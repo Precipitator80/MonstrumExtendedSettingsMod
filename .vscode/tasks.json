@@ -1,0 +1,27 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    // https://stackoverflow.com/questions/47707095/visual-studio-code-for-net-framework
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "H:/Visual Studio/Visual Studio/MSBuild/Current/Bin/MSBuild.exe", // Main / Sentinel computer
+            //"command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe", // Remote / Strathclyde computer
+            //"command": "F:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe", // Bueckeburg computer
+            "type": "shell",
+            "args": [
+                "Monstrum Extended Settings Mod.csproj",
+                "/t:Build",
+                "/p:Configuration=Debug",
+                "/p:Platform=\"AnyCPU\"",
+                "/p:OutputPath=\"H:/SteamLibrary/steamapps/common/Monstrum/Mods\"", // Main / Sentinel computer
+                //"/p:OutputPath='C:/Program Files (x86)/Steam/steamapps/common/Monstrum/Mods'", // Remote / Strathclyde computer
+                //"/p:OutputPath=\"F:/SteamLibrary/steamapps/common/Monstrum/Mods\"", // Bueckeburg computer
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
