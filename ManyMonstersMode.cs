@@ -17,16 +17,16 @@ namespace MonstrumExtendedSettingsMod
         {
             public static List<GameObject> monsterList;
             public static List<Monster> monsterListMonsterComponents;
-            private static List<int> monsterInstanceIDs;
+            private static Dictionary<int, int> monsterInstanceIDtoMonsterNumberDict;
             private static List<MState> monsterListStates;
 
             public static List<GameObject> brutes;
             public static List<Monster> brutesMonsterComponents;
-            private static List<int> brutesInstanceIDs;
+            private static Dictionary<int, int> brutesInstanceIDs;
 
             public static List<GameObject> hunters;
             public static List<Monster> huntersMonsterComponents;
-            private static List<int> huntersInstanceIDs;
+            private static Dictionary<int, int> huntersInstanceIDs;
 
             private static List<MTrappingState> huntersTrappingStates;
             private static List<bool> sightBelowThresholdList;
@@ -38,7 +38,7 @@ namespace MonstrumExtendedSettingsMod
 
             public static List<GameObject> fiends;
             public static List<Monster> fiendsMonsterComponents;
-            private static List<int> fiendsInstanceIDs;
+            private static Dictionary<int, int> fiendsInstanceIDs;
 
             private static Monster lastMonsterSeen;
             public static Monster lastMonsterSentMessage;
@@ -3849,7 +3849,7 @@ namespace MonstrumExtendedSettingsMod
                 // Initialise the monster list lists [not arrays anymore].
                 monsterList = new List<GameObject>();
                 monsterListMonsterComponents = new List<Monster>();
-                monsterInstanceIDs = new List<int>();
+                monsterInstanceIDtoMonsterNumberDict = new Dictionary<int, int>();
                 monsterListStates = new List<MState>();
 
                 if (monsterSelection != null)
@@ -3924,9 +3924,9 @@ namespace MonstrumExtendedSettingsMod
                             }
 
                             monsterListMonsterComponents.Add(monsterList[i].GetComponent<Monster>());
-                            monsterInstanceIDs.Add(monsterListMonsterComponents[i].GetInstanceID());
+                            monsterInstanceIDtoMonsterNumberDict.Add(monsterListMonsterComponents[i].GetInstanceID(), i);
                             monsterListStates.Add(monsterList[i].GetComponent<MState>());
-                            UnityEngine.Debug.Log(string.Concat(new object[] { "INSTANCE ID FOR MONSTER NUMBER ", i, " OF TYPE ", monsterListMonsterComponents[i].MonsterType.ToString(), " ----- The ID stored is " + monsterInstanceIDs[i] + "." }));
+                            UnityEngine.Debug.Log(string.Concat(new object[] { "INSTANCE ID FOR MONSTER NUMBER ", i, " OF TYPE ", monsterListMonsterComponents[i].MonsterType.ToString(), " ----- The ID stored is " + monsterListMonsterComponents[i].GetInstanceID() + "." }));
                         }
                         catch
                         {
@@ -5063,6 +5063,7 @@ namespace MonstrumExtendedSettingsMod
                 return closestMonster;
             }
 
+            /*
             private static int ClosestMonsterToThis(Vector3 passedPosition, Monster.MonsterTypeEnum monsterType)
             {
                 int[] monsterNumbersOfGivenType = new int[monsterList.Count];
@@ -5088,27 +5089,29 @@ namespace MonstrumExtendedSettingsMod
                 }
                 return closestMonster;
             }
+            */
 
             public static int MonsterNumber(int passedMonsterInstanceID)
             {
-                int monsterNumber = 0;
                 if (monsterList != null)
                 {
-                    for (int i = 1; i < monsterInstanceIDs.Count; i++)
+                    if (monsterInstanceIDtoMonsterNumberDict.ContainsKey(passedMonsterInstanceID))
                     {
-                        if (monsterInstanceIDs[i] == passedMonsterInstanceID)
-                        {
-                            monsterNumber = i;
-                        }
+                        return monsterInstanceIDtoMonsterNumberDict[passedMonsterInstanceID];
+                    }
+                    else
+                    {
+                        Debug.Log("monsterInstanceIDs does not contain passed ID!");
                     }
                 }
                 else
                 {
                     Debug.Log("monsterList is not initialised (written from MonsterNumber())");
                 }
-                return monsterNumber;
+                return 0; // Default return.
             }
 
+            /*
             private static int MonsterNumber(int monsterInstanceIDToUse, int[] passedMonsterInstanceIDs)
             {
                 int monsterNumber = 0;
@@ -5129,24 +5132,25 @@ namespace MonstrumExtendedSettingsMod
 
                 return monsterNumber;
             }
+            */
 
             private static int HunterNumber(int passedHunterInstanceID)
             {
                 if (hunters != null)
                 {
-                    for (int i = 0; i < monsterInstanceIDs.Count; i++)
+                    if (huntersInstanceIDs.ContainsKey(passedHunterInstanceID))
                     {
-                        if (huntersMonsterComponents[i].GetInstanceID() == passedHunterInstanceID)
-                        {
-                            return i;
-                        }
+                        return huntersInstanceIDs[passedHunterInstanceID];
+                    }
+                    else
+                    {
+                        Debug.Log("huntersInstanceIDs does not contain passed ID!");
                     }
                 }
                 else
                 {
                     Debug.Log("hunters is not initialised (written from HunterNumber())");
                 }
-                Debug.Log("Returning 0 from HunterNumber()");
                 return 0;
             }
 
@@ -5725,6 +5729,7 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookMonsterReactionOnTriggerEnter(On.MonsterReaction.orig_OnTriggerEnter orig, MonsterReaction monsterReaction, Collider _other)
             {
+                /*
                 if (monsterList != null)
                 {
                     for (int i = 0; i < monsterList.Count; i++)
@@ -5739,6 +5744,16 @@ namespace MonstrumExtendedSettingsMod
                             }
                             break;
                         }
+                    }
+                }
+                */
+                if (_other.transform.root.tag == "Monster")
+                {
+                    monsterReaction.monster = _other.GetComponentInParent<Monster>();
+                    monsterReaction.monNearby = true;
+                    if (monsterReaction.destroyingThis != null)
+                    {
+                        monsterReaction.monster.DestroyingThis = monsterReaction.destroyingThis;
                     }
                 }
             }
@@ -6159,7 +6174,7 @@ namespace MonstrumExtendedSettingsMod
                     monsterList[oldSize].SetActive(true); // This will run Monster.Awake, letting components be assigned.
                     monsterList[oldSize].SetActive(false);
                     monsterListMonsterComponents.Add(monsterList[oldSize].GetComponent<Monster>());
-                    monsterInstanceIDs.Add(monsterListMonsterComponents[oldSize].GetInstanceID());
+                    monsterInstanceIDtoMonsterNumberDict.Add(monsterListMonsterComponents[oldSize].GetInstanceID(), oldSize);
                     monsterListStates.Add(monsterList[oldSize].GetComponent<MState>());
                     monsterListStates[oldSize].m = monsterListMonsterComponents[oldSize];
                     /*
@@ -6204,7 +6219,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
                     */
-                    UnityEngine.Debug.Log(string.Concat(new object[] { "INSTANCE ID FOR NEWLY CREATED MONSTER NUMBER ", oldSize, " of type ", monsterListMonsterComponents[oldSize].monsterType, " ----- The ID stored is " + monsterInstanceIDs[oldSize] + "." }));
+                    UnityEngine.Debug.Log(string.Concat(new object[] { "INSTANCE ID FOR NEWLY CREATED MONSTER NUMBER ", oldSize, " of type ", monsterListMonsterComponents[oldSize].monsterType, " ----- The ID stored is " + monsterInstanceIDtoMonsterNumberDict[oldSize] + "." }));
                 }
                 catch
                 {
@@ -6229,10 +6244,10 @@ namespace MonstrumExtendedSettingsMod
                     switch (monsterToCreateString)
                     {
                         case "Hunter":
-                            ModSettings.numberOfHunters++;
                             hunters.Add(monsterList[oldSize]);
                             huntersMonsterComponents.Add(monsterListMonsterComponents[oldSize]);
-                            huntersInstanceIDs.Add(monsterInstanceIDs[oldSize]);
+                            huntersInstanceIDs.Add(monsterInstanceIDtoMonsterNumberDict[oldSize], ModSettings.numberOfHunters);
+                            ModSettings.numberOfHunters++;
                             try
                             {
                                 huntersTrappingStates.Add(monsterListMonsterComponents[oldSize].TrappingState);
@@ -6259,20 +6274,20 @@ namespace MonstrumExtendedSettingsMod
                             }
                             break;
                         case "Fiend":
-                            ModSettings.numberOfFiends++;
                             fiends.Add(monsterList[oldSize]);
                             fiendsMonsterComponents.Add(monsterListMonsterComponents[oldSize]);
-                            fiendsInstanceIDs.Add(monsterInstanceIDs[oldSize]);
+                            fiendsInstanceIDs.Add(monsterInstanceIDtoMonsterNumberDict[oldSize], ModSettings.numberOfFiends);
+                            ModSettings.numberOfFiends++;
                             fiendsThatAreInRangeOfPlayer.Add(false);
                             fiendsThatSeePlayer.Add(false);
                             auras.Add(monsterList[oldSize].GetComponentsInChildren<FiendAura>(true)[0]);
-                            fiendMindAttackFiendsTargetingPlayer[0].Add(MonsterNumber(monsterInstanceIDs[oldSize]));
+                            fiendMindAttackFiendsTargetingPlayer[0].Add(MonsterNumber(monsterInstanceIDtoMonsterNumberDict[oldSize]));
                             break;
                         default:
-                            ModSettings.numberOfBrutes++;
                             brutes.Add(monsterList[oldSize]);
                             brutesMonsterComponents.Add(monsterListMonsterComponents[oldSize]);
-                            brutesInstanceIDs.Add(monsterInstanceIDs[oldSize]);
+                            brutesInstanceIDs.Add(monsterInstanceIDtoMonsterNumberDict[oldSize], ModSettings.numberOfBrutes);
+                            ModSettings.numberOfBrutes++;
                             break;
                     }
                 }
@@ -7524,7 +7539,7 @@ namespace MonstrumExtendedSettingsMod
                     // Initialise the reference and instance IDs lists.
                     brutes = new List<GameObject>();
                     brutesMonsterComponents = new List<Monster>();
-                    brutesInstanceIDs = new List<int>();
+                    brutesInstanceIDs = new Dictionary<int, int>();
                     if (size > 0)
                     {
                         // Assign the references and instance IDs.
@@ -7543,7 +7558,7 @@ namespace MonstrumExtendedSettingsMod
                     // Initialise the reference and instance IDs lists.
                     hunters = new List<GameObject>();
                     huntersMonsterComponents = new List<Monster>();
-                    huntersInstanceIDs = new List<int>();
+                    huntersInstanceIDs = new Dictionary<int, int>();
                     if (size > 0)
                     {
                         // Assign the references and instance IDs.
@@ -7562,7 +7577,7 @@ namespace MonstrumExtendedSettingsMod
                     // Initialise the reference and instance IDs lists.
                     fiends = new List<GameObject>();
                     fiendsMonsterComponents = new List<Monster>();
-                    fiendsInstanceIDs = new List<int>();
+                    fiendsInstanceIDs = new Dictionary<int, int>();
                     if (size > 0)
                     {
                         // Assign the references and instance IDs.
@@ -7594,7 +7609,7 @@ namespace MonstrumExtendedSettingsMod
                 return size;
             }
 
-            private static void FillSpecificMonsterLists(ref List<GameObject> specificMonsterList, ref List<Monster> specificMonsterListMonsterComponents, ref List<int> specificMonsterInstanceIDs, Monster.MonsterTypeEnum specificMonsterType, int specificNumberOfMonsters)
+            private static void FillSpecificMonsterLists(ref List<GameObject> specificMonsterList, ref List<Monster> specificMonsterListMonsterComponents, ref Dictionary<int, int> specificMonsterInstanceIDs, Monster.MonsterTypeEnum specificMonsterType, int specificNumberOfMonsters)
             {
                 // As the specific lists are passed by direct reference, changing the parameter lists will change the original lists too.
                 if (specificMonsterList != null && monsterList != null)
@@ -7606,7 +7621,7 @@ namespace MonstrumExtendedSettingsMod
                         {
                             specificMonsterList.Add(monsterList[monsterNumber]);
                             specificMonsterListMonsterComponents.Add(monsterListMonsterComponents[monsterNumber]);
-                            specificMonsterInstanceIDs.Add(monsterInstanceIDs[monsterNumber]);
+                            specificMonsterInstanceIDs.Add(monsterListMonsterComponents[monsterNumber].GetInstanceID(), specificMonsterNumber);
                             specificMonsterNumber++;
                         }
                     }
