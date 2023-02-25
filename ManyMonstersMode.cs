@@ -15,37 +15,63 @@ namespace MonstrumExtendedSettingsMod
 
         private static class ManyMonstersMode
         {
-            public static List<GameObject> monsterList;
-            public static List<Monster> monsterListMonsterComponents;
-            private static List<int> monsterInstanceIDs;
-            private static List<MState> monsterListStates;
+            //public static List<GameObject> monsterList;
+            //public static List<Monster> monsterListMonsterComponents;
+            //private static List<int> monsterInstanceIDs;
+            //private static List<MState> monsterListStates;
 
-            public static List<GameObject> brutes;
-            public static List<Monster> brutesMonsterComponents;
-            private static List<int> brutesInstanceIDs;
+            //public static List<GameObject> brutes;
+            //public static List<Monster> brutesMonsterComponents;
+            //private static List<int> brutesInstanceIDs;
 
-            public static List<GameObject> hunters;
-            public static List<Monster> huntersMonsterComponents;
-            private static List<int> huntersInstanceIDs;
+            //public static List<GameObject> hunters;
+            //public static List<Monster> huntersMonsterComponents;
+            //private static List<int> huntersInstanceIDs;
 
-            private static List<MTrappingState> huntersTrappingStates;
-            private static List<bool> sightBelowThresholdList;
-            private static List<bool> soundBelowThresholdList;
-            private static List<bool> proxBelowThresholdList;
-            private static List<bool> allBelowThresholdList;
-            private static List<float> hunterThresholdValList;
-            public static bool logHunterActions;
+            //private static List<MTrappingState> huntersTrappingStates;
+            //private static List<bool> sightBelowThresholdList;
+            //private static List<bool> soundBelowThresholdList;
+            //private static List<bool> proxBelowThresholdList;
+            //private static List<bool> allBelowThresholdList;
+            //private static List<float> hunterThresholdValList;
+            //public static bool logHunterActions;
 
-            public static List<GameObject> fiends;
-            public static List<Monster> fiendsMonsterComponents;
-            private static List<int> fiendsInstanceIDs;
+            //public static List<GameObject> fiends;
+            //public static List<Monster> fiendsMonsterComponents;
+            //private static List<int> fiendsInstanceIDs;
+
+            //public static List<bool> monstersFinishedLerpToHidingSpot;
+            //public static List<bool> monstersFinishedGrab;
 
             private static Monster lastMonsterSeen;
             public static Monster lastMonsterSentMessage;
 
 
-            public static List<bool> monstersFinishedLerpToHidingSpot;
-            public static List<bool> monstersFinishedGrab;
+            public static Dictionary<int, GameObject> monsterDict;
+            public static Dictionary<int, Monster> monsterDictComponents;
+            public static Dictionary<int, MState> monsterDictStates;
+
+            //public static Dictionary<int, GameObject> brutes;
+            //public static Dictionary<int, Monster> brutesMonsterComponents;
+
+            //public static Dictionary<int, GameObject> hunters;
+            //public static Dictionary<int, Monster> huntersMonsterComponents;
+
+            //private static Dictionary<int, MTrappingState> huntersTrappingStates;
+            private static Dictionary<int, bool> sightBelowThresholdDict;
+            private static Dictionary<int, bool> soundBelowThresholdDict;
+            private static Dictionary<int, bool> proxBelowThresholdDict;
+            private static Dictionary<int, bool> allBelowThresholdDict;
+            private static Dictionary<int, float> hunterThresholdValDict;
+            public static bool logHunterActions;
+
+            //public static Dictionary<int, GameObject> fiends;
+            //public static Dictionary<int, Monster> fiendsMonsterComponents;
+
+            //public static Dictionary<int, bool> monstersFinishedLerpToHidingSpot;
+            //public static Dictionary<int, bool> monstersFinishedGrab;
+
+
 
             public readonly static Dictionary<IEnumerator, IEnumerator> IEnumeratorDictionary = new Dictionary<IEnumerator, IEnumerator>();
 
@@ -1202,7 +1228,7 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookChooseAttackChooseSoundByMonster(On.ChooseAttack.orig_ChooseSoundByMonster orig)
             {
-                string monsterText = monsterListMonsterComponents[ClosestMonsterToPlayer()].monsterType;
+                string monsterText = ClosestMonsterToPlayer().monsterType;
 
                 string attackText = " ";
                 switch (ChooseAttack.atkList)
@@ -1788,15 +1814,15 @@ namespace MonstrumExtendedSettingsMod
                 door.DamageDoor(1000);
                 door.doorSource.maxDistance = 10f;
                 door.NavBoxCheck();
-                int closestMonster = ClosestMonsterToThis(((MonoBehaviour)door).transform.position);
+                Monster closestMonster = ClosestMonsterToThis(((MonoBehaviour)door).transform.position);
                 /*
                 if (!ModSettings.enableCrewVSMonsterMode || (ModSettings.enableCrewVSMonsterMode && (closestMonster >= MultiplayerMode.monsterPlayers.Count)))
                 {
                     ((MonoBehaviour)door).transform.parent = monsterListMonsterComponents[closestMonster].CurrentHand.transform;
                 }
                 */
-                ((MonoBehaviour)door).transform.parent = monsterListMonsterComponents[closestMonster].CurrentHand.transform;
-                monsterListMonsterComponents[closestMonster].ResetHandSelection();
+                ((MonoBehaviour)door).transform.parent = closestMonster.CurrentHand.transform;
+                closestMonster.ResetHandSelection();
                 door.doorCollider.enabled = false;
                 door.doorRigidbody.constraints = RigidbodyConstraints.FreezeAll;
                 door.doorRigidbody.useGravity = false;
@@ -1844,7 +1870,7 @@ namespace MonstrumExtendedSettingsMod
                     doorBreak.brokenDoor[i].GetComponent<Rigidbody>().gameObject.layer = doorBreak.defaultLayer;
                     doorBreak.brokenDoor[i].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
                     doorBreak.brokenDoor[i].GetComponent<Rigidbody>().mass = 0.5f;
-                    doorBreak.brokenDoor[i].GetComponent<Rigidbody>().AddForce(monsterList[ClosestMonsterToThis(((MonoBehaviour)doorBreak).transform.position)].transform.forward, ForceMode.Impulse);
+                    doorBreak.brokenDoor[i].GetComponent<Rigidbody>().AddForce(ClosestMonsterToThis(((MonoBehaviour)doorBreak).transform.position).transform.forward, ForceMode.Impulse);
                 }
                 doorBreak.doorRigidbody.gameObject.SetActive(false);
                 InterpolateToPosition component = ((MonoBehaviour)doorBreak).GetComponentInParent<InterpolateToPosition>();
@@ -1860,7 +1886,7 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookDoorDebris(On.DoorDebris.orig_Force orig, DoorDebris doorDebris)
             {
-                Vector3 vector = monsterList[ClosestMonsterToThis(((MonoBehaviour)doorDebris).transform.position)].transform.forward;
+                Vector3 vector = ClosestMonsterToThis(((MonoBehaviour)doorDebris).transform.position).transform.forward;
                 vector.y = 0f;
                 vector.Normalize();
                 vector *= UnityEngine.Random.Range(doorDebris.forceMin, doorDebris.forceMax);
@@ -1977,11 +2003,11 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookEncounterMonster(On.EncounterMonster.orig_Update orig, EncounterMonster encounterMonster)
             {
-                if (!encounterMonster.completed && monsterList != null)
+                if (!encounterMonster.completed && monsterDict != null)
                 {
                     bool firstEscape = false;
 
-                    foreach (Monster monster in monsterListMonsterComponents)
+                    foreach (Monster monster in monsterDictComponents.Values)
                     {
                         if (monster.firstEscape)
                         {
@@ -2004,11 +2030,11 @@ namespace MonstrumExtendedSettingsMod
             private static void HookEscapeChecker(On.EscapeChecker.orig_UpdateAllCompleteness orig, EscapeChecker escapeChecker)
             {
                 orig.Invoke(escapeChecker);
-                if (monsterList != null)
+                if (monsterDict != null)
                 {
-                    for (int i = 1; i < monsterList.Count; i++)
+                    foreach (GameObject monsterObject in monsterDict.Values)
                     {
-                        monsterList[i].GetComponent<MonsterEffectiveness>().HighestEscapeCompleteness = escapeChecker.Highest;
+                        monsterObject.GetComponent<MonsterEffectiveness>().HighestEscapeCompleteness = escapeChecker.Highest;
                     }
                 }
             }
@@ -5033,6 +5059,7 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @ModSettings (Custom Calculations)
 
+            /*
             public static int ClosestMonsterToPlayer()
             {
                 int closestMonster = 0;
@@ -5047,7 +5074,26 @@ namespace MonstrumExtendedSettingsMod
                 }
                 return closestMonster;
             }
+            */
 
+            public static Monster ClosestMonsterToPlayer()
+            {
+                Monster closestMonster = lastMonsterSentMessage;
+                float closestDistance = float.MaxValue;
+                foreach (Monster monster in ManyMonstersMode.monsterDictComponents.Values)
+                {
+                    float distance = PlayerToMonsterDistance(monster);
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        closestMonster = monster;
+                    }
+                }
+                return closestMonster;
+            }
+
+
+            /*
             public static int ClosestMonsterToThis(Vector3 passedPosition)
             {
                 int closestMonster = 0;
@@ -5088,7 +5134,25 @@ namespace MonstrumExtendedSettingsMod
                 }
                 return closestMonster;
             }
+            */
 
+            public static Monster ClosestMonsterToThis(Vector3 passedPosition)
+            {
+                Monster closestMonster = lastMonsterSentMessage;
+                float closestDistance = float.MaxValue;
+                foreach (Monster monster in ManyMonstersMode.monsterDictComponents.Values)
+                {
+                    float distance = Vector3.Distance(monster.transform.position, passedPosition);
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        closestMonster = monster;
+                    }
+                }
+                return closestMonster;
+            }
+
+            /*
             public static int MonsterNumber(int passedMonsterInstanceID)
             {
                 int monsterNumber = 0;
@@ -5149,6 +5213,7 @@ namespace MonstrumExtendedSettingsMod
                 Debug.Log("Returning 0 from HunterNumber()");
                 return 0;
             }
+            */
 
             private static bool IsMonsterInRoom(Monster monster, Room room)
             {

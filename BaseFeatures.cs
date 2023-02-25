@@ -291,11 +291,11 @@ namespace MonstrumExtendedSettingsMod
                     // Debug & 0 Monsters Mode Monster Disabler
                     if ((ModSettings.debugMode && Input.GetKeyDown(KeyCode.Period)) || (ModSettings.numberOfMonsters == 0 && References.Monster.activeInHierarchy))
                     {
-                        if (ModSettings.numberOfMonsters > 1 && ManyMonstersMode.monsterList != null)
+                        if (ModSettings.numberOfMonsters > 1 && ManyMonstersMode.monsterDict != null)
                         {
-                            for (int i = 0; i < ManyMonstersMode.monsterList.Count; i++)
+                            foreach (KeyValuePair<int, GameObject> entry in ManyMonstersMode.monsterDict)
                             {
-                                ManyMonstersMode.monsterList[i].SetActive(false);
+                                entry.Value.SetActive(false);
                             }
                         }
                         else
@@ -365,7 +365,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                         else
                         {
-                            closestMonster = ManyMonstersMode.monsterListMonsterComponents[ManyMonstersMode.ClosestMonsterToPlayer()];
+                            closestMonster = ManyMonstersMode.ClosestMonsterToPlayer();
                         }
                         int distanceToMonster = Mathf.RoundToInt(Vector3.Distance(closestMonster.transform.position, References.player.transform.position)); // (int)Math.Round((closestMonster.transform.position - References.player.transform.position).magnitude); // Can use Vector3.Distance instead.
                         int distanceToRoot = Mathf.RoundToInt(Vector3.Distance(closestMonster.monsterMesh[0].rootBone.transform.position, References.player.transform.position)); // (int)Math.Round((closestMonster.monsterMesh[0].rootBone.transform.position - References.player.transform.position).magnitude); // Can use Vector3.Distance instead.
@@ -559,13 +559,12 @@ namespace MonstrumExtendedSettingsMod
 
                         if (Input.GetKeyDown(KeyCode.Comma))
                         {
-                            if (ModSettings.numberOfMonsters > 1 && ManyMonstersMode.monsterList != null)
+                            if (ModSettings.numberOfMonsters > 1 && ManyMonstersMode.monsterDict != null)
                             {
-                                for (int i = 0; i < ManyMonstersMode.monsterList.Count; i++)
+                                foreach (GameObject monsterObject in ManyMonstersMode.monsterDict.Values)
                                 {
-                                    ManyMonstersMode.monsterList[i].SetActive(true);
+                                    monsterObject.SetActive(true);
                                 }
-
                             }
                             else
                             {
@@ -1254,7 +1253,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                         else
                         {
-                            monsterTransform = ManyMonstersMode.monsterList[ManyMonstersMode.ClosestMonsterToThis(compassScript.needleTrans.position)].transform;
+                            monsterTransform = ManyMonstersMode.ClosestMonsterToThis(compassScript.needleTrans.position).transform;
                         }
 
                         Transform playerTransform;
@@ -1394,7 +1393,7 @@ namespace MonstrumExtendedSettingsMod
                 }
                 if (ModSettings.numberOfMonsters > 1)
                 {
-                    LevelGeneration.Instance.chosenMonstType = ManyMonstersMode.monsterListMonsterComponents[ManyMonstersMode.ClosestMonsterToPlayer()].MonsterType;
+                    LevelGeneration.Instance.chosenMonstType = ManyMonstersMode.ClosestMonsterToPlayer().MonsterType;
                 }
                 orig.Invoke(escapeRoute);
             }
@@ -4796,7 +4795,7 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookLightShaftsOnRenderObject(On.LightShafts.orig_OnRenderObject orig, LightShafts lightShafts)
             {
-                if (!ModSettings.doNotRenderBruteLight && (!ModSettings.enableCrewVSMonsterMode || !ModSettings.numbersOfMonsterPlayers.Contains(0) || ManyMonstersMode.monsterListMonsterComponents[0].MonsterType != Monster.MonsterTypeEnum.Brute))
+                if (!ModSettings.doNotRenderBruteLight && (!ModSettings.enableCrewVSMonsterMode || !ModSettings.numbersOfMonsterPlayers.Contains(0) || References.Monster.GetComponent<Monster>().MonsterType != Monster.MonsterTypeEnum.Brute))
                 {
                     orig.Invoke(lightShafts);
                 }
