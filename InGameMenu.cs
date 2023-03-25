@@ -342,7 +342,7 @@ namespace MonstrumExtendedSettingsMod
 
             if (settings == null)
             {
-                GameObject[] versionTextGOs = CreateText("V" + ModSettings.version + "\nPrecipitator", exitButtonGOs[0].transform, new Vector3(-250f, 0f, 0f), false, false);
+                GameObject[] versionTextGOs = CreateText("V" + VERSION_WITH_TEXT + "\nPrecipitator", exitButtonGOs[0].transform, new Vector3(-250f, 0f, 0f), false, false);
                 Text versionText = versionTextGOs[1].GetComponent<Text>();
                 versionText.rectTransform.sizeDelta = resetButtonText.rectTransform.sizeDelta;
                 versionText.fontSize /= 2;

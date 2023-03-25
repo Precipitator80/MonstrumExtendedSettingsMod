@@ -261,6 +261,12 @@ namespace MonstrumExtendedSettingsMod
                 // Molotov and Smoke Grenade
                 On.Smashable.Start += new On.Smashable.hook_Start(HookSmashableStart);
 
+                // No Time Freeze In Pause Menu
+                On.PauseMenu.TogglePause += new On.PauseMenu.hook_TogglePause(HookPauseMenuTogglePause);
+                On.PauseMenu.Update += new On.PauseMenu.hook_Update(HookPauseMenuUpdate);
+
+                // Hide Inventory
+                On.Inventory.DisplayInventory += new On.Inventory.hook_DisplayInventory(HookInventoryDisplayInventory);
             }
 
             /*
@@ -2065,6 +2071,15 @@ namespace MonstrumExtendedSettingsMod
             Sub HeadLights
             Welding Kit
             */
+
+
+            private static void HookInventoryDisplayInventory(On.Inventory.orig_DisplayInventory orig, Inventory inventory)
+            {
+                if (!ModSettings.hideInventory)
+                {
+                    orig.Invoke(inventory);
+                }
+            }
 
             private static void HookInventoryStart(On.Inventory.orig_Start orig, Inventory inventory)
             {
@@ -4882,7 +4897,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         if (!ModSettings.errorWhileReadingModSettings)
                         {
-                            loadingBackground.text.text += "\n\nMonstrum Extended Settings Mod Version " + ModSettings.version + " Active";
+                            loadingBackground.text.text += "\n\nMonstrum Extended Settings Mod Version " + VERSION_WITH_TEXT + " Active";
                         }
                         else
                         {
@@ -6099,6 +6114,156 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
                 */
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @PauseMenu
+
+            public static bool pausedWithoutTimeFreeze = false;
+
+            private static void HookPauseMenuTogglePause(On.PauseMenu.orig_TogglePause orig, PauseMenu pauseMenu)
+            {
+                pauseMenu.objects = UnityEngine.Object.FindObjectsOfType(typeof(GameObject));
+                if ((!ModSettings.noTimeFreezeInPauseMenu && !pauseMenu.pause) || (ModSettings.noTimeFreezeInPauseMenu && !pausedWithoutTimeFreeze))
+                {
+                    pauseMenu.pausedSources.Clear();
+
+                    if (!ModSettings.noTimeFreezeInPauseMenu)
+                    {
+                        foreach (GameObject gameObject in pauseMenu.objects)
+                        {
+                            if (gameObject != null)
+                            {
+                                AudioSource[] components = gameObject.GetComponents<AudioSource>();
+                                if (components.Length > 0)
+                                {
+                                    for (int j = 0; j < components.Length; j++)
+                                    {
+                                        if (components[j] != null && components[j].isPlaying)
+                                        {
+                                            components[j].Pause();
+                                            pauseMenu.pausedSources.Add(components[j]);
+                                        }
+                                    }
+                                }
+                                gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (MouseLock gameObject in FindObjectsOfType<MouseLock>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                        foreach (OculusPauseUI gameObject in FindObjectsOfType<OculusPauseUI>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                        foreach (PauseOculusCube gameObject in FindObjectsOfType<PauseOculusCube>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                        foreach (PauseMenu gameObject in FindObjectsOfType<PauseMenu>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                        foreach (OculusTutorialPromptsManager gameObject in FindObjectsOfType<OculusTutorialPromptsManager>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                        foreach (OculusInputMisc gameObject in FindObjectsOfType<OculusInputMisc>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                        foreach (GraphicsButton gameObject in FindObjectsOfType<GraphicsButton>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                        foreach (OVRControllerManager gameObject in FindObjectsOfType<OVRControllerManager>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                        foreach (MouseLookCustom gameObject in FindObjectsOfType<MouseLookCustom>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                        foreach (OculusReticule gameObject in FindObjectsOfType<OculusReticule>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                        foreach (OculusMainSceneControl gameObject in FindObjectsOfType<OculusMainSceneControl>())
+                        {
+                            gameObject.SendMessage("OnPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                    }
+                    pauseMenu.Show();
+                    pauseMenu.PauseGame();
+                    for (int k = 0; k < pauseMenu.listDPAD.Count; k++)
+                    {
+                        pauseMenu.listDPAD[k].DisableSelected();
+                    }
+                }
+                else
+                {
+                    for (int l = 0; l < pauseMenu.listDPAD.Count; l++)
+                    {
+                        pauseMenu.listDPAD[l].DisableSelected();
+                    }
+                    foreach (GameObject gameObject2 in pauseMenu.objects)
+                    {
+                        if (gameObject2 != null)
+                        {
+                            gameObject2.SendMessage("OnExitPauseGame", SendMessageOptions.DontRequireReceiver);
+                        }
+                    }
+                    foreach (AudioSource audioSource in pauseMenu.pausedSources)
+                    {
+                        if (audioSource != null)
+                        {
+                            audioSource.Play();
+                        }
+                    }
+                    pauseMenu.UnPauseGame();
+                    pauseMenu.Hide();
+                    pauseMenu.EnableToggle();
+                }
+                if (!ModSettings.noTimeFreezeInPauseMenu)
+                {
+                    pauseMenu.pause = !pauseMenu.pause;
+                }
+                else
+                {
+                    pausedWithoutTimeFreeze = !pausedWithoutTimeFreeze;
+                }
+            }
+
+            private static void HookPauseMenuUpdate(On.PauseMenu.orig_Update orig, PauseMenu pauseMenu)
+            {
+                if (pauseMenu.fadeIn.fadeInComplete && pauseMenu.enableToggle)
+                {
+                    if ((!ModSettings.noTimeFreezeInPauseMenu && !pauseMenu.pause) || (ModSettings.noTimeFreezeInPauseMenu && !pausedWithoutTimeFreeze))
+                    {
+                        if (MouseLock.Instance.IsLocked && (Input.GetKeyDown(KeyCode.Escape) || XboxCtrlrInput.XCI.GetButtonDown(XboxCtrlrInput.XboxButton.Start) || pauseMenu.pauseFromOverlay))
+                        {
+                            pauseMenu.pauseFromOverlay = false;
+                            pauseMenu.TogglePause();
+                        }
+                    }
+                    else if (Input.GetKeyDown(KeyCode.Escape) || XboxCtrlrInput.XCI.GetButtonDown(XboxCtrlrInput.XboxButton.Start))
+                    {
+                        if (pauseMenu.optionsEnabled)
+                        {
+                            pauseMenu.pauseButtons.SetActive(true);
+                            pauseMenu.optionsButtons.SetActive(false);
+                            pauseMenu.optionsEnabled = false;
+                        }
+                        else
+                        {
+                            pauseMenu.TogglePause();
+                        }
+                    }
+                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -7635,7 +7800,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 if (timeScaleManager.loading || timeScaleManager.paused)
                 {
-                    if (timeScaleManager.paused)
+                    if (timeScaleManager.paused && !ModSettings.noTimeFreezeInPauseMenu)
                     {
                         Time.timeScale = 0f;
                     }
@@ -7652,8 +7817,11 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookTriggerNotificationSetNotificationString(On.TriggerNotification.orig_SetNotificationString orig, TriggerNotification triggerNotification, string _notification)
             {
-                _notification += ".";
-                orig.Invoke(triggerNotification, _notification);
+                if (!ModSettings.hideTaskNotifications)
+                {
+                    _notification += ".";
+                    orig.Invoke(triggerNotification, _notification);
+                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/

@@ -1382,7 +1382,7 @@ namespace MonstrumExtendedSettingsMod
                 On.MouseLock.SubtractFromMenuStack += new On.MouseLock.hook_SubtractFromMenuStack(HookMouseLockSubtractFromMenuStack);
                 On.PauseMenu.Show += new On.PauseMenu.hook_Show(HookPauseMenuShow);
                 On.DisplayOptions.Hide += new On.DisplayOptions.hook_Hide(HookDisplayOptionsHide);
-                On.PauseMenu.Update += new On.PauseMenu.hook_Update(HookPauseMenuUpdate);
+                On.PauseMenu.Update += new On.PauseMenu.hook_Update(HookPauseMenuUpdate); // ALREADY HOOKED IN BASEFEATURES. DO NOT UNCOMMENT WITHOUT ACCOUNTING FOR THIS.
                 */
 
                 // Heli fuel hose handle cannot be grabbed? // Fixed with chair bug.

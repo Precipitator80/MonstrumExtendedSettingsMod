@@ -27,6 +27,9 @@ namespace MonstrumExtendedSettingsMod
 
     public partial class ExtendedSettingsModScript
     {
+        public const string VERSION = "5.1";
+        public const string VERSION_WITH_TEXT = VERSION + " Indev";
+
         public abstract class MESMSetting
         {
             public static string[] modSettings;
@@ -505,7 +508,7 @@ namespace MonstrumExtendedSettingsMod
                 try
                 {
                     // Some of the settings require the MESMSetting to be declared separately so that validation can be performed. Is this really necessary? .userValue is not used for anything else once a round has started loading.
-                    Debug.Log("READING EXTENDED SETTINGS FROM FILE [" + version + "]");
+                    Debug.Log("READING EXTENDED SETTINGS FROM FILE [" + VERSION_WITH_TEXT + "]");
                     allSettings = new List<MESMSetting>();
                     try
                     {
@@ -1001,7 +1004,10 @@ namespace MonstrumExtendedSettingsMod
                     breathRecovery = new MESMSetting<float>("Breath Recovery", "The amount of breath to recover per second outside of smoke", 2f, true, true).userValue;
                     smokeShroudBreathDrain = new MESMSetting<float>("Smoke Shroud Breath Drain", "The amount of breath to drain per second inside of a smoke shroud", 2f, true, true).userValue;
                     smokeCorridorBreathDrain = new MESMSetting<float>("Smoke Corridor Breath Drain", "The amount of breath to drain per second inside of a smoke corridor", 1f, true, true).userValue;
-
+                    noTimeFreezeInPauseMenu = new MESMSetting<bool>("No Time Freeze In Pause Menu", "The game will not be paused while using the pause menu", false).userValue;
+                    hideReticule = new MESMSetting<bool>("Hide Reticule", "Hides the reticule that is usually in the centre of the screen", false).userValue;
+                    hideInventory = new MESMSetting<bool>("Hide Inventory", "Hides the inventory display that is usually on the top left of the screen", false).userValue;
+                    hideTaskNotifications = new MESMSetting<bool>("Hide Task Notifications", "Hides the task notifications that are usually on the top left of the screen", false).userValue;
 
                     // Read Player Settings Variables
                     modSettingsErrorString = "Player";
@@ -1237,7 +1243,6 @@ namespace MonstrumExtendedSettingsMod
                     }
                     logDebugText = new MESMSetting<bool>("Log Debug Text", "Lets the game log a lot of extra information that lags the game but can be useful when fixing bugs", false).userValue;
 
-
                     // Initialise Other Variables Used In Code
                     modSettingsErrorString = "Other";
                     MESMSetting.currentCategoryBeingAssigned = modSettingsErrorString + " Settings";
@@ -1288,7 +1293,7 @@ namespace MonstrumExtendedSettingsMod
                         firstTimeReadingSettings = true;
                         ReadModSettings();
                     }
-                    Debug.Log("READ EXTENDED SETTINGS FROM FILE [" + version + "]");
+                    Debug.Log("READ EXTENDED SETTINGS FROM FILE [" + VERSION_WITH_TEXT + "]");
                 }
                 catch (Exception e)
                 {
@@ -2016,6 +2021,13 @@ namespace MonstrumExtendedSettingsMod
                             }
                         }
                     }
+                }
+
+                if (hideReticule)
+                {
+                    Reticule.Instance.selectedSize = Vector3.zero;
+                    Reticule.Instance.unselectedSize = Vector3.zero;
+                    Reticule.Instance.ReticuleScale = Vector3.zero;
                 }
                 Debug.Log("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
@@ -3334,6 +3346,10 @@ namespace MonstrumExtendedSettingsMod
             public static float breathRecovery;
             public static float smokeShroudBreathDrain;
             public static float smokeCorridorBreathDrain;
+            public static bool noTimeFreezeInPauseMenu;
+            public static bool hideReticule;
+            public static bool hideInventory;
+            public static bool hideTaskNotifications;
 
 
             // Player Settings Variables
@@ -3461,7 +3477,6 @@ namespace MonstrumExtendedSettingsMod
             public static bool enableMod;
             public static int numberOfMonsters;
             public static bool noclip;
-            public static string version = "5.0";
             public static bool errorWhileReadingModSettings;
             public static string modSettingsErrorString;
             public static bool errorDuringLevelGeneration;
