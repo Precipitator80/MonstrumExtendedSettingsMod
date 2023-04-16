@@ -1,0 +1,2 @@
+Place these in Monstrum/Mods/MESMAssetBundles.
+These do have a chance to be out of sync with the latest files built as these are local first to the machine's UnityEditor project and then copy of Monstrum.

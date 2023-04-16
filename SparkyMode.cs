@@ -18,7 +18,8 @@ namespace MonstrumExtendedSettingsMod
             public static List<GameObject> sparkyList;
             public static List<Monster> sparkyListMonsterComponents;
             public static List<string> sparkyState;
-            private static List<Light[]> sparkyEyes;
+            private static List<Light[]> bruteSparkyEyes;
+            private static List<Material[]> customSparkyEyes;
             public static float maxAggro;
             public static GameObject simpleSparkyGO;
             public static SkinnedMeshRenderer sparkyGlobalSMR;
@@ -30,7 +31,7 @@ namespace MonstrumExtendedSettingsMod
 
             }
 
-            public static void SimpleSparkyModelTest()
+            public static void SimpleSparkyModelTest(GameObject bruteSparkyGameObject)
             {
                 // LOAD ASSET BUNDLE
                 LoadSparkyAssetBundle();
@@ -38,7 +39,7 @@ namespace MonstrumExtendedSettingsMod
                 // Create Simple Sparky
                 simpleSparkyGO = Instantiate((GameObject)sparkyAssetBundleObjects[1]);
                 simpleSparkyGO.SetActive(true);
-                simpleSparkyGO.transform.SetParent(References.Monster.transform, false);
+                simpleSparkyGO.transform.SetParent(bruteSparkyGameObject.transform, false);
                 SkinnedMeshRenderer sparkySkinnedMeshRenderer = simpleSparkyGO.GetComponentInChildren<SkinnedMeshRenderer>();
                 sparkySkinnedMeshRenderer.enabled = true;
                 /*
@@ -75,12 +76,12 @@ namespace MonstrumExtendedSettingsMod
                 Animator sparkyAnimator = simpleSparkyGO.GetComponent<Animator>();
                 sparkyAnimator.enabled = false;
 
-                Animator monsterAnimator = References.Monster.GetComponentInChildren<Animator>();
+                Animator monsterAnimator = bruteSparkyGameObject.GetComponentInChildren<Animator>();
                 monsterAnimator.runtimeAnimatorController = Instantiate((AnimatorOverrideController)sparkyAssetBundleObjects[0]);
                 monsterAnimator.avatar = sparkyAnimator.avatar;
                 Debug.Log("Does Brute use root motion? " + monsterAnimator.applyRootMotion);
                 monsterAnimator.applyRootMotion = true;
-                SkinnedMeshRenderer monsterSMR = References.Monster.GetComponentInChildren<SkinnedMeshRenderer>();
+                SkinnedMeshRenderer monsterSMR = bruteSparkyGameObject.GetComponentInChildren<SkinnedMeshRenderer>();
 
                 monsterSMR.sharedMesh = sparkySkinnedMeshRenderer.sharedMesh; // I don't think it is recommended to edit anything using sharedMesh. Does this break other Brute models?
                 monsterSMR.bones = sparkySkinnedMeshRenderer.bones;
@@ -90,7 +91,7 @@ namespace MonstrumExtendedSettingsMod
                 monsterSMR.localBounds = sparkySkinnedMeshRenderer.localBounds;
                 monsterSMR.lightProbeUsage = sparkySkinnedMeshRenderer.lightProbeUsage;
 
-                BoxCollider[] boxColliders = References.Monster.GetComponentsInChildren<BoxCollider>();
+                BoxCollider[] boxColliders = bruteSparkyGameObject.GetComponentsInChildren<BoxCollider>();
                 foreach (BoxCollider boxCollider in boxColliders)
                 {
                     Debug.Log("Collider is " + boxCollider.name);
@@ -101,6 +102,8 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 ModSettings.finishedCreatingSimpleSparky = true;
+
+                BaseFeatures.DisableMonsterParticles(bruteSparkyGameObject);
             }
 
             // #SparkyModeAfterGenerationInitialisation
@@ -133,7 +136,8 @@ namespace MonstrumExtendedSettingsMod
                 sparkyList = new List<GameObject>();
                 sparkyListMonsterComponents = new List<Monster>();
                 sparkyState = new List<string>();
-                sparkyEyes = new List<Light[]>();
+                bruteSparkyEyes = new List<Light[]>();
+                customSparkyEyes = new List<Material[]>();
 
                 // Sparky FSM adjustment
                 foreach (Monster monster in ManyMonstersMode.monsterListMonsterComponents) // MMM is forced when Sparky is used.
@@ -156,10 +160,28 @@ namespace MonstrumExtendedSettingsMod
 
                         // Change Brute Sparky's Light
                         Light[] lights = monster.GetComponentsInChildren<Light>();
-                        sparkyEyes.Add(new Light[] { lights[4] /*Brute's left eye*/, lights[5] /*Brute's right eye*/ });
-                        foreach (Light light in lights)
+                        if (ModSettings.sparkyWithModel)
                         {
-                            light.color = new Color(1f, 1f, 1f, 0f);
+                            foreach (Light light in lights)
+                            {
+                                light.color = new Color(0f, 0f, 0f, 0f);
+                            }
+
+                            Material eyeL = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.L").gameObject.GetComponentInChildren<MeshRenderer>().material;
+                            Material eyeR = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.R").gameObject.GetComponentInChildren<MeshRenderer>().material;
+                            eyeL.SetColor("_EmissionColor", Color.red * 5f);
+                            eyeR.SetColor("_EmissionColor", Color.red * 5f);
+
+                            customSparkyEyes.Add(new Material[] { eyeL, eyeR });
+                        }
+                        else
+                        {
+                            // Brute Sparky
+                            bruteSparkyEyes.Add(new Light[] { lights[4] /*Brute's left eye*/, lights[5] /*Brute's right eye*/ });
+                            foreach (Light light in lights)
+                            {
+                                light.color = new Color(1f, 1f, 1f, 0f);
+                            }
                         }
 
                         // Make FSM adjustments
@@ -275,7 +297,7 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // #SparkyCreatorProofOfConcept
 
-            public static AssetBundle sparkyAssetBundle;
+            //public static AssetBundle sparkyAssetBundle;
             public static UnityEngine.Object[] sparkyAssetBundleObjects;
             public static Monster sparkyMonster;
 
@@ -297,16 +319,22 @@ namespace MonstrumExtendedSettingsMod
             // @CreateSparkyGameObject
             public static GameObject CreateSparkyGameObject()
             {
-                return CreateBruteSparky();
+                GameObject sparkyGameObject = CreateBruteSparky();
+                if (ModSettings.sparkyWithModel)
+                {
+                    SimpleSparkyModelTest(sparkyGameObject);
+                }
+                return sparkyGameObject;
             }
 
             private static void LoadSparkyAssetBundle()
             {
                 try
                 {
-                    if (sparkyAssetBundle == null)
+                    if (sparkyAssetBundleObjects == null)
                     {
-                        string sparkyFilePathNew = Path.Combine(Directory.GetCurrentDirectory(), "mesmassetbundle");
+                        /*
+                        string sparkyFilePathNew = Path.Combine(Directory.GetCurrentDirectory(), "Mods/MESMAssetBundles/mesmassetbundle");
                         Debug.Log("File path used for Sparky Asset Bundle is: " + sparkyFilePathNew);
                         try
                         {
@@ -338,7 +366,9 @@ namespace MonstrumExtendedSettingsMod
                         {
                             Debug.Log("Error getting Sparky Asset Bundle");
                         }
+                        */
 
+                        sparkyAssetBundleObjects = Utilities.LoadAssetBundle("sparky");
 
                         try
                         {
@@ -474,9 +504,20 @@ namespace MonstrumExtendedSettingsMod
 
                     // Change lights
                     float upperLimit = 0.84f;
-                    foreach (Light light in sparkyEyes[sparkyNumber])
+                    if (ModSettings.sparkyWithModel)
                     {
-                        light.color = new Color(upperLimit, upperLimit - upperLimit * sparkyAggroTimers[sparkyNumber] / maxAggro, upperLimit - upperLimit * sparkyAggroTimers[sparkyNumber] / maxAggro, 1f);
+                        foreach (Material material in customSparkyEyes[sparkyNumber])
+                        {
+                            material.SetColor("_EmissionColor", new Color(upperLimit, upperLimit - upperLimit * sparkyAggroTimers[sparkyNumber] / maxAggro, upperLimit - upperLimit * sparkyAggroTimers[sparkyNumber] / maxAggro, 1f) * 5f);
+                        }
+                    }
+                    else
+                    {
+                        // Brute Sparky
+                        foreach (Light light in bruteSparkyEyes[sparkyNumber])
+                        {
+                            light.color = new Color(upperLimit, upperLimit - upperLimit * sparkyAggroTimers[sparkyNumber] / maxAggro, upperLimit - upperLimit * sparkyAggroTimers[sparkyNumber] / maxAggro, 1f);
+                        }
                     }
                 }
             }

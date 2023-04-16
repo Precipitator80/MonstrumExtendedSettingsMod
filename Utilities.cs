@@ -316,33 +316,13 @@ namespace MonstrumExtendedSettingsMod
                 pasteVOL.zMultiplier = copyVOL.zMultiplier;
             }
 
-            /*
             public static UnityEngine.Object[] LoadAssetBundle(string assetBundleName)
             {
                 string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "Mods/MESMAssetBundles/" + assetBundleName);
                 return AssetBundle.LoadFromFile(fullPath).LoadAllAssets();
             }
-            */
 
-            /*
-            public static IEnumerator ActivateGameObjectAfterTime(GameObject gameObject, float timeToWait)
-            {
-                yield return new WaitForSeconds(timeToWait);
-                gameObject.SetActive(true);
-            }
-            */
-
-            /* Not currently used utilities.
-            private static void RecursiveTransformCheck(Transform transform, int layer)
-            {
-                for (int i = 0; i < transform.childCount; i++)
-                {
-                    Debug.Log("Transform found in layer " + layer + ": " + transform.GetChild(i));
-                    RecursiveTransformCheck(transform.GetChild(i), layer + 1);
-                }
-            }
-
-            private static Transform RecursiveTransformSearch(Transform transform, string targetTransformName)
+            public static Transform RecursiveTransformSearch(Transform transform, string targetTransformName)
             {
                 for (int i = 0; i < transform.childCount; i++)
                 {
@@ -358,6 +338,22 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
                 return null;
+            }
+
+            /* Not currently used utilities.
+            public static IEnumerator ActivateGameObjectAfterTime(GameObject gameObject, float timeToWait)
+            {
+                yield return new WaitForSeconds(timeToWait);
+                gameObject.SetActive(true);
+            }
+            
+            private static void RecursiveTransformCheck(Transform transform, int layer)
+            {
+                for (int i = 0; i < transform.childCount; i++)
+                {
+                    Debug.Log("Transform found in layer " + layer + ": " + transform.GetChild(i));
+                    RecursiveTransformCheck(transform.GetChild(i), layer + 1);
+                }
             }
 
             // @CopyComponent

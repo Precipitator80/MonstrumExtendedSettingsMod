@@ -4811,10 +4811,11 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookLightShaftsOnRenderObject(On.LightShafts.orig_OnRenderObject orig, LightShafts lightShafts)
             {
-                if (!ModSettings.doNotRenderBruteLight && (!ModSettings.enableCrewVSMonsterMode || !ModSettings.numbersOfMonsterPlayers.Contains(0) || ManyMonstersMode.monsterListMonsterComponents[0].MonsterType != Monster.MonsterTypeEnum.Brute))
+                if (ModSettings.doNotRenderBruteLight || (ModSettings.enableCrewVSMonsterMode && ModSettings.numbersOfMonsterPlayers.Contains(0) && ManyMonstersMode.monsterListMonsterComponents[0].MonsterType == Monster.MonsterTypeEnum.Brute))
                 {
-                    orig.Invoke(lightShafts);
+                    return;
                 }
+                orig.Invoke(lightShafts);
             }
 
             private static void HookLightShaftsUpdateLightType(On.LightShafts.orig_UpdateLightType orig, LightShafts lightShafts)
@@ -4854,11 +4855,75 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @LoadingBackground
 
+            private static Hints.HintCollection[] extendedLoadingScreenArray;
+            private static readonly Dictionary<String, String> customLoadingScreenMessages = new Dictionary<string, string>()
+            {
+                { "Bunks", "Bunks" },
+                { "Clock", "Clock" },
+                { "Container1", "Container1" },
+                { "Container2", "Container2" },
+                { "Darkness", "Darkness" },
+                { "DocumentsMonstrum2", "DocumentsMonstrum2" },
+                { "Helicopter", "Helicopter" },
+                { "HisaMaru", "HisaMaru" },
+                { "HisaMaruMonstrum2", "HisaMaruMonstrum2" },
+                { "Liferaft", "Liferaft" },
+                { "Map", "Map" },
+                { "NaidenSparky", "NaidenSparky" },
+                { "RedHallway", "RedHallway" },
+                { "SparkyEasterEgg", "SparkyEasterEgg" },
+                { "Sumbersible", "Submersible" },
+                { "UpperDecksMonstrum2", "UpperDecksMonstrum2" }
+            };
+
             private static void HookLoadingBackground(On.LoadingBackground.orig_Awake orig, LoadingBackground loadingBackground)
             {
                 if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Menus" || !ModSettings.skippedMenuScreen)
                 {
                     Hints.HintCollection randomHint = Hints.GetRandomHint();
+
+                    if (!ModSettings.disableCustomLoadingText)
+                    {
+                        Debug.Log("Hints length before is: " + Hints.instance.hints.Length);
+
+                        // Create an extended loading screen array of the default loading screens with the custom ones.
+                        if (extendedLoadingScreenArray == null)
+                        {
+                            List<Hints.HintCollection> extendedLoadingScreenList = new List<Hints.HintCollection>(Hints.instance.hints);
+                            UnityEngine.Object[] loadingScreensUnpacked = Utilities.LoadAssetBundle("loadingscreens");
+                            foreach (UnityEngine.Object loadingScreenObject in loadingScreensUnpacked)
+                            {
+                                if (loadingScreenObject.GetType() == typeof(Texture2D))
+                                {
+                                    Texture2D loadingScreenTexture = (Texture2D)loadingScreenObject;
+                                    Sprite loadingScreenSprite = Sprite.Create(loadingScreenTexture, randomHint.texture.rect, randomHint.texture.pivot, randomHint.texture.pixelsPerUnit);
+
+                                    Hints.HintCollection customHint = new Hints.HintCollection();
+                                    customHint.texture = loadingScreenSprite;
+                                    if (customLoadingScreenMessages.ContainsKey(loadingScreenTexture.name))
+                                    {
+                                        customHint.hints = new string[] { customLoadingScreenMessages[loadingScreenTexture.name] };
+                                    }
+                                    else
+                                    {
+                                        Debug.Log("Could not find custom text for hint: " + loadingScreenTexture.name);
+                                        customHint.hints = randomHint.hints;
+                                    }
+
+                                    extendedLoadingScreenList.Add(customHint);
+                                }
+                            }
+                            extendedLoadingScreenArray = extendedLoadingScreenList.ToArray();
+                            Debug.Log("Loaded custom loading screens");
+                        }
+
+                        // Choose a hint from the extended array.
+                        Hints.instance.hints = extendedLoadingScreenArray;
+                        randomHint = Hints.GetRandomHint();
+
+                        Debug.Log("Hints length after is: " + Hints.instance.hints.Length);
+                    }
+
                     LoadingBackground.loadingSprite = randomHint.texture;
                     if (randomHint.hints.Length != 0)
                     {
@@ -5299,29 +5364,33 @@ namespace MonstrumExtendedSettingsMod
                 new Hook(typeof(Monster).GetProperty("IsPlayerLocationKnown", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetGetMethod(), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookMonsterget_IsPlayerLocationKnown"), null);
             }
 
+            public static void DisableMonsterParticles(GameObject monsterGameObject)
+            {
+                try
+                {
+                    ParticleSystem[] monsterParticleSystems = monsterGameObject.GetComponentsInChildren<ParticleSystem>();
+                    if (monsterParticleSystems != null)
+                    {
+                        foreach (ParticleSystem particleSystem in monsterParticleSystems)
+                        {
+                            ParticleSystem.EmissionModule emissionModule = particleSystem.emission;
+                            emissionModule.enabled = false;
+                        }
+                    }
+                }
+                catch
+                {
+                    Debug.Log("Error while trying to disable monster particles.");
+                }
+            }
+
             private static void HookMonsterAwake(On.Monster.orig_Awake orig, Monster monster)
             {
                 //Debug.Log("Running Monster.Awake");
                 orig.Invoke(monster);
                 if (ModSettings.disableMonsterParticles)
                 {
-                    try
-                    {
-                        ParticleSystem[] monsterParticleSystems = ((MonoBehaviour)monster).GetComponentsInChildren<ParticleSystem>();
-                        if (monsterParticleSystems != null)
-                        {
-                            foreach (ParticleSystem particleSystem in monsterParticleSystems)
-                            {
-                                ParticleSystem.EmissionModule emissionModule = particleSystem.emission;
-                                emissionModule.enabled = false;
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        Debug.Log("Error while trying to disable monster particles.");
-                    }
-
+                    DisableMonsterParticles(monster.gameObject);
                     /*
                     try
                     {
@@ -6916,13 +6985,19 @@ namespace MonstrumExtendedSettingsMod
                         InventoryItem inventoryItem = smashable.GetComponentInParent<InventoryItem>();
                         inventoryItem.itemName = "Molotov";
 
-                        /*
                         if (molotovModelPrefab == null)
                         {
-                            UnityEngine.Object[] molotovUnpacked = Utilities.LoadAssetBundle("molotov");
-                            if (molotovUnpacked.Length > 0 && molotovUnpacked[0] != null && molotovUnpacked[0].GetType() == typeof(GameObject))
+                            try
                             {
-                                molotovModelPrefab = (GameObject)molotovUnpacked[0];
+                                UnityEngine.Object[] molotovUnpacked = Utilities.LoadAssetBundle("molotov");
+                                if (molotovUnpacked.Length > 0 && molotovUnpacked[0] != null && molotovUnpacked[0].GetType() == typeof(GameObject))
+                                {
+                                    molotovModelPrefab = (GameObject)molotovUnpacked[0];
+                                }
+                            }
+                            catch
+                            {
+                                Debug.Log("Failed to load Molotov model");
                             }
                         }
                         if (molotovModelPrefab != null)
@@ -6942,7 +7017,6 @@ namespace MonstrumExtendedSettingsMod
                             inventoryItem.glowShader.Start();
                             itemShadow.render = inventoryItem.GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>();//((MonoBehaviour)itemShadow).GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>(); // Does this do anything?
                         }
-                        */
                     }
                 }
             }
