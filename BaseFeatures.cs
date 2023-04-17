@@ -4864,6 +4864,8 @@ namespace MonstrumExtendedSettingsMod
                 { "Container2", "Container2" },
                 { "Darkness", "Darkness" },
                 { "DocumentsMonstrum2", "DocumentsMonstrum2" },
+                { "EggSac", "EggSac" },
+                { "FiendMindAttack", "FiendMindAttack" },
                 { "Helicopter", "Helicopter" },
                 { "HisaMaru", "HisaMaru" },
                 { "HisaMaruMonstrum2", "HisaMaruMonstrum2" },
@@ -4872,8 +4874,10 @@ namespace MonstrumExtendedSettingsMod
                 { "NaidenSparky", "NaidenSparky" },
                 { "RedHallway", "RedHallway" },
                 { "SparkyEasterEgg", "SparkyEasterEgg" },
-                { "Sumbersible", "Submersible" },
-                { "UpperDecksMonstrum2", "UpperDecksMonstrum2" }
+                { "SparkyTrap", "SparkyTrap" },
+                { "Submersible", "Submersible" },
+                { "UpperDecksMonstrum2", "UpperDecksMonstrum2" },
+                { "TV", "TV" }
             };
 
             private static void HookLoadingBackground(On.LoadingBackground.orig_Awake orig, LoadingBackground loadingBackground)
