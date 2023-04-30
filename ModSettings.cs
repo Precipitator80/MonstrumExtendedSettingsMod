@@ -3500,6 +3500,9 @@ namespace MonstrumExtendedSettingsMod
             // No Declaration Needed
             public static Vector3 temporaryPlayerPosition;
             public static bool showingPriorityText = false;
+
+            // Readonly Reference Variables
+            public static readonly string[] monsterNames = new string[] { "Brute", "Hunter", "Fiend", "Sparky" };
         }
 
     }

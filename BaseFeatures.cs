@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Linq;
 using System.IO;
+using UnityEngine.UI;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -267,6 +268,11 @@ namespace MonstrumExtendedSettingsMod
 
                 // Hide Inventory
                 On.Inventory.DisplayInventory += new On.Inventory.hook_DisplayInventory(HookInventoryDisplayInventory);
+
+                // DeathMenu
+                On.DeathMenu.Start += new On.DeathMenu.hook_Start(HookDeathMenuStart);
+                On.MAttackingState2.KillThePlayer += new On.MAttackingState2.hook_KillThePlayer(HookMAttackingState2KillThePlayer);
+                On.ChooseAttack.WhatDeathByPlayer += new On.ChooseAttack.hook_WhatDeathByPlayer(HookChooseAttackWhatDeathByPlayer);
             }
 
             /*
@@ -1241,6 +1247,16 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @ChooseAttack
+
+            private static void HookChooseAttackWhatDeathByPlayer(On.ChooseAttack.orig_WhatDeathByPlayer orig, ChooseAttack.PlayerDeath PD)
+            {
+                deathRegion = References.Monster.GetComponent<Monster>().PlayerDetectRoom.GetRoom.PrimaryRegion;
+                deathType = PD;
+                orig.Invoke(PD);
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @CompassScript
 
             private static void HookCompassScriptUpdate(On.CompassScript.orig_Update orig, CompassScript compassScript)
@@ -1363,6 +1379,232 @@ namespace MonstrumExtendedSettingsMod
                 }
                 orig.Invoke(craneChain);
             }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @DeathMenu
+
+            private static Dictionary<PrimaryRegionType, List<Sprite>> regionBackgrounds; // Death Menu Region Backgrounds.
+            private static Dictionary<String, List<Sprite>> monsterFrames; // Death Menu Monster Frames.
+            private static Dictionary<ChooseAttack.PlayerDeath, List<Sprite>> deathTypeFrames; // Death Menu Death Type Frames.
+
+            private static PrimaryRegionType deathRegion; // The region the player died in.
+            private static string deathMonster; // The monster the player died to.
+            private static ChooseAttack.PlayerDeath deathType; // The death type the player had (non-direct to monster).
+
+            private static void LoadDeathScreens()
+            {
+                regionBackgrounds = new Dictionary<PrimaryRegionType, List<Sprite>>();
+                monsterFrames = new Dictionary<string, List<Sprite>>();
+                deathTypeFrames = new Dictionary<ChooseAttack.PlayerDeath, List<Sprite>>();
+
+                UnityEngine.Object[] loadingScreensUnpacked = Utilities.LoadAssetBundle("deathscreens");
+
+                Sprite referenceSprite = Hints.GetRandomHint().texture;
+                foreach (UnityEngine.Object loadingScreenObject in loadingScreensUnpacked)
+                {
+                    if (loadingScreenObject.GetType() == typeof(Texture2D))
+                    {
+                        Texture2D loadingScreenTexture = (Texture2D)loadingScreenObject;
+
+
+                        Sprite loadingScreenSprite = Sprite.Create(loadingScreenTexture, referenceSprite.rect, referenceSprite.pivot, referenceSprite.pixelsPerUnit);
+
+                        bool added = false;
+                        // Check whether the image is a region background.
+                        foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
+                        {
+                            // Check the name of the image against the region enum.
+                            if (loadingScreenTexture.name.Contains(primaryRegionType.ToString()))
+                            {
+                                // Create a list of sprites if there is none for the key.
+                                if (!regionBackgrounds.ContainsKey(primaryRegionType))
+                                {
+                                    regionBackgrounds.Add(primaryRegionType, new List<Sprite>());
+                                }
+                                // Add the image to the list of sprites for the key.
+                                regionBackgrounds[primaryRegionType].Add(loadingScreenSprite);
+                                added = true;
+                                break;
+                            }
+                        }
+                        if (!added)
+                        {
+                            // Check whether the image is a monster frame.
+                            foreach (string monsterName in ModSettings.monsterNames)
+                            {
+                                // Check the name of the image against the monster names.
+                                if (loadingScreenTexture.name.Contains(monsterName))
+                                {
+                                    // Create a list of sprites if there is none for the key.
+                                    if (!monsterFrames.ContainsKey(monsterName))
+                                    {
+                                        monsterFrames.Add(monsterName, new List<Sprite>());
+                                    }
+                                    // Add the image to the list of sprites for the key.
+                                    monsterFrames[monsterName].Add(loadingScreenSprite);
+                                    added = true;
+                                    break;
+                                }
+                            }
+                            if (!added)
+                            {
+                                // Check whether the image is a death type frame.
+                                foreach (ChooseAttack.PlayerDeath playerDeath in Enum.GetValues(typeof(ChooseAttack.PlayerDeath)))
+                                {
+                                    // Check the name of the image against the playerDeath enum.
+                                    if (loadingScreenTexture.name.Contains(playerDeath.ToString()))
+                                    {
+                                        // Create a list of sprites if there is none for the key.
+                                        if (!deathTypeFrames.ContainsKey(playerDeath))
+                                        {
+                                            deathTypeFrames.Add(playerDeath, new List<Sprite>());
+                                        }
+                                        // Add the image to the list of sprites for the key.
+                                        deathTypeFrames[playerDeath].Add(loadingScreenSprite);
+                                        added = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            private static void HookDeathMenuStart(On.DeathMenu.orig_Start orig, DeathMenu deathMenu)
+            {
+                // Load custom death screens if required.
+                if (regionBackgrounds == null)
+                {
+                    LoadDeathScreens();
+                }
+
+                // Unhide the image.
+                deathMenu.backgroundImage.color = Color.white;
+
+                // Set a custom frame.
+                // Duplicate elements inside the canvas - Hosnkobf - https://forum.unity.com/threads/duplicate-elements-inside-the-canvas.612415/ - Accessed 29.04.2023
+                Image frame = Instantiate(deathMenu.backgroundImage, deathMenu.backgroundImage.rectTransform);
+                frame.preserveAspect = true;
+
+                if (ModSettings.monsterNames.Contains(deathMonster) && monsterFrames.ContainsKey(deathMonster) && monsterFrames[deathMonster].Count > 0)
+                {
+                    Debug.Log("Setting monster frame.");
+                    frame.sprite = monsterFrames[deathMonster][UnityEngine.Random.Range(0, monsterFrames[deathMonster].Count)];
+                }
+                else if (deathTypeFrames.ContainsKey(deathType) && deathTypeFrames[deathType].Count > 0)
+                {
+                    Debug.Log("Setting special death frame.");
+                    frame.sprite = deathTypeFrames[deathType][UnityEngine.Random.Range(0, deathTypeFrames[deathType].Count)];
+                }
+                else
+                {
+                    Debug.Log("Disabling death frame.");
+                    frame.enabled = false;
+                }
+
+                // Set a custom background. Set it after the frame so that a black background is not duplicated.
+                deathMenu.backgrounds = new Sprite[1];
+                DeathMenu.backgroundID = 0;
+
+                if (regionBackgrounds.ContainsKey(deathRegion) && regionBackgrounds[deathRegion].Count > 0)
+                {
+                    Debug.Log("Setting death region background.");
+                    deathMenu.backgrounds[0] = regionBackgrounds[deathRegion][UnityEngine.Random.Range(0, regionBackgrounds[deathRegion].Count)];
+                }
+                else
+                {
+                    Debug.Log("Disabling region background.");
+                    deathMenu.backgroundImage.color = Color.black;
+                }
+
+                // Reset the values for the next round after chosen.
+                // What is the default value for enum variable? - BoltClock - https://stackoverflow.com/questions/4967656/what-is-the-default-value-for-enum-variable - Accessed 30.04.2023
+                Debug.Log("Death Region: " + deathRegion + "\nDeath Monster: " + deathMonster + "\nDeath Type: " + deathType);
+                deathRegion = default(PrimaryRegionType);
+                deathMonster = string.Empty;
+                deathType = default(ChooseAttack.PlayerDeath); // Default is Steam. MindAttack is also used for specific Fiend frames.
+
+                // Change the render mode of the canvas to overlay the screen.
+                deathMenu.backgroundImage.canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+
+                // Resize the image to fit the screen. Requires an unusual resolution for some reason.
+                deathMenu.backgroundImage.rectTransform.sizeDelta = new Vector2(1820, 1100);
+
+                // Add an event to the exit button to hide the frame.
+                deathMenu.exit.GetComponentInChildren<Button>().onClick.AddListener(delegate ()
+                {
+                    frame.enabled = false;
+                });
+
+                // Scale up the buttons.
+                Button button = deathMenu.exit.GetComponentInChildren<Button>();
+                for (int i = 0; i < button.onClick.GetPersistentEventCount(); i++)
+                {
+                    UnityEngine.Object ueObject = button.onClick.GetPersistentTarget(i);
+                    Debug.Log(ueObject);
+                    if (ueObject.GetType() == typeof(GameObject))
+                    {
+                        foreach (Text text in ((GameObject)ueObject).GetComponentsInChildren<Text>())
+                        {
+                            text.transform.parent.parent.localScale = new Vector3(1.65f, 1.65f, 1.65f);
+                        }
+                    }
+                    // Show the frame when hiding the exit confirmation.
+                    if (ueObject.name.Equals("NoButton") && frame.enabled)
+                    {
+                        Button noButton = ((Button)ueObject);
+                        noButton.onClick.AddListener(delegate ()
+                        {
+                            frame.enabled = true;
+                        });
+                    }
+                }
+
+                // Reset the scale of the canvas.
+                deathMenu.backgroundImage.canvas.transform.localScale = Vector3.one;
+
+                // Reset the position of the image.
+                deathMenu.backgroundImage.transform.localPosition = Vector3.zero;
+
+                // Reset the scale of the image and its parents.
+                deathMenu.backgroundImage.rectTransform.localScale = Vector3.one;
+                deathMenu.backgroundImage.rectTransform.parent.localScale = Vector3.one;
+                deathMenu.backgroundImage.rectTransform.parent.parent.localScale = Vector3.one;
+
+                // Shift the image to the right.
+                deathMenu.backgroundImage.rectTransform.localPosition = new Vector3(50f, 0f, 0f);
+
+                // Put the buttons at the right height.
+                deathMenu.backgroundImage.rectTransform.parent.parent.localPosition = new Vector3(deathMenu.backgroundImage.rectTransform.parent.parent.localPosition.x, 0f, deathMenu.backgroundImage.rectTransform.parent.parent.localPosition.z);
+
+                // Scale the canvas to the right size (same mode as loading screen).
+                CanvasScaler canvasScaler = deathMenu.backgroundImage.canvas.GetComponent<CanvasScaler>();
+                canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                canvasScaler.matchWidthOrHeight = 1;
+                canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
+                canvasScaler.referenceResolution = new Vector2(1920, 1080);
+
+                Debug.Log("Image size:" + deathMenu.backgroundImage.rectTransform.sizeDelta);
+                Debug.Log("anchorMin: " + deathMenu.backgroundImage.rectTransform.anchorMin);
+                Debug.Log("anchorMax: " + deathMenu.backgroundImage.rectTransform.anchorMax);
+                Debug.Log("pivot: " + deathMenu.backgroundImage.rectTransform.pivot);
+                Debug.Log("Preserve aspect: " + deathMenu.backgroundImage.preserveAspect);
+                Debug.Log("anchoredPosition: " + deathMenu.backgroundImage.rectTransform.anchoredPosition);
+                Debug.Log("anchoredPosition3D: " + deathMenu.backgroundImage.rectTransform.anchoredPosition3D);
+                Debug.Log("canvasScaler: " + canvasScaler);
+                Debug.Log("canvasScaler scaleFactor:" + canvasScaler.scaleFactor);
+                Debug.Log("canvasScaler uiScaleMode:" + canvasScaler.uiScaleMode);
+                Debug.Log("canvasScaler matchWidthOrHeight:" + canvasScaler.matchWidthOrHeight);
+                Debug.Log("canvasScaler screenMatchMode:" + canvasScaler.screenMatchMode);
+                Debug.Log("canvasScaler referenceResolution:" + canvasScaler.referenceResolution);
+                Debug.Log("canvasScaler referencePixelsPerUnit:" + canvasScaler.referencePixelsPerUnit);
+
+                orig.Invoke(deathMenu);
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @DeathScreen
 
             /*----------------------------------------------------------------------------------------------------*/
             // @DuctTape
@@ -4856,28 +5098,44 @@ namespace MonstrumExtendedSettingsMod
             // @LoadingBackground
 
             private static Hints.HintCollection[] extendedLoadingScreenArray;
-            private static readonly Dictionary<String, String> customLoadingScreenMessages = new Dictionary<string, string>()
+            private static readonly Dictionary<string, string[]> customLoadingScreenMessages = new Dictionary<string, string[]>()
             {
-                { "Bunks", "Bunks" },
-                { "Clock", "Clock" },
-                { "Container1", "Container1" },
-                { "Container2", "Container2" },
-                { "Darkness", "Darkness" },
-                { "DocumentsMonstrum2", "DocumentsMonstrum2" },
-                { "EggSac", "EggSac" },
-                { "FiendMindAttack", "FiendMindAttack" },
-                { "Helicopter", "Helicopter" },
-                { "HisaMaru", "HisaMaru" },
-                { "HisaMaruMonstrum2", "HisaMaruMonstrum2" },
-                { "Liferaft", "Liferaft" },
-                { "Map", "Map" },
-                { "NaidenSparky", "NaidenSparky" },
-                { "RedHallway", "RedHallway" },
-                { "SparkyEasterEgg", "SparkyEasterEgg" },
-                { "SparkyTrap", "SparkyTrap" },
-                { "Submersible", "Submersible" },
-                { "UpperDecksMonstrum2", "UpperDecksMonstrum2" },
-                { "TV", "TV" }
+                { "AlphaBunks", new String[]{"The structure of the Hisa Maru was changed a lot throughout construction."}},
+                { "Brute", new String[]{"The Brute is hulk of a monser that will excel in a direct chase."}},
+                { "BrutePresence", new String[]{"Paying attention to your surroundings can mean the difference between life and death."}},
+                { "Clock", new String[]{"A good sense of time can help you to predict a monster's next action."}},
+                { "ColourSettings", new String[]{"The Colour Settings allow you to customise the appearance of the Hisa Maru."}},
+                { "Container", new String[]{"The cargo hold contains a large variety of items, but its maze of containers be difficult to navigate safely.", "Some of the cargo carried aboard the Hisa Maru proved difficult to contain..."}},
+                { "DarkShip", new String[]{"In Dark Ship mode, the Hisa Maru is plunged into darkness.", "Some monsters may benefit more than others from darkness."}},
+                { "DeckZero", new String[]{"Deck Zero is a dangerous stretch of corridors in the deepest parts of the ship."} },
+                { "Fiend", new String[]{"The Fiend is an intelligent monster with mysterious telekinetic powers."}},
+                { "FiendPresence", new String[]{"Having a keen ear will let you hear a monster before seeing it."}},
+                { "Helicopter1", new String[]{"Refueling the helicopter is an elaborate process that is sure to attract the attention of any monsters nearby."}},
+                { "Helicopter2", new String[]{"The helicopter can be used for fast transportation to land in case of emergencies."}},
+                { "HisaMaru", new String[]{"The contents of some of the cargo carried aboard the Hisa Maru remained classified."}},
+                { "Hunter", new String[]{"The Hunter is a gelatinous monster that hunts using the ship's ventilation system."}},
+                { "HunterPresence", new String[]{"Some things on the ship are best not investigated too closely..."}},
+                { "LevelGenerationSettings", new String[]{"The Level Generation Settings allow you to customise the ship's layout in unusual ways."}},
+                { "Liferaft", new String[]{"The life raft is often the safest option to escape against any monsters."}},
+                { "LowerDecks", new String[]{"The lower decks hold a lot of the ship's larger equipment in a maze of workshop rooms."}},
+                { "Map", new String[]{"Maps placed on the walls throughout the ship may help you to relocate yourself if lost."}},
+                { "MESMSettings", new String[]{"The Extended Settings Mod offers hundreds of settings to customise your experience."}},
+                { "Monstrum2Documents", new String[]{"The future answers many questions left unanswered by the past, but opens many others..."}},
+                { "Monstrum2HisaMaru", new String[]{"The Hisa Maru survived into the 21st century, severely damaged by time."}},
+                { "Monstrum2SeaFort", new String[]{"Genetic research on the monsters continued into the 21st century aboard a seemingly derelict array of sea forts."}},
+                { "Monstrum2UpperDecks", new String[]{"While other parts of the ship decayed severely over time, the Hisa Maru's upper decks remained in a relatively good condition."}},
+                { "Multiplayer", new String[]{"The local Multiplayer mode allows you to play PvE or PvP with friends on your computer. Third party software lets you play online with others."}},
+                { "OverpoweredSteam", new String[]{"Steam onboard the Hisa Maru can be quite dangerous, especially with additional modifications..."}},
+                { "Sparky", new String[]{"Sparky is a monster adept at lurking the player and interfering with the ship's power.", "Sparky was Monstrum's pre-alpha monster, reimagined in the mod with additional abilities."}},
+                { "SparkyEasterEgg1", new String[]{"Implementing a new monster takes a lot of time and dedication, but opens up the possibility for many new experiences in the game."}},
+                { "SparkyEasterEgg2", new String[]{"Congratulations! You have stumbled upon the golden Sparky. This is the original model designed for the Monstrum 1 pre-alpha."}},
+                { "SparkyEasterEgg3", new String[]{"Don't let Sparky catch you in the dark...", "It is unwise to let Sparky drain all the ship's power..." }},
+                { "SparkyPresence", new String[]{"Sparky can drain the ship's power, requiring a region's electricity to be restored."}},
+                { "SteamShutoff", new String[]{"The ship's steam can be shut off, but doing so can prove difficult."}},
+                { "Submersible", new String[]{"The submersible requires uninterrupted time charging, providing monsters unaccounted for an ample opportunity to interfere."}},
+                { "TV", new String[]{"Some objects that seem useless at first glance may prove to be more useful than thought."}},
+                { "UpperDecks", new String[]{"Rooms in the upper decks are filled with smaller items and plenty of hiding spots."}},
+                { "Workstation", new String[]{"Some items, notes and easter eggs may require a more thorough inspection of the environment to find."}}
             };
 
             private static void HookLoadingBackground(On.LoadingBackground.orig_Awake orig, LoadingBackground loadingBackground)
@@ -4906,7 +5164,7 @@ namespace MonstrumExtendedSettingsMod
                                     customHint.texture = loadingScreenSprite;
                                     if (customLoadingScreenMessages.ContainsKey(loadingScreenTexture.name))
                                     {
-                                        customHint.hints = new string[] { customLoadingScreenMessages[loadingScreenTexture.name] };
+                                        customHint.hints = customLoadingScreenMessages[loadingScreenTexture.name];
                                     }
                                     else
                                     {
@@ -4919,6 +5177,23 @@ namespace MonstrumExtendedSettingsMod
                             }
                             extendedLoadingScreenArray = extendedLoadingScreenList.ToArray();
                             Debug.Log("Loaded custom loading screens");
+
+                            Image image = loadingBackground.GetComponent<Image>();
+                            Debug.Log("Image size:" + image.rectTransform.sizeDelta);
+                            Debug.Log("anchorMin: " + image.rectTransform.anchorMin);
+                            Debug.Log("anchorMax: " + image.rectTransform.anchorMax);
+                            Debug.Log("pivot: " + image.rectTransform.pivot);
+                            Debug.Log("Preserve aspect: " + image.preserveAspect);
+                            Debug.Log("anchoredPosition: " + image.rectTransform.anchoredPosition);
+                            Debug.Log("anchoredPosition3D: " + image.rectTransform.anchoredPosition3D);
+                            CanvasScaler canvasScaler = image.canvas.GetComponent<CanvasScaler>();
+                            Debug.Log("canvasScaler: " + canvasScaler);
+                            Debug.Log("canvasScaler scaleFactor:" + canvasScaler.scaleFactor);
+                            Debug.Log("canvasScaler uiScaleMode:" + canvasScaler.uiScaleMode);
+                            Debug.Log("canvasScaler matchWidthOrHeight:" + canvasScaler.matchWidthOrHeight);
+                            Debug.Log("canvasScaler screenMatchMode:" + canvasScaler.screenMatchMode);
+                            Debug.Log("canvasScaler referenceResolution:" + canvasScaler.referenceResolution);
+                            Debug.Log("canvasScaler referencePixelsPerUnit:" + canvasScaler.referencePixelsPerUnit);
                         }
 
                         // Choose a hint from the extended array.
@@ -4984,6 +5259,16 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
                 }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @MAttackingState2
+
+            private static void HookMAttackingState2KillThePlayer(On.MAttackingState2.orig_KillThePlayer orig, MAttackingState2 mAttackingState2)
+            {
+                deathRegion = mAttackingState2.monster.PlayerDetectRoom.GetRoom.PrimaryRegion;
+                deathMonster = mAttackingState2.monster.monsterType;
+                orig.Invoke(mAttackingState2);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
