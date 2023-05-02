@@ -5107,7 +5107,7 @@ namespace MonstrumExtendedSettingsMod
                 { "ColourSettings", new String[]{"The Colour Settings allow you to customise the appearance of the Hisa Maru."}},
                 { "Container", new String[]{"The cargo hold contains a large variety of items, but its maze of containers be difficult to navigate safely.", "Some of the cargo carried aboard the Hisa Maru proved difficult to contain..."}},
                 { "DarkShip", new String[]{"In Dark Ship mode, the Hisa Maru is plunged into darkness.", "Some monsters may benefit more than others from darkness."}},
-                { "DeckZero", new String[]{"Deck Zero is a dangerous stretch of corridors in the deepest parts of the ship."} },
+                { "DeckZero", new String[]{"Deck Zero is a dangerous stretch of corridors forming the deepest parts of the ship."} },
                 { "Fiend", new String[]{"The Fiend is an intelligent monster with mysterious telekinetic powers."}},
                 { "FiendPresence", new String[]{"Having a keen ear will let you hear a monster before seeing it."}},
                 { "Helicopter1", new String[]{"Refueling the helicopter is an elaborate process that is sure to attract the attention of any monsters nearby."}},

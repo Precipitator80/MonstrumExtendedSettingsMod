@@ -538,7 +538,8 @@ namespace MonstrumExtendedSettingsMod
                         numberOfSparkiesMESM.userValue = 0; // Force the number of Sparkies to be 0 if useSparky is not true.
                     }
                     numberOfSparkies = numberOfSparkiesMESM.userValue;
-                    sparkyWithModel = new MESMSetting<bool>("Use Indev Sparky Model", "Uses a custom model for Sparky made by Naiden with placeholder animations. The monster will not function normally", false, false, true).userValue;
+                    customSparkyMusic = new MESMSetting<bool>("Use Custom Sparky Music", "Uses custom music for Sparky by Birdbonanza. If disabled, Brute music is used instead", true, false, true).userValue;
+                    customSparkyModel = new MESMSetting<bool>("Use Indev Sparky Model", "Uses a custom model for Sparky made by Naiden with placeholder animations. The monster will not function normally", false, false, true).userValue;
                     useSmokeMonster = false; //new MESMSetting<bool>("Add Smoke Monster To The Game", "Adds a Fiend-like monster to the game that prefers using mysterious smoke to take out the player to direct confrontation. Requires a restart to change", false).userValue;
                     /*
                     if (!useSmokeMonster)
@@ -3217,7 +3218,8 @@ namespace MonstrumExtendedSettingsMod
             public static int numberOfSparkies;
             public static int numberOfSmokeMonsters;
             public static bool useSparky;
-            public static bool sparkyWithModel; // New Sparky with working model. Use 1 Brute instead of 1 Sparky with Use Sparky enabled.
+            public static bool customSparkyModel; // New Sparky with working model but gameplay bugs from animations.
+            public static bool customSparkyMusic; // Custom Sparky music.
             public static bool useSmokeMonster; // Variable that enables the smoke monster code.
             public static bool finishedCreatingSimpleSparky;
             public static bool disableRandomBrute;

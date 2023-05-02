@@ -33,11 +33,8 @@ namespace MonstrumExtendedSettingsMod
 
             public static void SimpleSparkyModelTest(GameObject bruteSparkyGameObject)
             {
-                // LOAD ASSET BUNDLE
-                LoadSparkyAssetBundle();
-
                 // Create Simple Sparky
-                simpleSparkyGO = Instantiate((GameObject)sparkyAssetBundleObjects[1]);
+                simpleSparkyGO = Instantiate((GameObject)sparkyPrefab);
                 simpleSparkyGO.SetActive(true);
                 simpleSparkyGO.transform.SetParent(bruteSparkyGameObject.transform, false);
                 SkinnedMeshRenderer sparkySkinnedMeshRenderer = simpleSparkyGO.GetComponentInChildren<SkinnedMeshRenderer>();
@@ -77,7 +74,7 @@ namespace MonstrumExtendedSettingsMod
                 sparkyAnimator.enabled = false;
 
                 Animator monsterAnimator = bruteSparkyGameObject.GetComponentInChildren<Animator>();
-                monsterAnimator.runtimeAnimatorController = Instantiate((AnimatorOverrideController)sparkyAssetBundleObjects[0]);
+                monsterAnimator.runtimeAnimatorController = Instantiate(sparkyAnimatorOCPrefab);
                 monsterAnimator.avatar = sparkyAnimator.avatar;
                 Debug.Log("Does Brute use root motion? " + monsterAnimator.applyRootMotion);
                 monsterAnimator.applyRootMotion = true;
@@ -160,7 +157,7 @@ namespace MonstrumExtendedSettingsMod
 
                         // Change Brute Sparky's Light
                         Light[] lights = monster.GetComponentsInChildren<Light>();
-                        if (ModSettings.sparkyWithModel)
+                        if (ModSettings.customSparkyModel)
                         {
                             foreach (Light light in lights)
                             {
@@ -271,6 +268,70 @@ namespace MonstrumExtendedSettingsMod
                         fusebox.AddPreExistingFuse();
                     }
                 }
+
+                if (sparkyAudioClips != null)
+                {
+                    foreach (AudioClip audioClip in sparkyAudioClips)
+                    {
+                        string path = "Music/";
+                        if (audioClip.name.Contains("ChaseCool"))
+                        {
+                            path += "Cooldown";
+                        }
+                        else if (audioClip.name.Contains("ChaseLoop"))
+                        {
+                            path += "HighAlert";
+                        }
+                        else if (audioClip.name.Contains("HideCool"))
+                        {
+                            path += "Cooldown/AfterHide";
+                        }
+                        else if (audioClip.name.Contains("HideLoop"))
+                        {
+                            path += "Hiding";
+                        }
+                        else if (audioClip.name.Contains("WanderLoop"))
+                        {
+                            path += "NoAlert";
+                        }
+
+                        AudioLibrary audioLibrary = Instantiate(AudioSystem.GetLibraryFromName(path + "/Brute"));
+                        audioLibrary.clips = new List<AudioClip>();
+                        audioLibrary.AddClip(audioClip);
+
+                        AudioSystem.instance.libraries.Add(path + "/Sparky", audioLibrary);
+
+                        // Also make a sub theme for the high alert theme.
+                        if (path.Contains("HighAlert"))
+                        {
+                            AudioSystem.instance.libraries.Add("Music/SubEvent/Sparky", audioLibrary);
+                        }
+                    }
+
+                    /*
+                    string[] musicTypes = new string[] { "Cooldown/AfterHide", "Cooldown", "NoAlert", "Hiding", "HighAlert", "SubEvent" };
+                    foreach (string monsterName in ModSettings.monsterNames)
+                    {
+                        foreach (string musicType in musicTypes)
+                        {
+                            string path = "Music/" + musicType + "/" + monsterName;
+                            AudioLibrary audioLibrary = AudioSystem.GetLibraryFromName(path);
+                            if (audioLibrary != null)
+                            {
+                                Debug.Log("Library clips for " + path + ":");
+                                foreach (AudioClip audioClip in audioLibrary.clips)
+                                {
+                                    Debug.Log(audioClip);
+                                }
+                            }
+                            else
+                            {
+                                Debug.Log("No library for " + path);
+                            }
+                        }
+                    }
+                    */
+                }
             }
 
             // #InitialiseSparkyMode
@@ -297,8 +358,10 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // #SparkyCreatorProofOfConcept
 
-            //public static AssetBundle sparkyAssetBundle;
-            public static UnityEngine.Object[] sparkyAssetBundleObjects;
+            public static AnimatorOverrideController sparkyAnimatorOCPrefab;
+            public static GameObject sparkyPrefab;
+            public static List<AudioClip> sparkyAudioClips;
+
             public static Monster sparkyMonster;
 
             private static GameObject CreateBruteSparky()
@@ -320,7 +383,12 @@ namespace MonstrumExtendedSettingsMod
             public static GameObject CreateSparkyGameObject()
             {
                 GameObject sparkyGameObject = CreateBruteSparky();
-                if (ModSettings.sparkyWithModel)
+                if (ModSettings.customSparkyModel || ModSettings.customSparkyMusic)
+                {
+                    LoadSparkyAssetBundle();
+                }
+
+                if (ModSettings.customSparkyModel)
                 {
                     SimpleSparkyModelTest(sparkyGameObject);
                 }
@@ -331,7 +399,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 try
                 {
-                    if (sparkyAssetBundleObjects == null)
+                    if (sparkyPrefab == null)
                     {
                         /*
                         string sparkyFilePathNew = Path.Combine(Directory.GetCurrentDirectory(), "Mods/MESMAssetBundles/mesmassetbundle");
@@ -368,7 +436,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                         */
 
-                        sparkyAssetBundleObjects = Utilities.LoadAssetBundle("sparky");
+                        UnityEngine.Object[] sparkyAssetBundleObjects = Utilities.LoadAssetBundle("sparky");
 
                         try
                         {
@@ -380,32 +448,41 @@ namespace MonstrumExtendedSettingsMod
                                 {
                                     if (sparkyObject.GetType() == typeof(GameObject))
                                     {
-                                        GameObject sparkyGO = (GameObject)sparkyObject;
+                                        sparkyPrefab = (GameObject)sparkyObject;
 
-                                        if (sparkyGO.GetComponent<Rigidbody>() != null)
+                                        if (ModSettings.logDebugText)
                                         {
-                                            Debug.Log("GetComponent Rigidbody is not null");
+                                            if (sparkyPrefab.GetComponent<Rigidbody>() != null)
+                                            {
+                                                Debug.Log("GetComponent Rigidbody is not null");
+                                            }
+
+                                            if (sparkyPrefab.GetComponentInChildren<Rigidbody>() != null)
+                                            {
+                                                Debug.Log("GetComponentInChildren Rigidbody is not null");
+                                            }
+
+                                            Component[] sparkyGOComponents = sparkyPrefab.GetComponents<Component>();
+                                            foreach (Component component in sparkyGOComponents)
+                                            {
+                                                Debug.Log("Sparky GO component name is " + component.name + " and type is " + component.GetType());
+                                            }
                                         }
 
-                                        if (sparkyGO.GetComponentInChildren<Rigidbody>() != null)
-                                        {
-                                            Debug.Log("GetComponentInChildren Rigidbody is not null");
-                                        }
-
-                                        Component[] sparkyGOComponents = sparkyGO.GetComponents<Component>();
-                                        foreach (Component component in sparkyGOComponents)
-                                        {
-                                            Debug.Log("Sparky GO component name is " + component.name + " and type is " + component.GetType());
-                                        }
-
-                                        Component[] sparkyGOComponentsInChildren = sparkyGO.GetComponentsInChildren<Component>();
+                                        Component[] sparkyGOComponentsInChildren = sparkyPrefab.GetComponentsInChildren<Component>();
                                         foreach (Component component in sparkyGOComponentsInChildren)
                                         {
-                                            Debug.Log("Sparky GO component in children name is " + component.name + " and type is " + component.GetType());
+                                            if (ModSettings.logDebugText)
+                                            {
+                                                Debug.Log("Sparky GO component in children name is " + component.name + " and type is " + component.GetType());
+                                            }
                                             if (component.GetType() == typeof(SkinnedMeshRenderer))
                                             {
                                                 sparkyGlobalSMR = (SkinnedMeshRenderer)component;
-                                                Debug.Log("Assigned Sparky Global SMR. Is this null? " + (component == null) + ". Is casted null? " + (sparkyGlobalSMR == null));
+                                                if (ModSettings.logDebugText)
+                                                {
+                                                    Debug.Log("Assigned Sparky Global SMR. Is this null? " + (component == null) + ". Is casted null? " + (sparkyGlobalSMR == null));
+                                                }
                                             }
                                             else if (component.GetType() == typeof(Transform) && component.name.Equals("Armature"))
                                             {
@@ -413,10 +490,22 @@ namespace MonstrumExtendedSettingsMod
                                             }
                                         }
                                     }
+                                    else if (sparkyObject.GetType() == typeof(AnimatorOverrideController))
+                                    {
+                                        sparkyAnimatorOCPrefab = (AnimatorOverrideController)sparkyObject;
+                                    }
+                                    else if (sparkyObject.GetType() == typeof(AudioClip))
+                                    {
+                                        if (sparkyAudioClips == null)
+                                        {
+                                            sparkyAudioClips = new List<AudioClip>();
+                                        }
+                                        sparkyAudioClips.Add((AudioClip)sparkyObject);
+                                    }
                                 }
-                                catch
+                                catch (Exception e)
                                 {
-                                    Debug.Log("Error while trying to find rigidbody inside object");
+                                    Debug.Log("Error while loading Sparky object:\n" + e.ToString());
                                 }
                             }
                         }
@@ -504,7 +593,7 @@ namespace MonstrumExtendedSettingsMod
 
                     // Change lights
                     float upperLimit = 0.84f;
-                    if (ModSettings.sparkyWithModel)
+                    if (ModSettings.customSparkyModel)
                     {
                         foreach (Material material in customSparkyEyes[sparkyNumber])
                         {

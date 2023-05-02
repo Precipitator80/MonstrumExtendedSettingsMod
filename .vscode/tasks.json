@@ -6,8 +6,8 @@
     "tasks": [
         {
             "label": "build",
-            //"command": "H:/Visual Studio/Visual Studio/MSBuild/Current/Bin/MSBuild.exe", // Main / Sentinel computer
-            "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe", // Remote / Strathclyde computer
+            "command": "H:/Visual Studio/Visual Studio/MSBuild/Current/Bin/MSBuild.exe", // Main / Sentinel computer
+            //"command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe", // Remote / Strathclyde computer
             //"command": "F:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe", // Bueckeburg computer
             "type": "shell",
             "args": [
@@ -15,8 +15,8 @@
                 "/t:Build",
                 "/p:Configuration=Debug",
                 "/p:Platform=\"AnyCPU\"",
-                //"/p:OutputPath=\"H:/SteamLibrary/steamapps/common/Monstrum/Mods\"", // Main / Sentinel computer
-                "/p:OutputPath='C:/Program Files (x86)/Steam/steamapps/common/Monstrum/Mods'", // Remote / Strathclyde computer
+                "/p:OutputPath=\"H:/SteamLibrary/steamapps/common/Monstrum/Mods\"", // Main / Sentinel computer
+                //"/p:OutputPath='C:/Program Files (x86)/Steam/steamapps/common/Monstrum/Mods'", // Remote / Strathclyde computer
                 //"/p:OutputPath=\"F:/SteamLibrary/steamapps/common/Monstrum/Mods\"", // Bueckeburg computer
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"

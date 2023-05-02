@@ -3296,7 +3296,7 @@ namespace MonstrumExtendedSettingsMod
                         globalMusic.currentState = globalMusic.monstFSM.Current.typeofState.ToString();
                         if (GlobalMusic.Hascooled || globalMusic.changeSong)
                         {
-                            if (globalMusic.monsterType.Equals("Sparky"))
+                            if (globalMusic.monsterType.Equals("Sparky") && SparkyMode.sparkyAudioClips == null)
                             {
                                 globalMusic.monsterType = "Brute"; // Make sure music plays for Sparky.
                             }
@@ -3389,7 +3389,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         globalMusic.monsterBeenEncountered = true;
                     }
-                    if (globalMusic.monsterType.Equals("Sparky"))
+                    if (globalMusic.monsterType.Equals("Sparky") && SparkyMode.sparkyAudioClips == null)
                     {
                         globalMusic.monsterType = "Brute"; // Make sure music plays for Sparky.
                     }
