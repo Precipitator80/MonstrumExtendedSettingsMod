@@ -5118,7 +5118,7 @@ namespace MonstrumExtendedSettingsMod
                 { "LevelGenerationSettings", new String[]{"The Level Generation Settings allow you to customise the ship's layout in unusual ways."}},
                 { "Liferaft", new String[]{"The life raft is often the safest option to escape against any monsters."}},
                 { "LowerDecks", new String[]{"The lower decks hold a lot of the ship's larger equipment in a maze of workshop rooms."}},
-                { "Map", new String[]{"Maps placed on the walls throughout the ship may help you to relocate yourself if lost."}},
+                { "Map", new String[]{"Maps placed on the walls throughout the ship may help you relocate yourself if lost."}},
                 { "MESMSettings", new String[]{"The Extended Settings Mod offers hundreds of settings to customise your experience."}},
                 { "Monstrum2Documents", new String[]{"The future answers many questions left unanswered by the past, but opens many others..."}},
                 { "Monstrum2HisaMaru", new String[]{"The Hisa Maru survived into the 21st century, severely damaged by time."}},

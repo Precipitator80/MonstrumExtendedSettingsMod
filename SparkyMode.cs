@@ -1223,7 +1223,7 @@ namespace MonstrumExtendedSettingsMod
                         Room nearbyRoom = colliders[i].GetComponentInChildren<Room>();
                         if (nearbyRoom != null && nearbyRoom.RoomType == RoomStructure.Corridor && UnityEngine.Random.value <= sparkyElectricTrapSpawnChance)
                         {
-                            base.StartCoroutine(ElectricTrapManager.instance.SpawnElectricTrapWithRandomTimer(nearbyRoom.RoomBounds, buffPercentage, minTime, maxTime));
+                            base.StartCoroutine(ElectricTrapManager.instance.SpawnElectricTrapWithRandomTimer(nearbyRoom, buffPercentage, 500f, minTime, maxTime));
                         }
                     }
                 }
@@ -1411,16 +1411,20 @@ namespace MonstrumExtendedSettingsMod
                 psem.enabled = true;
             }
 
-            public void SpawnElectricTrap(Bounds roomBounds, float buffPercentage, float customSlowFactor = 0f, float customLocalScale = 0f, float customTime = 0f)
+            public Vector3 TrapPositionWithOffset(Room room)
             {
-                GameObject electricTrap = Instantiate<GameObject>(electricTrapPrefab, roomBounds.center - 0.75f * new Vector3(0f, roomBounds.extents.y, 0f), Quaternion.identity);
+                return room.RoomBounds.center - 0.75f * new Vector3(0f, room.RoomBounds.extents.y, 0f);
+            }
+
+            public void SpawnElectricTrap(Room room, float buffPercentage, float maxRate, float customSlowFactor = 0f, float customLocalScale = 0f, float customTime = 0f)
+            {
+                GameObject electricTrap = Instantiate<GameObject>(electricTrapPrefab, TrapPositionWithOffset(room), Quaternion.identity, room.transform);
 
                 PlayerSlower playerSlower = electricTrap.AddComponent<PlayerSlower>();
                 playerSlower.slowFactor = customSlowFactor == 0f ? sparkyElectricTrapBaseSlowFactor - maxTrapSlowFactorDecreaseFromSparkyBuff * buffPercentage : customSlowFactor; // This does not act like a percentage due to how the slowing is applied.
                 electricTrap.transform.localScale *= customLocalScale == 0f ? sparkyElectricTrapBaseScaleMultiplier + maxTrapScaleMultiplierIncreaseFromSparkyBuff * buffPercentage : customLocalScale;
                 electricTrap.SetActive(true);
 
-                float maxRate = 1000f;
                 ParticleSystem particleSystem = electricTrap.GetComponent<ParticleSystem>();
                 ParticleSystem.EmissionModule psem = particleSystem.emission;
                 psem.rateOverTime = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(0.15f, maxRate), new Keyframe(0.70f, maxRate), new Keyframe(1f, 0f)));
@@ -1446,7 +1450,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         if (room.RoomType == RoomStructure.Corridor)
                         {
-                            TimeScaleManager.Instance.StartCoroutine(ContinuouslySpawnElectricTrapWithRandomTimer(primaryRegionType, room.RoomBounds));
+                            TimeScaleManager.Instance.StartCoroutine(ContinuouslySpawnElectricTrapWithRandomTimer(primaryRegionType, room));
                         }
                     }
                     while (!FuseBoxManager.Instance.fuseboxes[primaryRegionType].powered)
@@ -1469,24 +1473,37 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
-            public IEnumerator ContinuouslySpawnElectricTrapWithRandomTimer(PrimaryRegionType primaryRegionType, Bounds roomBounds)
+            public IEnumerator ContinuouslySpawnElectricTrapWithRandomTimer(PrimaryRegionType primaryRegionType, Room room)
             {
                 yield return new WaitForSeconds(UnityEngine.Random.Range(regionElectricTrapMinSpawnTime / 2f, regionElectricTrapMaxSpawnTime / 2f));
                 while (!FuseBoxManager.Instance.fuseboxes[primaryRegionType].powered)
                 {
                     if (UnityEngine.Random.value <= regionElectricTrapSpawnChance)
                     {
-                        SpawnElectricTrap(roomBounds, 0f, regionElectricTrapSlowFactor, regionElectricTrapScaleMultiplier, regionElectricTrapLifeTime);
+                        Vector3 closestPlayerPosition;
+                        Vector3 trapPositionWithOffset = TrapPositionWithOffset(room);
+                        if (ModSettings.enableMultiplayer && !MultiplayerMode.useLegacyAudio)
+                        {
+                            closestPlayerPosition = MultiplayerMode.newPlayerClasses[MultiplayerMode.ClosestPlayerToThis(trapPositionWithOffset)].transform.position;
+                        }
+                        else
+                        {
+                            closestPlayerPosition = References.Player.transform.position;
+                        }
+                        if (Vector3.Distance(closestPlayerPosition, trapPositionWithOffset) < 16f && Mathf.Abs(closestPlayerPosition.y - trapPositionWithOffset.y) < 0.5f)
+                        {
+                            SpawnElectricTrap(room, 0f, 250f, regionElectricTrapSlowFactor, regionElectricTrapScaleMultiplier, regionElectricTrapLifeTime);
+                        }
                     }
                     yield return new WaitForSeconds(UnityEngine.Random.Range(regionElectricTrapMinSpawnTime, regionElectricTrapMaxSpawnTime));
                 }
                 yield break;
             }
 
-            public IEnumerator SpawnElectricTrapWithRandomTimer(Bounds roomBounds, float buffPercentage, float minTime, float maxTime, float customSlowFactor = 0f, float customLocalScale = 0f, float customTime = 0f)
+            public IEnumerator SpawnElectricTrapWithRandomTimer(Room room, float buffPercentage, float maxRate, float minTime, float maxTime, float customSlowFactor = 0f, float customLocalScale = 0f, float customTime = 0f)
             {
                 yield return new WaitForSeconds(UnityEngine.Random.Range(minTime, maxTime));
-                SpawnElectricTrap(roomBounds, buffPercentage, customSlowFactor, customLocalScale, customTime);
+                SpawnElectricTrap(room, buffPercentage, maxRate, customSlowFactor, customLocalScale, customTime);
                 yield break;
             }
         }
