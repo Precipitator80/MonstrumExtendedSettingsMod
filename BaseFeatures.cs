@@ -273,6 +273,9 @@ namespace MonstrumExtendedSettingsMod
                 On.DeathMenu.Start += new On.DeathMenu.hook_Start(HookDeathMenuStart);
                 On.MAttackingState2.KillThePlayer += new On.MAttackingState2.hook_KillThePlayer(HookMAttackingState2KillThePlayer);
                 On.ChooseAttack.WhatDeathByPlayer += new On.ChooseAttack.hook_WhatDeathByPlayer(HookChooseAttackWhatDeathByPlayer);
+
+                // Fire Steam Damage Fix and Moved Multiplayer Component
+                On.FireDamage.Start += new On.FireDamage.hook_Start(HookFireDamageStart);
             }
 
             /*
@@ -1805,6 +1808,15 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @Fire
+
+            private static void HookFireDamageStart(On.FireDamage.orig_Start orig, FireDamage fireDamage)
+            {
+                orig.Invoke(fireDamage);
+                fireDamage.fireDamageParent.GetComponentInChildren<DamageScript>().name = "FireDamage";
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @FireExtinguisher
 
             private static void HookFireExtinguisherUpdate(On.FireExtinguisher.orig_Update orig, FireExtinguisher fireExtinguisher)
@@ -2631,6 +2643,7 @@ namespace MonstrumExtendedSettingsMod
                     On.LevelGeneration.Awake += new On.LevelGeneration.hook_Awake(HookLevelGenerationAwake);
                 }
                 On.LevelGeneration.Begin += new On.LevelGeneration.hook_Begin(HookLevelGenerationBegin);
+                On.LevelGeneration.DoBreak += new On.LevelGeneration.hook_DoBreak(HookLevelGenerationDoBreak);
                 On.LevelGeneration.SpawnInitialRooms += new On.LevelGeneration.hook_SpawnInitialRooms(HookLevelGenerationSpawnInitialRooms);
                 new Hook(typeof(LevelGeneration).GetNestedType("<SpawnRooms>c__Iterator1", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookLevelGenerationSpawnRoomsIntermediateHook"), null);
                 new Hook(typeof(LevelGeneration).GetNestedType("<SpawnRandomRooms>c__Iterator2", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookLevelGenerationSpawnRandomRoomsIntermediateHook"), null);
@@ -2647,7 +2660,7 @@ namespace MonstrumExtendedSettingsMod
                 */
             }
 
-            private static void HookLevelGenerationAwake(On.LevelGeneration.orig_Awake orig, LevelGeneration levelGeneration)
+            public static void CommonLevelGeneration1(LevelGeneration levelGeneration)
             {
                 ModSettings.ReadBeforeGeneration();
 
@@ -2664,7 +2677,6 @@ namespace MonstrumExtendedSettingsMod
                 if (levelGeneration.levelSeed != 0)
                 {
                     UnityEngine.Random.InitState(levelGeneration.levelSeed);
-
                     Debug.Log("Level Test: " + levelGeneration.levelSeed);
                 }
                 else
@@ -2672,6 +2684,28 @@ namespace MonstrumExtendedSettingsMod
                     UnityEngine.Random.InitState(randomSeed);
                     Debug.Log("Level Test: " + randomSeed);
                 }
+            }
+
+            public static void CommonLevelGeneration2(LevelGeneration levelGeneration)
+            {
+                if (ModSettings.WallhacksMode)
+                {
+                    levelGeneration.winterWonderland = true;
+                }
+
+                if (ModSettings.startRoomRegion.Equals("Upper Deck") || ModSettings.startRoomRegion.Equals("upper deck"))
+                {
+                    LevelGeneration.Instance.spawnRoomType = LevelGeneration.SpawnRoomType.Upper;
+                }
+                else if (ModSettings.startRoomRegion.Equals("Lower Deck") || ModSettings.startRoomRegion.Equals("lower deck"))
+                {
+                    LevelGeneration.Instance.spawnRoomType = LevelGeneration.SpawnRoomType.Lower;
+                }
+            }
+
+            private static void HookLevelGenerationAwake(On.LevelGeneration.orig_Awake orig, LevelGeneration levelGeneration)
+            {
+                CommonLevelGeneration1(levelGeneration);
                 MonsterSelection monsterSelection = UnityEngine.Object.FindObjectOfType<MonsterSelection>();
                 levelGeneration.allMonsters = GameObject.FindGameObjectsWithTag("Monster");
                 if (monsterSelection != null)
@@ -2712,20 +2746,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     Debug.Log("MonsterSelection is not in the scene! No monster!");
                 }
-
-                if (ModSettings.WallhacksMode)
-                {
-                    levelGeneration.winterWonderland = true;
-                }
-
-                if (ModSettings.startRoomRegion.Equals("Upper Deck") || ModSettings.startRoomRegion.Equals("upper deck"))
-                {
-                    LevelGeneration.Instance.spawnRoomType = LevelGeneration.SpawnRoomType.Upper;
-                }
-                else if (ModSettings.startRoomRegion.Equals("Lower Deck") || ModSettings.startRoomRegion.Equals("lower deck"))
-                {
-                    LevelGeneration.Instance.spawnRoomType = LevelGeneration.SpawnRoomType.Lower;
-                }
+                CommonLevelGeneration2(levelGeneration);
             }
 
             private static void HookLevelGenerationBegin(On.LevelGeneration.orig_Begin orig, LevelGeneration levelGeneration)
@@ -2871,6 +2892,16 @@ namespace MonstrumExtendedSettingsMod
                 orig.Invoke(levelGeneration);
                 ((MonoBehaviour)levelGeneration).StartCoroutine(WaitUntilGenerationIsFinished());
                 yield break;
+            }
+
+
+            private static bool HookLevelGenerationDoBreak(On.LevelGeneration.orig_DoBreak orig, LevelGeneration levelGeneration)
+            {
+                if (ModSettings.useCustomSeed)
+                {
+                    return false;
+                }
+                return orig.Invoke(levelGeneration);
             }
 
             private static void HookLevelGenerationSpawnInitialRooms(On.LevelGeneration.orig_SpawnInitialRooms orig, LevelGeneration levelGeneration)
@@ -3053,6 +3084,7 @@ namespace MonstrumExtendedSettingsMod
                 float loadIncrement = 50f / (float)spawnOperations;
                 Loading.UpdateLoading(loadIncrement);
                 string loadingProgressText = "Spawning Stairs";
+                Debug.Log(loadingProgressText);
                 SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 try
@@ -3066,6 +3098,7 @@ namespace MonstrumExtendedSettingsMod
 
                 Loading.UpdateLoading(loadIncrement);
                 loadingProgressText = "Spawning Initial Rooms";
+                Debug.Log(loadingProgressText);
                 SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 try
@@ -3082,6 +3115,7 @@ namespace MonstrumExtendedSettingsMod
                 if (!levelGeneration.removeWalkways)
                 {
                     loadingProgressText = "Spawning Deck Pieces";
+                    Debug.Log(loadingProgressText);
                     SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
@@ -3098,6 +3132,7 @@ namespace MonstrumExtendedSettingsMod
                 if (!levelGeneration.removeDeckCargo)
                 {
                     loadingProgressText = "Spawning Deck Cargo Containers";
+                    Debug.Log(loadingProgressText);
                     SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
@@ -3114,6 +3149,7 @@ namespace MonstrumExtendedSettingsMod
                 if (!levelGeneration.removeWalkways)
                 {
                     loadingProgressText = "Spawning Walkways";
+                    Debug.Log(loadingProgressText);
                     SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
@@ -3130,6 +3166,7 @@ namespace MonstrumExtendedSettingsMod
                 if (!levelGeneration.removeEngines)
                 {
                     loadingProgressText = "Spawning Engine Room";
+                    Debug.Log(loadingProgressText);
                     SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
@@ -3146,6 +3183,7 @@ namespace MonstrumExtendedSettingsMod
                 if (!levelGeneration.removeCargo)
                 {
                     loadingProgressText = "Spawning Cargo Hold";
+                    Debug.Log(loadingProgressText);
                     SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
@@ -3160,6 +3198,7 @@ namespace MonstrumExtendedSettingsMod
 
                 Loading.UpdateLoading(loadIncrement);
                 loadingProgressText = "Spawning Random Rooms [No Error Notifications]";
+                Debug.Log(loadingProgressText);
                 SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 busyWithCoroutine = true;
@@ -3173,6 +3212,7 @@ namespace MonstrumExtendedSettingsMod
                 if (!levelGeneration.removeWalkways)
                 {
                     loadingProgressText = "Spawning Shell";
+                    Debug.Log(loadingProgressText);
                     SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
@@ -3187,6 +3227,7 @@ namespace MonstrumExtendedSettingsMod
 
                 Loading.UpdateLoading(loadIncrement);
                 loadingProgressText = "Spawning Corridors [No Error Notifications]";
+                Debug.Log(loadingProgressText);
                 SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 busyWithCoroutine = true;
@@ -3198,6 +3239,7 @@ namespace MonstrumExtendedSettingsMod
 
                 Loading.UpdateLoading(loadIncrement);
                 loadingProgressText = "Spawning Joints And Doors [No Error Notifications]";
+                Debug.Log(loadingProgressText);
                 SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 busyWithCoroutine = true;
@@ -3209,6 +3251,7 @@ namespace MonstrumExtendedSettingsMod
 
                 Loading.UpdateLoading(loadIncrement);
                 loadingProgressText = "Handling Node Data";
+                Debug.Log(loadingProgressText);
                 SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 try
@@ -3305,7 +3348,9 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 Loading.UpdateLoading(loadIncrement);
-                SetLoadingText(loadingBackground, "Handling Post Processing");
+                loadingProgressText = "Handling Post Processing";
+                Debug.Log(loadingProgressText);
+                SetLoadingText(loadingBackground, loadingProgressText);
                 yield break;
             }
 
@@ -3322,7 +3367,7 @@ namespace MonstrumExtendedSettingsMod
 
             private static IEnumerator HookLevelGenerationSpawnRandomRooms(LevelGeneration levelGeneration)
             {
-                Debug.Log("Spawn random rooms is being hooked");
+                //Debug.Log("Spawn random rooms is being hooked");
                 List<Room> extraRooms = new List<Room>();
                 int jLower = 0;
                 int jUpper = 0;
@@ -6703,6 +6748,10 @@ namespace MonstrumExtendedSettingsMod
                 if (ModSettings.enableMultiplayer)
                 {
                     crewPlayerIndex = MultiplayerMode.crewPlayers.IndexOf(playerHealth.NPC);
+                }
+                if (ModSettings.logDebugText)
+                {
+                    Debug.Log("Damaged by type: " + DMG + " with damage " + damageVal + ". Stack Trace:\n" + new StackTrace().ToString());
                 }
                 if (!ModSettings.invincibilityMode[crewPlayerIndex])
                 {

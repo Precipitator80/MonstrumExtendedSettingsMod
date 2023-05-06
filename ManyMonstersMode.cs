@@ -3820,29 +3820,7 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookLevelGenerationAwake(On.LevelGeneration.orig_Awake orig, LevelGeneration levelGeneration)
             {
-                ModSettings.ReadBeforeGeneration();
-
-                levelGeneration.removeEngines = false;
-                levelGeneration.removeCargo = false;
-                Loading.UpdateLoading(15f);
-                int randomSeed = UnityEngine.Random.Range(0, int.MaxValue);
-                if (ModSettings.useCustomSeed)
-                {
-                    randomSeed = ModSettings.seed;
-                    levelGeneration.levelSeed = ModSettings.seed;
-                }
-                Debug.Log("Test Seed: " + randomSeed);
-                if (levelGeneration.levelSeed != 0)
-                {
-                    UnityEngine.Random.InitState(levelGeneration.levelSeed);
-
-                    Debug.Log("Level Test: " + levelGeneration.levelSeed);
-                }
-                else
-                {
-                    UnityEngine.Random.InitState(randomSeed);
-                    Debug.Log("Level Test: " + randomSeed);
-                }
+                BaseFeatures.CommonLevelGeneration1(levelGeneration);
                 MonsterSelection monsterSelection = UnityEngine.Object.FindObjectOfType<MonsterSelection>();
                 levelGeneration.allMonsters = GameObject.FindGameObjectsWithTag("Monster");
 
@@ -3928,9 +3906,9 @@ namespace MonstrumExtendedSettingsMod
                             monsterListStates.Add(monsterList[i].GetComponent<MState>());
                             UnityEngine.Debug.Log(string.Concat(new object[] { "INSTANCE ID FOR MONSTER NUMBER ", i, " OF TYPE ", monsterListMonsterComponents[i].MonsterType.ToString(), " ----- The ID stored is " + monsterListMonsterComponents[i].GetInstanceID() + "." }));
                         }
-                        catch
+                        catch (Exception e)
                         {
-                            UnityEngine.Debug.Log(string.Concat(new object[] { "Error while creating monster number ", i, " during level generation." }));
+                            UnityEngine.Debug.Log(string.Concat(new object[] { "Error while creating monster number ", i, " during level generation:\n", e.ToString() }));
                         }
                     }
 
@@ -3973,20 +3951,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     Debug.Log("MonsterSelection is not in the scene! No monster!");
                 }
-
-                if (ModSettings.WallhacksMode)
-                {
-                    levelGeneration.winterWonderland = true;
-                }
-
-                if (ModSettings.startRoomRegion.Equals("Upper Deck") || ModSettings.startRoomRegion.Equals("upper deck"))
-                {
-                    LevelGeneration.Instance.spawnRoomType = LevelGeneration.SpawnRoomType.Upper;
-                }
-                else if (ModSettings.startRoomRegion.Equals("Lower Deck") || ModSettings.startRoomRegion.Equals("lower deck"))
-                {
-                    LevelGeneration.Instance.spawnRoomType = LevelGeneration.SpawnRoomType.Lower;
-                }
+                BaseFeatures.CommonLevelGeneration2(levelGeneration);
             }
 
             /*----------------------------------------------------------------------------------------------------*/

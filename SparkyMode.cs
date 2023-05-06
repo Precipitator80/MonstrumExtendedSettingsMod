@@ -74,6 +74,51 @@ namespace MonstrumExtendedSettingsMod
                 sparkyAnimator.enabled = false;
 
                 Animator monsterAnimator = bruteSparkyGameObject.GetComponentInChildren<Animator>();
+                /*
+                Debug.Log("Brute Animator BEFORE replacement:");
+                foreach (AnimationClip clip in monsterAnimator.runtimeAnimatorController.animationClips)
+                {
+                    Debug.Log("Clip: " + clip);
+                    foreach (AnimationEvent aevent in clip.events)
+                    {
+                        Debug.Log("Event: " + aevent);
+                    }
+                }
+
+
+                Debug.Log("Sparky Animator BEFORE replacement:");
+                foreach (AnimationClip clip in sparkyAnimatorOCPrefab.animationClips)
+                {
+                    Debug.Log("Clip: " + clip);
+                    foreach (AnimationEvent aevent in clip.events)
+                    {
+                        Debug.Log("Event: " + aevent);
+                    }
+                }
+                */
+
+                /*
+                for (int clipIndex = 0; clipIndex < monsterAnimator.runtimeAnimatorController.animationClips.Length && clipIndex < sparkyAnimatorOCPrefab.animationClips.Length; clipIndex++)
+                {
+                    for (int eventIndex = 0; eventIndex < monsterAnimator.runtimeAnimatorController.animationClips[clipIndex].events.Length; eventIndex++)
+                    {
+                        sparkyAnimatorOCPrefab.animationClips[clipIndex].AddEvent(monsterAnimator.runtimeAnimatorController.animationClips[clipIndex].events[eventIndex]);
+                    }
+                }
+                */
+
+                /*
+                Debug.Log("Sparky Animator AFTER replacement:");
+                foreach (AnimationClip clip in monsterAnimator.runtimeAnimatorController.animationClips)
+                {
+                    Debug.Log("Clip: " + clip);
+                    foreach (AnimationEvent aevent in clip.events)
+                    {
+                        Debug.Log("Event: " + aevent);
+                    }
+                }
+                */
+
                 monsterAnimator.runtimeAnimatorController = Instantiate(sparkyAnimatorOCPrefab);
                 monsterAnimator.avatar = sparkyAnimator.avatar;
                 Debug.Log("Does Brute use root motion? " + monsterAnimator.applyRootMotion);
