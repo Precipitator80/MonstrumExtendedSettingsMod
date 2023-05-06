@@ -326,7 +326,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 for (int i = 0; i < transform.childCount; i++)
                 {
-                    Debug.Log("Name of transform found is " + transform.GetChild(i).name + " and target name is " + targetTransformName);
+                    //Debug.Log("Name of transform found is " + transform.GetChild(i).name + " and target name is " + targetTransformName);
                     if (transform.GetChild(i).name.Equals(targetTransformName))
                     {
                         return transform.GetChild(i);

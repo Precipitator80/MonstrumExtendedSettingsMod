@@ -81,10 +81,9 @@ namespace MonstrumExtendedSettingsMod
                     Debug.Log("Clip: " + clip);
                     foreach (AnimationEvent aevent in clip.events)
                     {
-                        Debug.Log("Event: " + aevent);
+                        Debug.Log("Event: " + aevent + " | Time: " + aevent.time);
                     }
                 }
-
 
                 Debug.Log("Sparky Animator BEFORE replacement:");
                 foreach (AnimationClip clip in sparkyAnimatorOCPrefab.animationClips)
@@ -92,29 +91,43 @@ namespace MonstrumExtendedSettingsMod
                     Debug.Log("Clip: " + clip);
                     foreach (AnimationEvent aevent in clip.events)
                     {
-                        Debug.Log("Event: " + aevent);
+                        Debug.Log("Event: " + aevent + " | Time: " + aevent.time);
                     }
                 }
                 */
 
-                /*
-                for (int clipIndex = 0; clipIndex < monsterAnimator.runtimeAnimatorController.animationClips.Length && clipIndex < sparkyAnimatorOCPrefab.animationClips.Length; clipIndex++)
+                foreach (AnimationClip bruteClip in monsterAnimator.runtimeAnimatorController.animationClips)
                 {
-                    for (int eventIndex = 0; eventIndex < monsterAnimator.runtimeAnimatorController.animationClips[clipIndex].events.Length; eventIndex++)
+                    foreach (AnimationClip sparkyClip in sparkyAnimatorOCPrefab.animationClips)
                     {
-                        sparkyAnimatorOCPrefab.animationClips[clipIndex].AddEvent(monsterAnimator.runtimeAnimatorController.animationClips[clipIndex].events[eventIndex]);
+                        if (sparkyClip.name.Contains(bruteClip.name) && sparkyClip.events.Length == 0)
+                        {
+                            for (int eventIndex = 0; eventIndex < bruteClip.events.Length; eventIndex++)
+                            {
+                                // Add the event to Sparky's animation.
+                                AnimationEvent bruteEvent = bruteClip.events[eventIndex];
+
+                                AnimationEvent sparkyEvent = new AnimationEvent();
+                                sparkyEvent.functionName = bruteEvent.functionName;
+                                float scaledBruteTime = (bruteEvent.time / bruteClip.length); // Scale the event to Sparky's animation.
+                                sparkyEvent.time = sparkyClip.length * scaledBruteTime;
+                                sparkyClip.AddEvent(sparkyEvent);
+                                //Debug.Log("---------------");
+                                //Debug.Log("Time in Brute's animation: " + bruteEvent.time + " | Brute clip length: " + bruteClip.length);
+                                //Debug.Log("Time in Sparky's animation: " + sparkyEvent.time + " | Sparky's clip length: " + sparkyClip.length);
+                            }
+                        }
                     }
                 }
-                */
 
                 /*
                 Debug.Log("Sparky Animator AFTER replacement:");
-                foreach (AnimationClip clip in monsterAnimator.runtimeAnimatorController.animationClips)
+                foreach (AnimationClip clip in sparkyAnimatorOCPrefab.animationClips)
                 {
                     Debug.Log("Clip: " + clip);
                     foreach (AnimationEvent aevent in clip.events)
                     {
-                        Debug.Log("Event: " + aevent);
+                        Debug.Log("Event: " + aevent + " | Time: " + aevent.time);
                     }
                 }
                 */
@@ -133,15 +146,17 @@ namespace MonstrumExtendedSettingsMod
                 monsterSMR.localBounds = sparkySkinnedMeshRenderer.localBounds;
                 monsterSMR.lightProbeUsage = sparkySkinnedMeshRenderer.lightProbeUsage;
 
+                /*
                 BoxCollider[] boxColliders = bruteSparkyGameObject.GetComponentsInChildren<BoxCollider>();
                 foreach (BoxCollider boxCollider in boxColliders)
                 {
                     Debug.Log("Collider is " + boxCollider.name);
                     if (boxCollider.name.Equals("StopStandingOnMonsters"))
                     {
-                        boxCollider.size = new Vector3(1.5f, 3f, 2.5f);
+                        boxCollider.size = monsterSMR.bounds.extents;// new Vector3(1.5f, 3f, 2.5f);
                     }
                 }
+                */
 
                 ModSettings.finishedCreatingSimpleSparky = true;
 
@@ -204,17 +219,42 @@ namespace MonstrumExtendedSettingsMod
                         Light[] lights = monster.GetComponentsInChildren<Light>();
                         if (ModSettings.customSparkyModel)
                         {
+                            // Sparky Eyes
+                            MeshRenderer eyeLMR = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.L").gameObject.GetComponentInChildren<MeshRenderer>();
+                            MeshRenderer eyeRMR = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.R").gameObject.GetComponentInChildren<MeshRenderer>();
+
+                            Material eyeLM = eyeLMR.material;
+                            Material eyeRM = eyeRMR.material;
+                            eyeLM.SetColor("_EmissionColor", Color.red * 5f);
+                            eyeRM.SetColor("_EmissionColor", Color.red * 5f);
+                            customSparkyEyes.Add(new Material[] { eyeLM, eyeRM });
+
+                            // Brute Eyes
+                            bruteSparkyEyes.Add(new Light[] { lights[4] /*Brute's left eye*/, lights[5] /*Brute's right eye*/ });
+
+                            // Set their position.
+                            lights[4].transform.SetParent(eyeLMR.transform.parent);
+                            lights[5].transform.SetParent(eyeRMR.transform.parent);
+                            lights[4].transform.localPosition = Vector3.zero;
+                            lights[5].transform.localPosition = Vector3.zero;
+                            Vector3 eyeOffset = 0.075f * Vector3.forward;
+                            Debug.Log("Sparky eye offset: " + eyeOffset);
+                            lights[4].transform.position += eyeOffset;
+                            lights[5].transform.position += eyeOffset;
+                            lights[4].transform.localRotation = Quaternion.Euler(-75f, 0f, 0f);
+                            lights[5].transform.localRotation = Quaternion.Euler(-75f, 0f, 0f);
+
+                            // Set their starting colour.
                             foreach (Light light in lights)
                             {
                                 light.color = new Color(0f, 0f, 0f, 0f);
                             }
 
-                            Material eyeL = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.L").gameObject.GetComponentInChildren<MeshRenderer>().material;
-                            Material eyeR = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.R").gameObject.GetComponentInChildren<MeshRenderer>().material;
-                            eyeL.SetColor("_EmissionColor", Color.red * 5f);
-                            eyeR.SetColor("_EmissionColor", Color.red * 5f);
-
-                            customSparkyEyes.Add(new Material[] { eyeL, eyeR });
+                            // Set their intensity and range.
+                            lights[4].intensity /= 15f;
+                            lights[5].intensity /= 15f;
+                            lights[4].range *= 1.5f;
+                            lights[5].range *= 1.5f;
                         }
                         else
                         {
@@ -638,11 +678,18 @@ namespace MonstrumExtendedSettingsMod
 
                     // Change lights
                     float upperLimit = 0.84f;
+                    float scaledAggro = sparkyAggroTimers[sparkyNumber] / maxAggro;
+                    float scaledColour = upperLimit - upperLimit * scaledAggro; // Go to 0 as aggro is maxed (red) and upper limit as aggro is minimised (white).
                     if (ModSettings.customSparkyModel)
                     {
                         foreach (Material material in customSparkyEyes[sparkyNumber])
                         {
-                            material.SetColor("_EmissionColor", new Color(upperLimit, upperLimit - upperLimit * sparkyAggroTimers[sparkyNumber] / maxAggro, upperLimit - upperLimit * sparkyAggroTimers[sparkyNumber] / maxAggro, 1f) * 5f);
+                            material.SetColor("_EmissionColor", new Color(upperLimit, scaledColour, scaledColour, 1f) * 5f);
+                        }
+
+                        foreach (Light light in bruteSparkyEyes[sparkyNumber])
+                        {
+                            light.color = new Color(upperLimit * scaledAggro, 0f, 0f, 1f);
                         }
                     }
                     else
@@ -650,7 +697,7 @@ namespace MonstrumExtendedSettingsMod
                         // Brute Sparky
                         foreach (Light light in bruteSparkyEyes[sparkyNumber])
                         {
-                            light.color = new Color(upperLimit, upperLimit - upperLimit * sparkyAggroTimers[sparkyNumber] / maxAggro, upperLimit - upperLimit * sparkyAggroTimers[sparkyNumber] / maxAggro, 1f);
+                            light.color = new Color(upperLimit, scaledColour, scaledColour, 1f);
                         }
                     }
                 }

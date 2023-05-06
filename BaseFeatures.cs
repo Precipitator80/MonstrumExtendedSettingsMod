@@ -1588,6 +1588,7 @@ namespace MonstrumExtendedSettingsMod
                 canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
                 canvasScaler.referenceResolution = new Vector2(1920, 1080);
 
+                /*
                 Debug.Log("Image size:" + deathMenu.backgroundImage.rectTransform.sizeDelta);
                 Debug.Log("anchorMin: " + deathMenu.backgroundImage.rectTransform.anchorMin);
                 Debug.Log("anchorMax: " + deathMenu.backgroundImage.rectTransform.anchorMax);
@@ -1602,6 +1603,7 @@ namespace MonstrumExtendedSettingsMod
                 Debug.Log("canvasScaler screenMatchMode:" + canvasScaler.screenMatchMode);
                 Debug.Log("canvasScaler referenceResolution:" + canvasScaler.referenceResolution);
                 Debug.Log("canvasScaler referencePixelsPerUnit:" + canvasScaler.referencePixelsPerUnit);
+                */
 
                 orig.Invoke(deathMenu);
             }
@@ -5145,42 +5147,42 @@ namespace MonstrumExtendedSettingsMod
             private static Hints.HintCollection[] extendedLoadingScreenArray;
             private static readonly Dictionary<string, string[]> customLoadingScreenMessages = new Dictionary<string, string[]>()
             {
-                { "AlphaBunks", new String[]{"The structure of the Hisa Maru was changed a lot throughout construction."}},
-                { "Brute", new String[]{"The Brute is hulk of a monser that will excel in a direct chase."}},
-                { "BrutePresence", new String[]{"Paying attention to your surroundings can mean the difference between life and death."}},
-                { "Clock", new String[]{"A good sense of time can help you to predict a monster's next action."}},
-                { "ColourSettings", new String[]{"The Colour Settings allow you to customise the appearance of the Hisa Maru."}},
-                { "Container", new String[]{"The cargo hold contains a large variety of items, but its maze of containers be difficult to navigate safely.", "Some of the cargo carried aboard the Hisa Maru proved difficult to contain..."}},
-                { "DarkShip", new String[]{"In Dark Ship mode, the Hisa Maru is plunged into darkness.", "Some monsters may benefit more than others from darkness."}},
-                { "DeckZero", new String[]{"Deck Zero is a dangerous stretch of corridors forming the deepest parts of the ship."} },
-                { "Fiend", new String[]{"The Fiend is an intelligent monster with mysterious telekinetic powers."}},
-                { "FiendPresence", new String[]{"Having a keen ear will let you hear a monster before seeing it."}},
-                { "Helicopter1", new String[]{"Refueling the helicopter is an elaborate process that is sure to attract the attention of any monsters nearby."}},
-                { "Helicopter2", new String[]{"The helicopter can be used for fast transportation to land in case of emergencies."}},
-                { "HisaMaru", new String[]{"The contents of some of the cargo carried aboard the Hisa Maru remained classified."}},
-                { "Hunter", new String[]{"The Hunter is a gelatinous monster that hunts using the ship's ventilation system."}},
-                { "HunterPresence", new String[]{"Some things on the ship are best not investigated too closely..."}},
-                { "LevelGenerationSettings", new String[]{"The Level Generation Settings allow you to customise the ship's layout in unusual ways."}},
-                { "Liferaft", new String[]{"The life raft is often the safest option to escape against any monsters."}},
-                { "LowerDecks", new String[]{"The lower decks hold a lot of the ship's larger equipment in a maze of workshop rooms."}},
-                { "Map", new String[]{"Maps placed on the walls throughout the ship may help you relocate yourself if lost."}},
-                { "MESMSettings", new String[]{"The Extended Settings Mod offers hundreds of settings to customise your experience."}},
-                { "Monstrum2Documents", new String[]{"The future answers many questions left unanswered by the past, but opens many others..."}},
-                { "Monstrum2HisaMaru", new String[]{"The Hisa Maru survived into the 21st century, severely damaged by time."}},
-                { "Monstrum2SeaFort", new String[]{"Genetic research on the monsters continued into the 21st century aboard a seemingly derelict array of sea forts."}},
-                { "Monstrum2UpperDecks", new String[]{"While other parts of the ship decayed severely over time, the Hisa Maru's upper decks remained in a relatively good condition."}},
-                { "Multiplayer", new String[]{"The local Multiplayer mode allows you to play PvE or PvP with friends on your computer. Third party software lets you play online with others."}},
-                { "OverpoweredSteam", new String[]{"Steam onboard the Hisa Maru can be quite dangerous, especially with additional modifications..."}},
-                { "Sparky", new String[]{"Sparky is a monster adept at lurking the player and interfering with the ship's power.", "Sparky was Monstrum's pre-alpha monster, reimagined in the mod with additional abilities."}},
-                { "SparkyEasterEgg1", new String[]{"Implementing a new monster takes a lot of time and dedication, but opens up the possibility for many new experiences in the game."}},
-                { "SparkyEasterEgg2", new String[]{"Congratulations! You have stumbled upon the golden Sparky. This is the original model designed for the Monstrum 1 pre-alpha."}},
-                { "SparkyEasterEgg3", new String[]{"Don't let Sparky catch you in the dark...", "It is unwise to let Sparky drain all the ship's power..." }},
-                { "SparkyPresence", new String[]{"Sparky can drain the ship's power, requiring a region's electricity to be restored."}},
-                { "SteamShutoff", new String[]{"The ship's steam can be shut off, but doing so can prove difficult."}},
-                { "Submersible", new String[]{"The submersible requires uninterrupted time charging, providing monsters unaccounted for an ample opportunity to interfere."}},
-                { "TV", new String[]{"Some objects that seem useless at first glance may prove to be more useful than thought."}},
-                { "UpperDecks", new String[]{"Rooms in the upper decks are filled with smaller items and plenty of hiding spots."}},
-                { "Workstation", new String[]{"Some items, notes and easter eggs may require a more thorough inspection of the environment to find."}}
+                { "AlphaBunks",             new String[]{"The structure of the Hisa Maru was changed a lot throughout construction."}},
+                { "Brute",                  new String[]{"The Brute is hulk of a monser that will excel in a direct chase."}},
+                { "BrutePresence",          new String[]{"Paying attention to your surroundings can mean the difference between life and death."}},
+                { "Clock",                  new String[]{"A good sense of time can help you to predict a monster's next action."}},
+                { "ColourSettings",         new String[]{"The Colour Settings allow you to customise the appearance of the Hisa Maru."}},
+                { "Container",              new String[]{"The cargo hold contains a large variety of items, but its maze of containers be difficult to navigate safely.", "Some of the cargo carried aboard the Hisa Maru proved difficult to contain..."}},
+                { "DarkShip",               new String[]{"In Dark Ship mode, the Hisa Maru is plunged into darkness.", "Some monsters may benefit more than others from darkness."}},
+                { "DeckZero",               new String[]{"Deck Zero is a dangerous stretch of corridors forming the deepest parts of the ship."} },
+                { "Fiend",                  new String[]{"The Fiend is an intelligent monster with mysterious telekinetic powers."}},
+                { "FiendPresence",          new String[]{"Having a keen ear will let you hear a monster before seeing it."}},
+                { "Helicopter1",            new String[]{"Refueling the helicopter is an elaborate process that is sure to attract the attention of any monsters nearby."}},
+                { "Helicopter2",            new String[]{"The helicopter can be used for fast transportation to land in case of emergencies."}},
+                { "HisaMaru",               new String[]{"The contents of some of the cargo carried aboard the Hisa Maru remained classified."}},
+                { "Hunter",                 new String[]{"The Hunter is a gelatinous monster that inspects the ship using its ventilation system."}},
+                { "HunterPresence",         new String[]{"Some things on the ship are best not investigated too closely..."}},
+                { "LevelGenerationSettings",new String[]{"The Level Generation Settings allow you to customise the ship's layout in unusual ways."}},
+                { "Liferaft",               new String[]{"The life raft is often the safest option to escape against any monsters."}},
+                { "LowerDecks",             new String[]{"The lower decks hold a lot of the ship's larger equipment in a maze of workshop rooms."}},
+                { "Map",                    new String[]{"Maps placed on the walls throughout the ship may help you relocate yourself if lost."}},
+                { "MESMSettings",           new String[]{"The Extended Settings Mod offers hundreds of settings to customise your experience."}},
+                { "Monstrum2Documents",     new String[]{"The future answers many questions left unanswered by the past, but opens many others..."}},
+                { "Monstrum2HisaMaru",      new String[]{"The Hisa Maru survived into the 21st century, severely damaged by time."}},
+                { "Monstrum2SeaFort",       new String[]{"Genetic research on the monsters continued into the 21st century aboard a seemingly derelict array of sea forts."}},
+                { "Monstrum2UpperDecks",    new String[]{"While other parts of the ship decayed severely over time, the Hisa Maru's upper decks remained in a relatively good condition."}},
+                { "Multiplayer",            new String[]{"The local Multiplayer mode lets you play with friends on your computer. Third party software enables online play."}},
+                { "OverpoweredSteam",       new String[]{"Steam onboard the Hisa Maru can be quite dangerous, especially with additional modifications..."}},
+                { "Sparky",                 new String[]{"Sparky is a monster adept at lurking the player and interfering with the ship's power.", "Sparky was Monstrum's pre-alpha monster, reimagined in the mod with additional abilities."}},
+                { "SparkyEasterEgg1",       new String[]{"Implementing a new monster takes a lot of time and dedication, but opens up the possibility for many new experiences."}},
+                { "SparkyEasterEgg2",       new String[]{"Congratulations! You have stumbled upon the golden Sparky. This is the original model designed for the Monstrum 1 pre-alpha."}},
+                { "SparkyEasterEgg3",       new String[]{"Don't let Sparky catch you in the dark...", "It is unwise to let Sparky drain all the ship's power..." }},
+                { "SparkyPresence",         new String[]{"Sparky can drain the ship's power, requiring a region's electricity to be restored."}},
+                { "SteamShutoff",           new String[]{"The ship's steam can be shut off, but doing so can prove difficult."}},
+                { "Submersible",            new String[]{"The submersible requires uninterrupted time charging, providing monsters unaccounted for an ample opportunity to interfere."}},
+                { "TV",                     new String[]{"Some objects that seem useless at first glance may prove to be more useful than thought."}},
+                { "UpperDecks",             new String[]{"Rooms in the upper decks are filled with smaller items and plenty of hiding spots."}},
+                { "Workstation",            new String[]{"Some items, notes and easter eggs may require a more thorough inspection of the environment to find."}}
             };
 
             private static void HookLoadingBackground(On.LoadingBackground.orig_Awake orig, LoadingBackground loadingBackground)
@@ -5222,7 +5224,7 @@ namespace MonstrumExtendedSettingsMod
                             }
                             extendedLoadingScreenArray = extendedLoadingScreenList.ToArray();
                             Debug.Log("Loaded custom loading screens");
-
+                            /*
                             Image image = loadingBackground.GetComponent<Image>();
                             Debug.Log("Image size:" + image.rectTransform.sizeDelta);
                             Debug.Log("anchorMin: " + image.rectTransform.anchorMin);
@@ -5239,11 +5241,19 @@ namespace MonstrumExtendedSettingsMod
                             Debug.Log("canvasScaler screenMatchMode:" + canvasScaler.screenMatchMode);
                             Debug.Log("canvasScaler referenceResolution:" + canvasScaler.referenceResolution);
                             Debug.Log("canvasScaler referencePixelsPerUnit:" + canvasScaler.referencePixelsPerUnit);
+                            */
                         }
 
                         // Choose a hint from the extended array.
                         Hints.instance.hints = extendedLoadingScreenArray;
                         randomHint = Hints.GetRandomHint();
+                        if (randomHint.texture.name.Contains("EasterEgg") && UnityEngine.Random.value > 0.001f)
+                        {
+                            for (int tries = 0; tries < 10 && randomHint.texture.name.Contains("EasterEgg"); tries++)
+                            {
+                                randomHint = Hints.GetRandomHint();
+                            }
+                        }
 
                         Debug.Log("Hints length after is: " + Hints.instance.hints.Length);
                     }
