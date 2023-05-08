@@ -123,6 +123,10 @@ namespace MonstrumExtendedSettingsMod
 
                                     AnimationEvent sparkyEvent = new AnimationEvent();
                                     sparkyEvent.functionName = bruteEvent.functionName;
+                                    sparkyEvent.intParameter = bruteEvent.intParameter;
+                                    sparkyEvent.floatParameter = bruteEvent.floatParameter;
+                                    sparkyEvent.stringParameter = bruteEvent.stringParameter;
+                                    sparkyEvent.objectReferenceParameter = bruteEvent.objectReferenceParameter;
                                     float scaledBruteTime = (bruteEvent.time / bruteClip.length); // Scale the event to Sparky's animation.
                                     sparkyEvent.time = sparkyClip.length * scaledBruteTime;
                                     sparkyClip.AddEvent(sparkyEvent);
