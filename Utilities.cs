@@ -1,6 +1,5 @@
 // ~Beginning Of File
 using UnityEngine;
-using System.Collections;
 using System.IO;
 
 namespace MonstrumExtendedSettingsMod

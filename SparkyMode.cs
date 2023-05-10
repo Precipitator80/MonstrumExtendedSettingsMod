@@ -1,6 +1,5 @@
 ﻿// ~Beginning Of File
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using System;
 using System.Collections;
@@ -11,202 +10,272 @@ namespace MonstrumExtendedSettingsMod
     public partial class ExtendedSettingsModScript
     {
         /*----------------------------------------------------------------------------------------------------*/
-        // ~SparkyMode
-        private static class SparkyMode
+        // ~Sparky
+        public class Sparky : MESMMonster
         {
-            public static List<float> sparkyAggroTimers;
-            public static List<GameObject> sparkyList;
-            public static List<Monster> sparkyListMonsterComponents;
-            public static List<string> sparkyState;
-            private static List<Light[]> bruteSparkyEyes;
-            private static List<Material[]> customSparkyEyes;
-            public static float maxAggro;
-            public static GameObject simpleSparkyGO;
-            public static SkinnedMeshRenderer sparkyGlobalSMR;
-            public static Transform armatureTransform;
-
-            // #SparkyModeBeforeGenerationInitialisation
-            public static void SparkyModeBeforeGenerationInitialisation()
+            public static MESMMonster CreateSparky(MonsterSelection monsterSelection)
             {
-
+                MESMMonster mESMMonster = CreateMESMMonster(monsterSelection, Monster.MonsterTypeEnum.Brute);
+                mESMMonster.gameObject.AddComponent<Sparky>();
+                return mESMMonster;
             }
 
-            public static void SimpleSparkyModelTest(GameObject bruteSparkyGameObject)
+            protected override void Awake()
             {
-                /*
-                foreach (Component component in bruteSparkyGameObject.GetComponentsInChildren<Component>())
+                base.Awake();
+                mState = monster.GetComponent<MState>();
+
+                //// Brute Sparky
+                this.gameObject.name = "Sparky";
+                monster.monsterType = "Sparky";
+                this.gameObject.AddComponent<SparkyAura>();
+
+                // Make FSM adjustments
+                FSMState lurkState = monster.gameObject.AddComponent<MLurkState>();
+                if (ModSettings.logDebugText)
                 {
-                    Debug.Log("Component in Brute GO (1): " + component + " | GameObject " + component.gameObject + " | Layer = " + LayerMask.LayerToName(component.gameObject.layer));
-                    if (LayerMask.LayerToName(component.gameObject.layer).Equals("Default"))
-                    {
-                        component.gameObject.layer = LayerMask.NameToLayer("IgnoreRaycast");
-                    }
+                    Debug.Log("-----\nSparky FSM information BEFORE adding MLurkState:");
                 }
-                */
-
-                // Create Simple Sparky
-                simpleSparkyGO = Instantiate((GameObject)sparkyPrefab);
-                simpleSparkyGO.SetActive(true);
-                simpleSparkyGO.transform.SetParent(bruteSparkyGameObject.transform, false);
-                SkinnedMeshRenderer sparkySkinnedMeshRenderer = simpleSparkyGO.GetComponentInChildren<SkinnedMeshRenderer>();
-                sparkySkinnedMeshRenderer.enabled = true;
-                /*
-                Transform eyeTransform = RecursiveTransformSearch(simpleSparkyGO.transform, "Eye_Inner.L");//skinnedMeshRenderer.rootBone.FindChild("Eye_Outer.L");
-                if (eyeTransform != null)
+                foreach (FSMState state in mState.Fsm.States)
                 {
-                    MeshRenderer eyeMR = eyeTransform.gameObject.GetComponentInChildren<MeshRenderer>();
-                    if (eyeMR != null)
+                    if (ModSettings.logDebugText)
                     {
-                        if (eyeMR.material != null)
+                        Debug.Log("-----\nOne of Sparky's states is: " + state);
+                        foreach (FSMTransition transition in state.transitions)
                         {
-                            //eyeMR.material.EnableKeyword("_EMISSION");
-                            eyeMR.material.SetColor("_EmissionColor", Color.red * 5f); // How to access Emission Color of a Material in Script? - Unshackled - https://answers.unity.com/questions/1019974/how-to-access-emission-color-of-a-material-in-scri.html - Accessed 12.01.2022
-                            //DynamicGI.UpdateEnvironment();
-
-                            //eyeMR.material.SetColor("_Emission", Color.red);
-                            //DynamicGI.UpdateEnvironment();
-                        }
-                        else
-                        {
-                            Debug.Log("Could not find Sparky's eye's SMR's material");
+                            Debug.Log("Transitions from this are: " + transition.name);
                         }
                     }
-                    else
-                    {
-                        Debug.Log("Could not find Sparky's eye's SMR");
-                    }
-                }
-                else
-                {
-                    Debug.Log("Could not find Sparky's eye");
-                }
-                */
-                Animator sparkyAnimator = simpleSparkyGO.GetComponent<Animator>();
-                sparkyAnimator.enabled = false;
 
-                Animator monsterAnimator = bruteSparkyGameObject.GetComponentInChildren<Animator>();
-                /*
-                Debug.Log("Brute Animator BEFORE replacement:");
-                foreach (AnimationClip clip in monsterAnimator.runtimeAnimatorController.animationClips)
-                {
-                    Debug.Log("Clip: " + clip);
-                    foreach (AnimationEvent aevent in clip.events)
+                    // Add state transitions to other states going to MLurkState
+                    Type stateType = state.GetType();
+                    if (stateType == typeof(MWanderState) || stateType == typeof(MIdleState) || stateType == typeof(MSearchingState) || stateType == typeof(MDestroyState))
                     {
-                        Debug.Log("Event: " + aevent + " | Time: " + aevent.time);
+                        state.AddTransition("Lurk", lurkState);
+                    }
+
+                    // Add state transitions to MLurkState going to other states
+                    if (stateType == typeof(MChasingState))
+                    {
+                        lurkState.AddTransition("Chase", state);
+                    }
+                    if (stateType == typeof(MDestroyState))
+                    {
+                        lurkState.AddTransition("Destroy", state);
                     }
                 }
 
-                Debug.Log("Sparky Animator BEFORE replacement:");
-                foreach (AnimationClip clip in sparkyAnimatorOCPrefab.animationClips)
+                // Add aura and disruptor for chases
+                FiendAura fiendAura = ModSettings.GiveMonsterFiendAuraAndDisruptor(monster, 0.3f, 2.5f, 5f);
+                if (!ModSettings.giveAllMonstersAFiendAura)
                 {
-                    Debug.Log("Clip: " + clip);
-                    foreach (AnimationEvent aevent in clip.events)
-                    {
-                        Debug.Log("Event: " + aevent + " | Time: " + aevent.time);
-                    }
+                    fiendAura.enabled = false;
+                    monster.GetComponent<FiendLightDisruptor>().enabled = false;
                 }
-                */
 
-                foreach (AnimationClip bruteClip in monsterAnimator.runtimeAnimatorController.animationClips)
+                mState.Fsm.States.Add(lurkState);
+                lurkState.SetFSM(mState.Fsm);
+                if (ModSettings.logDebugText)
                 {
-                    foreach (AnimationClip sparkyClip in sparkyAnimatorOCPrefab.animationClips)
+                    mState.Fsm.outputDebug = true;
+
+                    Debug.Log("-----\nSparky FSM information AFTER adding MLurkState:");
+                    foreach (FSMState state in mState.Fsm.States)
                     {
-                        if (sparkyClip.name.Contains(bruteClip.name))
+                        Debug.Log("-----\nOne of Sparky's states is: " + state);
+                        foreach (FSMTransition transition in state.transitions)
                         {
-                            sparkyClip.wrapMode = bruteClip.wrapMode;
-                            if (sparkyClip.events.Length == 0)
+                            Debug.Log("Transitions from this are: " + transition.name);
+                        }
+                    }
+                }
+
+                // Change Brute Sparky's Light
+                Light[] lights = monster.GetComponentsInChildren<Light>();
+                bruteEyes = new Light[] { lights[4] /*Brute's left eye*/, lights[5] /*Brute's right eye*/ };
+                foreach (Light light in lights)
+                {
+                    light.color = new Color(1f, 1f, 1f, 0f);
+                }
+
+                // Sparky with Model
+                if (ModSettings.customSparkyModel || ModSettings.customSparkyMusic)
+                {
+                    SparkyMode.LoadSparkyAssetBundle();
+                }
+
+                if (ModSettings.customSparkyModel)
+                {
+                    // Create Simple Sparky
+                    GameObject simpleSparkyGO = Instantiate(SparkyMode.sparkyPrefab);
+                    simpleSparkyGO.SetActive(true);
+                    simpleSparkyGO.transform.SetParent(this.gameObject.transform, false);
+                    SkinnedMeshRenderer sparkySkinnedMeshRenderer = simpleSparkyGO.GetComponentInChildren<SkinnedMeshRenderer>();
+                    sparkySkinnedMeshRenderer.enabled = true;
+
+                    Animator sparkyAnimator = simpleSparkyGO.GetComponent<Animator>();
+                    sparkyAnimator.enabled = false;
+
+                    Animator monsterAnimator = this.gameObject.GetComponentInChildren<Animator>();
+
+                    foreach (AnimationClip bruteClip in monsterAnimator.runtimeAnimatorController.animationClips)
+                    {
+                        foreach (AnimationClip sparkyClip in SparkyMode.sparkyAnimatorOCPrefab.animationClips)
+                        {
+                            if (sparkyClip.name.Contains(bruteClip.name))
                             {
-                                for (int eventIndex = 0; eventIndex < bruteClip.events.Length; eventIndex++)
+                                sparkyClip.wrapMode = bruteClip.wrapMode;
+                                if (sparkyClip.events.Length == 0)
                                 {
-                                    // Add the event to Sparky's animation.
-                                    AnimationEvent bruteEvent = bruteClip.events[eventIndex];
+                                    for (int eventIndex = 0; eventIndex < bruteClip.events.Length; eventIndex++)
+                                    {
+                                        // Add the event to Sparky's animation.
+                                        AnimationEvent bruteEvent = bruteClip.events[eventIndex];
 
-                                    AnimationEvent sparkyEvent = new AnimationEvent();
-                                    sparkyEvent.functionName = bruteEvent.functionName;
-                                    sparkyEvent.intParameter = bruteEvent.intParameter;
-                                    sparkyEvent.floatParameter = bruteEvent.floatParameter;
-                                    sparkyEvent.stringParameter = bruteEvent.stringParameter;
-                                    sparkyEvent.objectReferenceParameter = bruteEvent.objectReferenceParameter;
-                                    float scaledBruteTime = (bruteEvent.time / bruteClip.length); // Scale the event to Sparky's animation.
-                                    sparkyEvent.time = sparkyClip.length * scaledBruteTime;
-                                    sparkyClip.AddEvent(sparkyEvent);
-                                    //Debug.Log("---------------");
-                                    //Debug.Log("Time in Brute's animation: " + bruteEvent.time + " | Brute clip length: " + bruteClip.length);
-                                    //Debug.Log("Time in Sparky's animation: " + sparkyEvent.time + " | Sparky's clip length: " + sparkyClip.length);
+                                        AnimationEvent sparkyEvent = new AnimationEvent();
+                                        sparkyEvent.functionName = bruteEvent.functionName;
+                                        sparkyEvent.intParameter = bruteEvent.intParameter;
+                                        sparkyEvent.floatParameter = bruteEvent.floatParameter;
+                                        sparkyEvent.stringParameter = bruteEvent.stringParameter;
+                                        sparkyEvent.objectReferenceParameter = bruteEvent.objectReferenceParameter;
+                                        float scaledBruteTime = (bruteEvent.time / bruteClip.length); // Scale the event to Sparky's animation.
+                                        sparkyEvent.time = sparkyClip.length * scaledBruteTime;
+                                        sparkyClip.AddEvent(sparkyEvent);
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                /*
-                Debug.Log("Sparky Animator AFTER replacement:");
-                foreach (AnimationClip clip in sparkyAnimatorOCPrefab.animationClips)
-                {
-                    Debug.Log("Clip: " + clip);
-                    foreach (AnimationEvent aevent in clip.events)
+                    monsterAnimator.runtimeAnimatorController = Instantiate(SparkyMode.sparkyAnimatorOCPrefab);
+                    monsterAnimator.avatar = sparkyAnimator.avatar;
+                    Debug.Log("Does Brute use root motion? " + monsterAnimator.applyRootMotion);
+                    monsterAnimator.applyRootMotion = true;
+                    SkinnedMeshRenderer monsterSMR = this.gameObject.GetComponentInChildren<SkinnedMeshRenderer>();
+
+                    monsterSMR.sharedMesh = sparkySkinnedMeshRenderer.sharedMesh; // I don't think it is recommended to edit anything using sharedMesh. Does this break other Brute models?
+                    monsterSMR.bones = sparkySkinnedMeshRenderer.bones;
+                    monsterSMR.material = sparkySkinnedMeshRenderer.material;
+                    monsterSMR.materials = sparkySkinnedMeshRenderer.materials;
+                    monsterSMR.rootBone = sparkySkinnedMeshRenderer.rootBone;
+                    monsterSMR.localBounds = sparkySkinnedMeshRenderer.localBounds;
+                    monsterSMR.lightProbeUsage = sparkySkinnedMeshRenderer.lightProbeUsage;
+
+                    BaseFeatures.DisableMonsterParticles(this.gameObject);
+
+                    // Sparky Eyes
+                    MeshRenderer eyeLMR = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.L").gameObject.GetComponentInChildren<MeshRenderer>();
+                    MeshRenderer eyeRMR = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.R").gameObject.GetComponentInChildren<MeshRenderer>();
+
+                    Material eyeLM = eyeLMR.material;
+                    Material eyeRM = eyeRMR.material;
+                    eyeLM.SetColor("_EmissionColor", Color.red * 5f);
+                    eyeRM.SetColor("_EmissionColor", Color.red * 5f);
+                    sparkyEyes = new Material[] { eyeLM, eyeRM };
+
+                    // Brute Eyes
+                    // Set Brute light positions to fit Sparky.
+                    lights[4].transform.SetParent(eyeLMR.transform.parent);
+                    lights[5].transform.SetParent(eyeRMR.transform.parent);
+                    lights[4].transform.localPosition = Vector3.zero;
+                    lights[5].transform.localPosition = Vector3.zero;
+                    Vector3 eyeOffset = 0.075f * Vector3.forward;
+                    Debug.Log("Sparky eye offset: " + eyeOffset);
+                    lights[4].transform.position += eyeOffset;
+                    lights[5].transform.position += eyeOffset;
+                    lights[4].transform.localRotation = Quaternion.Euler(-75f, 0f, 0f);
+                    lights[5].transform.localRotation = Quaternion.Euler(-75f, 0f, 0f);
+
+                    /*
+                    Debug.Log("Eye Light Position: " + lights[4].transform.position + " | EyeVision Position: " + monster.EyeVision.transform.position + " | LocalPosition: " + monster.EyeVision.transform.localPosition + " | EV GO P: " + monster.EyeVision.gameObject.transform.position + " | EV GO LP: " + monster.EyeVision.gameObject.transform.localPosition);
+                    */
+
+                    GameObject cameraTransformGameObject = new GameObject("Sparky Camera Transform");
+                    cameraTransformGameObject.transform.SetParent(lights[4].transform.parent);
+                    cameraTransformGameObject.transform.localPosition = Vector3.zero;
+                    monster.EyeVision.GetComponentInChildren<FollowTransform2>().TranToFollow = cameraTransformGameObject.transform;
+
+                    /*
+                    Debug.Log("Eye Light Position: " + lights[4].transform.position + " | EyeVision Position: " + monster.EyeVision.transform.position + " | LocalPosition: " + monster.EyeVision.transform.localPosition + " | EV GO P: " + monster.EyeVision.gameObject.transform.position + " | EV GO LP: " + monster.EyeVision.gameObject.transform.localPosition);
+                    Light spotlight1 = monster.EyeVision.gameObject.AddComponent<Light>();
+                    spotlight1.type = LightType.Spot;
+                    spotlight1.color = Color.blue;
+                    Light spotlight2 = monster.EyeVision.monsterCam.gameObject.AddComponent<Light>();
+                    spotlight2.type = LightType.Spot;
+                    spotlight2.color = Color.magenta;
+                    */
+
+                    // Set their starting colour.
+                    foreach (Light light in lights)
                     {
-                        Debug.Log("Event: " + aevent + " | Time: " + aevent.time);
+                        light.color = new Color(0f, 0f, 0f, 0f);
                     }
+
+                    // Set their intensity and range.
+                    lights[4].intensity /= 15f;
+                    lights[5].intensity /= 15f;
+                    lights[4].range *= 1.5f;
+                    lights[5].range *= 1.5f;
                 }
-                */
-
-                monsterAnimator.runtimeAnimatorController = Instantiate(sparkyAnimatorOCPrefab);
-                monsterAnimator.avatar = sparkyAnimator.avatar;
-                Debug.Log("Does Brute use root motion? " + monsterAnimator.applyRootMotion);
-                monsterAnimator.applyRootMotion = true;
-                SkinnedMeshRenderer monsterSMR = bruteSparkyGameObject.GetComponentInChildren<SkinnedMeshRenderer>();
-
-                monsterSMR.sharedMesh = sparkySkinnedMeshRenderer.sharedMesh; // I don't think it is recommended to edit anything using sharedMesh. Does this break other Brute models?
-                monsterSMR.bones = sparkySkinnedMeshRenderer.bones;
-                monsterSMR.material = sparkySkinnedMeshRenderer.material;
-                monsterSMR.materials = sparkySkinnedMeshRenderer.materials;
-                monsterSMR.rootBone = sparkySkinnedMeshRenderer.rootBone;
-                monsterSMR.localBounds = sparkySkinnedMeshRenderer.localBounds;
-                monsterSMR.lightProbeUsage = sparkySkinnedMeshRenderer.lightProbeUsage;
-
-                /*
-                Debug.Log("Sparky Layer: " + LayerMask.LayerToName(simpleSparkyGO.layer));
-                Debug.Log("MonsterSMR Layer: " + LayerMask.LayerToName(monsterSMR.gameObject.layer));
-                Debug.Log("Brute layer: " + LayerMask.LayerToName(bruteSparkyGameObject.layer));
-                Debug.Log("Brute Monster GameObject layer (the same GO as Brute?): " + LayerMask.LayerToName(bruteSparkyGameObject.GetComponent<Monster>().gameObject.layer));
-                foreach (Component component in bruteSparkyGameObject.GetComponentsInChildren<Component>())
-                {
-                    Debug.Log("Component in Brute GO (2): " + component + " | GameObject " + component.gameObject + " | Layer = " + LayerMask.LayerToName(component.gameObject.layer));
-                    if (LayerMask.LayerToName(component.gameObject.layer).Equals("Default"))
-                    {
-                        component.gameObject.layer = LayerMask.NameToLayer("IgnoreRaycast");
-                    }
-                }
-                simpleSparkyGO.gameObject.layer = bruteSparkyGameObject.layer;
-                monsterSMR.gameObject.layer = bruteSparkyGameObject.layer;
-                Debug.Log("Sparky Layer: " + LayerMask.LayerToName(simpleSparkyGO.layer));
-                Debug.Log("MonsterSMR Layer: " + LayerMask.LayerToName(monsterSMR.gameObject.layer));
-                Debug.Log("Brute layer: " + LayerMask.LayerToName(bruteSparkyGameObject.layer));
-                Debug.Log("Brute Monster GameObject layer (the same GO as Brute?): " + LayerMask.LayerToName(bruteSparkyGameObject.GetComponent<Monster>().gameObject.layer));
-                */
-
-                /*
-                BoxCollider[] boxColliders = bruteSparkyGameObject.GetComponentsInChildren<BoxCollider>();
-                foreach (BoxCollider boxCollider in boxColliders)
-                {
-                    Debug.Log("Collider is " + boxCollider.name);
-                    if (boxCollider.name.Equals("StopStandingOnMonsters"))
-                    {
-                        boxCollider.size = monsterSMR.bounds.extents;// new Vector3(1.5f, 3f, 2.5f);
-                    }
-                }
-                */
-
-                ModSettings.finishedCreatingSimpleSparky = true;
-
-                BaseFeatures.DisableMonsterParticles(bruteSparkyGameObject);
             }
+
+            void Update()
+            {
+                // Change aggro timers
+                if (mState.Fsm.Current.GetType() == typeof(MChasingState))
+                {
+                    aggroTimer = ModSettings.sparkyLurkMaxAggro;
+                }
+                else if (mState.Fsm.Current.GetType() != typeof(MLurkState))
+                {
+                    aggroTimer -= Time.deltaTime / 5f;
+                }
+
+                // Clamp the aggro timer
+                aggroTimer = Mathf.Clamp(aggroTimer, 0f, ModSettings.sparkyLurkMaxAggro);
+
+                // Change lights
+                float scaledAggro = aggroTimer / ModSettings.sparkyLurkMaxAggro;
+                float scaledColour = upperLimit - upperLimit * scaledAggro; // Go to 0 as aggro is maxed (red) and upper limit as aggro is minimised (white).
+                if (ModSettings.customSparkyModel)
+                {
+                    foreach (Material material in sparkyEyes)
+                    {
+                        material.SetColor("_EmissionColor", new Color(upperLimit, scaledColour, scaledColour, 1f) * 5f);
+                    }
+
+                    foreach (Light light in bruteEyes)
+                    {
+                        light.color = new Color(upperLimit * scaledAggro, 0f, 0f, 1f);
+                    }
+                }
+                else
+                {
+                    // Brute Sparky
+                    foreach (Light light in bruteEyes)
+                    {
+                        light.color = new Color(upperLimit, scaledColour, scaledColour, 1f);
+                    }
+                }
+            }
+
+            Light[] bruteEyes;
+            Material[] sparkyEyes;
+            public float aggroTimer;
+            static float upperLimit = 0.84f;
+            MState mState;
+        }
+
+        /*----------------------------------------------------------------------------------------------------*/
+        // ~SparkyMode
+        private static class SparkyMode
+        {
+            private static bool sparkyInGame;
 
             // #SparkyModeAfterGenerationInitialisation
             public static void SparkyModeAfterGenerationInitialisation()
             {
-                bool sparkyInGame = false;
+                sparkyInGame = false;
                 if (ModSettings.numberOfMonsters == 1 && References.Monster.GetComponent<Monster>().monsterType.Equals("Sparky"))
                 {
                     sparkyInGame = true;
@@ -228,177 +297,7 @@ namespace MonstrumExtendedSettingsMod
                     return;
                 }
 
-                maxAggro = ModSettings.sparkyLurkMaxAggro;
-                sparkyAggroTimers = new List<float>();
-                sparkyList = new List<GameObject>();
-                sparkyListMonsterComponents = new List<Monster>();
-                sparkyState = new List<string>();
-                bruteSparkyEyes = new List<Light[]>();
-                customSparkyEyes = new List<Material[]>();
-
-                // Sparky FSM adjustment
-                foreach (Monster monster in ManyMonstersMode.monsterListMonsterComponents) // MMM is forced when Sparky is used.
-                {
-                    if (monster.monsterType.Equals("Sparky"))
-                    {
-                        // Add aura and disruptor for chases
-                        FiendAura fiendAura = ModSettings.GiveMonsterFiendAuraAndDisruptor(monster, 0.3f, 2.5f, 5f);
-                        if (!ModSettings.giveAllMonstersAFiendAura)
-                        {
-                            fiendAura.enabled = false;
-                            monster.GetComponent<FiendLightDisruptor>().enabled = false;
-                        }
-
-                        // Setup lists
-                        sparkyAggroTimers.Add(0f);
-                        sparkyList.Add(monster.gameObject);
-                        sparkyListMonsterComponents.Add(monster);
-                        sparkyState.Add("");
-
-                        // Change Brute Sparky's Light
-                        Light[] lights = monster.GetComponentsInChildren<Light>();
-                        if (ModSettings.customSparkyModel)
-                        {
-                            // Sparky Eyes
-                            MeshRenderer eyeLMR = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.L").gameObject.GetComponentInChildren<MeshRenderer>();
-                            MeshRenderer eyeRMR = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.R").gameObject.GetComponentInChildren<MeshRenderer>();
-
-                            Material eyeLM = eyeLMR.material;
-                            Material eyeRM = eyeRMR.material;
-                            eyeLM.SetColor("_EmissionColor", Color.red * 5f);
-                            eyeRM.SetColor("_EmissionColor", Color.red * 5f);
-                            customSparkyEyes.Add(new Material[] { eyeLM, eyeRM });
-
-                            // Brute Eyes
-                            bruteSparkyEyes.Add(new Light[] { lights[4] /*Brute's left eye*/, lights[5] /*Brute's right eye*/ });
-
-                            // Set their position.
-                            lights[4].transform.SetParent(eyeLMR.transform.parent);
-                            lights[5].transform.SetParent(eyeRMR.transform.parent);
-                            lights[4].transform.localPosition = Vector3.zero;
-                            lights[5].transform.localPosition = Vector3.zero;
-                            Vector3 eyeOffset = 0.075f * Vector3.forward;
-                            Debug.Log("Sparky eye offset: " + eyeOffset);
-                            lights[4].transform.position += eyeOffset;
-                            lights[5].transform.position += eyeOffset;
-                            lights[4].transform.localRotation = Quaternion.Euler(-75f, 0f, 0f);
-                            lights[5].transform.localRotation = Quaternion.Euler(-75f, 0f, 0f);
-
-                            /*
-                            Debug.Log("Eye Light Position: " + lights[4].transform.position + " | EyeVision Position: " + monster.EyeVision.transform.position + " | LocalPosition: " + monster.EyeVision.transform.localPosition + " | EV GO P: " + monster.EyeVision.gameObject.transform.position + " | EV GO LP: " + monster.EyeVision.gameObject.transform.localPosition);
-                            */
-
-                            GameObject cameraTransformGameObject = new GameObject("Sparky Camera Transform");
-                            cameraTransformGameObject.transform.SetParent(lights[4].transform.parent);
-                            cameraTransformGameObject.transform.localPosition = Vector3.zero;
-                            monster.EyeVision.GetComponentInChildren<FollowTransform2>().TranToFollow = cameraTransformGameObject.transform;
-
-                            /*
-                            Debug.Log("Eye Light Position: " + lights[4].transform.position + " | EyeVision Position: " + monster.EyeVision.transform.position + " | LocalPosition: " + monster.EyeVision.transform.localPosition + " | EV GO P: " + monster.EyeVision.gameObject.transform.position + " | EV GO LP: " + monster.EyeVision.gameObject.transform.localPosition);
-                            Light spotlight1 = monster.EyeVision.gameObject.AddComponent<Light>();
-                            spotlight1.type = LightType.Spot;
-                            spotlight1.color = Color.blue;
-                            Light spotlight2 = monster.EyeVision.monsterCam.gameObject.AddComponent<Light>();
-                            spotlight2.type = LightType.Spot;
-                            spotlight2.color = Color.magenta;
-                            */
-
-                            // Set their starting colour.
-                            foreach (Light light in lights)
-                            {
-                                light.color = new Color(0f, 0f, 0f, 0f);
-                            }
-
-                            // Set their intensity and range.
-                            lights[4].intensity /= 15f;
-                            lights[5].intensity /= 15f;
-                            lights[4].range *= 1.5f;
-                            lights[5].range *= 1.5f;
-                        }
-                        else
-                        {
-                            // Brute Sparky
-                            bruteSparkyEyes.Add(new Light[] { lights[4] /*Brute's left eye*/, lights[5] /*Brute's right eye*/ });
-                            foreach (Light light in lights)
-                            {
-                                light.color = new Color(1f, 1f, 1f, 0f);
-                            }
-                        }
-
-                        // Make FSM adjustments
-                        MState mState = monster.GetComponent<MState>();
-
-                        if (mState != null)
-                        {
-                            FSMState lurkState = monster.gameObject.AddComponent<MLurkState>();
-
-                            if (ModSettings.logDebugText)
-                            {
-                                Debug.Log("-----\nSparky FSM information BEFORE adding MLurkState:");
-                            }
-                            foreach (FSMState state in mState.Fsm.States)
-                            {
-                                if (ModSettings.logDebugText)
-                                {
-                                    Debug.Log("-----\nOne of Sparky's states is: " + state);
-                                    foreach (FSMTransition transition in state.transitions)
-                                    {
-                                        Debug.Log("Transitions from this are: " + transition.name);
-                                    }
-                                }
-
-                                // Add state transitions to other states going to MLurkState
-                                Type stateType = state.GetType();
-                                if (stateType == typeof(MWanderState) || stateType == typeof(MIdleState) || stateType == typeof(MSearchingState) || stateType == typeof(MDestroyState))
-                                {
-                                    state.AddTransition("Lurk", lurkState);
-                                }
-
-                                // Add state transitions to MLurkState going to other states
-                                if (stateType == typeof(MChasingState))
-                                {
-                                    lurkState.AddTransition("Chase", state);
-                                }
-                                if (stateType == typeof(MDestroyState))
-                                {
-                                    lurkState.AddTransition("Destroy", state);
-                                }
-                            }
-
-                            mState.Fsm.States.Add(lurkState);
-                            lurkState.SetFSM(mState.Fsm);
-                            if (ModSettings.logDebugText)
-                            {
-                                mState.Fsm.outputDebug = true;
-
-                                Debug.Log("-----\nSparky FSM information AFTER adding MLurkState:");
-                                foreach (FSMState state in mState.Fsm.States)
-                                {
-                                    Debug.Log("-----\nOne of Sparky's states is: " + state);
-                                    foreach (FSMTransition transition in state.transitions)
-                                    {
-                                        Debug.Log("Transitions from this are: " + transition.name);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Debug.Log("Sparky MState is null");
-                        }
-                    }
-                }
-
                 ElectricTrapManager electricTrapManager = References.Player.AddComponent<ElectricTrapManager>();
-                SparkyAura.empDictionary = new Dictionary<PrimaryRegionType, PrimaryRegionType>();
-                SparkyAura.empDictionary.Add(PrimaryRegionType.CrewDeck, PrimaryRegionType.CrewDeck);
-                SparkyAura.empDictionary.Add(PrimaryRegionType.OuterDeckCargo, PrimaryRegionType.CrewDeck);
-                SparkyAura.empDictionary.Add(PrimaryRegionType.LowerDeck, PrimaryRegionType.LowerDeck);
-                SparkyAura.empDictionary.Add(PrimaryRegionType.CargoHold, PrimaryRegionType.LowerDeck);
-                SparkyAura.empDictionary.Add(PrimaryRegionType.SubEscape, PrimaryRegionType.LowerDeck);
-                SparkyAura.empDictionary.Add(PrimaryRegionType.UpperDeck, PrimaryRegionType.UpperDeck);
-                SparkyAura.empDictionary.Add(PrimaryRegionType.OuterDeck, PrimaryRegionType.UpperDeck);
-                SparkyAura.empDictionary.Add(PrimaryRegionType.Engine, PrimaryRegionType.Engine);
 
                 List<PrimaryRegionType> primaryFuseBoxRegions = new List<PrimaryRegionType>();
                 primaryFuseBoxRegions.AddRange(new PrimaryRegionType[] { PrimaryRegionType.CrewDeck, PrimaryRegionType.LowerDeck, PrimaryRegionType.UpperDeck });
@@ -506,80 +405,12 @@ namespace MonstrumExtendedSettingsMod
             public static GameObject sparkyPrefab;
             public static List<AudioClip> sparkyAudioClips;
 
-            public static Monster sparkyMonster;
-
-            private static GameObject CreateBruteSparky()
-            {
-                MonsterSelection monsterSelection = UnityEngine.Object.FindObjectOfType<MonsterSelection>();
-
-                GameObject sparkyGameObject = Instantiate<GameObject>(monsterSelection.NameToObject("Brute"));
-                sparkyGameObject.name = "Sparky";
-
-                sparkyMonster = sparkyGameObject.GetComponent<Monster>();
-                sparkyMonster.monsterType = "Sparky";
-
-                sparkyGameObject.AddComponent<SparkyAura>();
-
-                return sparkyGameObject;
-            }
-
-            // @CreateSparkyGameObject
-            public static GameObject CreateSparkyGameObject()
-            {
-                GameObject sparkyGameObject = CreateBruteSparky();
-                if (ModSettings.customSparkyModel || ModSettings.customSparkyMusic)
-                {
-                    LoadSparkyAssetBundle();
-                }
-
-                if (ModSettings.customSparkyModel)
-                {
-                    SimpleSparkyModelTest(sparkyGameObject);
-                }
-                return sparkyGameObject;
-            }
-
-            private static void LoadSparkyAssetBundle()
+            public static void LoadSparkyAssetBundle()
             {
                 try
                 {
                     if (sparkyPrefab == null)
                     {
-                        /*
-                        string sparkyFilePathNew = Path.Combine(Directory.GetCurrentDirectory(), "Mods/MESMAssetBundles/mesmassetbundle");
-                        Debug.Log("File path used for Sparky Asset Bundle is: " + sparkyFilePathNew);
-                        try
-                        {
-                            try
-                            {
-                                sparkyAssetBundle = AssetBundle.LoadFromFile(sparkyFilePathNew);
-                            }
-                            catch
-                            {
-                                Debug.Log("Error loading Asset Bundle from file");
-                            }
-                            try
-                            {
-                                if (sparkyAssetBundle != null)
-                                {
-                                    sparkyAssetBundleObjects = sparkyAssetBundle.LoadAllAssets();
-                                }
-                                else
-                                {
-                                    Debug.Log("Sparky Asset Bundle is still null when trying to load all assets from it");
-                                }
-                            }
-                            catch
-                            {
-                                Debug.Log("Error loading all assets from asset bundle.");
-                            }
-                        }
-                        catch
-                        {
-                            Debug.Log("Error getting Sparky Asset Bundle");
-                        }
-                        */
-
                         UnityEngine.Object[] sparkyAssetBundleObjects = Utilities.LoadAssetBundle("sparky");
 
                         try
@@ -593,46 +424,6 @@ namespace MonstrumExtendedSettingsMod
                                     if (sparkyObject.GetType() == typeof(GameObject))
                                     {
                                         sparkyPrefab = (GameObject)sparkyObject;
-
-                                        if (ModSettings.logDebugText)
-                                        {
-                                            if (sparkyPrefab.GetComponent<Rigidbody>() != null)
-                                            {
-                                                Debug.Log("GetComponent Rigidbody is not null");
-                                            }
-
-                                            if (sparkyPrefab.GetComponentInChildren<Rigidbody>() != null)
-                                            {
-                                                Debug.Log("GetComponentInChildren Rigidbody is not null");
-                                            }
-
-                                            Component[] sparkyGOComponents = sparkyPrefab.GetComponents<Component>();
-                                            foreach (Component component in sparkyGOComponents)
-                                            {
-                                                Debug.Log("Sparky GO component name is " + component.name + " and type is " + component.GetType());
-                                            }
-                                        }
-
-                                        Component[] sparkyGOComponentsInChildren = sparkyPrefab.GetComponentsInChildren<Component>();
-                                        foreach (Component component in sparkyGOComponentsInChildren)
-                                        {
-                                            if (ModSettings.logDebugText)
-                                            {
-                                                Debug.Log("Sparky GO component in children name is " + component.name + " and type is " + component.GetType());
-                                            }
-                                            if (component.GetType() == typeof(SkinnedMeshRenderer))
-                                            {
-                                                sparkyGlobalSMR = (SkinnedMeshRenderer)component;
-                                                if (ModSettings.logDebugText)
-                                                {
-                                                    Debug.Log("Assigned Sparky Global SMR. Is this null? " + (component == null) + ". Is casted null? " + (sparkyGlobalSMR == null));
-                                                }
-                                            }
-                                            else if (component.GetType() == typeof(Transform) && component.name.Equals("Armature"))
-                                            {
-                                                armatureTransform = (Transform)component;
-                                            }
-                                        }
                                     }
                                     else if (sparkyObject.GetType() == typeof(AnimatorOverrideController))
                                     {
@@ -705,81 +496,6 @@ namespace MonstrumExtendedSettingsMod
                 fiendAura.srt_medRad = auraValues[4];
                 fiendAura.srt_lrgRad = auraValues[5];
                 yield break;
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
-            // @SparkyActiveFeatures
-
-            //static AnimationClip sparkyAnimatorCurrentClip;
-            //static Animator sparkyAnimator;
-
-            public static void SparkyActiveFeatures()
-            {
-                for (int sparkyNumber = 0; sparkyNumber < sparkyList.Count; sparkyNumber++)
-                {
-                    // Change aggro timers
-                    switch (sparkyState[sparkyNumber])
-                    {
-                        case "MonstrumExtendedSettingsMod.ExtendedSettingsModScript+MLurkState":
-                            {
-                                break;
-                            }
-                        case "MChasingState":
-                            {
-                                sparkyAggroTimers[sparkyNumber] = maxAggro;
-                                break;
-                            }
-                        default:
-                            {
-                                sparkyAggroTimers[sparkyNumber] -= Time.deltaTime / 5f;
-                                break;
-                            }
-                    }
-                    // Clamp the aggro timer
-                    sparkyAggroTimers[sparkyNumber] = Mathf.Clamp(sparkyAggroTimers[sparkyNumber], 0f, maxAggro);
-
-                    // Change lights
-                    float upperLimit = 0.84f;
-                    float scaledAggro = sparkyAggroTimers[sparkyNumber] / maxAggro;
-                    float scaledColour = upperLimit - upperLimit * scaledAggro; // Go to 0 as aggro is maxed (red) and upper limit as aggro is minimised (white).
-                    if (ModSettings.customSparkyModel)
-                    {
-                        foreach (Material material in customSparkyEyes[sparkyNumber])
-                        {
-                            material.SetColor("_EmissionColor", new Color(upperLimit, scaledColour, scaledColour, 1f) * 5f);
-                        }
-
-                        foreach (Light light in bruteSparkyEyes[sparkyNumber])
-                        {
-                            light.color = new Color(upperLimit * scaledAggro, 0f, 0f, 1f);
-                        }
-                    }
-                    else
-                    {
-                        // Brute Sparky
-                        foreach (Light light in bruteSparkyEyes[sparkyNumber])
-                        {
-                            light.color = new Color(upperLimit, scaledColour, scaledColour, 1f);
-                        }
-                    }
-                }
-                /*
-                if (sparkyAnimator == null)
-                {
-                    sparkyAnimator = sparkyList[0].GetComponentInChildren<Animator>();
-                    sparkyAnimatorCurrentClip = sparkyAnimator.GetCurrentAnimatorClipInfo(0)[0].clip;
-                    Debug.Log("Sparky start animation: " + sparkyAnimatorCurrentClip.name);
-                }
-                else
-                {
-                    AnimationClip newAnimationClip = sparkyAnimator.GetCurrentAnimatorClipInfo(0)[0].clip;
-                    if (newAnimationClip != sparkyAnimatorCurrentClip)
-                    {
-                        sparkyAnimatorCurrentClip = newAnimationClip;
-                        Debug.Log("Sparky playing animation: " + sparkyAnimatorCurrentClip.name);
-                    }
-                }
-                */
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -904,7 +620,7 @@ namespace MonstrumExtendedSettingsMod
             private static void HookToggleRoomLightSwitchOnHandGrab(On.ToggleRoomLightSwitch.orig_OnHandGrab orig, ToggleRoomLightSwitch toggleRoomLightSwitch)
             {
                 orig.Invoke(toggleRoomLightSwitch);
-                if (sparkyList.Count > 0 && (!ModSettings.darkShip || ModSettings.powerableLights))
+                if (sparkyInGame && (!ModSettings.darkShip || ModSettings.powerableLights))
                 {
                     Room room = ((MonoBehaviour)toggleRoomLightSwitch).transform.GetParentOfType<Room>();
                     Collider[] colliders = Physics.OverlapBox(room.RoomBounds.center, room.RoomBounds.extents + new Vector3(2f, 0f, 2f));
@@ -923,33 +639,13 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
-            // @WeightedSelection
-
-            /* Moved to LevelGeneration.Awake
-            private static GameObject HookWeightedSelectionChoose(On.WeightedSelection.orig_Choose orig, WeightedSelection weightedSelection)
-            {
-                // If the original weighted selection is used, which it only is when the player uses random monsters, then let Sparky be chosen too at a 1/4 chance.
-                if (weightedSelection.playerPrefIdentifier == "MonsterCounts")
-                {
-                    int upperIndexLimit = GameObject.FindGameObjectsWithTag("Monster").Length;
-                    int randomNumber = UnityEngine.Random.Range(0, upperIndexLimit + 1);
-                    if (randomNumber == upperIndexLimit)
-                    {
-                        return CreateSparkyGameObject();
-                    }
-                }
-                return orig.Invoke(weightedSelection);
-            }
-            */
-
-            /*----------------------------------------------------------------------------------------------------*/
         }
 
         // ~MLurkState
         // The monster will be seeing the player when entering this state.
         public class MLurkState : MState
         {
-            int sparkyNumber;
+            Sparky sparky;
             float minDistanceToPlayer;
             float maxSuperEMPDistance;
             float superEMPChargeTimeToWait;
@@ -963,12 +659,15 @@ namespace MonstrumExtendedSettingsMod
                 superEMPChargeTimeToWait = ModSettings.sparkyLurkSuperEMPChargeTimeToWait;
             }
 
+            public void Start()
+            {
+                sparky = monster.gameObject.GetComponent<Sparky>();
+            }
+
             public override void OnEnter()
             {
                 base.OnEnter();
                 typeofState = FSMState.StateTypes.LowAlert;
-                sparkyNumber = SparkyMode.sparkyListMonsterComponents.IndexOf(base.monster);
-                SparkyMode.sparkyState[sparkyNumber] = "MonstrumExtendedSettingsMod.ExtendedSettingsModScript+MLurkState";
                 superEMPChargeTimer = 0f;
                 doingSuperEMP = false;
             }
@@ -988,7 +687,6 @@ namespace MonstrumExtendedSettingsMod
             {
                 base.monster.PreviousWasDestroy = false;
                 base.monster.PreviousWasClimb = false;
-                SparkyMode.sparkyState[sparkyNumber] = "";
             }
 
             private void PlayerVisionCheck()
@@ -1005,7 +703,7 @@ namespace MonstrumExtendedSettingsMod
 
                 if (monster.CanSeePlayer && Vector3.Angle(playerCamera.transform.forward, -monster.transform.forward) <= playerCamera.fieldOfView)
                 {
-                    SparkyMode.sparkyAggroTimers[sparkyNumber] += Time.deltaTime;
+                    sparky.aggroTimer += Time.deltaTime;
                     //Debug.Log("Player can see Sparky during lurk 1! " + SparkyMode.sparkyAggroTimers[sparkyNumber] / SparkyMode.maxAggro);
                 }
             }
@@ -1056,7 +754,7 @@ namespace MonstrumExtendedSettingsMod
 
             private void StateChanges()
             {
-                if (SparkyMode.sparkyAggroTimers[sparkyNumber] == SparkyMode.maxAggro || ManyMonstersMode.PlayerToMonsterDistance(base.monster) < minDistanceToPlayer || base.monster.TimeOutVision.TimeElapsed > 3f)
+                if (sparky.aggroTimer == ModSettings.sparkyLurkMaxAggro || ManyMonstersMode.PlayerToMonsterDistance(base.monster) < minDistanceToPlayer || base.monster.TimeOutVision.TimeElapsed > 3f)
                 {
                     /*
                     if (SparkyMode.sparkyAggroTimers[sparkyNumber] == SparkyMode.maxAggro)
@@ -1106,7 +804,16 @@ namespace MonstrumExtendedSettingsMod
             List<Room> nearbyRooms;
             List<Room> nearbyActiveRooms;
             Monster monster;
-            public static Dictionary<PrimaryRegionType, PrimaryRegionType> empDictionary;
+            public static readonly Dictionary<PrimaryRegionType, PrimaryRegionType> empDictionary = new Dictionary<PrimaryRegionType, PrimaryRegionType>(){
+                {PrimaryRegionType.CrewDeck, PrimaryRegionType.CrewDeck},
+                {PrimaryRegionType.OuterDeckCargo, PrimaryRegionType.CrewDeck},
+                {PrimaryRegionType.LowerDeck, PrimaryRegionType.LowerDeck},
+                {PrimaryRegionType.CargoHold, PrimaryRegionType.LowerDeck},
+                {PrimaryRegionType.SubEscape, PrimaryRegionType.LowerDeck},
+                {PrimaryRegionType.UpperDeck, PrimaryRegionType.UpperDeck},
+                {PrimaryRegionType.OuterDeck, PrimaryRegionType.UpperDeck},
+                {PrimaryRegionType.Engine, PrimaryRegionType.Engine}
+            };
 
             void Start()
             {

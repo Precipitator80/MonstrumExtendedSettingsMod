@@ -48,6 +48,7 @@
     <Compile Include="ExtendedSettingsMod.cs" />
     <Compile Include="InGameMenu.cs" />
     <Compile Include="ManyMonstersMode.cs" />
+    <Compile Include="MESMMonster.cs" />
     <Compile Include="ModSettings.cs" />
     <Compile Include="MultiplayerMode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

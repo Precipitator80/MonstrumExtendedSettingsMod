@@ -103,7 +103,10 @@ namespace MonstrumExtendedSettingsMod
                     fiendMindAttackPlayerDelayTimers = new List<float>();
                     fiendMindAttackPlayerCurrentClip = new List<string>();
                     fiendMindAttackFiendsTargetingPlayer = new List<List<int>>();
-                    auras = new List<FiendAura>();
+                    if (auras == null)
+                    {
+                        auras = new List<FiendAura>();
+                    }
 
                     if (!ModSettings.enableMultiplayer)
                     {
@@ -3853,7 +3856,7 @@ namespace MonstrumExtendedSettingsMod
                                         int randomNumber = UnityEngine.Random.Range(0, upperIndexLimit + 1);
                                         if (randomNumber == upperIndexLimit)
                                         {
-                                            monsterGameObject = SparkyMode.CreateSparkyGameObject();
+                                            monsterGameObject = Sparky.CreateSparky(monsterSelection).gameObject;
                                         }
                                     }
                                 }
@@ -3863,7 +3866,7 @@ namespace MonstrumExtendedSettingsMod
                                     {
                                         if (ModSettings.useSparky)
                                         {
-                                            monsterGameObject = SparkyMode.CreateSparkyGameObject();
+                                            monsterGameObject = Sparky.CreateSparky(monsterSelection).gameObject;
                                         }
                                         else
                                         {
@@ -3894,7 +3897,7 @@ namespace MonstrumExtendedSettingsMod
                             }
                             else if (i < ModSettings.numberOfRandomMonsters + ModSettings.numberOfBrutes + ModSettings.numberOfHunters + ModSettings.numberOfFiends + ModSettings.numberOfSparkies)
                             {
-                                monsterList.Add(SparkyMode.CreateSparkyGameObject()); // Used to be monsterList.Add(levelGeneration.selectedMonster = SparkyMode.CreateSparkyGameObject()); ?
+                                monsterList.Add(Sparky.CreateSparky(monsterSelection).gameObject);
                             }
                             else if (i < ModSettings.numberOfRandomMonsters + ModSettings.numberOfBrutes + ModSettings.numberOfHunters + ModSettings.numberOfFiends + ModSettings.numberOfSparkies + ModSettings.numberOfSmokeMonsters)
                             {
@@ -4296,7 +4299,6 @@ namespace MonstrumExtendedSettingsMod
                         fiendLightDisruptor.enabled = true;
                         TimeScaleManager.Instance.StartCoroutine(SparkyMode.UpdateFiendDisruptorAfterAFrame(fiendLightDisruptor));
                     }
-                    SparkyMode.sparkyState[SparkyMode.sparkyListMonsterComponents.IndexOf(((MState)mChasingState).monster)] = "MChasingState";
                     //Debug.Log("Triggering EMP from chase");
                     ((MState)mChasingState).monster.GetComponent<SparkyAura>().EMP(true); // Trigger an EMP when Sparky enters a chase.
                 }
@@ -4341,7 +4343,6 @@ namespace MonstrumExtendedSettingsMod
                         FiendLightDisruptor fiendLightDisruptor = ((MState)mChasingState).monster.GetComponent<FiendLightDisruptor>();
                         TimeScaleManager.Instance.StartCoroutine(SparkyMode.DisableFiendAuraAfterAFrame(fiendAura, fiendLightDisruptor));
                     }
-                    SparkyMode.sparkyState[SparkyMode.sparkyListMonsterComponents.IndexOf(((MState)mChasingState).monster)] = "";
                 }
 
                 orig.Invoke(mChasingState);

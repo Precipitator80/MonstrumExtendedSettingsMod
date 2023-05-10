@@ -973,11 +973,6 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
 
-                    if (ModSettings.useSparky)
-                    {
-                        SparkyMode.SparkyActiveFeatures();
-                    }
-
                     if (ModSettings.useSmokeMonster)
                     {
                         SmokeMonster.SmokeMonsterActiveFeatures();

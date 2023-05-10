@@ -1274,7 +1274,6 @@ namespace MonstrumExtendedSettingsMod
                         playerMovementSpeedDynamicMultiplier.Add(playerMovementSpeedStartMultiplier);
                         staminaTimer.Add(0f);
                     }
-                    finishedCreatingSimpleSparky = false;
                     // This is already done when creating variables.
                     StringBuilder settingsLogger = new StringBuilder("Listing all settings:\t ");
                     foreach (MESMSetting mESMSetting in allSettings)
@@ -1516,10 +1515,6 @@ namespace MonstrumExtendedSettingsMod
                 if (enableMultiplayer)
                 {
                     MultiplayerMode.MultiplayerModeVariableInitialisation();
-                }
-                if (useSparky)
-                {
-                    SparkyMode.SparkyModeBeforeGenerationInitialisation();
                 }
             }
 
@@ -3196,6 +3191,10 @@ namespace MonstrumExtendedSettingsMod
                 }
                 if (ModSettings.startedWithMMM)
                 {
+                    if (ManyMonstersMode.auras == null)
+                    {
+                        ManyMonstersMode.auras = new List<FiendAura>();
+                    }
                     ManyMonstersMode.auras.Add(fiendAura);
                 }
 
@@ -3221,7 +3220,6 @@ namespace MonstrumExtendedSettingsMod
             public static bool customSparkyModel; // New Sparky with working model but gameplay bugs from animations.
             public static bool customSparkyMusic; // Custom Sparky music.
             public static bool useSmokeMonster; // Variable that enables the smoke monster code.
-            public static bool finishedCreatingSimpleSparky;
             public static bool disableRandomBrute;
             public static bool disableRandomHunter;
             public static bool disableRandomFiend;
