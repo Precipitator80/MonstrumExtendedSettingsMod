@@ -3846,7 +3846,7 @@ namespace MonstrumExtendedSettingsMod
                         {
                             if (i < ModSettings.numberOfRandomMonsters)
                             {
-                                GameObject monsterGameObject = monsterSelection.Select();
+                                GameObject monsterGameObject = Instantiate(monsterSelection.Select());
                                 if (ModSettings.useSparky)
                                 {
                                     // If the original weighted selection is used, which it only is when the player uses random monsters, then let Sparky be chosen too at a 1/4 chance.
@@ -3870,14 +3870,14 @@ namespace MonstrumExtendedSettingsMod
                                         }
                                         else
                                         {
-                                            monsterGameObject = monsterSelection.Select();
+                                            monsterGameObject = Instantiate(monsterSelection.Select());
                                         }
                                     }
                                     else
                                     {
                                         do
                                         {
-                                            monsterGameObject = monsterSelection.Select();
+                                            monsterGameObject = Instantiate(monsterSelection.Select());
                                         } while (ModSettings.bannedRandomMonsters.Contains(monsterGameObject.GetComponent<Monster>().monsterType));
                                     }
                                 }
