@@ -197,13 +197,21 @@ namespace MonstrumExtendedSettingsMod
 
                     /*
                     Debug.Log("Eye Light Position: " + lights[4].transform.position + " | EyeVision Position: " + monster.EyeVision.transform.position + " | LocalPosition: " + monster.EyeVision.transform.localPosition + " | EV GO P: " + monster.EyeVision.gameObject.transform.position + " | EV GO LP: " + monster.EyeVision.gameObject.transform.localPosition);
-                    Light spotlight1 = monster.EyeVision.gameObject.AddComponent<Light>();
-                    spotlight1.type = LightType.Spot;
-                    spotlight1.color = Color.blue;
-                    Light spotlight2 = monster.EyeVision.monsterCam.gameObject.AddComponent<Light>();
-                    spotlight2.type = LightType.Spot;
-                    spotlight2.color = Color.magenta;
                     */
+                    if (ModSettings.sparkyDebugLight)
+                    {
+                        Light spotlight = monster.EyeVision.gameObject.AddComponent<Light>();
+                        spotlight.type = LightType.Spot;
+                        spotlight.color = Color.magenta;
+                        if (ModSettings.sparkyDebugLightSmallerAngle)
+                        {
+                            spotlight.range *= 2f;
+                        }
+                        else
+                        {
+                            spotlight.spotAngle = monster.EyeVision.coneAngle;
+                        }
+                    }
 
                     // Set their starting colour.
                     foreach (Light light in lights)
