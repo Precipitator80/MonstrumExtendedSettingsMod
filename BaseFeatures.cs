@@ -5188,7 +5188,7 @@ namespace MonstrumExtendedSettingsMod
 
                     if (!ModSettings.disableCustomLoadingText)
                     {
-                        Debug.Log("Hints length before is: " + Hints.instance.hints.Length);
+                        //Debug.Log("Hints length before is: " + Hints.instance.hints.Length);
 
                         // Create an extended loading screen array of the default loading screens with the custom ones.
                         if (extendedLoadingScreenArray == null)
@@ -5242,15 +5242,15 @@ namespace MonstrumExtendedSettingsMod
                         // Choose a hint from the extended array.
                         Hints.instance.hints = extendedLoadingScreenArray;
                         randomHint = Hints.GetRandomHint();
-                        if (randomHint.texture.name.Contains("EasterEgg") && UnityEngine.Random.value > 0.001f)
+                        if (randomHint.texture.texture.name.Contains("EasterEgg") && UnityEngine.Random.value > 0.01f)
                         {
-                            for (int tries = 0; tries < 10 && randomHint.texture.name.Contains("EasterEgg"); tries++)
+                            for (int tries = 0; tries < 10 && randomHint.texture.texture.name.Contains("EasterEgg"); tries++)
                             {
                                 randomHint = Hints.GetRandomHint();
                             }
                         }
 
-                        Debug.Log("Hints length after is: " + Hints.instance.hints.Length);
+                        //Debug.Log("Hints length after is: " + Hints.instance.hints.Length);
                     }
 
                     LoadingBackground.loadingSprite = randomHint.texture;
