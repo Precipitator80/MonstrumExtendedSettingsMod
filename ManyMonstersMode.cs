@@ -1318,28 +1318,7 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
-            private static void SetFaceThis(ClimbCheck climbCheck, Monster monster)
-            {
-                MonsterClimbPoint monsterClimbPoint = null;
-                climbCheck.minDistance = 99f;
-                for (int i = 0; i < climbCheck.mClimbPoints.Count; i++)
-                {
-                    if (climbCheck.mClimbPoints[i].gameObject.activeSelf && climbCheck.mClimbPoints[i].canClimb)
-                    {
-                        climbCheck.mClimbPoints[i].distance = climbCheck.GetDistance(climbCheck.mClimbPoints[i].transform.position, monster.MoveControl.FarAheadNodePos());
-                        if (climbCheck.mClimbPoints[i].distance < climbCheck.minDistance)
-                        {
-                            climbCheck.minDistance = climbCheck.mClimbPoints[i].distance;
-                            monsterClimbPoint = climbCheck.mClimbPoints[i];
-                        }
-                    }
-                }
-                if (monsterClimbPoint != null)
-                {
-                    monster.Climber.closestClimb = monsterClimbPoint;
-                    monster.Climber.FaceThis = monsterClimbPoint.transform.position;
-                }
-            }
+            // Custom SetFaceThis moved to BaseFeatures (See MClimbingState).
 
             /*----------------------------------------------------------------------------------------------------*/
             // @ConeControl
@@ -4183,82 +4162,10 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookMChasingState()
             {
-                // StateChanges has been moved to BaseFeatures.
-                On.MChasingState.Chase += new On.MChasingState.hook_Chase(HookMChasingStateChase); // For Alternating Monsters Mode. Also supports Multiplayer Mode.
+                // StateChanges and Chase have been moved to BaseFeatures.
                 On.MChasingState.OnEnter += new On.MChasingState.hook_OnEnter(HookMChasingStateOnEnter);
                 On.MChasingState.OnUpdate += new On.MChasingState.hook_OnUpdate(HookMChasingStateOnUpdate);
                 On.MChasingState.OnExit += new On.MChasingState.hook_OnExit(HookMChasingStateOnExit);
-            }
-
-            private static void HookMChasingStateChase(On.MChasingState.orig_Chase orig, MChasingState mChasingState, bool instantCalc)
-            {
-                ((MState)mChasingState).monster.IsDistracted = false;
-                if (((MState)mChasingState).monster.IsPlayerLocationKnown || mChasingState.IsAmbushingPlayer || (((MState)mChasingState).monster.Hearing.SoundIsFromPlayer && ((MState)mChasingState).monster.GetAlertMeters.HighestAlert == "Sound" && ((MState)mChasingState).monster.Hearing.CurrentSoundSource != null && ((MState)mChasingState).monster.Hearing.CurrentSoundSource.Gameplay.canBeADistraction))
-                {
-                    mChasingState.chaseType = MChasingState.ChaseType.DirectChase;
-                    mChasingState.range = 0f;
-                    if (((MState)mChasingState).monster.IsPlayerHiding)
-                    {
-                        mChasingState.spot = mChasingState.playerRoomDetect.PlayerHidingSpot(mChasingState.playerRoomDetect.GetRoom.HidingSpots);
-                        if (mChasingState.spot != null)
-                        {
-                            mChasingState.ChaseGoal(mChasingState.spot.MonsterPoint);
-                        }
-                    }
-                    else
-                    {
-                        mChasingState.ChaseGoal(((MState)mChasingState).monster.player.transform.position + Vector3.up);
-                    }
-                }
-                else if (((MState)mChasingState).monster.HasPointOfInterest)
-                {
-                    mChasingState.chaseType = MChasingState.ChaseType.TowardsDistraction;
-                    ((MState)mChasingState).monster.IsDistracted = true;
-                    ((MState)mChasingState).monster.MoveControl.GetAniControl.HeardASound = true;
-                    mChasingState.range = 0f;
-                    mChasingState.ChaseGoal(((MState)mChasingState).monster.Hearing.PointOfInterest + Vector3.up * 0.1f);
-                }
-                else if (((MState)mChasingState).monster.PersistChase)
-                {
-                    mChasingState.chaseType = MChasingState.ChaseType.DirectChase;
-                    mChasingState.range = 0f;
-                    if (((MState)mChasingState).monster.IsPlayerHiding)
-                    {
-                        mChasingState.spot = mChasingState.playerRoomDetect.PlayerHidingSpot(mChasingState.playerRoomDetect.GetRoom.HidingSpots);
-                        if (mChasingState.spot != null)
-                        {
-                            mChasingState.ChaseGoal(mChasingState.spot.MonsterPoint);
-                        }
-                    }
-                    else
-                    {
-                        mChasingState.ChaseGoal(((MState)mChasingState).monster.player.transform.position + Vector3.up);
-                    }
-                }
-                else if (((MState)mChasingState).monster.ShouldSearchRoom && ((MState)mChasingState).monster.SightAlert > 99f)
-                {
-                    mChasingState.chaseType = MChasingState.ChaseType.ToRoom;
-                    mChasingState.range = 0f;
-                    mChasingState.ChaseGoal(((MState)mChasingState).monster.PlayerDetectRoom.GetRoom.RoomBounds.center);
-                }
-                else if (((MState)mChasingState).monster.GetAlertMeters.mSightAlert > 50f)
-                {
-                    if ((((MState)mChasingState).monster.IsAtEndOfPath || ((MState)mChasingState).monster.IsStuck) && (mChasingState.timeSincePathChange > 3f || mChasingState.chaseType != MChasingState.ChaseType.TowardsLastSeen))
-                    {
-                        mChasingState.chaseType = MChasingState.ChaseType.TowardsLastSeen;
-                        mChasingState.range = (100f - ((MState)mChasingState).monster.SightAlert) / (((MState)mChasingState).monster.GetMonEffectiveness.EffectTotal * ((MState)mChasingState).monster.GetIntelligence);
-                        mChasingState.range = Mathf.Clamp(mChasingState.range, 5f, 20f);
-                        mChasingState.ChaseGoal(((MState)mChasingState).monster.LastSeenPlayerPosition + Vector3.up);
-                    }
-                }
-                else if (!mChasingState.changingState)
-                {
-                    ((MState)mChasingState).SendEvent("PlayerLoseSight");
-                    if (ModSettings.alternatingMonstersMode && ModSettings.numberOfMonsters > ModSettings.numberOfAlternatingMonsters && ((MState)mChasingState).monster.MonsterType != Monster.MonsterTypeEnum.Hunter)
-                    {
-                        TimeScaleManager.Instance.StartCoroutine(SwitchMonster(((MState)mChasingState).monster));
-                    }
-                }
             }
 
             private static void HookMChasingStateOnEnter(On.MChasingState.orig_OnEnter orig, MChasingState mChasingState)
@@ -4477,7 +4384,10 @@ namespace MonstrumExtendedSettingsMod
             private static void HookMClimbingState()
             {
                 new Hook(typeof(MClimbingState).GetNestedType("<LerpTo>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookMClimbingStateLerpToIntermediateHook"), null);
-                On.MClimbingState.OnEnter += new On.MClimbingState.hook_OnEnter(HookMClimbingStateOnEnter);
+
+                // Moved to BaseFeatures to fix a non-reversal bug affecting music in Persistent Monster mode.
+                //On.MClimbingState.OnEnter += new On.MClimbingState.hook_OnEnter(HookMClimbingStateOnEnter);
+                //On.MClimbingState.FinishClimb += new On.MClimbingState.hook_FinishClimb(HookMClimbingStateFinishClimb);
             }
 
             public static bool HookMClimbingStateLerpToIntermediateHook(IEnumerator self)
@@ -4511,33 +4421,6 @@ namespace MonstrumExtendedSettingsMod
                 ((MState)mClimbingState).transform.position = mClimbingState.LerpPosition;
                 ((MState)mClimbingState).monster.MoveControl.GetAniControl.climbUp = true;
                 yield break;
-            }
-
-            private static void HookMClimbingStateOnEnter(On.MClimbingState.orig_OnEnter orig, MClimbingState mClimbingState)
-            {
-                ((Action)Activator.CreateInstance(typeof(Action), mClimbingState, typeof(MState).GetMethod("OnEnter").MethodHandle.GetFunctionPointer()))();
-                mClimbingState.targeting = ((MState)mClimbingState).GetComponent<TargetMatching>();
-                mClimbingState.typeofState = FSMState.StateTypes.IgnoreThis;
-                ((MState)mClimbingState).monster.MoveControl.MaxSpeed = 0f;
-                mClimbingState.t = 0f;
-                mClimbingState.facethis = Vector3.zero;
-                ((MState)mClimbingState).monster.MoveControl.LockRotation = true;
-                ((MState)mClimbingState).monster.MoveControl.isClimbing = true;
-                SetFaceThis(mClimbingState.currentClimb, mClimbingState.monster);
-                ((MState)mClimbingState).monster.GetMainCollider.enabled = false;
-                ((MState)mClimbingState).monster.PreviousWasClimb = true;
-                if (mClimbingState.facethis != Vector3.zero)
-                {
-                    ((MState)mClimbingState).StartCoroutine(mClimbingState.LerpTo());
-                }
-                else
-                {
-                    ((MState)mClimbingState).monster.MoveControl.LockRotation = false;
-                    ((MState)mClimbingState).monster.MoveControl.isClimbing = false;
-                    ((MState)mClimbingState).monster.GetMainCollider.enabled = true;
-                    ((MState)mClimbingState).monster.MoveControl.enabled = true;
-                    ((MState)mClimbingState).SendEvent("Idle");
-                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/

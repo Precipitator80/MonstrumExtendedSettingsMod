@@ -276,6 +276,13 @@ namespace MonstrumExtendedSettingsMod
 
                 // Fire Steam Damage Fix and Moved Multiplayer Component
                 On.FireDamage.Start += new On.FireDamage.hook_Start(HookFireDamageStart);
+
+                // Alternating Monsters, Multiplayer and Persistent Monster
+                On.MChasingState.Chase += new On.MChasingState.hook_Chase(HookMChasingStateChase);
+
+                // Many Monsters Mode and Persistent Monster
+                On.MClimbingState.OnEnter += new On.MClimbingState.hook_OnEnter(HookMClimbingStateOnEnter);
+                On.MClimbingState.FinishClimb += new On.MClimbingState.hook_FinishClimb(HookMClimbingStateFinishClimb);
             }
 
             /*
@@ -5392,6 +5399,121 @@ namespace MonstrumExtendedSettingsMod
                     }
                     else
                     {
+                        ((MState)mChasingState).monster.MoveControl.MaxSpeed = 100f;
+                        if (((MState)mChasingState).monster.SubEventBeenStarted())
+                        {
+                            mChasingState.changingState = true;
+                            ((MState)mChasingState).SendEvent("EventStarted");
+                        }
+                        else if (((MState)mChasingState).monster.IsMonsterRetreating)
+                        {
+                            mChasingState.changingState = true;
+                            ((MState)mChasingState).SendEvent("Retreat");
+                        }
+                        else if (((MState)mChasingState).monster.IsMonsterDestroying)
+                        {
+                            mChasingState.changingState = true;
+                            ((MState)mChasingState).SendEvent("Destroy");
+                        }
+                        else if (((MState)mChasingState).monster.MoveControl.shouldClimb)
+                        {
+                            mChasingState.changingState = true;
+                            ((MState)mChasingState).SendEvent("Climb");
+                        }
+                        else if (((MState)mChasingState).monster.IsPlayerLocationKnown || ((MState)mChasingState).monster.WasFoundBySound())
+                        {
+                            ((MState)mChasingState).monster.GetAlertMeters.mSightAlert = 100f;
+                            ((MState)mChasingState).monster.ShouldSearchRoom = false;
+                            ((MState)mChasingState).Timeout.ResetTimer();
+                            if (((MState)mChasingState).monster.IsPlayerLocationKnown)
+                            {
+                                ((MState)mChasingState).monster.Hearing.ClearLastHeardPosition();
+                                ((MState)mChasingState).monster.Hearing.MarkAllSoundsAsExplored();
+                            }
+                            if (!ModSettings.invincibilityMode[crewPlayerIndex] && ((MState)mChasingState).monster.IsPlayerInAttackRange())
+                            {
+                                if ((((MState)mChasingState).monster.FoundPlayerBySound || ((MState)mChasingState).monster.IsPlayerLocationKnown || ((MState)mChasingState).monster.CanSeePlayer || ((MState)mChasingState).monster.CanSeeTorch) && (((MState)mChasingState).monster.IsPlayerHiding || ManyMonstersMode.PlayerToMonsterCast(((MState)mChasingState).monster)))
+                                {
+                                    NewPlayerClass monsterNewPlayerClass = ((MState)mChasingState).monster.player.GetComponent<NewPlayerClass>();
+                                    if (!ModSettings.enableMultiplayer || (ModSettings.enableMultiplayer && MultiplayerMode.AllOtherPlayersDown(monsterNewPlayerClass)))
+                                    {
+                                        if (!ModSettings.PlayerHasLivesLeft())
+                                        {
+                                            if (((MState)mChasingState).monster.IsPlayerHiding)
+                                            {
+                                                mChasingState.spot = mChasingState.playerRoomDetect.PlayerHidingSpot(mChasingState.playerRoomDetect.GetRoom.HidingSpots);
+                                                ChooseAttack.WhatAttackHiding(mChasingState.spot);
+
+                                                if (ModSettings.enableCrewVSMonsterMode)
+                                                {
+                                                    CrewVsMonsterMode.playersGoneIntoHiding[MultiplayerMode.PlayerNumber(mChasingState.monster.PlayerDetectRoom.player.GetInstanceID())] = false;
+                                                    foreach (Renderer renderer in mChasingState.monster.PlayerDetectRoom.player.GetComponentsInChildren<Renderer>())
+                                                    {
+                                                        renderer.enabled = true;
+                                                    }
+                                                    foreach (Light light in mChasingState.monster.PlayerDetectRoom.player.GetComponentsInChildren<Light>())
+                                                    {
+                                                        light.enabled = true;
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                ManyMonstersMode.WhatAttackOpen(((MState)mChasingState).monster);
+                                            }
+                                            mChasingState.changingState = true;
+                                            ((MState)mChasingState).SendEvent("AttackPlayer");
+                                        }
+                                        else
+                                        {
+                                            ModSettings.TakeLife(monsterNewPlayerClass.GetComponentInChildren<PlayerHealth>());
+                                        }
+                                    }
+                                    else
+                                    {
+                                        MultiplayerMode.DownPlayer(monsterNewPlayerClass);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                mChasingState.lerpingToHidingSpot = false;
+                                ((MState)mChasingState).StopCoroutine("LerpToHidingSpot");
+                            }
+                        }
+                        else if (((MState)mChasingState).monster.InSearchableArea() && !((MState)mChasingState).monster.IsPlayerLocationKnown && (!ModSettings.enableCrewVSMonsterMode || CrewVsMonsterMode.letAIControlMonster))
+                        {
+                            mChasingState.changingState = true;
+                            ((MState)mChasingState).SendEvent("Search Room");
+                        }
+                    }
+                }
+                else if (!ModSettings.seerMonster) // If the monster is not a seer monster, stop it from seeing the player when they have spawn protection
+                {
+                    if (ModSettings.logDebugText)
+                    {
+                        Debug.Log("Making monster lose sight");
+                    }
+                    ((MState)mChasingState).SendEvent("PlayerLoseSight");
+                }
+            }
+
+            private static void HookMChasingStateStateChangesOld(On.MChasingState.orig_StateChanges orig, MChasingState mChasingState)
+            {
+                int crewPlayerIndex = 0;
+                if (ModSettings.enableMultiplayer)
+                {
+                    crewPlayerIndex = MultiplayerMode.crewPlayers.IndexOf(mChasingState.monster.PlayerDetectRoom.player);
+                }
+                if (!ModSettings.spawnProtection[crewPlayerIndex])
+                {
+                    mChasingState.changingState = false;
+                    if (((MState)mChasingState).monster.MoveControl.GetAniControl.DoARoar || ((MState)mChasingState).monster.MoveControl.GetAniControl.IsHaulted)
+                    {
+                        ((MState)mChasingState).monster.MoveControl.MaxSpeed = 0f;
+                    }
+                    else
+                    {
                         /*
                         if (ModSettings.persistentMonster && ((MState)mChasingState).monster.EyeVision.CheckIfPlayer())
                         {
@@ -5582,6 +5704,165 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            private static void HookMChasingStateChase(On.MChasingState.orig_Chase orig, MChasingState mChasingState, bool instantCalc)
+            {
+                if (ModSettings.persistentMonster)
+                {
+                    ((MState)mChasingState).monster.GetAlertMeters.mSightAlert = 100f;
+                    ((MState)mChasingState).Timeout.ResetTimer();
+                    ((MState)mChasingState).monster.TimeOutVision.ResetTimer();
+                }
+                ((MState)mChasingState).monster.IsDistracted = false;
+                if (((MState)mChasingState).monster.IsPlayerLocationKnown || mChasingState.IsAmbushingPlayer || (((MState)mChasingState).monster.Hearing.SoundIsFromPlayer && ((MState)mChasingState).monster.GetAlertMeters.HighestAlert == "Sound" && ((MState)mChasingState).monster.Hearing.CurrentSoundSource != null && ((MState)mChasingState).monster.Hearing.CurrentSoundSource.Gameplay.canBeADistraction))
+                {
+                    mChasingState.chaseType = MChasingState.ChaseType.DirectChase;
+                    mChasingState.range = 0f;
+                    if (((MState)mChasingState).monster.IsPlayerHiding)
+                    {
+                        mChasingState.spot = mChasingState.playerRoomDetect.PlayerHidingSpot(mChasingState.playerRoomDetect.GetRoom.HidingSpots);
+                        if (mChasingState.spot != null)
+                        {
+                            mChasingState.ChaseGoal(mChasingState.spot.MonsterPoint);
+                        }
+                    }
+                    else
+                    {
+                        mChasingState.ChaseGoal(((MState)mChasingState).monster.player.transform.position + Vector3.up);
+                    }
+                }
+                else if (((MState)mChasingState).monster.HasPointOfInterest)
+                {
+                    mChasingState.chaseType = MChasingState.ChaseType.TowardsDistraction;
+                    ((MState)mChasingState).monster.IsDistracted = true;
+                    ((MState)mChasingState).monster.MoveControl.GetAniControl.HeardASound = true;
+                    mChasingState.range = 0f;
+                    mChasingState.ChaseGoal(((MState)mChasingState).monster.Hearing.PointOfInterest + Vector3.up * 0.1f);
+                }
+                else if (((MState)mChasingState).monster.PersistChase)
+                {
+                    mChasingState.chaseType = MChasingState.ChaseType.DirectChase;
+                    mChasingState.range = 0f;
+                    if (((MState)mChasingState).monster.IsPlayerHiding)
+                    {
+                        mChasingState.spot = mChasingState.playerRoomDetect.PlayerHidingSpot(mChasingState.playerRoomDetect.GetRoom.HidingSpots);
+                        if (mChasingState.spot != null)
+                        {
+                            mChasingState.ChaseGoal(mChasingState.spot.MonsterPoint);
+                        }
+                    }
+                    else
+                    {
+                        mChasingState.ChaseGoal(((MState)mChasingState).monster.player.transform.position + Vector3.up);
+                    }
+                }
+                else if (((MState)mChasingState).monster.ShouldSearchRoom && ((MState)mChasingState).monster.SightAlert > 99f)
+                {
+                    mChasingState.chaseType = MChasingState.ChaseType.ToRoom;
+                    mChasingState.range = 0f;
+                    mChasingState.ChaseGoal(((MState)mChasingState).monster.PlayerDetectRoom.GetRoom.RoomBounds.center);
+                }
+                else if (((MState)mChasingState).monster.GetAlertMeters.mSightAlert > 50f)
+                {
+                    if ((((MState)mChasingState).monster.IsAtEndOfPath || ((MState)mChasingState).monster.IsStuck) && (mChasingState.timeSincePathChange > 3f || mChasingState.chaseType != MChasingState.ChaseType.TowardsLastSeen))
+                    {
+                        mChasingState.chaseType = MChasingState.ChaseType.TowardsLastSeen;
+                        mChasingState.range = (100f - ((MState)mChasingState).monster.SightAlert) / (((MState)mChasingState).monster.GetMonEffectiveness.EffectTotal * ((MState)mChasingState).monster.GetIntelligence);
+                        mChasingState.range = Mathf.Clamp(mChasingState.range, 5f, 20f);
+                        mChasingState.ChaseGoal(((MState)mChasingState).monster.LastSeenPlayerPosition + Vector3.up);
+                    }
+                }
+                else if (!mChasingState.changingState && !ModSettings.persistentMonster)
+                {
+                    ((MState)mChasingState).SendEvent("PlayerLoseSight");
+                    if (ModSettings.alternatingMonstersMode && ModSettings.numberOfMonsters > ModSettings.numberOfAlternatingMonsters && ((MState)mChasingState).monster.MonsterType != Monster.MonsterTypeEnum.Hunter)
+                    {
+                        TimeScaleManager.Instance.StartCoroutine(ManyMonstersMode.SwitchMonster(((MState)mChasingState).monster));
+                    }
+                }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @MClimbingState
+
+            private static void HookMClimbingStateOnEnter(On.MClimbingState.orig_OnEnter orig, MClimbingState mClimbingState)
+            {
+                ((Action)Activator.CreateInstance(typeof(Action), mClimbingState, typeof(MState).GetMethod("OnEnter").MethodHandle.GetFunctionPointer()))();
+                mClimbingState.targeting = ((MState)mClimbingState).GetComponent<TargetMatching>();
+                mClimbingState.typeofState = FSMState.StateTypes.IgnoreThis;
+                ((MState)mClimbingState).monster.MoveControl.MaxSpeed = 0f;
+                mClimbingState.t = 0f;
+                mClimbingState.facethis = Vector3.zero;
+                ((MState)mClimbingState).monster.MoveControl.LockRotation = true;
+                ((MState)mClimbingState).monster.MoveControl.isClimbing = true;
+                SetFaceThis(mClimbingState.currentClimb, mClimbingState.monster);
+                ((MState)mClimbingState).monster.GetMainCollider.enabled = false;
+                ((MState)mClimbingState).monster.PreviousWasClimb = true;
+                if (mClimbingState.facethis != Vector3.zero)
+                {
+                    ((MState)mClimbingState).StartCoroutine(mClimbingState.LerpTo());
+                }
+                else
+                {
+                    // Reset values
+                    ((MState)mClimbingState).monster.MoveControl.LockRotation = false;
+                    ((MState)mClimbingState).monster.MoveControl.isClimbing = false;
+                    ((MState)mClimbingState).monster.GetMainCollider.enabled = true;
+                    ((MState)mClimbingState).monster.MoveControl.enabled = true;
+
+                    // Persistent Monster reverse check
+                    ReverseCheck(mClimbingState);
+                }
+            }
+
+            private static void HookMClimbingStateFinishClimb(On.MClimbingState.orig_FinishClimb orig, MClimbingState mClimbingState)
+            {
+                ((MState)mClimbingState).StartCoroutine(mClimbingState.LerpToClimbPos());
+                ((MState)mClimbingState).monster.MoveControl.isClimbing = false;
+                ((MState)mClimbingState).monster.MoveControl.GetAniControl.climbUp = false;
+                ((MState)mClimbingState).monster.MoveControl.shouldClimb = false;
+                ((MState)mClimbingState).monster.MoveControl.LockRotation = false;
+                ((MState)mClimbingState).monster.MoveControl.GetAniControl.inClimbingZone = false;
+                mClimbingState.t = 0f;
+
+                // Persistent Monster reverse check
+                ReverseCheck(mClimbingState);
+            }
+
+            private static void ReverseCheck(MState mState)
+            {
+                if (mState.Fsm.Previous != null)
+                {
+                    mState.RevertState();
+                }
+                else
+                {
+                    mState.SendEvent("Idle");
+                }
+            }
+
+            private static void SetFaceThis(ClimbCheck climbCheck, Monster monster)
+            {
+                MonsterClimbPoint monsterClimbPoint = null;
+                climbCheck.minDistance = 99f;
+                for (int i = 0; i < climbCheck.mClimbPoints.Count; i++)
+                {
+                    if (climbCheck.mClimbPoints[i].gameObject.activeSelf && climbCheck.mClimbPoints[i].canClimb)
+                    {
+                        climbCheck.mClimbPoints[i].distance = climbCheck.GetDistance(climbCheck.mClimbPoints[i].transform.position, monster.MoveControl.FarAheadNodePos());
+                        if (climbCheck.mClimbPoints[i].distance < climbCheck.minDistance)
+                        {
+                            climbCheck.minDistance = climbCheck.mClimbPoints[i].distance;
+                            monsterClimbPoint = climbCheck.mClimbPoints[i];
+                        }
+                    }
+                }
+                if (monsterClimbPoint != null)
+                {
+                    monster.Climber.closestClimb = monsterClimbPoint;
+                    monster.Climber.FaceThis = monsterClimbPoint.transform.position;
+                }
+            }
+
             /*----------------------------------------------------------------------------------------------------*/
             // @MDestroyState
 
@@ -5700,7 +5981,6 @@ namespace MonstrumExtendedSettingsMod
             private static void HookMonster()
             {
                 On.Monster.Awake += new On.Monster.hook_Awake(HookMonsterAwake);
-                new Hook(typeof(Monster).GetProperty("IsPlayerLocationKnown", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetGetMethod(), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookMonsterget_IsPlayerLocationKnown"), null);
             }
 
             public static void DisableMonsterParticles(GameObject monsterGameObject)
@@ -5767,33 +6047,6 @@ namespace MonstrumExtendedSettingsMod
                         Debug.Log("Could not list monster lights");
                     }
                     */
-                }
-            }
-
-            public static bool HookMonsterget_IsPlayerLocationKnown(Monster monster)
-            {
-                if (ModSettings.persistentMonster)
-                {
-                    return true;
-                }
-                else
-                {
-                    if (!monster.BeenBlinded)
-                    {
-                        if (monster.CanSeePlayerNotHiding)
-                        {
-                            monster.CheckedLastSeen = false;
-                            monster.TimeOutVision.ResetTimer();
-                            return true;
-                        }
-                        if (monster.sawPlayerEnterHiding)
-                        {
-                            monster.CheckedLastSeen = false;
-                            monster.TimeOutVision.ResetTimer();
-                            return true;
-                        }
-                    }
-                    return false;
                 }
             }
 
