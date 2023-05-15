@@ -89,7 +89,7 @@ namespace MonstrumExtendedSettingsMod
 
                 // Debug Mode, Invincibility Mode & Extra Lives
                 On.EscapeRoute.OnInteract += new On.EscapeRoute.hook_OnInteract(HookEscapeRoute);
-                On.FiendMindAttack.Update += new On.FiendMindAttack.hook_Update(HookFiendMindAttack);
+                On.FiendMindAttack.Update += new On.FiendMindAttack.hook_Update(HookFiendMindAttackUpdate);
                 if (!ModSettings.startedWithMMM)
                 {
                     On.GlobalMusic.CheckMusicState += new On.GlobalMusic.hook_CheckMusicState(HookGlobalMusic);
@@ -283,6 +283,13 @@ namespace MonstrumExtendedSettingsMod
                 // Many Monsters Mode and Persistent Monster
                 On.MClimbingState.OnEnter += new On.MClimbingState.hook_OnEnter(HookMClimbingStateOnEnter);
                 On.MClimbingState.FinishClimb += new On.MClimbingState.hook_FinishClimb(HookMClimbingStateFinishClimb);
+
+                // Fiend Mind Attack Customisation
+                if (!ModSettings.startedWithMMM)
+                {
+                    On.FiendMindAttack.AttackCheck += new On.FiendMindAttack.hook_AttackCheck(HookFiendMindAttackAttackCheck);
+                    On.FiendMindAttack.ChangeTimers += new On.FiendMindAttack.hook_ChangeTimers(HookFiendMindAttackChangeTimers);
+                }
             }
 
             /*
@@ -1800,7 +1807,7 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FiendMindAttack
 
-            private static void HookFiendMindAttack(On.FiendMindAttack.orig_Update orig, FiendMindAttack fiendMindAttack)
+            private static void HookFiendMindAttackUpdate(On.FiendMindAttack.orig_Update orig, FiendMindAttack fiendMindAttack)
             {
                 int crewPlayerIndex = 0;
                 if (ModSettings.enableMultiplayer)
@@ -1815,6 +1822,141 @@ namespace MonstrumExtendedSettingsMod
                 {
                     orig.Invoke(fiendMindAttack);
                 }
+            }
+
+            private static void HookFiendMindAttackAttackCheck(On.FiendMindAttack.orig_AttackCheck orig, FiendMindAttack fiendMindAttack)
+            {
+                bool flag = false;
+                if (Calculations.PlayerToMonsterDistance() < fiendMindAttack.attackRange && fiendMindAttack.monster.CanSeePlayer && fiendMindAttack.attackTimer == fiendMindAttack.maxTime && fiendMindAttack.delayTimer == fiendMindAttack.maxDelay)
+                {
+                    if (fiendMindAttack.fiendAnims != null)
+                    {
+                        flag = true;
+                    }
+                    else
+                    {
+                        fiendMindAttack.fiendAnims = fiendMindAttack.monster.GetComponentInChildren<FiendAnimations>();
+                    }
+                }
+                if (flag)
+                {
+                    fiendMindAttack.fiendAnims.DoMindAttack = true;
+                    fiendMindAttack.monster.MoveControl.GetAniControl.DesiredUpperBodyWeight = 1f;
+                    if (!OculusManager.isOculusEnabled)
+                    {
+                        fiendMindAttack.mindAttackBleed.impact = 2f;
+                    }
+                    else
+                    {
+                        fiendMindAttack.oculusMindAttackBleed.impact = 2f;
+                    }
+                    fiendMindAttack.PlayAttackSound();
+                    fiendMindAttack.PlayerEffects();
+                    fiendMindAttack.delayTimer = 0f;
+                    fiendMindAttack.playerHealth.DoDamage(35f * ModSettings.fiendMindAttackDamageMultiplier, false, PlayerHealth.DamageTypes.MindAttack, false);
+                }
+            }
+
+            private static void HookFiendMindAttackChangeTimers(On.FiendMindAttack.orig_ChangeTimers orig, FiendMindAttack fiendMindAttack)
+            {
+                bool flag = false;
+                if (fiendMindAttack.stateMachine.Current.ToString().Contains("MChasingState") && fiendMindAttack.monster.CanSeePlayer)
+                {
+                    flag = true;
+                }
+                if (fiendMindAttack.delayTimer == fiendMindAttack.maxDelay)
+                {
+                    if (flag && fiendMindAttack.attackTimer < fiendMindAttack.maxTime)
+                    {
+                        fiendMindAttack.attackTimer += Time.deltaTime * ModSettings.fiendMindAttackAttackTimerChargeRate;
+                        if (fiendMindAttack.PlaySound(fiendMindAttack.chargeSound, fiendMindAttack.chargeSource))
+                        {
+                            fiendMindAttack.chargeSource.time = fiendMindAttack.attackTimer;
+                            if (fiendMindAttack.chargeVolume == null)
+                            {
+                                fiendMindAttack.chargeVolume = fiendMindAttack.chargeSource.GetComponent<VolumeController>();
+                            }
+                            fiendMindAttack.chargeVolume.fadeValue = 0f;
+                        }
+                        fiendMindAttack.fadeIncDec = 1f;
+                    }
+                    else
+                    {
+                        fiendMindAttack.attackTimer -= Time.deltaTime * ModSettings.fiendMindAttackAttackTimerDecayRate;
+                        if (fiendMindAttack.currentSound != string.Empty)
+                        {
+                            float num = 0f;
+                            if (fiendMindAttack.coolSource != null)
+                            {
+                                num = fiendMindAttack.chargeSource.clip.length - fiendMindAttack.chargeSource.time;
+                            }
+                            if (fiendMindAttack.PlaySound(fiendMindAttack.coolSound, fiendMindAttack.coolSource))
+                            {
+                                fiendMindAttack.coolSource.time = num;
+                                if (fiendMindAttack.coolVolume == null)
+                                {
+                                    fiendMindAttack.coolVolume = fiendMindAttack.coolSource.GetComponent<VolumeController>();
+                                }
+                                if (fiendMindAttack.coolVolume != null)
+                                {
+                                    fiendMindAttack.coolVolume.fadeValue = 0f;
+                                }
+                            }
+                            fiendMindAttack.fadeIncDec = -1f;
+                        }
+                    }
+                }
+                else
+                {
+                    fiendMindAttack.attackTimer -= Time.deltaTime * 3f * ModSettings.fiendMindAttackAttackTimerDecayRate;
+                }
+                if (fiendMindAttack.chargeVolume != null)
+                {
+                    fiendMindAttack.chargeVolume.fadeValue = Mathf.Clamp01(fiendMindAttack.chargeVolume.fadeValue + fiendMindAttack.fadeIncDec * Time.deltaTime * 3f);
+                }
+                if (fiendMindAttack.coolVolume != null)
+                {
+                    fiendMindAttack.coolVolume.fadeValue = Mathf.Clamp01(fiendMindAttack.coolVolume.fadeValue - fiendMindAttack.fadeIncDec * Time.deltaTime * 3f);
+                }
+                fiendMindAttack.attackTimer = Mathf.Clamp(fiendMindAttack.attackTimer, 0f, fiendMindAttack.maxTime);
+                if (fiendMindAttack.attackTimer == 0f)
+                {
+                    if (!OculusManager.isOculusEnabled)
+                    {
+                        fiendMindAttack.mindAttackBleed.enabled = false;
+                    }
+                    else
+                    {
+                        fiendMindAttack.oculusMindAttackBleed.enabled = false;
+                    }
+                }
+                else if (!OculusManager.isOculusEnabled)
+                {
+                    fiendMindAttack.mindAttackBleed.enabled = true;
+                    fiendMindAttack.mindAttackBleed.impact -= Time.deltaTime;
+                    fiendMindAttack.mindAttackBleed.impact = Mathf.Clamp01(fiendMindAttack.mindAttackBleed.impact);
+                    fiendMindAttack.mindAttackBleed.strength = fiendMindAttack.attackTimer / fiendMindAttack.maxTime;
+                }
+                else
+                {
+                    fiendMindAttack.oculusMindAttackBleed.enabled = true;
+                    fiendMindAttack.oculusMindAttackBleed.impact -= Time.deltaTime;
+                    fiendMindAttack.oculusMindAttackBleed.impact = Mathf.Clamp01(fiendMindAttack.oculusMindAttackBleed.impact);
+                    fiendMindAttack.oculusMindAttackBleed.strength = fiendMindAttack.attackTimer / fiendMindAttack.maxTime;
+                }
+                if (!OculusManager.isOculusEnabled)
+                {
+                    if (fiendMindAttack.mindAttackBleed.strength > 0.1f)
+                    {
+                        fiendMindAttack.playerHealth.DoDamage(0f, false, PlayerHealth.DamageTypes.MindAttack, false);
+                    }
+                }
+                else if (fiendMindAttack.oculusMindAttackBleed.strength > 0.1f)
+                {
+                    fiendMindAttack.playerHealth.DoDamage(0f, false, PlayerHealth.DamageTypes.MindAttack, false);
+                }
+                fiendMindAttack.delayTimer += Time.deltaTime * ModSettings.fiendMindAttackDelayTimerRate;
+                fiendMindAttack.delayTimer = Mathf.Clamp(fiendMindAttack.delayTimer, 0f, fiendMindAttack.maxDelay);
             }
 
             /*----------------------------------------------------------------------------------------------------*/

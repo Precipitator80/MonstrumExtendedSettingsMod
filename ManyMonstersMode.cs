@@ -2534,7 +2534,7 @@ namespace MonstrumExtendedSettingsMod
                                         {
                                             Debug.Log("Fiend number " + monsterNumber + " passed the test after the first proper block");
                                         }
-                                        fiendMindAttack.attackTimer += Time.deltaTime;
+                                        fiendMindAttack.attackTimer += Time.deltaTime * ModSettings.fiendMindAttackAttackTimerChargeRate;
                                         try
                                         {
                                             if (fiendMindAttack.PlaySound(fiendMindAttack.chargeSound, fiendMindAttack.chargeSource))
@@ -2595,7 +2595,7 @@ namespace MonstrumExtendedSettingsMod
                                         {
                                             if (IsFiendAllowedToReduceTimer(playerNumber, monsterNumber))
                                             {
-                                                fiendMindAttack.attackTimer -= Time.deltaTime;
+                                                fiendMindAttack.attackTimer -= Time.deltaTime * ModSettings.fiendMindAttackAttackTimerDecayRate;
                                             }
                                         }
                                         catch
@@ -2702,7 +2702,7 @@ namespace MonstrumExtendedSettingsMod
                             }
                             else if (IsFiendMinimumInGroup(playerNumber, monsterNumber))
                             {
-                                fiendMindAttack.attackTimer -= Time.deltaTime * 3f;
+                                fiendMindAttack.attackTimer -= Time.deltaTime * 3f * ModSettings.fiendMindAttackAttackTimerDecayRate;
                             }
                         }
                         catch
@@ -2806,7 +2806,7 @@ namespace MonstrumExtendedSettingsMod
                             }
                             try
                             {
-                                fiendMindAttack.delayTimer += Time.deltaTime;
+                                fiendMindAttack.delayTimer += Time.deltaTime * ModSettings.fiendMindAttackDelayTimerRate;
                                 fiendMindAttack.delayTimer = Mathf.Clamp(fiendMindAttack.delayTimer, 0f, fiendMindAttack.maxDelay);
                             }
                             catch
@@ -2993,7 +2993,7 @@ namespace MonstrumExtendedSettingsMod
                                 fiendsMonsterComponents[i].MoveControl.GetAniControl.DesiredUpperBodyWeight = 1f;
                             }
                         }
-                        fiendMindAttack.playerHealth.DoDamage(35f, false, PlayerHealth.DamageTypes.MindAttack, false);
+                        fiendMindAttack.playerHealth.DoDamage(35f * ModSettings.fiendMindAttackDamageMultiplier, false, PlayerHealth.DamageTypes.MindAttack, false);
                         if (!OculusManager.isOculusEnabled)
                         {
                             fiendMindAttack.mindAttackBleed.impact = 2f;

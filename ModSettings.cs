@@ -594,6 +594,10 @@ namespace MonstrumExtendedSettingsMod
                     fiendFlickerMin = new MESMSetting<float>("Fiend Flicker Minimum Range", "Changes the radius of Fiend's aura in which lights are affected the most. The game uses 3 by default", 0).userValue;
                     fiendFlickerMed = new MESMSetting<float>("Fiend Flicker Medium Range", "Changes the radius of Fiend's aura in which lights are affected in-between the minimum and maximum effect. The game uses 4.5 by default", 0, false, true).userValue;
                     fiendFlickerMax = new MESMSetting<float>("Fiend Flicker Maximum Range", "Changes the radius of Fiend's aura in which lights are affected the least. The game uses 6 by default", 0, false, true).userValue;
+                    fiendMindAttackDamageMultiplier = new MESMSetting<float>("Fiend Mind Attack Damage Multiplier", "Changes how much damage Fiend's mind attack does", 1).userValue;
+                    fiendMindAttackAttackTimerChargeRate = new MESMSetting<float>("Fiend Mind Attack Attack Timer Charge Rate", "Changes how quickly Fiend charges a mind attack", 1, false, true).userValue;
+                    fiendMindAttackAttackTimerDecayRate = new MESMSetting<float>("Fiend Mind Attack Attack Timer Decay Rate", "Changes how quickly Fiend's mind attack timer decays when not seeing the player", 1, false, true).userValue;
+                    fiendMindAttackDelayTimerRate = new MESMSetting<float>("Fiend Mind Attack Delay Timer Rate", "Changes how quickly Fiend can charge another mind attack after successfully carrying out one", 1, false, true).userValue;
                     fiendDoorTeleportation = new MESMSetting<bool>("Fiend Door Teleportation", "Lets the Fiend teleport through doors", false).userValue;
                     applyDoorTeleportationToAllMonsters = new MESMSetting<bool>("Apply Door Teleportation To All Monsters", "Lets all monsters teleport through doors, not just the Fiend", false, false, true).userValue;
                     //letAllMonstersLockDoors = new MESMSetting<bool>("Let All Monsters Lock Doors", "Lets all monsters lock doors when chasing the player like the Fiend does", false).userValue; // Didn't work because door smoke requires a Fiend to be loaded.
@@ -3250,6 +3254,10 @@ namespace MonstrumExtendedSettingsMod
             public static float fiendFlickerMin;
             public static float fiendFlickerMed;
             public static float fiendFlickerMax;
+            public static float fiendMindAttackDamageMultiplier;
+            public static float fiendMindAttackAttackTimerChargeRate;
+            public static float fiendMindAttackAttackTimerDecayRate;
+            public static float fiendMindAttackDelayTimerRate;
             public static bool fiendDoorTeleportation;
             public static bool applyDoorTeleportationToAllMonsters;
             // public static bool letAllMonstersLockDoors;
