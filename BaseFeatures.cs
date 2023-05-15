@@ -1256,7 +1256,11 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookChooseAttackWhatDeathByPlayer(On.ChooseAttack.orig_WhatDeathByPlayer orig, ChooseAttack.PlayerDeath PD)
             {
-                deathRegion = References.Monster.GetComponent<Monster>().PlayerDetectRoom.GetRoom.PrimaryRegion;
+                Room playerRoom = References.Monster.GetComponent<Monster>().PlayerDetectRoom.GetRoom;
+                if (playerRoom != null)
+                {
+                    deathRegion = playerRoom.PrimaryRegion;
+                }
                 deathType = PD;
                 orig.Invoke(PD);
             }
@@ -1402,14 +1406,14 @@ namespace MonstrumExtendedSettingsMod
                 monsterFrames = new Dictionary<string, List<Sprite>>();
                 deathTypeFrames = new Dictionary<ChooseAttack.PlayerDeath, List<Sprite>>();
 
-                UnityEngine.Object[] loadingScreensUnpacked = Utilities.LoadAssetBundle("deathscreens");
+                UnityEngine.Object[] deathScreensUnpacked = Utilities.LoadAssetBundle("deathscreens");
 
                 Sprite referenceSprite = Hints.GetRandomHint().texture;
-                foreach (UnityEngine.Object loadingScreenObject in loadingScreensUnpacked)
+                foreach (UnityEngine.Object deathScreenObject in deathScreensUnpacked)
                 {
-                    if (loadingScreenObject.GetType() == typeof(Texture2D))
+                    if (deathScreenObject.GetType() == typeof(Texture2D))
                     {
-                        Texture2D loadingScreenTexture = (Texture2D)loadingScreenObject;
+                        Texture2D loadingScreenTexture = (Texture2D)deathScreenObject;
 
 
                         Sprite loadingScreenSprite = Sprite.Create(loadingScreenTexture, referenceSprite.rect, referenceSprite.pivot, referenceSprite.pixelsPerUnit);
@@ -1474,6 +1478,8 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
                 }
+                // Copy Fiend death screens to Mind Attack death screens.
+                deathTypeFrames.Add(ChooseAttack.PlayerDeath.MindAttack, monsterFrames[Monster.MonsterTypeEnum.Fiend.ToString()]);
             }
 
             private static void HookDeathMenuStart(On.DeathMenu.orig_Start orig, DeathMenu deathMenu)
@@ -5249,7 +5255,7 @@ namespace MonstrumExtendedSettingsMod
                         // Choose a hint from the extended array.
                         Hints.instance.hints = extendedLoadingScreenArray;
                         randomHint = Hints.GetRandomHint();
-                        if (randomHint.texture.texture.name.Contains("EasterEgg") && UnityEngine.Random.value > 0.01f)
+                        if (randomHint.texture.texture.name.Contains("EasterEgg") && UnityEngine.Random.value > 0.02f)
                         {
                             for (int tries = 0; tries < 10 && randomHint.texture.texture.name.Contains("EasterEgg"); tries++)
                             {
