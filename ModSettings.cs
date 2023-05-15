@@ -1085,6 +1085,7 @@ namespace MonstrumExtendedSettingsMod
                     allowKeyItemsToNotSpawnAtAll = new MESMSetting<bool>("Allow Key Items To Not Spawn At All", "If the number of key items to spawn has been reduced to below 1, instead of setting them to 1 let them be 0", false, false, true).userValue;
                     diverseItemSpawns = new MESMSetting<bool>("Diverse Item Spawns", "Allows items to be spawned in regions they may not previously have been found", false, false, true).userValue;
                     spawnItemsAnywhere = new MESMSetting<bool>("Spawn Items Anywhere", "Allows items to be spawned in any valid spot", false, false, true).userValue;
+                    randomStartRoom = new MESMSetting<bool>("Random Start Room", "Lets the player spawn in a random room in the ship rather than the standard start room", false).userValue;
 
 
                     // Read Item Settings Variables
@@ -2029,8 +2030,100 @@ namespace MonstrumExtendedSettingsMod
                     Reticule.Instance.unselectedSize = Vector3.zero;
                     Reticule.Instance.ReticuleScale = Vector3.zero;
                 }
+
+                if (randomStartRoom)
+                {
+                    // Find all standard rooms.
+                    Room[] allRooms = FindObjectsOfType<Room>();
+                    List<Room> spawnRooms = new List<Room>();
+                    foreach (Room room in allRooms)
+                    {
+                        if (StandardRoom(room))
+                        {
+                            spawnRooms.Add(room);
+                        }
+                    }
+
+                    // Choose a random standard room to spawn in.
+                    if (spawnRooms.Count > 0)
+                    {
+                        Room startRoom = spawnRooms[UnityEngine.Random.Range(0, spawnRooms.Count)];
+
+                        MonsterStarter monsterStarter = References.Monster.GetComponent<Monster>().Starter;
+
+                        // Add Monster Spawn triggers to each of the doors.
+                        foreach (Door door in startRoom.roomDoors)
+                        {
+                            door.gameObject.AddComponent<MonsterStarterDoorCollider>();
+                            door.gameObject.AddComponent<TutorialDoor>();
+                        }
+
+                        Transform monsterSpawnerTransform = startRoom.gameObject.transform.FindChild("MonsterSpawner");
+                        Vector3 spawnPosition = (monsterSpawnerTransform != null) ? monsterSpawnerTransform.transform.position : startRoom.RoomBounds.center;
+
+                        if (ModSettings.enableMultiplayer)
+                        {
+                            foreach (NewPlayerClass newPlayerClass in MultiplayerMode.newPlayerClasses)
+                            {
+                                newPlayerClass.transform.position = spawnPosition;
+                                if (monsterSpawnerTransform != null)
+                                {
+                                    newPlayerClass.transform.rotation = monsterSpawnerTransform.rotation;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            References.Player.transform.position = spawnPosition;
+                            if (monsterSpawnerTransform != null)
+                            {
+                                References.Player.transform.rotation = monsterSpawnerTransform.rotation;
+                            }
+                        }
+                    }
+                }
+
                 Debug.Log("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
+            }
+
+            static bool StandardRoom(Room room)
+            {
+                // Ensure the room has doors, is not in the cargo hold and is not the bridge (has two doors that are not part of the bridge).
+                if (room.roomDoors.Count > 0 && room.PrimaryRegion != PrimaryRegionType.CargoHold && !room.name.Contains("Bridge"))
+                {
+                    foreach (DoorData doorData in room.roomDoorData)
+                    {
+                        if (doorData.connection != ConnectionType.Corridor)
+                        {
+                            return false;
+                        }
+                    }
+                    if (ModSettings.logDebugText)
+                    {
+                        Debug.Log("Standard room: " + room + " | Number of doors: " + room.roomDoors.Count);
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            private class MonsterStarterDoorCollider : MonoBehaviour
+            {
+                MonsterStarter monsterStarter;
+                private void Awake()
+                {
+                    monsterStarter = References.Monster.GetComponent<Monster>().Starter;
+                }
+
+                private void OnTriggerEnter(Collider other)
+                {
+                    if (PlayerHelper.IsPlayerBody(other) && !monsterStarter.spawning)
+                    {
+                        monsterStarter.transform.position = this.transform.position - 2f * this.transform.forward;
+                        monsterStarter.transform.rotation = this.transform.rotation;
+                    }
+                }
             }
 
             // @FindItemWithSpecificName
@@ -3413,6 +3506,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool allowKeyItemsToNotSpawnAtAll;
             public static bool diverseItemSpawns;
             public static bool spawnItemsAnywhere;
+            public static bool randomStartRoom;
             public static bool experimentalShipExtension = false;
 
 
