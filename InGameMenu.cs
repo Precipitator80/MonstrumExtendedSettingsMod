@@ -207,6 +207,8 @@ namespace MonstrumExtendedSettingsMod
                 GameObject[] subMenu = CreateSubMenu(categories[i], mesmButtonGOs[0], mesmButtonGOs[1].transform, new Vector3(0f, 52.5f - (52.5f * i), 0f), menuSounds, settingsAssociatedToCategory[i], false, false);
             }
 
+            GameObject[] challengesMenu = CreateSubMenu("Challenges", mesmButtonGOs[0], mesmButtonGOs[1].transform, new Vector3(0f, 52.5f - (52.5f * categories.Count), 0f), menuSounds, null, false, false, false);
+
             // Create a warning box to alert the user of restart conditions and errors.
             // Create the base GameObjects to serve as the warning box and adjust their sorting order to appear on top of the menu buttons.
             warningBoxGOs = CreateTextAndImageButton("WarningBox", /*gameObjectReferencePos.transform*/optionsUI.optionsButtons.transform/*buttonList[3].transform*//*.parent.parent.parent*/, new Vector3(0f, 0/*200f*/, -7.5f), false, false, clipboardTransform, false);
@@ -246,7 +248,18 @@ namespace MonstrumExtendedSettingsMod
             newPage.SetActive(true);
         }
 
-        private static GameObject[] CreateSubMenu(string name, GameObject originalPage, Transform buttonTransform, Vector3 referenceOffset, MenuSounds menuSounds, List<MESMSetting> settings = null, bool smallOption = false, bool topLevel = false)
+        // CreateSubMenu
+        // Creates a settings sub menu.
+        // name: The name of the menu to display in the parent menu.
+        // originalPage: The original menu page to display a button to the sub menu on.
+        // buttonTransform: A reference transform of another button to position the new button.
+        // referenceOffset: The offset to use from the buttonTransform.
+        // menuSounds: A MenuSounds instance to play sounds.
+        // settings: A list of settings to allow customisation of on the page.
+        // smallOption: Whether to show certain text in a small font.
+        // topLevel: Whether the menu is a parent menu or a sub menu (whether it is at the top level or not).
+        // useResetButton: Whether to use a reset button or not.
+        private static GameObject[] CreateSubMenu(string name, GameObject originalPage, Transform buttonTransform, Vector3 referenceOffset, MenuSounds menuSounds, List<MESMSetting> settings = null, bool smallOption = false, bool topLevel = false, bool useResetAndGuide = true)
         {
             GameObject[] entryButtonGOs = CreateTextButton(name, buttonTransform, referenceOffset, smallOption, topLevel);
             Text entryButtonText = entryButtonGOs[1].GetComponentInChildren<Text>();
@@ -275,7 +288,15 @@ namespace MonstrumExtendedSettingsMod
             GameObject[] exitButtonGOs = CreateTextButton("Exit", subMenuCanvasRendererGameObject.transform/*referenceImageSmallTextAndImageButton.transform*/, new Vector3(0f, topLevel ? -315f : -375f/*topLevel ? -375f : -500f*//*topLevel ? -525f : -700f*/, 0f), false, false);
             Button exitButton = exitButtonGOs[1].GetComponentInChildren<Button>();
             Text exitButtonText = exitButtonGOs[1].GetComponent<Text>();
-            exitButtonText.rectTransform.sizeDelta = new Vector2(exitButtonText.rectTransform.sizeDelta.x / 1.5f, exitButtonText.rectTransform.sizeDelta.y);
+
+            // Create reference sizes.
+            Vector2 largeReferenceSizeDelta = referenceCategoryImage.rectTransform.sizeDelta + new Vector2(0.25f * referenceCategoryImage.rectTransform.sizeDelta.x, 0);
+            Vector2 largeButtonSizeDelta = new Vector2(1.2f * largeReferenceSizeDelta.x, 3f * largeReferenceSizeDelta.y);
+            int largeButtonFontSize = (int)(1.25f * referenceCategoryText.fontSize);
+            Vector2 smallButtonSizeDelta = new Vector2(1.2f * referenceOptionImage.rectTransform.sizeDelta.x, 3f * referenceOptionImage.rectTransform.sizeDelta.y);
+            int smallButtonFontSize = (int)(1.25f * referenceOptionText.fontSize);
+
+            exitButtonText.rectTransform.sizeDelta = largeButtonSizeDelta;
 
             entryButton.onClick.AddListener(delegate ()
             {
@@ -297,64 +318,69 @@ namespace MonstrumExtendedSettingsMod
             subMenuPage.SetActive(false);
 
             string shortTitle = name.Split(new string[] { " Settings" }, System.StringSplitOptions.None)[0];
-            GameObject[] categoryTitleGOs = CreateText(shortTitle, exitButtonGOs[0].transform, new Vector3(0f, (shortTitle.Length > 8 ? 450f : 435f), 0f), false, false);
+            GameObject[] categoryTitleGOs = CreateText(shortTitle, exitButtonGOs[0].transform, new Vector3(0f, (shortTitle.Length > 10 ? 450f : 435f), 0f), false, false); // Give long titles two lines rather than one.
             Text text = categoryTitleGOs[1].GetComponent<Text>();
             text.rectTransform.sizeDelta = new Vector2(/*1.25f * */text.rectTransform.sizeDelta.x, 2f * text.rectTransform.sizeDelta.y);
 
-            // Create a reset to default button
-            GameObject[] resetButtonGOs = CreateTextButton("Reset To Default (Press Save Afterwards)", exitButtonGOs[0].transform, new Vector3(-250f, 435f, 0f), true, false);
-            Button resetButton = resetButtonGOs[1].GetComponentInChildren<Button>();
-            Text resetButtonText = resetButtonGOs[1].GetComponent<Text>();
-            resetButtonText.rectTransform.sizeDelta = new Vector2(1.2f * resetButtonText.rectTransform.sizeDelta.x, 3f * resetButtonText.rectTransform.sizeDelta.y);
-            resetButtonText.fontSize = (int)(1.25f * resetButtonText.fontSize);
-            if (settings != null)
-            {
-                resetButton.onClick.AddListener(delegate ()
-                {
-                    MESMSetting.ResetSettingsToDefault(settings);
-                });
-            }
-            else
-            {
-                resetButton.onClick.AddListener(delegate ()
-                {
-                    MESMSetting.ResetSettingsToDefault(ModSettings.allSettings);
-                });
-            }
-
             // Create a save button.
-            GameObject[] saveButtonGOs = CreateTextButton((settings != null ? "Save" : "Save All Settings"), exitButtonGOs[0].transform, (settings != null ? new Vector3(0f, 50f, 0f) : new Vector3(250f, 435f, 0f)), (settings != null ? false : true), false);
+            GameObject[] saveButtonGOs = CreateTextButton((topLevel ? "Save All Settings" : "Save"), exitButtonGOs[0].transform, (topLevel ? new Vector3(250f, 435f, 0f) : new Vector3(0f, 50f, 0f)), topLevel, false);
             Button saveButton = saveButtonGOs[1].GetComponentInChildren<Button>();
             Text saveButtonText = saveButtonGOs[1].GetComponent<Text>();
-            if (settings != null)
+
+            if (!topLevel)
             {
-                saveButtonText.rectTransform.sizeDelta = new Vector2(saveButtonText.rectTransform.sizeDelta.x / 1.5f, saveButtonText.rectTransform.sizeDelta.y);
+                saveButtonText.rectTransform.sizeDelta = smallButtonSizeDelta;
             }
             else
             {
-                saveButtonText.rectTransform.sizeDelta = resetButtonText.rectTransform.sizeDelta;
-                saveButtonText.fontSize = resetButtonText.fontSize;
+                saveButtonText.rectTransform.sizeDelta = largeButtonSizeDelta;
+                saveButtonText.fontSize = smallButtonFontSize;
             }
             saveButton.onClick.AddListener(delegate ()
             {
                 MESMSetting.SaveSettings();
             });
 
-            if (settings == null)
+            if (useResetAndGuide)
+            {
+                // Create a reset to default button
+                GameObject[] resetButtonGOs = CreateTextButton("Reset To Default (Press Save Afterwards)", exitButtonGOs[0].transform, new Vector3(-250f, 435f, 0f), true, false);
+                Button resetButton = resetButtonGOs[1].GetComponentInChildren<Button>();
+                Text resetButtonText = resetButtonGOs[1].GetComponent<Text>();
+                resetButtonText.rectTransform.sizeDelta = smallButtonSizeDelta;
+                resetButtonText.fontSize = smallButtonFontSize;
+
+                if (!topLevel)
+                {
+                    resetButton.onClick.AddListener(delegate ()
+                    {
+                        MESMSetting.ResetSettingsToDefault(settings);
+                    });
+                }
+                else
+                {
+                    resetButton.onClick.AddListener(delegate ()
+                    {
+                        MESMSetting.ResetSettingsToDefault(ModSettings.allSettings);
+                    });
+                }
+            }
+
+            if (topLevel)
             {
                 GameObject[] versionTextGOs = CreateText("V" + VERSION_WITH_TEXT + "\nPrecipitator", exitButtonGOs[0].transform, new Vector3(-250f, 0f, 0f), false, false);
                 Text versionText = versionTextGOs[1].GetComponent<Text>();
-                versionText.rectTransform.sizeDelta = resetButtonText.rectTransform.sizeDelta;
+                versionText.rectTransform.sizeDelta = smallButtonSizeDelta;
                 versionText.fontSize /= 2;
             }
 
-            if (settings != null)
+            if (!topLevel && useResetAndGuide)
             {
                 // Create guide text in the top right on settings pages.
                 GameObject[] guideTextGOs = CreateText("Hover over settings to view descriptions", exitButtonGOs[0].transform, new Vector3(250f, 435f, 0f), true, false);
                 Text guideText = guideTextGOs[1].GetComponent<Text>();
-                guideText.rectTransform.sizeDelta = resetButtonText.rectTransform.sizeDelta;
-                guideText.fontSize = resetButtonText.fontSize;
+                guideText.rectTransform.sizeDelta = smallButtonSizeDelta;
+                guideText.fontSize = smallButtonFontSize;
 
                 // Set up variables to correctly place settings on pages.
                 int k = 0;

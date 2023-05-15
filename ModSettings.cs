@@ -1018,8 +1018,9 @@ namespace MonstrumExtendedSettingsMod
                     hideInventory = new MESMSetting<bool>("Hide Inventory", "Hides the inventory display that is usually on the top left of the screen", false).userValue;
                     hideTaskNotifications = new MESMSetting<bool>("Hide Task Notifications", "Hides the task notifications that are usually on the top left of the screen", false).userValue;
 
+                    // Read Player and Item Settings Variables
                     // Read Player Settings Variables
-                    modSettingsErrorString = "Player";
+                    modSettingsErrorString = "Player and Item";
                     MESMSetting.currentCategoryBeingAssigned = modSettingsErrorString + " Settings";
                     extraLives = new MESMSetting<int>("Extra Lives", "Allows you to teleport back to the starter room instead of dying if you have additional lives remaining. Also gives a few seconds of spawn protection", 0).userValue;
                     inventorySize = new MESMSetting<int>("Inventory Size", "Changes how many inventory slots you have when starting a game", 0).userValue;
@@ -1040,6 +1041,24 @@ namespace MonstrumExtendedSettingsMod
                     }
                     customPlayerScale = new MESMSetting<float>("Custom Player Scale", "Change the scale of the player. Hitbox scales alongside this, but not speed. Can make monsters not see the player when they should be able to", 1).userValue;
                     unlockPlayerHead = new MESMSetting<bool>("Unlock Player Head", "Lets the player look up and down by the full 90 degrees instead of being locked to the default 60 degrees", false).userValue;
+                    // Read Item Settings Variables
+                    infiniteFireExtinguisherFuel = new MESMSetting<bool>("Infinite Fire Extinguisher Fuel", "Fire extinguishers will have infinite fuel", false).userValue;
+                    flareLifetime = new MESMSetting<float>("Flare Lifetime", "Sets the time that flares burn after being shot out of a flare gun", 10).userValue;
+                    spawnWithFlareGun = new MESMSetting<bool>("Spawn With Flare Gun", "Gives the player a flare gun at the start of the game", false, false, true).userValue;
+                    overpoweredFlareGun = new MESMSetting<bool>("Overpowered Flare Gun", "Removes the cooldown from the flare gun, lets it fire infinite flares and stun any monster", false, false, true).userValue;
+                    flaresDisableMonsters = new MESMSetting<bool>("Flares Disable Monsters", "Disables any monster hit by a flare", false, false, true).userValue;
+                    infiniteFlashlightPower = new MESMSetting<bool>("Infinite Flashlight Power", "Flashlights will have infinite power", false).userValue;
+                    infiniteFuelCanFuel = new MESMSetting<bool>("Infinite Fuel Can Fuel", "Fuel cans will have infinite fuel", false).userValue;
+                    fireDurationMultiplier = new MESMSetting<float>("Fire Duration Multiplier", "Changes the duration of how long fires burn", 1, true, true).userValue;
+                    monsterCompass = new MESMSetting<bool>("Monster Compass", "Makes compasses point towards the nearest monster", false).userValue;
+                    spawnWithLiferaftItems = new MESMSetting<bool>("Spawn With Liferaft Items", "Starts a round with the mission items required to complete the liferaft objectives in your inventory", false).userValue;
+                    spawnWithHelicopterItems = new MESMSetting<bool>("Spawn With Helicopter Items", "Starts a round with the mission items required to complete the helicopter objectives in your inventory", false, false, true).userValue;
+                    spawnWithSubmersibleItems = new MESMSetting<bool>("Spawn With Submersible Items", "Starts a round with the mission items required to complete the Submersible objectives in your inventory", false, false, true).userValue;
+                    loopingRadio = new MESMSetting<bool>("Looping Radio", "Makes the radio loop its playlist instead of playing only from the start of the first song when turned on after all tracks have played once", true).userValue;
+                    betterSmashables = new MESMSetting<bool>("Better Smashables", "Makes smashables not break when they impact with only a small velocity", false).userValue;
+                    unsmashables = new MESMSetting<bool>("Unsmashables", "Makes smashables never smash. Try holding the throw button! Just a fun setting", false, false, true).userValue;
+                    addSmokeGrenade = new MESMSetting<bool>("Add Smoke Grenade", "Gives smashable bottles a 33% chance to spawn as a smoke grenade. When smashed, the bottle will emit smoke that can stun the monster like fire extinguisher powder and block its vision", false).userValue;
+                    addMolotov = new MESMSetting<bool>("Add Molotov", "Gives smashable bottles a 33% chance to spawn as a molotov. When smashed, the bottle will spawn fire that can stun the monster like lit fuel", false).userValue;
 
 
                     // Read Level Generation Settings Variables
@@ -1086,28 +1105,6 @@ namespace MonstrumExtendedSettingsMod
                     diverseItemSpawns = new MESMSetting<bool>("Diverse Item Spawns", "Allows items to be spawned in regions they may not previously have been found", false, false, true).userValue;
                     spawnItemsAnywhere = new MESMSetting<bool>("Spawn Items Anywhere", "Allows items to be spawned in any valid spot", false, false, true).userValue;
                     randomStartRoom = new MESMSetting<bool>("Random Start Room", "Lets the player spawn in a random room in the ship rather than the standard start room", false).userValue;
-
-
-                    // Read Item Settings Variables
-                    modSettingsErrorString = "Item";
-                    MESMSetting.currentCategoryBeingAssigned = modSettingsErrorString + " Settings";
-                    infiniteFireExtinguisherFuel = new MESMSetting<bool>("Infinite Fire Extinguisher Fuel", "Fire extinguishers will have infinite fuel", false).userValue;
-                    flareLifetime = new MESMSetting<float>("Flare Lifetime", "Sets the time that flares burn after being shot out of a flare gun", 10).userValue;
-                    spawnWithFlareGun = new MESMSetting<bool>("Spawn With Flare Gun", "Gives the player a flare gun at the start of the game", false, false, true).userValue;
-                    overpoweredFlareGun = new MESMSetting<bool>("Overpowered Flare Gun", "Removes the cooldown from the flare gun, lets it fire infinite flares and stun any monster", false, false, true).userValue;
-                    flaresDisableMonsters = new MESMSetting<bool>("Flares Disable Monsters", "Disables any monster hit by a flare", false, false, true).userValue;
-                    infiniteFlashlightPower = new MESMSetting<bool>("Infinite Flashlight Power", "Flashlights will have infinite power", false).userValue;
-                    infiniteFuelCanFuel = new MESMSetting<bool>("Infinite Fuel Can Fuel", "Fuel cans will have infinite fuel", false).userValue;
-                    fireDurationMultiplier = new MESMSetting<float>("Fire Duration Multiplier", "Changes the duration of how long fires burn", 1, true, true).userValue;
-                    monsterCompass = new MESMSetting<bool>("Monster Compass", "Makes compasses point towards the nearest monster", false).userValue;
-                    spawnWithLiferaftItems = new MESMSetting<bool>("Spawn With Liferaft Items", "Starts a round with the mission items required to complete the liferaft objectives in your inventory", false).userValue;
-                    spawnWithHelicopterItems = new MESMSetting<bool>("Spawn With Helicopter Items", "Starts a round with the mission items required to complete the helicopter objectives in your inventory", false, false, true).userValue;
-                    spawnWithSubmersibleItems = new MESMSetting<bool>("Spawn With Submersible Items", "Starts a round with the mission items required to complete the Submersible objectives in your inventory", false, false, true).userValue;
-                    loopingRadio = new MESMSetting<bool>("Looping Radio", "Makes the radio loop its playlist instead of playing only from the start of the first song when turned on after all tracks have played once", true).userValue;
-                    betterSmashables = new MESMSetting<bool>("Better Smashables", "Makes smashables not break when they impact with only a small velocity", false).userValue;
-                    unsmashables = new MESMSetting<bool>("Unsmashables", "Makes smashables never smash. Try holding the throw button! Just a fun setting", false, false, true).userValue;
-                    addSmokeGrenade = new MESMSetting<bool>("Add Smoke Grenade", "Gives smashable bottles a 33% chance to spawn as a smoke grenade. When smashed, the bottle will emit smoke that can stun the monster like fire extinguisher powder and block its vision", false).userValue;
-                    addMolotov = new MESMSetting<bool>("Add Molotov", "Gives smashable bottles a 33% chance to spawn as a molotov. When smashed, the bottle will spawn fire that can stun the monster like lit fuel", false).userValue;
 
 
                     // Read Colour Settings Variables
@@ -3455,6 +3452,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool hideTaskNotifications;
 
 
+            // Player and Item Settings Variables
             // Player Settings Variables
             public static int extraLives;
             public static int inventorySize;
@@ -3466,6 +3464,25 @@ namespace MonstrumExtendedSettingsMod
             public static List<float> playerMovementSpeedMultiplier;
             private static float customPlayerScale;
             public static bool unlockPlayerHead;
+
+            // Item Settings Variables
+            public static bool infiniteFireExtinguisherFuel;
+            public static float flareLifetime;
+            public static bool spawnWithFlareGun;
+            public static bool overpoweredFlareGun;
+            public static bool flaresDisableMonsters;
+            public static bool infiniteFlashlightPower;
+            public static bool infiniteFuelCanFuel;
+            public static float fireDurationMultiplier;
+            public static bool monsterCompass;
+            private static bool spawnWithLiferaftItems;
+            private static bool spawnWithHelicopterItems;
+            private static bool spawnWithSubmersibleItems;
+            public static bool loopingRadio;
+            public static bool betterSmashables;
+            public static bool unsmashables;
+            public static bool addSmokeGrenade;
+            public static bool addMolotov;
 
 
             // Level Generation Settings Variables
@@ -3508,26 +3525,6 @@ namespace MonstrumExtendedSettingsMod
             public static bool spawnItemsAnywhere;
             public static bool randomStartRoom;
             public static bool experimentalShipExtension = false;
-
-
-            // Item Settings Variables
-            public static bool infiniteFireExtinguisherFuel;
-            public static float flareLifetime;
-            public static bool spawnWithFlareGun;
-            public static bool overpoweredFlareGun;
-            public static bool flaresDisableMonsters;
-            public static bool infiniteFlashlightPower;
-            public static bool infiniteFuelCanFuel;
-            public static float fireDurationMultiplier;
-            public static bool monsterCompass;
-            private static bool spawnWithLiferaftItems;
-            private static bool spawnWithHelicopterItems;
-            private static bool spawnWithSubmersibleItems;
-            public static bool loopingRadio;
-            public static bool betterSmashables;
-            public static bool unsmashables;
-            public static bool addSmokeGrenade;
-            public static bool addMolotov;
 
 
             // Colour & Light Settings
