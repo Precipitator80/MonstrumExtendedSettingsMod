@@ -207,7 +207,7 @@ namespace MonstrumExtendedSettingsMod
                 GameObject[] subMenu = CreateSubMenu(categories[i], mesmButtonGOs[0], mesmButtonGOs[1].transform, new Vector3(0f, 52.5f - (52.5f * i), 0f), menuSounds, settingsAssociatedToCategory[i], false, false);
             }
 
-            GameObject[] challengesMenu = CreateSubMenu("Challenges", mesmButtonGOs[0], mesmButtonGOs[1].transform, new Vector3(0f, 52.5f - (52.5f * categories.Count), 0f), menuSounds, null, false, false, true);
+            GameObject[] challengesMenu = CreateChallengesPage(mesmButtonGOs[0], mesmButtonGOs[1].transform, new Vector3(0f, 52.5f - (52.5f * categories.Count), 0f), menuSounds);
 
             // Create a warning box to alert the user of restart conditions and errors.
             // Create the base GameObjects to serve as the warning box and adjust their sorting order to appear on top of the menu buttons.
@@ -606,6 +606,30 @@ namespace MonstrumExtendedSettingsMod
             }
 
             return new GameObject[] { subMenuPage, subMenuCanvasRendererGameObject, entryButtonGOs[0], entryButtonGOs[1], exitButtonGOs[0], exitButtonGOs[1] };
+        }
+
+        private static GameObject[] CreateChallengesPage(GameObject originalPage, Transform buttonTransform, Vector3 referenceOffset, MenuSounds menuSounds)
+        {
+            GameObject[] challengesMenu = CreateSubMenu("Challenges", originalPage, buttonTransform, referenceOffset, menuSounds, null, false, false, true);
+
+            Transform exitButtonTransform = challengesMenu[4].transform;
+            float yOffset = 375f;
+            GameObject[] challengeNameGOs = CreateTextButton("Name", exitButtonTransform, new Vector3(-225f, yOffset, 0f));
+            GameObject[] authorGOs = CreateTextButton("Author", exitButtonTransform, new Vector3(-75f, yOffset, 0f));
+            GameObject[] difficultyGOs = CreateTextButton("Difficulty", exitButtonTransform, new Vector3(75f, yOffset, 0f));
+            GameObject[] completedGOs = CreateTextButton("Completed", exitButtonTransform, new Vector3(225f, yOffset, 0f));
+
+            int mediumFontSize = (2 * referenceOptionText.fontSize);
+            challengeNameGOs[1].GetComponent<Text>().fontSize = mediumFontSize;
+            challengeNameGOs[1].GetComponent<Text>().rectTransform.sizeDelta *= 1.4f;
+            authorGOs[1].GetComponent<Text>().fontSize = mediumFontSize;
+            authorGOs[1].GetComponent<Text>().rectTransform.sizeDelta *= 1.4f;
+            difficultyGOs[1].GetComponent<Text>().fontSize = mediumFontSize;
+            difficultyGOs[1].GetComponent<Text>().rectTransform.sizeDelta *= 1.4f;
+            completedGOs[1].GetComponent<Text>().fontSize = mediumFontSize;
+            completedGOs[1].GetComponent<Text>().rectTransform.sizeDelta *= 1.4f;
+
+            return challengesMenu;
         }
 
         private static void SwitchSettings(List<GameObject[]> settingsToActivate, List<GameObject[]> settingsToDeactivate, GameObject[] buttonsToActivate, GameObject[] buttonsToDeactivate)
