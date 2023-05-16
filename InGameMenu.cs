@@ -207,7 +207,7 @@ namespace MonstrumExtendedSettingsMod
                 GameObject[] subMenu = CreateSubMenu(categories[i], mesmButtonGOs[0], mesmButtonGOs[1].transform, new Vector3(0f, 52.5f - (52.5f * i), 0f), menuSounds, settingsAssociatedToCategory[i], false, false);
             }
 
-            GameObject[] challengesMenu = CreateSubMenu("Challenges", mesmButtonGOs[0], mesmButtonGOs[1].transform, new Vector3(0f, 52.5f - (52.5f * categories.Count), 0f), menuSounds, null, false, false, false);
+            GameObject[] challengesMenu = CreateSubMenu("Challenges", mesmButtonGOs[0], mesmButtonGOs[1].transform, new Vector3(0f, 52.5f - (52.5f * categories.Count), 0f), menuSounds, null, false, false, true);
 
             // Create a warning box to alert the user of restart conditions and errors.
             // Create the base GameObjects to serve as the warning box and adjust their sorting order to appear on top of the menu buttons.
@@ -259,7 +259,7 @@ namespace MonstrumExtendedSettingsMod
         // smallOption: Whether to show certain text in a small font.
         // topLevel: Whether the menu is a parent menu or a sub menu (whether it is at the top level or not).
         // useResetButton: Whether to use a reset button or not.
-        private static GameObject[] CreateSubMenu(string name, GameObject originalPage, Transform buttonTransform, Vector3 referenceOffset, MenuSounds menuSounds, List<MESMSetting> settings = null, bool smallOption = false, bool topLevel = false, bool useResetAndGuide = true)
+        private static GameObject[] CreateSubMenu(string name, GameObject originalPage, Transform buttonTransform, Vector3 referenceOffset, MenuSounds menuSounds, List<MESMSetting> settings = null, bool smallOption = false, bool topLevel = false, bool blankPage = false)
         {
             GameObject[] entryButtonGOs = CreateTextButton(name, buttonTransform, referenceOffset, smallOption, topLevel);
             Text entryButtonText = entryButtonGOs[1].GetComponentInChildren<Text>();
@@ -322,27 +322,28 @@ namespace MonstrumExtendedSettingsMod
             Text text = categoryTitleGOs[1].GetComponent<Text>();
             text.rectTransform.sizeDelta = new Vector2(/*1.25f * */text.rectTransform.sizeDelta.x, 2f * text.rectTransform.sizeDelta.y);
 
-            // Create a save button.
-            GameObject[] saveButtonGOs = CreateTextButton((topLevel ? "Save All Settings" : "Save"), exitButtonGOs[0].transform, (topLevel ? new Vector3(250f, 435f, 0f) : new Vector3(0f, 50f, 0f)), topLevel, false);
-            Button saveButton = saveButtonGOs[1].GetComponentInChildren<Button>();
-            Text saveButtonText = saveButtonGOs[1].GetComponent<Text>();
 
-            if (!topLevel)
+            if (!blankPage)
             {
-                saveButtonText.rectTransform.sizeDelta = smallButtonSizeDelta;
-            }
-            else
-            {
-                saveButtonText.rectTransform.sizeDelta = largeButtonSizeDelta;
-                saveButtonText.fontSize = smallButtonFontSize;
-            }
-            saveButton.onClick.AddListener(delegate ()
-            {
-                MESMSetting.SaveSettings();
-            });
+                // Create a save button.
+                GameObject[] saveButtonGOs = CreateTextButton((topLevel ? "Save All Settings" : "Save"), exitButtonGOs[0].transform, (topLevel ? new Vector3(250f, 435f, 0f) : new Vector3(0f, 50f, 0f)), topLevel, false);
+                Button saveButton = saveButtonGOs[1].GetComponentInChildren<Button>();
+                Text saveButtonText = saveButtonGOs[1].GetComponent<Text>();
 
-            if (useResetAndGuide)
-            {
+                if (!topLevel)
+                {
+                    saveButtonText.rectTransform.sizeDelta = smallButtonSizeDelta;
+                }
+                else
+                {
+                    saveButtonText.rectTransform.sizeDelta = largeButtonSizeDelta;
+                    saveButtonText.fontSize = smallButtonFontSize;
+                }
+                saveButton.onClick.AddListener(delegate ()
+                {
+                    MESMSetting.SaveSettings();
+                });
+
                 // Create a reset to default button
                 GameObject[] resetButtonGOs = CreateTextButton("Reset To Default (Press Save Afterwards)", exitButtonGOs[0].transform, new Vector3(-250f, 435f, 0f), true, false);
                 Button resetButton = resetButtonGOs[1].GetComponentInChildren<Button>();
@@ -364,243 +365,243 @@ namespace MonstrumExtendedSettingsMod
                         MESMSetting.ResetSettingsToDefault(ModSettings.allSettings);
                     });
                 }
-            }
 
-            if (topLevel)
-            {
-                GameObject[] versionTextGOs = CreateText("V" + VERSION_WITH_TEXT + "\nPrecipitator", exitButtonGOs[0].transform, new Vector3(-250f, 0f, 0f), false, false);
-                Text versionText = versionTextGOs[1].GetComponent<Text>();
-                versionText.rectTransform.sizeDelta = smallButtonSizeDelta;
-                versionText.fontSize /= 2;
-            }
-
-            if (!topLevel && useResetAndGuide)
-            {
-                // Create guide text in the top right on settings pages.
-                GameObject[] guideTextGOs = CreateText("Hover over settings to view descriptions", exitButtonGOs[0].transform, new Vector3(250f, 435f, 0f), true, false);
-                Text guideText = guideTextGOs[1].GetComponent<Text>();
-                guideText.rectTransform.sizeDelta = smallButtonSizeDelta;
-                guideText.fontSize = smallButtonFontSize;
-
-                // Set up variables to correctly place settings on pages.
-                int k = 0;
-                Vector3 offset = new Vector3(-175f, 0f, 0f) / sizeReduction; //Vector3.zero;//new Vector3(-150f, 0f, 0f);
-                int verticalShift = (int)(45 / sizeReduction);
-                int maximumOptionsPerRow = 335 / verticalShift;
-                Transform settingsReferenceTransform = subMenuCanvasRendererGameObject.transform;
-
-                // Create pages to hold settings.
-                List<List<GameObject[]>> settingsPages = new List<List<GameObject[]>>();
-                settingsPages.Add(new List<GameObject[]>());
-                for (int i = 0; i < settings.Count; i++)
+                if (topLevel)
                 {
-                    if (settings[i].GetType() == typeof(MESMSettingRGB))
+                    GameObject[] versionTextGOs = CreateText("V" + VERSION_WITH_TEXT + "\nPrecipitator", exitButtonGOs[0].transform, new Vector3(-250f, 0f, 0f), false, false);
+                    Text versionText = versionTextGOs[1].GetComponent<Text>();
+                    versionText.rectTransform.sizeDelta = smallButtonSizeDelta;
+                    versionText.fontSize /= 2;
+                }
+
+                if (!topLevel)
+                {
+                    // Create guide text in the top right on settings pages.
+                    GameObject[] guideTextGOs = CreateText("Hover over settings to view descriptions", exitButtonGOs[0].transform, new Vector3(250f, 435f, 0f), true, false);
+                    Text guideText = guideTextGOs[1].GetComponent<Text>();
+                    guideText.rectTransform.sizeDelta = smallButtonSizeDelta;
+                    guideText.fontSize = smallButtonFontSize;
+
+                    // Set up variables to correctly place settings on pages.
+                    int k = 0;
+                    Vector3 offset = new Vector3(-175f, 0f, 0f) / sizeReduction; //Vector3.zero;//new Vector3(-150f, 0f, 0f);
+                    int verticalShift = (int)(45 / sizeReduction);
+                    int maximumOptionsPerRow = 335 / verticalShift;
+                    Transform settingsReferenceTransform = subMenuCanvasRendererGameObject.transform;
+
+                    // Create pages to hold settings.
+                    List<List<GameObject[]>> settingsPages = new List<List<GameObject[]>>();
+                    settingsPages.Add(new List<GameObject[]>());
+                    for (int i = 0; i < settings.Count; i++)
                     {
-                        if (((MESMSettingRGB)settings[i]).colour == MESMSettingRGB.MESMSettingRGBColourEnum.red)
+                        if (settings[i].GetType() == typeof(MESMSettingRGB))
                         {
-                            if (2 * maximumOptionsPerRow - k < 3)
+                            if (((MESMSettingRGB)settings[i]).colour == MESMSettingRGB.MESMSettingRGBColourEnum.red)
                             {
-                                k = 2 * maximumOptionsPerRow - 1;
-                                i--;
-                            }
-                            else if (maximumOptionsPerRow - (k % maximumOptionsPerRow) < 3)
-                            {
-                                i--;
+                                if (2 * maximumOptionsPerRow - k < 3)
+                                {
+                                    k = 2 * maximumOptionsPerRow - 1;
+                                    i--;
+                                }
+                                else if (maximumOptionsPerRow - (k % maximumOptionsPerRow) < 3)
+                                {
+                                    i--;
+                                }
+                                else
+                                {
+                                    // Create colour display text and the first component button.
+                                    GameObject[] displayTextGOs = CreateText(settings[i].modSettingsText.Replace(" Red Component", ""), settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset);
+                                    Text displayText = displayTextGOs[1].GetComponent<Text>();
+                                    settingsPages[settingsPages.Count - 1].Add(displayTextGOs);
+                                    k++;
+                                    settingsPages[settingsPages.Count - 1].Add(((MESMSettingRGB)settings[i]).CreateRGBButton(settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset, displayText));
+                                }
                             }
                             else
                             {
-                                // Create colour display text and the first component button.
-                                GameObject[] displayTextGOs = CreateText(settings[i].modSettingsText.Replace(" Red Component", ""), settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset);
-                                Text displayText = displayTextGOs[1].GetComponent<Text>();
-                                settingsPages[settingsPages.Count - 1].Add(displayTextGOs);
-                                k++;
-                                settingsPages[settingsPages.Count - 1].Add(((MESMSettingRGB)settings[i]).CreateRGBButton(settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset, displayText));
+                                // Create another component button by using the last component's reference to the display text.
+                                settingsPages[settingsPages.Count - 1].Add(((MESMSettingRGB)settings[i]).CreateRGBButton(settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset, ((MESMSettingRGB)settings[i - 1]).displayText));
+                                /*
+                                // If the last component is being assigned, set the display text colour based on the settings.
+                                if (((MESMSettingRGB)settings[i]).colour == MESMSettingRGB.MESMSettingRGBColourEnum.blue)
+                                {
+                                    if (((MESMSettingRGB)settings[i]).userValue == -1 || ((MESMSettingRGB)settings[i - 1]).userValue == -1 || ((MESMSettingRGB)settings[i - 2]).userValue == -1)
+                                    {
+                                        ((MESMSettingRGB)settings[i]).displayText.color = referenceOptionText.color;
+                                    }
+                                    else
+                                    {
+                                        ((MESMSettingRGB)settings[i]).displayText.color = new Color(Convert.ToSingle(((MESMSettingRGB)settings[i - 2]).inputField.text) / 255f, Convert.ToSingle(((MESMSettingRGB)settings[i - 1]).inputField.text) / 255f, Convert.ToSingle(((MESMSettingRGB)settings[i]).inputField.text) / 255f);
+                                    }
+                                }
+                                */
                             }
                         }
                         else
                         {
-                            // Create another component button by using the last component's reference to the display text.
-                            settingsPages[settingsPages.Count - 1].Add(((MESMSettingRGB)settings[i]).CreateRGBButton(settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset, ((MESMSettingRGB)settings[i - 1]).displayText));
-                            /*
-                            // If the last component is being assigned, set the display text colour based on the settings.
-                            if (((MESMSettingRGB)settings[i]).colour == MESMSettingRGB.MESMSettingRGBColourEnum.blue)
+                            // Create a button for a setting on a certain page.
+                            settingsPages[settingsPages.Count - 1].Add(settings[i].CreateButtonForSetting(settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset));
+                        }
+
+                        k++;
+                        if (k % maximumOptionsPerRow == 0)
+                        {
+                            offset += new Vector3(400f / sizeReduction, maximumOptionsPerRow * verticalShift, 0f);
+                            if (k == 2 * maximumOptionsPerRow && i != settings.Count - 1)
                             {
-                                if (((MESMSettingRGB)settings[i]).userValue == -1 || ((MESMSettingRGB)settings[i - 1]).userValue == -1 || ((MESMSettingRGB)settings[i - 2]).userValue == -1)
+                                settingsPages.Add(new List<GameObject[]>());
+                                offset = new Vector3(-175f, 0f, 0f) / sizeReduction; //Vector3.zero;//new Vector3(-150f, 0f, 0f);
+                                k = 0;
+                            }
+                        }
+                    }
+                    if (settingsPages.Count > 1)
+                    {
+                        // If multiple pages will be used, disable all parent GameObjects so that one page can be reactivated later.
+                        for (int i = 1; i < settingsPages.Count; i++)
+                        {
+
+                            foreach (GameObject[] gameObjects in settingsPages[i])
+                            {
+                                foreach (GameObject gameObject in gameObjects)
                                 {
-                                    ((MESMSettingRGB)settings[i]).displayText.color = referenceOptionText.color;
+                                    if (!gameObject.name.Contains("DESCRIPTION_BOX") && !gameObject.name.Contains("DROPDOWN_BOX") && !gameObject.name.Contains("DROPDOWN_CHOICE"))
+                                    {
+                                        gameObject.SetActive(false);
+                                    }
                                 }
-                                else
+                            }
+                            /*
+                            foreach (GameObject[] gameObjects in settingsPages[i])
+                            {
+                                gameObjects[0].SetActive(false);
+                                if (gameObjects.Length > 3)
                                 {
-                                    ((MESMSettingRGB)settings[i]).displayText.color = new Color(Convert.ToSingle(((MESMSettingRGB)settings[i - 2]).inputField.text) / 255f, Convert.ToSingle(((MESMSettingRGB)settings[i - 1]).inputField.text) / 255f, Convert.ToSingle(((MESMSettingRGB)settings[i]).inputField.text) / 255f);
+                                    gameObjects[2].SetActive(false);
+                                }
+                                if (gameObjects.Length > 5)
+                                {
+                                    gameObjects[4].SetActive(false);
+                                }
+                                if (gameObjects.Length > 11)
+                                {
+                                    gameObjects[12].SetActive(false); // Sliders have this many gameobjects.
                                 }
                             }
                             */
                         }
-                    }
-                    else
-                    {
-                        // Create a button for a setting on a certain page.
-                        settingsPages[settingsPages.Count - 1].Add(settings[i].CreateButtonForSetting(settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset));
-                    }
 
-                    k++;
-                    if (k % maximumOptionsPerRow == 0)
-                    {
-                        offset += new Vector3(400f / sizeReduction, maximumOptionsPerRow * verticalShift, 0f);
-                        if (k == 2 * maximumOptionsPerRow && i != settings.Count - 1)
+                        List<GameObject[]> navigationButtons = new List<GameObject[]>();
+                        for (int i = 0; i < settingsPages.Count; i++)
                         {
-                            settingsPages.Add(new List<GameObject[]>());
-                            offset = new Vector3(-175f, 0f, 0f) / sizeReduction; //Vector3.zero;//new Vector3(-150f, 0f, 0f);
-                            k = 0;
-                        }
-                    }
-                }
-                if (settingsPages.Count > 1)
-                {
-                    // If multiple pages will be used, disable all parent GameObjects so that one page can be reactivated later.
-                    for (int i = 1; i < settingsPages.Count; i++)
-                    {
-
-                        foreach (GameObject[] gameObjects in settingsPages[i])
-                        {
-                            foreach (GameObject gameObject in gameObjects)
+                            navigationButtons.Add(CreateTextButton("→_" + name + "_NextPage_" + (i + 1), exitButtonGOs[0].transform, new Vector3(150f, 20f, 0f), topLevel));
+                            navigationButtons.Add(CreateTextButton("←_" + name + "_LastPage_" + (i + 1), exitButtonGOs[0].transform, new Vector3(-150f, 20f, 0f), topLevel));
+                            Text navigationButtonsText1 = navigationButtons[2 * i][1].GetComponent<Text>();
+                            navigationButtonsText1.rectTransform.sizeDelta = new Vector2(navigationButtonsText1.rectTransform.sizeDelta.x / 1.5f, navigationButtonsText1.rectTransform.sizeDelta.y);
+                            Text navigationButtonsText2 = navigationButtons[2 * i + 1][1].GetComponent<Text>();
+                            navigationButtonsText2.rectTransform.sizeDelta = new Vector2(navigationButtonsText2.rectTransform.sizeDelta.x / 1.5f, navigationButtonsText2.rectTransform.sizeDelta.y);
+                            if (i > 0)
                             {
-                                if (!gameObject.name.Contains("DESCRIPTION_BOX") && !gameObject.name.Contains("DROPDOWN_BOX") && !gameObject.name.Contains("DROPDOWN_CHOICE"))
+                                navigationButtons[2 * i][1].SetActive(false);
+                                navigationButtons[2 * i + 1][1].SetActive(false);
+                            }
+                        }
+
+                        //Debug.Log("Starting settings page next and last arrow assignment");
+                        //Debug.Log("Number of settings groups is " + settingsGroups.Count);
+                        //Debug.Log("Number of navigation buttons is " + navigationButtons.Count);
+
+                        for (int i = 0; i < settingsPages.Count; i++)
+                        {
+                            int storedIndex = i; // Passing a temporary variable to add listener - Mmmpies - https://answers.unity.com/questions/908847/passing-a-temporary-variable-to-add-listener.html - Accessed 15.12.2021
+                                                 //Debug.Log("Page " + storedIndex);
+                            GameObject nextButtonGO = navigationButtons[2 * storedIndex][1];
+                            GameObject lastButtonGO = navigationButtons[2 * storedIndex + 1][1];
+
+                            Button nextButton = nextButtonGO.GetComponentInChildren<Button>();
+                            Button lastButton = lastButtonGO.GetComponentInChildren<Button>();
+
+                            //Debug.Log("Current page buttons found");
+
+                            GameObject nextButtonFromNextPageGO;
+                            GameObject lastButtonFromNextPageGO;
+                            GameObject nextButtonFromLastPageGO;
+                            GameObject lastButtonFromLastPageGO;
+                            if (storedIndex + 1 == settingsPages.Count)
+                            {
+                                //Debug.Log("Using alt next button");
+                                nextButtonFromNextPageGO = navigationButtons[0][1];
+                                lastButtonFromNextPageGO = navigationButtons[1][1];
+                                //Debug.Log("Used alt next button");
+                            }
+                            else
+                            {
+                                nextButtonFromNextPageGO = navigationButtons[2 * (storedIndex + 1)][1];
+                                lastButtonFromNextPageGO = navigationButtons[2 * (storedIndex + 1) + 1][1];
+                            }
+                            //Debug.Log("Next page buttons found");
+                            if (storedIndex - 1 == -1)
+                            {
+                                //Debug.Log("Using alt last button");
+                                nextButtonFromLastPageGO = navigationButtons[navigationButtons.Count - 2][1];
+                                lastButtonFromLastPageGO = navigationButtons[navigationButtons.Count - 1][1];
+                                //Debug.Log("Used alt last button");
+                            }
+                            else
+                            {
+                                nextButtonFromLastPageGO = navigationButtons[2 * (storedIndex - 1)][1];
+                                lastButtonFromLastPageGO = navigationButtons[2 * (storedIndex - 1) + 1][1];
+                            }
+                            //Debug.Log("Last page buttons found");
+
+
+                            if (storedIndex + 1 == settingsPages.Count)
+                            {
+                                nextButton.onClick.AddListener(delegate ()
                                 {
-                                    gameObject.SetActive(false);
-                                }
+                                    //Debug.Log("Using indices 0 and " + storedIndex + " for " + settingsGroups.Count + " (Next alt)");
+                                    SwitchSettings(settingsPages[0], settingsPages[storedIndex], new GameObject[] { nextButtonFromNextPageGO, lastButtonFromNextPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
+                                });
                             }
-                        }
-                        /*
-                        foreach (GameObject[] gameObjects in settingsPages[i])
-                        {
-                            gameObjects[0].SetActive(false);
-                            if (gameObjects.Length > 3)
+                            else
                             {
-                                gameObjects[2].SetActive(false);
+                                //Debug.Log("Using indices " + (storedIndex + 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Next normal)");
+                                nextButton.onClick.AddListener(delegate ()
+                                {
+                                    SwitchSettings(settingsPages[storedIndex + 1], settingsPages[storedIndex], new GameObject[] { nextButtonFromNextPageGO, lastButtonFromNextPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
+                                });
                             }
-                            if (gameObjects.Length > 5)
+                            //Debug.Log("Next page buttons assigned");
+
+                            if (storedIndex - 1 == -1)
                             {
-                                gameObjects[4].SetActive(false);
+                                //Debug.Log("Using indices " + (settingsGroups.Count - 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Last alt)");
+                                lastButton.onClick.AddListener(delegate ()
+                                {
+                                    SwitchSettings(settingsPages[settingsPages.Count - 1], settingsPages[storedIndex], new GameObject[] { nextButtonFromLastPageGO, lastButtonFromLastPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
+                                });
                             }
-                            if (gameObjects.Length > 11)
+                            else
                             {
-                                gameObjects[12].SetActive(false); // Sliders have this many gameobjects.
+                                //Debug.Log("Using indices " + (storedIndex - 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Last normal)");
+                                lastButton.onClick.AddListener(delegate ()
+                                {
+                                    SwitchSettings(settingsPages[storedIndex - 1], settingsPages[storedIndex], new GameObject[] { nextButtonFromLastPageGO, lastButtonFromLastPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
+                                });
                             }
-                        }
-                        */
-                    }
+                            //Debug.Log("Last page buttons assigned");
 
-                    List<GameObject[]> navigationButtons = new List<GameObject[]>();
-                    for (int i = 0; i < settingsPages.Count; i++)
-                    {
-                        navigationButtons.Add(CreateTextButton("→_" + name + "_NextPage_" + (i + 1), exitButtonGOs[0].transform, new Vector3(150f, 20f, 0f), topLevel));
-                        navigationButtons.Add(CreateTextButton("←_" + name + "_LastPage_" + (i + 1), exitButtonGOs[0].transform, new Vector3(-150f, 20f, 0f), topLevel));
-                        Text navigationButtonsText1 = navigationButtons[2 * i][1].GetComponent<Text>();
-                        navigationButtonsText1.rectTransform.sizeDelta = new Vector2(navigationButtonsText1.rectTransform.sizeDelta.x / 1.5f, navigationButtonsText1.rectTransform.sizeDelta.y);
-                        Text navigationButtonsText2 = navigationButtons[2 * i + 1][1].GetComponent<Text>();
-                        navigationButtonsText2.rectTransform.sizeDelta = new Vector2(navigationButtonsText2.rectTransform.sizeDelta.x / 1.5f, navigationButtonsText2.rectTransform.sizeDelta.y);
-                        if (i > 0)
-                        {
-                            navigationButtons[2 * i][1].SetActive(false);
-                            navigationButtons[2 * i + 1][1].SetActive(false);
-                        }
-                    }
-
-                    //Debug.Log("Starting settings page next and last arrow assignment");
-                    //Debug.Log("Number of settings groups is " + settingsGroups.Count);
-                    //Debug.Log("Number of navigation buttons is " + navigationButtons.Count);
-
-                    for (int i = 0; i < settingsPages.Count; i++)
-                    {
-                        int storedIndex = i; // Passing a temporary variable to add listener - Mmmpies - https://answers.unity.com/questions/908847/passing-a-temporary-variable-to-add-listener.html - Accessed 15.12.2021
-                        //Debug.Log("Page " + storedIndex);
-                        GameObject nextButtonGO = navigationButtons[2 * storedIndex][1];
-                        GameObject lastButtonGO = navigationButtons[2 * storedIndex + 1][1];
-
-                        Button nextButton = nextButtonGO.GetComponentInChildren<Button>();
-                        Button lastButton = lastButtonGO.GetComponentInChildren<Button>();
-
-                        //Debug.Log("Current page buttons found");
-
-                        GameObject nextButtonFromNextPageGO;
-                        GameObject lastButtonFromNextPageGO;
-                        GameObject nextButtonFromLastPageGO;
-                        GameObject lastButtonFromLastPageGO;
-                        if (storedIndex + 1 == settingsPages.Count)
-                        {
-                            //Debug.Log("Using alt next button");
-                            nextButtonFromNextPageGO = navigationButtons[0][1];
-                            lastButtonFromNextPageGO = navigationButtons[1][1];
-                            //Debug.Log("Used alt next button");
-                        }
-                        else
-                        {
-                            nextButtonFromNextPageGO = navigationButtons[2 * (storedIndex + 1)][1];
-                            lastButtonFromNextPageGO = navigationButtons[2 * (storedIndex + 1) + 1][1];
-                        }
-                        //Debug.Log("Next page buttons found");
-                        if (storedIndex - 1 == -1)
-                        {
-                            //Debug.Log("Using alt last button");
-                            nextButtonFromLastPageGO = navigationButtons[navigationButtons.Count - 2][1];
-                            lastButtonFromLastPageGO = navigationButtons[navigationButtons.Count - 1][1];
-                            //Debug.Log("Used alt last button");
-                        }
-                        else
-                        {
-                            nextButtonFromLastPageGO = navigationButtons[2 * (storedIndex - 1)][1];
-                            lastButtonFromLastPageGO = navigationButtons[2 * (storedIndex - 1) + 1][1];
-                        }
-                        //Debug.Log("Last page buttons found");
-
-
-                        if (storedIndex + 1 == settingsPages.Count)
-                        {
                             nextButton.onClick.AddListener(delegate ()
                             {
-                                //Debug.Log("Using indices 0 and " + storedIndex + " for " + settingsGroups.Count + " (Next alt)");
-                                SwitchSettings(settingsPages[0], settingsPages[storedIndex], new GameObject[] { nextButtonFromNextPageGO, lastButtonFromNextPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
+                                menuSounds.ButtonClickGoForward();
                             });
-                        }
-                        else
-                        {
-                            //Debug.Log("Using indices " + (storedIndex + 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Next normal)");
-                            nextButton.onClick.AddListener(delegate ()
-                            {
-                                SwitchSettings(settingsPages[storedIndex + 1], settingsPages[storedIndex], new GameObject[] { nextButtonFromNextPageGO, lastButtonFromNextPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
-                            });
-                        }
-                        //Debug.Log("Next page buttons assigned");
-
-                        if (storedIndex - 1 == -1)
-                        {
-                            //Debug.Log("Using indices " + (settingsGroups.Count - 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Last alt)");
                             lastButton.onClick.AddListener(delegate ()
                             {
-                                SwitchSettings(settingsPages[settingsPages.Count - 1], settingsPages[storedIndex], new GameObject[] { nextButtonFromLastPageGO, lastButtonFromLastPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
+                                menuSounds.ButtonClickGoBack();
                             });
                         }
-                        else
-                        {
-                            //Debug.Log("Using indices " + (storedIndex - 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Last normal)");
-                            lastButton.onClick.AddListener(delegate ()
-                            {
-                                SwitchSettings(settingsPages[storedIndex - 1], settingsPages[storedIndex], new GameObject[] { nextButtonFromLastPageGO, lastButtonFromLastPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
-                            });
-                        }
-                        //Debug.Log("Last page buttons assigned");
-
-                        nextButton.onClick.AddListener(delegate ()
-                        {
-                            menuSounds.ButtonClickGoForward();
-                        });
-                        lastButton.onClick.AddListener(delegate ()
-                        {
-                            menuSounds.ButtonClickGoBack();
-                        });
+                        //Debug.Log("Finished settings page next and last arrow assignment");
                     }
-                    //Debug.Log("Finished settings page next and last arrow assignment");
                 }
             }
 

@@ -44,6 +44,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BaseFeatures.cs" />
+    <Compile Include="ChallengeParser.cs" />
     <Compile Include="CrewVsMonsterMode.cs" />
     <Compile Include="ExtendedSettingsMod.cs" />
     <Compile Include="InGameMenu.cs" />

@@ -38,9 +38,9 @@ namespace MonstrumExtendedSettingsMod
 
             public string modSettingsText;
             protected string modSettingsDescription;
-            private string defaultValueString;
+            public string defaultValueString;
             public string userValueString;
-            protected int modSettingsLine;
+            public int modSettingsLine;
             public string category;
             //private int linesToResult;
             private bool childSetting;
@@ -1250,6 +1250,14 @@ namespace MonstrumExtendedSettingsMod
                     }
                     logDebugText = new MESMSetting<bool>("Log Debug Text", "Lets the game log a lot of extra information that lags the game but can be useful when fixing bugs", false).userValue;
 
+                    // Challenge Test
+                    if (firstTimeReadingSettings)
+                    {
+                        firstTimeReadingSettings = false;
+                        ChallengeParser.SaveChallenge("Test Challenge Write");
+                        ChallengeParser.ReadChallenge("Test Challenge Read");
+                    }
+
                     // Initialise Other Variables Used In Code
                     modSettingsErrorString = "Other";
                     MESMSetting.currentCategoryBeingAssigned = modSettingsErrorString + " Settings";
@@ -1292,7 +1300,7 @@ namespace MonstrumExtendedSettingsMod
                     Debug.Log(settingsLog.Substring(0, settingsLog.Length - 3));
                     if (!MESMSetting.modSettingsExist)
                     {
-                        // Create the modSettings  file.
+                        // Create the modSettings file.
                         MESMSetting.SaveSettings();
 
                         // Read settings from the modSettings file to verify that reading works under normal circumstances.
