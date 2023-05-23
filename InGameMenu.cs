@@ -17,8 +17,6 @@ namespace MonstrumExtendedSettingsMod
         public static Image dropDownArrowImage; // Down arrow image
         public static Image dropDownOptionImage; // Option in drop down menu image
 
-
-
         private static Image referenceCategoryImage;
         private static Text referenceCategoryText;
 
@@ -45,45 +43,45 @@ namespace MonstrumExtendedSettingsMod
         private static Vector2 smallButtonSizeDelta;
         private static int smallButtonFontSize;
 
+        // Menu to provide functionality to save and load presets / challenges.
         private class ChallengesMenu : SubMenu
         {
             public ChallengesMenu(GameObject parentPage, Vector3 entryButtonOffset) : base("Challenges", parentPage, Vector3.zero, parentPage.transform, entryButtonOffset)
             {
                 float yOffset = 375f;
-                MenuTextButton challengeNameGOs = new MenuTextButton("Name", exitButtonGO.transform, new Vector3(-225f, yOffset, 0f));
-                MenuTextButton authorGOs = new MenuTextButton("Author", exitButtonGO.transform, new Vector3(-75f, yOffset, 0f));
-                MenuTextButton difficultyGOs = new MenuTextButton("Difficulty", exitButtonGO.transform, new Vector3(75f, yOffset, 0f));
-                MenuTextButton completedGOs = new MenuTextButton("Completed", exitButtonGO.transform, new Vector3(225f, yOffset, 0f));
+                MenuTextButton challengeName = new MenuTextButton("Name", exitButtonGO.transform, new Vector3(-225f, yOffset, 0f));
+                MenuTextButton author = new MenuTextButton("Author", exitButtonGO.transform, new Vector3(-75f, yOffset, 0f));
+                MenuTextButton difficulty = new MenuTextButton("Difficulty", exitButtonGO.transform, new Vector3(75f, yOffset, 0f));
+                MenuTextButton completed = new MenuTextButton("Completed", exitButtonGO.transform, new Vector3(225f, yOffset, 0f));
 
                 int mediumFontSize = (2 * referenceOptionText.fontSize);
-                challengeNameGOs.text.fontSize = mediumFontSize;
-                challengeNameGOs.text.rectTransform.sizeDelta *= 1.4f;
-                authorGOs.text.fontSize = mediumFontSize;
-                authorGOs.text.rectTransform.sizeDelta *= 1.4f;
-                difficultyGOs.text.fontSize = mediumFontSize;
-                difficultyGOs.text.rectTransform.sizeDelta *= 1.4f;
-                completedGOs.text.fontSize = mediumFontSize;
-                completedGOs.text.rectTransform.sizeDelta *= 1.4f;
+                challengeName.text.fontSize = mediumFontSize;
+                challengeName.text.rectTransform.sizeDelta *= 1.4f;
+                author.text.fontSize = challengeName.text.fontSize;
+                author.text.rectTransform.sizeDelta = challengeName.text.rectTransform.sizeDelta;
+                difficulty.text.fontSize = challengeName.text.fontSize;
+                difficulty.text.rectTransform.sizeDelta = challengeName.text.rectTransform.sizeDelta;
+                completed.text.fontSize = challengeName.text.fontSize;
+                completed.text.rectTransform.sizeDelta = challengeName.text.rectTransform.sizeDelta;
             }
         }
 
+        // Top page sub menu with buttons to other sub menus.
         private class NavigationSubMenu : SubMenu
         {
             public NavigationSubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Transform entryButtonParentTransform, Vector3 entryButtonOffset) : base(name, parentPage, parentPageOffset, entryButtonParentTransform, entryButtonOffset)
             {
                 // Create a save button.
-                MenuTextButton saveButton = new MenuTextButton("Save All Settings", exitButtonGO.transform, new Vector3(250f, 435f, 0f), true);
-
+                MenuTextButton saveButton = new MenuTextButton("Save All Settings", gameObject.transform, exitButtonGO.transform, new Vector3(250f, 435f, 0f), true);
                 saveButton.text.rectTransform.sizeDelta = largeButtonSizeDelta;
                 saveButton.text.fontSize = smallButtonFontSize;
-
                 saveButton.button.onClick.AddListener(delegate ()
                 {
                     MESMSetting.SaveSettings();
                 });
 
                 // Create a reset to default button
-                MenuTextButton resetButton = new MenuTextButton("Reset To Default (Press Save Afterwards)", exitButtonGO.transform, new Vector3(-250f, 435f, 0f), true);
+                MenuTextButton resetButton = new MenuTextButton("Reset To Default (Press Save Afterwards)", gameObject.transform, exitButtonGO.transform, new Vector3(-250f, 435f, 0f), true);
                 resetButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
                 resetButton.text.fontSize = smallButtonFontSize;
 
@@ -98,6 +96,7 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
+        // A single page of a settings sub menu.
         private class SettingsSubMenuPage : GameObjectFollowingTransform
         {
             public MenuTextButton nextButton;
@@ -105,12 +104,10 @@ namespace MonstrumExtendedSettingsMod
 
             public SettingsSubMenuPage(string name, Transform parentTransform, Transform exitButtonTransform, int index) : base(name, parentTransform, Vector3.zero)
             {
-                nextButton = new MenuTextButton("→_" + name + "_NextPage_" + index, exitButtonTransform, new Vector3(150f, 20f, 0f), false);
-                nextButton.gameObject.transform.SetParent(gameObject.transform, true);
+                nextButton = new MenuTextButton("→_" + name + "_NextPage_" + index, gameObject.transform, exitButtonTransform, new Vector3(150f, 20f, 0f), false);
                 nextButton.text.rectTransform.sizeDelta = new Vector2(nextButton.text.rectTransform.sizeDelta.x / 1.5f, nextButton.text.rectTransform.sizeDelta.y);
 
-                previousButton = new MenuTextButton("←_" + name + "_LastPage_" + index, exitButtonTransform, new Vector3(-150f, 20f, 0f), false);
-                previousButton.gameObject.transform.SetParent(gameObject.transform, true);
+                previousButton = new MenuTextButton("←_" + name + "_LastPage_" + index, gameObject.transform, exitButtonTransform, new Vector3(-150f, 20f, 0f), false);
                 previousButton.text.rectTransform.sizeDelta = nextButton.text.rectTransform.sizeDelta;
 
                 nextButton.button.onClick.AddListener(delegate ()
@@ -124,6 +121,7 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
+        // Sub menu to show settings of a certain category.
         private class SettingsSubMenu : SubMenu
         {
             List<SettingsSubMenuPage> settingsPages;
@@ -134,7 +132,7 @@ namespace MonstrumExtendedSettingsMod
             public SettingsSubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Transform entryButtonParentTransform, Vector3 entryButtonOffset, List<MESMSetting> settings) : base(name, parentPage, parentPageOffset, entryButtonParentTransform, entryButtonOffset)
             {
                 // Create a save button.
-                MenuTextButton saveButton = new MenuTextButton("Save", exitButtonGO.transform, new Vector3(0f, 50f, 0f), false);
+                MenuTextButton saveButton = new MenuTextButton("Save", gameObject.transform, exitButtonGO.transform, new Vector3(0f, 50f, 0f), false);
                 saveButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
                 saveButton.button.onClick.AddListener(delegate ()
                 {
@@ -142,15 +140,13 @@ namespace MonstrumExtendedSettingsMod
                 });
 
                 // Create a reset to default button
-                MenuTextButton resetButton = new MenuTextButton("Reset To Default (Press Save Afterwards)", exitButtonGO.transform, new Vector3(-250f, 435f, 0f), true);
+                MenuTextButton resetButton = new MenuTextButton("Reset To Default (Press Save Afterwards)", gameObject.transform, exitButtonGO.transform, new Vector3(-250f, 435f, 0f), true);
                 resetButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
                 resetButton.text.fontSize = smallButtonFontSize;
-
                 resetButton.button.onClick.AddListener(delegate ()
                 {
                     MESMSetting.ResetSettingsToDefault(settings);
                 });
-
 
                 // Create guide text in the top right on settings pages.
                 MenuText guideText = new MenuText("Hover over settings to view descriptions", exitButtonGO.transform, new Vector3(250f, 435f, 0f), true);
@@ -170,6 +166,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (settings[i].GetType() == typeof(MESMSettingRGB))
                     {
+                        // Check whether this is the first part of the colour setting so that a colour setting is not split across two pages.
                         if (((MESMSettingRGB)settings[i]).colour == MESMSettingRGB.MESMSettingRGBColourEnum.red)
                         {
                             if (2 * maximumOptionsPerRow - k < 3)
@@ -201,6 +198,7 @@ namespace MonstrumExtendedSettingsMod
                         settings[i].CreateButtonForSetting(settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset);
                     }
 
+                    // Keep an index of column entry to check when to switch to the second and back to the first column.
                     k++;
                     if (k % maximumOptionsPerRow == 0)
                     {
@@ -208,7 +206,7 @@ namespace MonstrumExtendedSettingsMod
                         if (k == 2 * maximumOptionsPerRow && i != settings.Count - 1)
                         {
                             settingsPages.Add(new SettingsSubMenuPage(name, this.gameObject.transform, exitButtonGO.transform, i));
-                            offset = new Vector3(-175f, 0f, 0f) / sizeReduction; //Vector3.zero;//new Vector3(-150f, 0f, 0f);
+                            offset = new Vector3(-175f, 0f, 0f) / sizeReduction;
                             k = 0;
                         }
                     }
@@ -220,9 +218,6 @@ namespace MonstrumExtendedSettingsMod
                     {
                         settingsPages[i].gameObject.SetActive(false);
                     }
-                    //Debug.Log("Starting settings page next and last arrow assignment");
-                    //Debug.Log("Number of settings groups is " + settingsGroups.Count);
-                    //Debug.Log("Number of navigation buttons is " + navigationButtons.Count);
 
                     for (int i = 0; i < settingsPages.Count; i++)
                     {
@@ -288,8 +283,6 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
-
-
         // SubMenu - A settings sub menu.
         private abstract class SubMenu : CanvasFollowingTransform
         {
@@ -302,9 +295,10 @@ namespace MonstrumExtendedSettingsMod
             // entryButtonOffset: The offset from the entryButtonParentTransform to use.
             protected SubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Transform entryButtonParentTransform, Vector3 entryButtonOffset) : base(name, parentPage.transform, parentPageOffset)
             {
-                this.gameObject.transform.SetParent(clipboardTransform, true);
+                this.gameObject.transform.SetParent(clipboardTransform, true); // Use the clipboardTransform so that a sub menu is displayed even when parent menus are disabled.
 
                 MenuTextButton entryButton = new MenuTextButton(name, entryButtonParentTransform, entryButtonOffset, false);
+                entryButton.text.rectTransform.sizeDelta = new Vector2(2f * entryButton.text.rectTransform.sizeDelta.x, entryButton.text.rectTransform.sizeDelta.y);
                 MenuTextButton exitButton = new MenuTextButton("Exit", this.gameObject.transform, new Vector3(0f, -375f, 0f), false);
                 exitButtonGO = exitButton.gameObject;
                 entryButton.button.onClick.AddListener(delegate ()
@@ -324,13 +318,9 @@ namespace MonstrumExtendedSettingsMod
                     menuSounds.ButtonClickGoBack();
                 });
 
-                Text exitButtonText = exitButtonGO.GetComponentInChildren<Text>();
-
-                exitButtonText.rectTransform.sizeDelta = largeButtonSizeDelta;
-
                 string shortTitle = name.Split(new string[] { " Settings" }, System.StringSplitOptions.None)[0];
-                MenuText text = new MenuText(shortTitle, exitButtonGO.transform, new Vector3(0f, (shortTitle.Length > 10 ? 450f : 435f), 0f), false); // Give long titles two lines rather than one.
-                text.text.rectTransform.sizeDelta = new Vector2(/*1.25f * */text.text.rectTransform.sizeDelta.x, 2f * text.text.rectTransform.sizeDelta.y);
+                MenuText titleText = new MenuText(shortTitle, exitButtonGO.transform, new Vector3(0f, (shortTitle.Length > 10 ? 450f : 435f), 0f), false); // Give long titles two lines rather than one.
+                titleText.text.rectTransform.sizeDelta = new Vector2(titleText.text.rectTransform.sizeDelta.x, 2f * titleText.text.rectTransform.sizeDelta.y);
 
                 this.gameObject.SetActive(false);
             }
@@ -478,6 +468,7 @@ namespace MonstrumExtendedSettingsMod
             smallButtonSizeDelta = new Vector2(1.2f * referenceOptionImage.rectTransform.sizeDelta.x, 3f * referenceOptionImage.rectTransform.sizeDelta.y);
             smallButtonFontSize = (int)(1.25f * referenceOptionText.fontSize);
 
+            // Create the initial navigation sub menu.
             NavigationSubMenu navigationSubMenu = new NavigationSubMenu("MES Mod", optionsUI.optionsButtons, new Vector3(0f, 140f, -5f), buttonList[3].transform.parent, (buttonList[3].transform.localPosition - buttonList[3].transform.parent.localPosition) - 3f * (buttonList[3].transform.localPosition - buttonList[1].transform.localPosition));
 
             // Discover all the categories used for the settings in order to set up pages for them.
@@ -513,18 +504,18 @@ namespace MonstrumExtendedSettingsMod
             ChallengesMenu challengesMenu = new ChallengesMenu(navigationSubMenu.gameObject, new Vector3(0f, -(52.5f * categories.Count), 0f));
 
             // Create a warning box to alert the user of restart conditions and errors.
-            // Create the base GameObjects to serve as the warning box and adjust their sorting order to appear on top of the menu buttons.
-            warningBox = new MenuTextImageButton("WarningBox", /*gameObjectReferencePos.transform*/optionsUI.optionsButtons.transform/*buttonList[3].transform*//*.parent.parent.parent*/, new Vector3(0f, 0/*200f*/, -7.5f), false, clipboardTransform);
-            //warningBoxGOs.GetComponent<Canvas>().sortingOrder = 5;
-            //warningBoxGOs.GetComponent<Canvas>().sortingOrder = 4;
+            // Use a base canvas and adjust its sorting order to appear on top of the menu buttons.
+            CanvasFollowingTransform warningBoxCanvas = new CanvasFollowingTransform("WarningBox", optionsUI.optionsButtons.transform, new Vector3(0f, 0f, -7.5f));
+            warningBox = new MenuTextImageButton("WarningBox", warningBoxCanvas.gameObject.transform, Vector3.zero);
+            warningBoxCanvas.gameObject.transform.SetParent(clipboardTransform, true);
+            warningBoxCanvas.canvas.sortingOrder = 2;
 
             // Adjust the area and opacity of the image.
             warningBox.image.rectTransform.sizeDelta = new Vector2(5f * warningBox.image.rectTransform.sizeDelta.x, 15f * warningBox.image.rectTransform.sizeDelta.y); // Big variant
             warningBox.image.color = new Color(warningBox.image.color.r, warningBox.image.color.g, warningBox.image.color.b, 1f);
 
             // Change the area and size of the text.
-            warningBox.text.rectTransform.sizeDelta = new Vector2(0.975f * warningBox.text.rectTransform.sizeDelta.x, 0.975f * warningBox.text.rectTransform.sizeDelta.y);
-            warningBox.text.fontSize = (int)(warningBox.text.fontSize / 2.5f); // Big variant
+            warningBox.text.rectTransform.sizeDelta = new Vector2(0.975f * warningBox.image.rectTransform.sizeDelta.x, 0.975f * warningBox.image.rectTransform.sizeDelta.y);
 
             // Add functionality to the box.
             warningBox.button.onClick.AddListener(delegate ()
@@ -540,80 +531,52 @@ namespace MonstrumExtendedSettingsMod
             warningBox.gameObject.SetActive(false);
         }
 
+        // Method to switch between sub pages and settings sub-sub-pages
         private static void SwitchToPage(GameObject newPage, GameObject originalPage)
         {
             originalPage.SetActive(false);
             newPage.SetActive(true);
         }
 
-        private static void SwitchSettings(List<GameObject> settingsToActivate, List<GameObject> settingsToDeactivate, GameObject[] buttonsToActivate, GameObject[] buttonsToDeactivate)
-        {
-            foreach (GameObject gameObject in settingsToDeactivate)
-            {
-                if (!gameObject.name.Contains("DESCRIPTION_BOX") && !gameObject.name.Contains("DROPDOWN_BOX") && !gameObject.name.Contains("DROPDOWN_CHOICE"))
-                {
-                    gameObject.SetActive(false);
-                }
-            }
-            foreach (GameObject gameObject in buttonsToDeactivate)
-            {
-                gameObject.SetActive(false);
-            }
-            foreach (GameObject gameObject in settingsToActivate)
-            {
-                if (!gameObject.name.Contains("DESCRIPTION_BOX") && !gameObject.name.Contains("DROPDOWN_BOX") && !gameObject.name.Contains("DROPDOWN_CHOICE"))
-                {
-                    gameObject.SetActive(true);
-                }
-            }
-            foreach (GameObject gameObject in buttonsToActivate)
-            {
-                gameObject.SetActive(true);
-            }
-        }
-
         public class MenuMultipleChoiceButtonWithDescription : MenuDescriptionBox
         {
-            MenuTextImage leftImage;
+            MenuTextImage selectedOptionImage;
             public MenuMultipleChoiceButtonWithDescription(string description, string name, string[] choices, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText)
             {
                 float xShift = Mathf.Abs((dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2);
                 Vector3 xShiftVector = new Vector3(xShift, 0f, 0f);
-                //this.gameObject.transform.localPosition += new Vector3(xShift, 0f, 0f);
 
                 //Debug.Log("dropDownOptionImage.rectTransform.sizeDelta.x = " + dropDownOptionImage.rectTransform.sizeDelta.x + ", referenceOptionImage.rectTransform.sizeDelta.x = " + referenceOptionImage.rectTransform.sizeDelta.x + ", ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction) = " + ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction) + ",(dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2 = " + (dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2 + ", Total = " + xShift);
                 float arrowShift = dropDownOptionImage.rectTransform.sizeDelta.x / 2 + 10f / sizeReduction;/*62.5f / sizeReduction;*/
                 Vector3 arrowShiftVector = new Vector3(arrowShift, 0f, 0f);
-                leftImage = new MenuTextImage(name, nameTextCustomTransform, nameOffsetConstant * nameTextCustomTransform.localPosition + xShiftVector, smallText);
-                MenuImageButton rightImageBoxBaseGOs = new MenuImageButton(name, leftImage.gameObject.transform, arrowShiftVector, true);
-                MenuImage rightImageArrow = new MenuImage(name, rightImageBoxBaseGOs.gameObject.transform, Vector3.zero);
+                selectedOptionImage = new MenuTextImage(name, nameTextCustomTransform, nameOffsetConstant * nameTextCustomTransform.localPosition + xShiftVector, smallText);
+                MenuImageButton arrowImageBase = new MenuImageButton(name, selectedOptionImage.gameObject.transform, arrowShiftVector, true);
+                MenuImage arrowImage = new MenuImage(name, arrowImageBase.gameObject.transform, Vector3.zero);
 
-                leftImage.image.rectTransform.sizeDelta = dropDownOptionImage.rectTransform.sizeDelta;
-                rightImageBoxBaseGOs.image.rectTransform.sizeDelta = dropDownButtonBoxImage.rectTransform.sizeDelta;
+                selectedOptionImage.image.rectTransform.sizeDelta = dropDownOptionImage.rectTransform.sizeDelta;
+                arrowImageBase.image.rectTransform.sizeDelta = dropDownButtonBoxImage.rectTransform.sizeDelta;
 
-                rightImageArrow.image.rectTransform.sizeDelta = dropDownArrowImage.rectTransform.sizeDelta;
-                rightImageArrow.image.sprite = dropDownArrowImage.sprite;
-                rightImageArrow.image.color = dropDownArrowImage.color;
-                rightImageArrow.image.raycastTarget = false;
+                arrowImage.image.rectTransform.sizeDelta = dropDownArrowImage.rectTransform.sizeDelta;
+                arrowImage.image.sprite = dropDownArrowImage.sprite;
+                arrowImage.image.color = dropDownArrowImage.color;
+                arrowImage.image.raycastTarget = false;
 
                 // Create and resize a dropdown box and then put dropdown choices on top of it.
                 List<GameObject> dropdownGOs = new List<GameObject>();
-                MenuImage backgroundImage = new MenuImage(name + "DROPDOWN_BOX", leftImage.gameObject.transform, Vector3.zero);
-                backgroundImage.image.rectTransform.sizeDelta = new Vector2(leftImage.image.rectTransform.sizeDelta.x, choices.Length * leftImage.image.rectTransform.sizeDelta.y);
+                MenuImage backgroundImage = new MenuImage(name + "DROPDOWN_BOX", selectedOptionImage.gameObject.transform, Vector3.zero);
+                backgroundImage.image.rectTransform.sizeDelta = new Vector2(selectedOptionImage.image.rectTransform.sizeDelta.x, choices.Length * selectedOptionImage.image.rectTransform.sizeDelta.y);
                 backgroundImage.image.color = new Color(backgroundImage.image.color.r, backgroundImage.image.color.g, backgroundImage.image.color.b, 1f);
 
                 for (int i = 0; i < choices.Length; i++)
                 {
-                    MenuTextImageButton choiceGOs = new MenuTextImageButton(choices[i] + "_DROPDOWN_CHOICE", leftImage.gameObject.transform, new Vector3(0f, (i + 1) * -leftImage.image.rectTransform.sizeDelta.y, 0f), smallText, true);
-                    choiceGOs.image.rectTransform.sizeDelta = leftImage.image.rectTransform.sizeDelta;
+                    MenuTextImageButton choiceGOs = new MenuTextImageButton(choices[i] + "_DROPDOWN_CHOICE", selectedOptionImage.gameObject.transform, new Vector3(0f, (i + 1) * -selectedOptionImage.image.rectTransform.sizeDelta.y, 0f), smallText, true);
+                    choiceGOs.image.rectTransform.sizeDelta = selectedOptionImage.image.rectTransform.sizeDelta;
                     dropdownGOs.Add(choiceGOs.gameObject);
 
                     int storableInt = i;
                     choiceGOs.button.onClick.AddListener(delegate ()
                     {
-                        Debug.Log("Updating left image (before): " + leftImage.text.text);
-                        leftImage.text.text = choices[storableInt];
-                        Debug.Log("Updating left image (after): " + leftImage.text.text);
+                        selectedOptionImage.text.text = choices[storableInt];
                         foreach (GameObject gameObject in dropdownGOs)
                         {
                             gameObject.SetActive(false);
@@ -643,7 +606,7 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 // Add button functionality to the drop down menu.
-                rightImageBoxBaseGOs.button.onClick.AddListener(delegate ()
+                arrowImageBase.button.onClick.AddListener(delegate ()
                 {
                     if (backgroundImage.gameObject.activeSelf)
                     {
@@ -662,24 +625,33 @@ namespace MonstrumExtendedSettingsMod
                 });
             }
 
-            public override Text ValueText()
+            public override string GetText()
             {
-                Debug.Log("Left Image Text value: " + leftImage.text.text);
-                return leftImage.text;
+                return selectedOptionImage.text.text;
+            }
+
+            public override void SetText(string value)
+            {
+                selectedOptionImage.text.text = value;
             }
         }
 
         public class MenuBoolButtonWithDescription : MenuDescriptionBox
         {
-            MenuBoolButton menuBoolButton;
+            public MenuBoolButton menuBoolButton;
             public MenuBoolButtonWithDescription(string description, string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText)
             {
                 menuBoolButton = new MenuBoolButton(name, nameTextCustomTransform, nameOffsetConstant * nameTextCustomTransform.localPosition, smallText);
             }
 
-            public override Text ValueText()
+            public override string GetText()
             {
-                return menuBoolButton.text;
+                return menuBoolButton.text.text;
+            }
+
+            public override void SetText(string value)
+            {
+                menuBoolButton.text.text = value;
             }
         }
 
@@ -722,13 +694,17 @@ namespace MonstrumExtendedSettingsMod
                 menuInputField = new MenuInputField(name, nameTextCustomTransform, nameOffsetConstant * nameTextCustomTransform.localPosition, useInt, minClamp, maxClamp, smallText);
             }
 
-            public override Text ValueText()
+            public override string GetText()
             {
-                return menuInputField.inputField.textComponent;
+                return menuInputField.inputField.text;
+            }
+
+            public override void SetText(string value)
+            {
+                menuInputField.inputField.text = value;
             }
         }
 
-        // To fix hover don't make parents children of nameMenuText.
         public abstract class MenuDescriptionBox : GameObjectFollowingTransform
         {
             protected static float nameOffsetConstant = -1.7f;
@@ -756,59 +732,45 @@ namespace MonstrumExtendedSettingsMod
                 nameMenuText.text.raycastTarget = true;
                 nameMenuText.text.alignment = TextAnchor.MiddleRight;
 
-                //descriptionTextGameObjects[0].GetComponent<Canvas>().sortingOrder = 3;
-                //descriptionTextGameObjects[2].GetComponent<Canvas>().sortingOrder = 2;
-
-                /*
-                // CSF Experiment
-                Image descriptionImage = descriptionTextGameObjects[3].GetComponentInChildren<Image>();
-                descriptionImage.rectTransform.sizeDelta = new Vector2(2.75f * descriptionImage.rectTransform.sizeDelta.x, 5f * descriptionImage.rectTransform.sizeDelta.y);
-                descriptionImage.color = new Color(descriptionImage.color.r, descriptionImage.color.g, descriptionImage.color.b, 1f);
-                Text text = descriptionTextGameObjects[1].GetComponentInChildren<Text>();
-                text.rectTransform.sizeDelta = descriptionImage.rectTransform.sizeDelta;
-                text.text = description;
-                ContentSizeFitter csf = descriptionTextGameObjects[1].AddComponent<ContentSizeFitter>();
-                csf.verticalFit = ContentSizeFitter.FitMode.MinSize;
-                descriptionImage.rectTransform.sizeDelta = new Vector2(descriptionImage.rectTransform.sizeDelta.x, text.rectTransform.sizeDelta.y);
-                text.rectTransform.sizeDelta = new Vector2(0.975f * descriptionImage.rectTransform.sizeDelta.x, 0.975f * descriptionImage.rectTransform.sizeDelta.y);
-                */
-
-                EventTrigger trigger = nameMenuText.gameObject.AddComponent<EventTrigger>();
-                EventTrigger.Entry entry = new EventTrigger.Entry();
-                entry.eventID = EventTriggerType.PointerEnter;
-                entry.callback.AddListener((eventData) =>
+                EventTrigger revealCheckTrigger = nameMenuText.gameObject.AddComponent<EventTrigger>();
+                EventTrigger.Entry pointerEnter = new EventTrigger.Entry();
+                pointerEnter.eventID = EventTriggerType.PointerEnter;
+                pointerEnter.callback.AddListener((eventData) =>
                 {
-                    AudioSystem.instance.StartCoroutine(RevealDescriptionAfterTime(descriptionMenuTextImage.gameObject, nameMenuText.gameObject, trigger));
+                    AudioSystem.instance.StartCoroutine(RevealDescriptionAfterTime(descriptionMenuTextImage.gameObject, nameMenuText.gameObject, revealCheckTrigger));
                 });
-                trigger.triggers.Add(entry);
+                revealCheckTrigger.triggers.Add(pointerEnter);
 
-                EventTrigger trigger2 = descriptionMenuTextImage.gameObject.AddComponent<EventTrigger>();
-                EventTrigger.Entry entry2 = new EventTrigger.Entry();
-                entry2.eventID = EventTriggerType.PointerExit;
-                entry2.callback.AddListener((eventData) =>
+                EventTrigger hideTrigger = descriptionMenuTextImage.gameObject.AddComponent<EventTrigger>();
+                EventTrigger.Entry pointerExit = new EventTrigger.Entry();
+                pointerExit.eventID = EventTriggerType.PointerExit;
+                pointerExit.callback.AddListener((eventData) =>
                 {
                     descriptionMenuTextImage.gameObject.SetActive(false);
 
                     nameMenuText.gameObject.SetActive(true);
                 });
-                trigger2.triggers.Add(entry2);
+                hideTrigger.triggers.Add(pointerExit);
 
                 descriptionMenuTextImage.gameObject.SetActive(false);
             }
 
-            public abstract Text ValueText();
+            // Methods to get and set the text component of the object corresponding to the selected user value.
+            public abstract string GetText();
+            public abstract void SetText(string value);
 
             private static IEnumerator RevealDescriptionAfterTime(GameObject descriptionGameObject, GameObject settingsButtonGameObject, EventTrigger trigger)
             {
+                // Wait until some time has expired to show the description or until the setting name text has been exited.
                 float t = 0f;
                 bool exitedText = false;
-                EventTrigger.Entry entry = new EventTrigger.Entry();
-                entry.eventID = EventTriggerType.PointerExit;
-                entry.callback.AddListener((eventData) =>
+                EventTrigger.Entry pointerExit = new EventTrigger.Entry();
+                pointerExit.eventID = EventTriggerType.PointerExit;
+                pointerExit.callback.AddListener((eventData) =>
                 {
                     exitedText = true;
                 });
-                trigger.triggers.Add(entry);
+                trigger.triggers.Add(pointerExit);
                 while (t < 0.5f)
                 {
                     t += Time.deltaTime;
@@ -818,13 +780,14 @@ namespace MonstrumExtendedSettingsMod
                     }
                     yield return null;
                 }
+                // Show the description once the waiting time has expired if the setting name text has not been exited.
                 if (!exitedText)
                 {
                     descriptionGameObject.SetActive(true);
 
                     settingsButtonGameObject.SetActive(false);
                 }
-                trigger.triggers.Remove(entry);
+                trigger.triggers.Remove(pointerExit);
             }
         }
 
@@ -842,15 +805,13 @@ namespace MonstrumExtendedSettingsMod
                 slider.navigation = referenceSlider.navigation;
                 slider.spriteState = referenceSlider.spriteState;
                 slider.transition = referenceSlider.transition;
-                //slider.wholeNumbers = referenceSlider.wholeNumbers;
-                slider.wholeNumbers = useInt;
+                slider.wholeNumbers = useInt; // Might be good to add extra update to round float numbers to 1/2 DP.
                 slider.minValue = minClamp;
                 slider.maxValue = maxClamp;
 
                 image.sprite = referenceSliderBackgroundImage.sprite;
                 image.type = referenceSliderBackgroundImage.type;
                 image.material = referenceSliderBackgroundImage.material;
-                //sliderBackgroundImage.color = referenceSliderBackgroundImage.color;
 
                 MenuImage fillMenuImage = new MenuImage(name, gameObject.transform, Vector3.zero);
                 fillImage = fillMenuImage.image;
@@ -886,7 +847,7 @@ namespace MonstrumExtendedSettingsMod
                 float handleHeightDifference = handleImage.rectTransform.rect.height - handleHeightBefore;
 
                 image.rectTransform.sizeDelta = new Vector2(0.945f * image.rectTransform.sizeDelta.x, image.rectTransform.sizeDelta.y / 2f);//slider.image.rectTransform.sizeDelta = new Vector2(slider.image.rectTransform.sizeDelta.x, slider.image.rectTransform.sizeDelta.y / 2f);
-                slider.fillRect.sizeDelta = new Vector2(/*2f * */referenceSliderFillImage.rectTransform.sizeDelta.x, slider.fillRect.sizeDelta.y - fillHeightDifference - fillHeightBefore / 2f);
+                slider.fillRect.sizeDelta = new Vector2(referenceSliderFillImage.rectTransform.sizeDelta.x, slider.fillRect.sizeDelta.y - fillHeightDifference - fillHeightBefore / 2f);
                 slider.handleRect.sizeDelta = new Vector2(slider.handleRect.sizeDelta.x, slider.handleRect.sizeDelta.y - handleHeightDifference / 2f);
 
                 // Scale the slider and adjust for slider scaling
@@ -898,9 +859,9 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
-
         public class MenuBoolButton : MenuTextImageButton
         {
+            private bool value;
             public MenuBoolButton(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText, true)
             {
                 image.rectTransform.sizeDelta = referenceBoolButtonImage.rectTransform.sizeDelta;
@@ -913,17 +874,22 @@ namespace MonstrumExtendedSettingsMod
                 text.rectTransform.sizeDelta = referenceBoolButtonImage.rectTransform.sizeDelta;
                 text.alignment = referenceBoolButtonText.alignment;
 
+                // Event to switch the button.
                 button.onClick.AddListener(delegate ()
-                    {
-                        if (text.text.Equals("X"))
-                        {
-                            text.text = string.Empty;
-                        }
-                        else
-                        {
-                            text.text = "X";
-                        }
-                    });
+                {
+                    SetValueAndUpdateText(!value);
+                });
+            }
+
+            public bool GetValue()
+            {
+                return this.value;
+            }
+
+            public void SetValueAndUpdateText(bool value)
+            {
+                this.value = value;
+                text.text = value ? "X" : string.Empty;
             }
         }
 
@@ -1054,22 +1020,28 @@ namespace MonstrumExtendedSettingsMod
         private class MenuTextButton : MenuText
         {
             public Button button;
+            public MenuTextButton(string name, Transform parentTransform, Transform referenceTransform, Vector3 referenceOffset, bool smallText = true) : this(name, referenceTransform, referenceOffset, smallText)
+            {
+                this.gameObject.transform.SetParent(parentTransform, true);
+            }
+
             public MenuTextButton(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText)
             {
                 button = this.gameObject.AddComponent<Button>();
                 text.raycastTarget = true;
 
                 EventTrigger trigger = text.gameObject.AddComponent<EventTrigger>();
-                EventTrigger.Entry entry = new EventTrigger.Entry();
-                entry.eventID = EventTriggerType.PointerEnter;
-                entry.callback.AddListener((eventData) => { text.color = Color.black; });
-                trigger.triggers.Add(entry);
+                EventTrigger.Entry textHighlight = new EventTrigger.Entry();
+                textHighlight.eventID = EventTriggerType.PointerEnter;
+                textHighlight.callback.AddListener((eventData) => { text.color = Color.black; });
+                trigger.triggers.Add(textHighlight);
 
-                EventTrigger.Entry entry2 = new EventTrigger.Entry();
-                entry2.eventID = EventTriggerType.PointerExit;
-                entry2.callback.AddListener((eventData) => { text.color = referenceCategoryText.color; });
-                trigger.triggers.Add(entry2);
+                EventTrigger.Entry textHighlightReset = new EventTrigger.Entry();
+                textHighlightReset.eventID = EventTriggerType.PointerExit;
+                textHighlightReset.callback.AddListener((eventData) => { text.color = referenceCategoryText.color; });
+                trigger.triggers.Add(textHighlightReset);
 
+                // Event to reset text colour when clicking on a button to fix highlights persisting when going in and out of a sub menu.
                 button.onClick.AddListener(delegate ()
                 {
                     text.color = referenceCategoryText.color;
@@ -1106,7 +1078,7 @@ namespace MonstrumExtendedSettingsMod
                 }
                 else
                 {
-                    text.rectTransform.sizeDelta = referenceCategoryImage.rectTransform.sizeDelta + new Vector2(0.25f * referenceCategoryImage.rectTransform.sizeDelta.x, 0);
+                    text.rectTransform.sizeDelta = new Vector2(1.25f * referenceCategoryImage.rectTransform.sizeDelta.x, referenceCategoryImage.rectTransform.sizeDelta.y);
                 }
                 text.alignment = referenceCategoryText.alignment;
             }
@@ -1127,7 +1099,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 // Create Unity UI Panel via Script - prof - https://answers.unity.com/questions/1034060/create-unity-ui-panel-via-script.html - Accessed 23.10.2021
                 canvas = this.gameObject.AddComponent<Canvas>();
-                canvas.renderMode = RenderMode.WorldSpace;//RenderMode.ScreenSpaceOverlay;
+                canvas.renderMode = RenderMode.WorldSpace;
                 canvas.sortingOrder = 0;
                 this.gameObject.AddComponent<CanvasScaler>();
                 this.gameObject.AddComponent<GraphicRaycaster>();
@@ -1144,22 +1116,6 @@ namespace MonstrumExtendedSettingsMod
                 this.gameObject.transform.SetParent(parentTransform, false);
                 this.gameObject.transform.localPosition += referenceOffset;
             }
-        }
-
-        public static GameObject GameObjectArrayToSingleParent(string name, GameObject[] array)
-        {
-            // Only combine GameObjects if there are at least two.
-            if (array != null && array.Length > 1)
-            {
-                GameObject parent = new GameObject(name);
-                parent.transform.SetParent(array[0].transform.parent);
-                foreach (GameObject child in array)
-                {
-                    child.transform.SetParent(parent.transform);
-                }
-                return parent;
-            }
-            return null;
         }
 
         public class MESMSettingRGB : MESMSetting<int>
@@ -1196,7 +1152,6 @@ namespace MonstrumExtendedSettingsMod
             }
 
             // On stop using slider [or input field for now], update colour of display text. Change component corresponding to which of rgb this slider is.
-
             private IEnumerator ChangeDisplayTextColourAfterInput()
             {
                 yield return null;
@@ -1241,15 +1196,15 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
-            public GameObject CreateRGBButton(Transform referenceTransform, Vector3 referenceOffset, Text displayText)
+            public MenuDescriptionBox CreateRGBButton(Transform referenceTransform, Vector3 referenceOffset, Text displayText)
             {
                 this.displayText = displayText;
                 base.CreateButtonForSetting(referenceTransform, referenceOffset); // Creates and assigns settingsButton
 
                 // Edit settingsButton
-                inputField = settingsButton.GetComponentInChildren<InputField>();
+                MenuSliderInputFieldWithDescription menuSliderInputFieldWithDescription = ((MenuSliderInputFieldWithDescription)settingsButton);
+                inputField = menuSliderInputFieldWithDescription.menuInputField.inputField;
 
-                EventTrigger trigger = settingsButton.GetComponentInChildren<EventTrigger>();
                 EventTrigger.Entry entry = new EventTrigger.Entry();
                 entry.eventID = EventTriggerType.PointerClick;
 
@@ -1257,10 +1212,9 @@ namespace MonstrumExtendedSettingsMod
                 {
                     inputField.StartCoroutine(ChangeDisplayTextColourAfterInput());
                 });
-                trigger.triggers.Add(entry);
+                menuSliderInputFieldWithDescription.menuInputField.eventTrigger.triggers.Add(entry);
 
-                Slider slider = settingsButton.GetComponentInChildren<Slider>();
-                slider.onValueChanged.AddListener((sliderValue) => { ChangeTextColour(); });
+                menuSliderInputFieldWithDescription.menuSlider.slider.onValueChanged.AddListener((sliderValue) => { ChangeTextColour(); });
 
                 ChangeTextColour();
 
