@@ -44,7 +44,7 @@ namespace MonstrumExtendedSettingsMod
             public string category;
             //private int linesToResult;
             private bool childSetting;
-            protected GameObject[] settingsButton;
+            protected GameObject settingsButton;
 
             public MESMSetting(string modSettingsText, string modSettingsDescription, bool childSetting, string defaultValueString)
             {
@@ -105,11 +105,11 @@ namespace MonstrumExtendedSettingsMod
                                 {
                                     if (t == typeof(MESMSettingMultipleChoice))
                                     {
-                                        value = mESMSetting.settingsButton[3].GetComponent<Text>().text;
+                                        value = mESMSetting.settingsButton.GetComponentInChildren<Text>().text;
                                     }
                                     else
                                     {
-                                        value = mESMSetting.settingsButton[10].GetComponent<InputField>().text;
+                                        value = mESMSetting.settingsButton.GetComponentInChildren<InputField>().text;
                                     }
                                 }
                                 catch (Exception e)
@@ -121,7 +121,7 @@ namespace MonstrumExtendedSettingsMod
                             }
                             else if (t == typeof(MESMSettingRGB))
                             {
-                                value = mESMSetting.settingsButton[10].GetComponent<InputField>().text;
+                                value = mESMSetting.settingsButton.GetComponentInChildren<InputField>().text;
                                 ((MESMSettingRGB)mESMSetting).userValue = Convert.ToInt32(value);
                             }
                             else
@@ -131,7 +131,7 @@ namespace MonstrumExtendedSettingsMod
                                     Type gt = mESMSetting.GetType().GetGenericArguments()[0]; // How to get the type of T from a member of a generic class or method - Tamas Czinege - https://stackoverflow.com/questions/557340/how-to-get-the-type-of-t-from-a-member-of-a-generic-class-or-method - Accessed 26.10.2021
                                     if (gt == typeof(int) || gt == typeof(float))
                                     {
-                                        value = mESMSetting.settingsButton[10].GetComponent<InputField>().text;
+                                        value = mESMSetting.settingsButton.GetComponentInChildren<InputField>().text;
                                         if (gt == typeof(int))
                                         {
                                             ((MESMSetting<int>)mESMSetting).userValue = Convert.ToInt32(value);
@@ -147,7 +147,7 @@ namespace MonstrumExtendedSettingsMod
                                     }
                                     else if (gt == typeof(bool))
                                     {
-                                        value = mESMSetting.settingsButton[1].GetComponent<Text>().text.Equals("X") ? "True" : "False";
+                                        value = mESMSetting.settingsButton.GetComponentInChildren<Text>().text.Equals("X") ? "True" : "False";
                                         ((MESMSetting<bool>)mESMSetting).userValue = Convert.ToBoolean(value);
                                     }
                                     else
@@ -229,8 +229,7 @@ namespace MonstrumExtendedSettingsMod
                             warningBoxTextStringBuilder.Append(badlyFormattedSetting);
                         }
                         warningBoxTextStringBuilder.Append("\n----------\nSettings have not been saved. Restart if unable to fix.\n\n");
-                        warningBoxGOs[0].SetActive(true);
-                        warningBoxGOs[2].SetActive(true);
+                        warningBox.gameObject.SetActive(true);
                     }
                     else
                     {
@@ -278,11 +277,10 @@ namespace MonstrumExtendedSettingsMod
                         }
                         warningBoxTextStringBuilder.Append(".");
 
-                        warningBoxGOs[0].SetActive(true);
-                        warningBoxGOs[2].SetActive(true);
+                        warningBox.gameObject.SetActive(true);
                     }
                     warningBoxTextStringBuilder.Append("\n\nOK");
-                    warningBoxText.text = warningBoxTextStringBuilder.ToString();
+                    warningBox.text.text = warningBoxTextStringBuilder.ToString();
                 }
                 else
                 {
@@ -304,11 +302,11 @@ namespace MonstrumExtendedSettingsMod
                         {
                             if (t == typeof(MESMSettingMultipleChoice))
                             {
-                                mESMSetting.settingsButton[3].GetComponent<Text>().text = mESMSetting.defaultValueString;
+                                mESMSetting.settingsButton.GetComponentInChildren<Text>().text = mESMSetting.defaultValueString;
                             }
                             else
                             {
-                                mESMSetting.settingsButton[10].GetComponent<InputField>().text = mESMSetting.defaultValueString;
+                                mESMSetting.settingsButton.GetComponentInChildren<InputField>().text = mESMSetting.defaultValueString;
                             }
                         }
                         catch
@@ -318,9 +316,9 @@ namespace MonstrumExtendedSettingsMod
                     }
                     else if (t == typeof(MESMSettingRGB))
                     {
-                        mESMSetting.settingsButton[10].GetComponent<InputField>().text = mESMSetting.defaultValueString;
+                        mESMSetting.settingsButton.GetComponentInChildren<InputField>().text = mESMSetting.defaultValueString;
                         ((MESMSettingRGB)mESMSetting).ChangeTextColour();
-                        mESMSetting.settingsButton[12].GetComponent<Slider>().value = Convert.ToSingle(mESMSetting.defaultValueString);
+                        mESMSetting.settingsButton.GetComponentInChildren<Slider>().value = Convert.ToSingle(mESMSetting.defaultValueString);
                     }
                     else
                     {
@@ -329,15 +327,16 @@ namespace MonstrumExtendedSettingsMod
                             Type gt = mESMSetting.GetType().GetGenericArguments()[0]; // How to get the type of T from a member of a generic class or method - Tamas Czinege - https://stackoverflow.com/questions/557340/how-to-get-the-type-of-t-from-a-member-of-a-generic-class-or-method - Accessed 26.10.2021
                             if (gt == typeof(int) || gt == typeof(float))
                             {
-                                mESMSetting.settingsButton[10].GetComponent<InputField>().text = mESMSetting.defaultValueString;
-                                if (mESMSetting.settingsButton.Length > 12)
+                                mESMSetting.settingsButton.GetComponentInChildren<InputField>().text = mESMSetting.defaultValueString;
+                                Slider slider = mESMSetting.settingsButton.GetComponentInChildren<Slider>();
+                                if (slider != null)
                                 {
-                                    mESMSetting.settingsButton[12].GetComponent<Slider>().value = Convert.ToSingle(mESMSetting.defaultValueString);
+                                    slider.value = Convert.ToSingle(mESMSetting.defaultValueString);
                                 }
                             }
                             else if (gt == typeof(bool))
                             {
-                                mESMSetting.settingsButton[1].GetComponent<Text>().text = ((MESMSetting<bool>)mESMSetting).defaultValue == true ? "X" : "";
+                                mESMSetting.settingsButton.GetComponentInChildren<Text>().text = ((MESMSetting<bool>)mESMSetting).defaultValue == true ? "X" : "";
                             }
                             else
                             {
@@ -352,7 +351,7 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
-            public abstract GameObject[] CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset);
+            public abstract GameObject CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset);
         }
 
         public class MESMSettingString : MESMSetting
@@ -364,11 +363,11 @@ namespace MonstrumExtendedSettingsMod
                 this.userValueString = this.userValue.ToString();
             }
 
-            public override GameObject[] CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
+            public override GameObject CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
             {
-                settingsButton = MonstrumExtendedSettingsMod.ExtendedSettingsModScript.CreateInputFieldDescriptionBox(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, false, 0f, 0f);
-                InputField inputField = settingsButton[10].GetComponent<InputField>();
-                inputField.text = userValue.ToString();
+                MenuInputFieldWithDescription menuInputFieldWithDescription = new MenuInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, false, 0f, 0f);
+                settingsButton = menuInputFieldWithDescription.gameObject;
+                menuInputFieldWithDescription.menuInputField.inputField.text = userValue.ToString();
                 return settingsButton;
             }
 
@@ -385,11 +384,14 @@ namespace MonstrumExtendedSettingsMod
                 this.choices = choices;
             }
 
-            public override GameObject[] CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
+            public override GameObject CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
             {
-                settingsButton = MonstrumExtendedSettingsMod.ExtendedSettingsModScript.CreateMultipleChoiceDescriptionBox(this.modSettingsDescription, this.modSettingsText, choices, referenceTransform, referenceOffset);
-                Text text = settingsButton[3].GetComponent<Text>();
-                text.text = userValue.ToString();
+                MenuMultipleChoiceButtonWithDescription menuMultipleChoiceButtonWithDescription = new MenuMultipleChoiceButtonWithDescription(this.modSettingsDescription, this.modSettingsText, choices, referenceTransform, referenceOffset);
+                settingsButton = menuMultipleChoiceButtonWithDescription.gameObject;
+                Debug.Log("Value text before: " + menuMultipleChoiceButtonWithDescription.ValueText().text);
+                Debug.Log("User value is: " + userValueString);
+                menuMultipleChoiceButtonWithDescription.ValueText().text = userValue.ToString();
+                Debug.Log("Value text after: " + menuMultipleChoiceButtonWithDescription.ValueText().text);
                 return settingsButton;
             }
         }
@@ -450,33 +452,36 @@ namespace MonstrumExtendedSettingsMod
                 return FindSetting(FindLineOfSettingText(searchText) + linesToResult);
             }
 
-            public override GameObject[] CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
+            public override GameObject CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
             {
                 if (typeof(T) == typeof(int) || typeof(T) == typeof(float))
                 {
+                    MenuInputFieldWithDescription menuInputFieldWithDescription;
                     if (this.minClamp != 0f || this.maxClamp != 0f)
                     {
-                        settingsButton = MonstrumExtendedSettingsMod.ExtendedSettingsModScript.CreateSliderDescriptionBox(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, typeof(T) == typeof(int) ? true : false, this.minClamp, this.maxClamp);
-                        settingsButton[12].GetComponent<Slider>().value = Convert.ToSingle(userValue);
+                        MenuSliderInputFieldWithDescription menuSliderInputFieldDescriptionBox = new MenuSliderInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
+                        settingsButton = menuSliderInputFieldDescriptionBox.gameObject;
+                        menuSliderInputFieldDescriptionBox.menuSlider.slider.value = Convert.ToSingle(userValue);
+                        menuInputFieldWithDescription = menuSliderInputFieldDescriptionBox;
                     }
                     else
                     {
-                        settingsButton = MonstrumExtendedSettingsMod.ExtendedSettingsModScript.CreateInputFieldDescriptionBox(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, typeof(T) == typeof(int) ? true : false, this.minClamp, this.maxClamp);
+                        menuInputFieldWithDescription = new MenuInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
+                        settingsButton = menuInputFieldWithDescription.gameObject;
                     }
-                    InputField inputField = settingsButton[10].GetComponent<InputField>();
-                    inputField.text = userValue.ToString();
+                    menuInputFieldWithDescription.menuInputField.inputField.text = userValue.ToString();
                 }
                 else /*if (typeof(T) == typeof(bool))*/
                 {
-                    settingsButton = MonstrumExtendedSettingsMod.ExtendedSettingsModScript.CreateBoolDescriptionBox(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset);
-                    Text text = settingsButton[1].GetComponent<Text>();
+                    MenuBoolButtonWithDescription menuBoolButtonWithDescription = new MenuBoolButtonWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset);
+                    settingsButton = menuBoolButtonWithDescription.gameObject;
                     if ((bool)Convert.ChangeType(userValue, typeof(bool)))
                     {
-                        text.text = "X";
+                        menuBoolButtonWithDescription.ValueText().text = "X";
                     }
                     else
                     {
-                        text.text = string.Empty;
+                        menuBoolButtonWithDescription.ValueText().text = string.Empty;
                     }
                 }
                 return settingsButton;

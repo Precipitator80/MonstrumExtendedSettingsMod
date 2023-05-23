@@ -33,11 +33,308 @@ namespace MonstrumExtendedSettingsMod
         private static Image referenceSliderFillImage;
         private static Image referenceSliderHandleImage;
 
-        public static GameObject[] mesmButtonGOs;
-        public static GameObject[] warningBoxGOs;
-        public static Text warningBoxText;
+        private static MenuSounds menuSounds;
+
+        public static MenuTextImageButton warningBox;
 
         private static float sizeReduction;
+
+        private static Vector2 largeReferenceSizeDelta;
+        private static Vector2 largeButtonSizeDelta;
+        private static int largeButtonFontSize;
+        private static Vector2 smallButtonSizeDelta;
+        private static int smallButtonFontSize;
+
+        private class ChallengesMenu : SubMenu
+        {
+            public ChallengesMenu(GameObject parentPage, Vector3 entryButtonOffset) : base("Challenges", parentPage, Vector3.zero, parentPage.transform, entryButtonOffset)
+            {
+                float yOffset = 375f;
+                MenuTextButton challengeNameGOs = new MenuTextButton("Name", exitButtonGO.transform, new Vector3(-225f, yOffset, 0f));
+                MenuTextButton authorGOs = new MenuTextButton("Author", exitButtonGO.transform, new Vector3(-75f, yOffset, 0f));
+                MenuTextButton difficultyGOs = new MenuTextButton("Difficulty", exitButtonGO.transform, new Vector3(75f, yOffset, 0f));
+                MenuTextButton completedGOs = new MenuTextButton("Completed", exitButtonGO.transform, new Vector3(225f, yOffset, 0f));
+
+                int mediumFontSize = (2 * referenceOptionText.fontSize);
+                challengeNameGOs.text.fontSize = mediumFontSize;
+                challengeNameGOs.text.rectTransform.sizeDelta *= 1.4f;
+                authorGOs.text.fontSize = mediumFontSize;
+                authorGOs.text.rectTransform.sizeDelta *= 1.4f;
+                difficultyGOs.text.fontSize = mediumFontSize;
+                difficultyGOs.text.rectTransform.sizeDelta *= 1.4f;
+                completedGOs.text.fontSize = mediumFontSize;
+                completedGOs.text.rectTransform.sizeDelta *= 1.4f;
+            }
+        }
+
+        private class NavigationSubMenu : SubMenu
+        {
+            public NavigationSubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Transform entryButtonParentTransform, Vector3 entryButtonOffset) : base(name, parentPage, parentPageOffset, entryButtonParentTransform, entryButtonOffset)
+            {
+                // Create a save button.
+                MenuTextButton saveButton = new MenuTextButton("Save All Settings", exitButtonGO.transform, new Vector3(250f, 435f, 0f), true);
+
+                saveButton.text.rectTransform.sizeDelta = largeButtonSizeDelta;
+                saveButton.text.fontSize = smallButtonFontSize;
+
+                saveButton.button.onClick.AddListener(delegate ()
+                {
+                    MESMSetting.SaveSettings();
+                });
+
+                // Create a reset to default button
+                MenuTextButton resetButton = new MenuTextButton("Reset To Default (Press Save Afterwards)", exitButtonGO.transform, new Vector3(-250f, 435f, 0f), true);
+                resetButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
+                resetButton.text.fontSize = smallButtonFontSize;
+
+                resetButton.button.onClick.AddListener(delegate ()
+                {
+                    MESMSetting.ResetSettingsToDefault(ModSettings.allSettings);
+                });
+
+                MenuText versionText = new MenuText("V" + VERSION_WITH_TEXT + "\nPrecipitator", exitButtonGO.transform, new Vector3(-250f, 0f, 0f), false);
+                versionText.text.rectTransform.sizeDelta = smallButtonSizeDelta;
+                versionText.text.fontSize /= 2;
+            }
+        }
+
+        private class SettingsSubMenuPage : GameObjectFollowingTransform
+        {
+            public MenuTextButton nextButton;
+            public MenuTextButton previousButton;
+
+            public SettingsSubMenuPage(string name, Transform parentTransform, Transform exitButtonTransform, int index) : base(name, parentTransform, Vector3.zero)
+            {
+                nextButton = new MenuTextButton("→_" + name + "_NextPage_" + index, exitButtonTransform, new Vector3(150f, 20f, 0f), false);
+                nextButton.gameObject.transform.SetParent(gameObject.transform, true);
+                nextButton.text.rectTransform.sizeDelta = new Vector2(nextButton.text.rectTransform.sizeDelta.x / 1.5f, nextButton.text.rectTransform.sizeDelta.y);
+
+                previousButton = new MenuTextButton("←_" + name + "_LastPage_" + index, exitButtonTransform, new Vector3(-150f, 20f, 0f), false);
+                previousButton.gameObject.transform.SetParent(gameObject.transform, true);
+                previousButton.text.rectTransform.sizeDelta = nextButton.text.rectTransform.sizeDelta;
+
+                nextButton.button.onClick.AddListener(delegate ()
+                {
+                    menuSounds.ButtonClickGoForward();
+                });
+                previousButton.button.onClick.AddListener(delegate ()
+                {
+                    menuSounds.ButtonClickGoBack();
+                });
+            }
+        }
+
+        private class SettingsSubMenu : SubMenu
+        {
+            List<SettingsSubMenuPage> settingsPages;
+            public SettingsSubMenu(string name, GameObject parentPage, Vector3 entryButtonOffset, List<MESMSetting> settings) : this(name, parentPage, Vector3.zero, parentPage.transform, entryButtonOffset, settings)
+            {
+            }
+
+            public SettingsSubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Transform entryButtonParentTransform, Vector3 entryButtonOffset, List<MESMSetting> settings) : base(name, parentPage, parentPageOffset, entryButtonParentTransform, entryButtonOffset)
+            {
+                // Create a save button.
+                MenuTextButton saveButton = new MenuTextButton("Save", exitButtonGO.transform, new Vector3(0f, 50f, 0f), false);
+                saveButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
+                saveButton.button.onClick.AddListener(delegate ()
+                {
+                    MESMSetting.SaveSettings();
+                });
+
+                // Create a reset to default button
+                MenuTextButton resetButton = new MenuTextButton("Reset To Default (Press Save Afterwards)", exitButtonGO.transform, new Vector3(-250f, 435f, 0f), true);
+                resetButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
+                resetButton.text.fontSize = smallButtonFontSize;
+
+                resetButton.button.onClick.AddListener(delegate ()
+                {
+                    MESMSetting.ResetSettingsToDefault(settings);
+                });
+
+
+                // Create guide text in the top right on settings pages.
+                MenuText guideText = new MenuText("Hover over settings to view descriptions", exitButtonGO.transform, new Vector3(250f, 435f, 0f), true);
+                guideText.text.rectTransform.sizeDelta = smallButtonSizeDelta;
+                guideText.text.fontSize = smallButtonFontSize;
+
+                // Set up variables to correctly place settings on pages.
+                int k = 0;
+                Vector3 offset = new Vector3(-175f, 0f, 0f) / sizeReduction; //Vector3.zero;//new Vector3(-150f, 0f, 0f);
+                int verticalShift = (int)(45 / sizeReduction);
+                int maximumOptionsPerRow = 335 / verticalShift;
+
+                // Create pages to hold settings.
+                settingsPages = new List<SettingsSubMenuPage>();
+                settingsPages.Add(new SettingsSubMenuPage(name, this.gameObject.transform, exitButtonGO.transform, 0));
+                for (int i = 0; i < settings.Count; i++)
+                {
+                    if (settings[i].GetType() == typeof(MESMSettingRGB))
+                    {
+                        if (((MESMSettingRGB)settings[i]).colour == MESMSettingRGB.MESMSettingRGBColourEnum.red)
+                        {
+                            if (2 * maximumOptionsPerRow - k < 3)
+                            {
+                                k = 2 * maximumOptionsPerRow - 1;
+                                i--;
+                            }
+                            else if (maximumOptionsPerRow - (k % maximumOptionsPerRow) < 3)
+                            {
+                                i--;
+                            }
+                            else
+                            {
+                                // Create colour display text and the first component button.
+                                MenuText displayText = new MenuText(settings[i].modSettingsText.Replace(" Red Component", ""), settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset);
+                                k++;
+                                ((MESMSettingRGB)settings[i]).CreateRGBButton(settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset, displayText.text);
+                            }
+                        }
+                        else
+                        {
+                            // Create another component button by using the last component's reference to the display text.
+                            ((MESMSettingRGB)settings[i]).CreateRGBButton(settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset, ((MESMSettingRGB)settings[i - 1]).displayText);
+                        }
+                    }
+                    else
+                    {
+                        // Create a button for a setting on a certain page.
+                        settings[i].CreateButtonForSetting(settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset);
+                    }
+
+                    k++;
+                    if (k % maximumOptionsPerRow == 0)
+                    {
+                        offset += new Vector3(400f / sizeReduction, maximumOptionsPerRow * verticalShift, 0f);
+                        if (k == 2 * maximumOptionsPerRow && i != settings.Count - 1)
+                        {
+                            settingsPages.Add(new SettingsSubMenuPage(name, this.gameObject.transform, exitButtonGO.transform, i));
+                            offset = new Vector3(-175f, 0f, 0f) / sizeReduction; //Vector3.zero;//new Vector3(-150f, 0f, 0f);
+                            k = 0;
+                        }
+                    }
+                }
+                if (settingsPages.Count > 1)
+                {
+                    // If multiple pages will be used, disable all parent GameObjects so that one page can be reactivated later.
+                    for (int i = 1; i < settingsPages.Count; i++)
+                    {
+                        settingsPages[i].gameObject.SetActive(false);
+                    }
+                    //Debug.Log("Starting settings page next and last arrow assignment");
+                    //Debug.Log("Number of settings groups is " + settingsGroups.Count);
+                    //Debug.Log("Number of navigation buttons is " + navigationButtons.Count);
+
+                    for (int i = 0; i < settingsPages.Count; i++)
+                    {
+                        int storedIndex = i; // Passing a temporary variable to add listener - Mmmpies - https://answers.unity.com/questions/908847/passing-a-temporary-variable-to-add-listener.html - Accessed 15.12.2021
+                                             //Debug.Log("Page " + storedIndex);
+
+                        if (storedIndex + 1 == settingsPages.Count)
+                        {
+                            settingsPages[storedIndex].nextButton.button.onClick.AddListener(delegate ()
+                            {
+                                //Debug.Log("Using indices 0 and " + storedIndex + " for " + settingsGroups.Count + " (Next alt)");
+                                SwitchToPage(settingsPages[0].gameObject, settingsPages[storedIndex].gameObject);
+                            });
+                        }
+                        else
+                        {
+                            //Debug.Log("Using indices " + (storedIndex + 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Next normal)");
+                            settingsPages[storedIndex].nextButton.button.onClick.AddListener(delegate ()
+                            {
+                                SwitchToPage(settingsPages[storedIndex + 1].gameObject, settingsPages[storedIndex].gameObject);
+                            });
+                        }
+                        //Debug.Log("Next page buttons assigned");
+
+                        if (storedIndex - 1 == -1)
+                        {
+                            //Debug.Log("Using indices " + (settingsGroups.Count - 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Last alt)");
+                            settingsPages[storedIndex].previousButton.button.onClick.AddListener(delegate ()
+                            {
+                                SwitchToPage(settingsPages[settingsPages.Count - 1].gameObject, settingsPages[storedIndex].gameObject);
+                            });
+                        }
+                        else
+                        {
+                            //Debug.Log("Using indices " + (storedIndex - 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Last normal)");
+                            settingsPages[storedIndex].previousButton.button.onClick.AddListener(delegate ()
+                            {
+                                SwitchToPage(settingsPages[storedIndex - 1].gameObject, settingsPages[storedIndex].gameObject);
+                            });
+                        }
+                        //Debug.Log("Last page buttons assigned");
+                    }
+                    //Debug.Log("Finished settings page next and last arrow assignment");
+                }
+                else if (settingsPages.Count == 1)
+                {
+                    settingsPages[0].nextButton.gameObject.SetActive(false);
+                    settingsPages[0].previousButton.gameObject.SetActive(false);
+                }
+
+                // Reverse the order of child transform to layer text correctly.
+                // how can I reverse my children indices? - LeftyRighty -  https://forum.unity.com/threads/how-can-i-reverse-my-children-indices.436052/ - Accessed 23.05.2023
+                for (int pageNumber = 0; pageNumber < settingsPages.Count; pageNumber++)
+                {
+                    if (settingsPages[pageNumber].gameObject.transform.childCount > 0)
+                    {
+                        for (int i = 0; i < settingsPages[pageNumber].gameObject.transform.childCount; i++)
+                        {
+                            settingsPages[pageNumber].gameObject.transform.GetChild(0).SetSiblingIndex(settingsPages[pageNumber].gameObject.transform.childCount - i);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+        // SubMenu - A settings sub menu.
+        private abstract class SubMenu : CanvasFollowingTransform
+        {
+            protected GameObject exitButtonGO;
+
+            // name: The name of the menu to display in the parent menu.
+            // parentPage: The parent menu page to display a button to the sub menu on.
+            // parentPageOffset: The offset from the parent page to use for hte sub page.
+            // entryButtonParentTransform: A reference transform of another button to position the entry button.
+            // entryButtonOffset: The offset from the entryButtonParentTransform to use.
+            protected SubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Transform entryButtonParentTransform, Vector3 entryButtonOffset) : base(name, parentPage.transform, parentPageOffset)
+            {
+                this.gameObject.transform.SetParent(clipboardTransform, true);
+
+                MenuTextButton entryButton = new MenuTextButton(name, entryButtonParentTransform, entryButtonOffset, false);
+                MenuTextButton exitButton = new MenuTextButton("Exit", this.gameObject.transform, new Vector3(0f, -375f, 0f), false);
+                exitButtonGO = exitButton.gameObject;
+                entryButton.button.onClick.AddListener(delegate ()
+                {
+                    SwitchToPage(this.gameObject, parentPage);
+                });
+                exitButton.button.onClick.AddListener(delegate ()
+                {
+                    SwitchToPage(parentPage, this.gameObject);
+                });
+                entryButton.button.onClick.AddListener(delegate ()
+                {
+                    menuSounds.ButtonClickGoForward();
+                });
+                exitButton.button.onClick.AddListener(delegate ()
+                {
+                    menuSounds.ButtonClickGoBack();
+                });
+
+                Text exitButtonText = exitButtonGO.GetComponentInChildren<Text>();
+
+                exitButtonText.rectTransform.sizeDelta = largeButtonSizeDelta;
+
+                string shortTitle = name.Split(new string[] { " Settings" }, System.StringSplitOptions.None)[0];
+                MenuText text = new MenuText(shortTitle, exitButtonGO.transform, new Vector3(0f, (shortTitle.Length > 10 ? 450f : 435f), 0f), false); // Give long titles two lines rather than one.
+                text.text.rectTransform.sizeDelta = new Vector2(/*1.25f * */text.text.rectTransform.sizeDelta.x, 2f * text.text.rectTransform.sizeDelta.y);
+
+                this.gameObject.SetActive(false);
+            }
+        }
 
         private static void HookOptionsUIStart(On.OptionsUI.orig_Start orig, OptionsUI optionsUI)
         {
@@ -125,7 +422,7 @@ namespace MonstrumExtendedSettingsMod
             List<Button> buttonList = new List<Button>();
 
             MenuUI menuUI = optionsButtonsObjects[26] as MenuUI;
-            MenuSounds menuSounds = FindObjectOfType<MenuSounds>();
+            menuSounds = FindObjectOfType<MenuSounds>();
             ExitButton exitButton = FindObjectOfType<ExitButton>();
 
             buttonList.Add((Button)optionsButtonsObjects[9]);
@@ -174,8 +471,14 @@ namespace MonstrumExtendedSettingsMod
             dropDownArrowImage.rectTransform.sizeDelta /= sizeReduction;
             dropDownOptionImage.rectTransform.sizeDelta /= sizeReduction;
 
-            // Create the categories menu and button to go into it on the original options page.
-            mesmButtonGOs = CreateSubMenu("MES Mod", optionsUI.optionsButtons, buttonList[3].transform, (buttonList[3].transform.position - buttonList[3].transform.parent.position) - 3f * (buttonList[3].transform.position - buttonList[1].transform.position), menuSounds, null, false, true);
+            // Create reference sizes.
+            largeReferenceSizeDelta = referenceCategoryImage.rectTransform.sizeDelta + new Vector2(0.25f * referenceCategoryImage.rectTransform.sizeDelta.x, 0);
+            largeButtonSizeDelta = new Vector2(1.2f * largeReferenceSizeDelta.x, 3f * largeReferenceSizeDelta.y);
+            largeButtonFontSize = (int)(1.25f * referenceCategoryText.fontSize);
+            smallButtonSizeDelta = new Vector2(1.2f * referenceOptionImage.rectTransform.sizeDelta.x, 3f * referenceOptionImage.rectTransform.sizeDelta.y);
+            smallButtonFontSize = (int)(1.25f * referenceOptionText.fontSize);
+
+            NavigationSubMenu navigationSubMenu = new NavigationSubMenu("MES Mod", optionsUI.optionsButtons, new Vector3(0f, 140f, -5f), buttonList[3].transform.parent, (buttonList[3].transform.localPosition - buttonList[3].transform.parent.localPosition) - 3f * (buttonList[3].transform.localPosition - buttonList[1].transform.localPosition));
 
             // Discover all the categories used for the settings in order to set up pages for them.
             List<string> categories = new List<string>();
@@ -204,42 +507,37 @@ namespace MonstrumExtendedSettingsMod
             // Create pages for all of the categories.
             for (int i = 0; i < categories.Count; i++)
             {
-                GameObject[] subMenu = CreateSubMenu(categories[i], mesmButtonGOs[0], mesmButtonGOs[1].transform, new Vector3(0f, 52.5f - (52.5f * i), 0f), menuSounds, settingsAssociatedToCategory[i], false, false);
+                SettingsSubMenu settingsSubMenu = new SettingsSubMenu(categories[i], navigationSubMenu.gameObject, new Vector3(0f, -(52.5f * i), 0f), settingsAssociatedToCategory[i]);
             }
 
-            GameObject[] challengesMenu = CreateChallengesPage(mesmButtonGOs[0], mesmButtonGOs[1].transform, new Vector3(0f, 52.5f - (52.5f * categories.Count), 0f), menuSounds);
+            ChallengesMenu challengesMenu = new ChallengesMenu(navigationSubMenu.gameObject, new Vector3(0f, -(52.5f * categories.Count), 0f));
 
             // Create a warning box to alert the user of restart conditions and errors.
             // Create the base GameObjects to serve as the warning box and adjust their sorting order to appear on top of the menu buttons.
-            warningBoxGOs = CreateTextAndImageButton("WarningBox", /*gameObjectReferencePos.transform*/optionsUI.optionsButtons.transform/*buttonList[3].transform*//*.parent.parent.parent*/, new Vector3(0f, 0/*200f*/, -7.5f), false, false, clipboardTransform, false);
-            warningBoxGOs[0].GetComponent<Canvas>().sortingOrder = 5;
-            warningBoxGOs[2].GetComponent<Canvas>().sortingOrder = 4;
+            warningBox = new MenuTextImageButton("WarningBox", /*gameObjectReferencePos.transform*/optionsUI.optionsButtons.transform/*buttonList[3].transform*//*.parent.parent.parent*/, new Vector3(0f, 0/*200f*/, -7.5f), false, clipboardTransform);
+            //warningBoxGOs.GetComponent<Canvas>().sortingOrder = 5;
+            //warningBoxGOs.GetComponent<Canvas>().sortingOrder = 4;
 
             // Adjust the area and opacity of the image.
-            Image warningBoxImage = warningBoxGOs[3].GetComponent<Image>();
-            warningBoxImage.rectTransform.sizeDelta = new Vector2(5f * warningBoxImage.rectTransform.sizeDelta.x, 15f * warningBoxImage.rectTransform.sizeDelta.y); // Big variant
-            warningBoxImage.color = new Color(warningBoxImage.color.r, warningBoxImage.color.g, warningBoxImage.color.b, 1f);
+            warningBox.image.rectTransform.sizeDelta = new Vector2(5f * warningBox.image.rectTransform.sizeDelta.x, 15f * warningBox.image.rectTransform.sizeDelta.y); // Big variant
+            warningBox.image.color = new Color(warningBox.image.color.r, warningBox.image.color.g, warningBox.image.color.b, 1f);
 
             // Change the area and size of the text.
-            warningBoxText = warningBoxGOs[1].GetComponent<Text>();
-            warningBoxText.rectTransform.sizeDelta = new Vector2(0.975f * warningBoxImage.rectTransform.sizeDelta.x, 0.975f * warningBoxImage.rectTransform.sizeDelta.y);
-            warningBoxText.fontSize = (int)(warningBoxText.fontSize / 2.5f); // Big variant
+            warningBox.text.rectTransform.sizeDelta = new Vector2(0.975f * warningBox.text.rectTransform.sizeDelta.x, 0.975f * warningBox.text.rectTransform.sizeDelta.y);
+            warningBox.text.fontSize = (int)(warningBox.text.fontSize / 2.5f); // Big variant
 
             // Add functionality to the box.
-            Button warningBoxButton = warningBoxGOs[3].GetComponent<Button>();
-            warningBoxButton.onClick.AddListener(delegate ()
+            warningBox.button.onClick.AddListener(delegate ()
             {
-                warningBoxGOs[0].SetActive(false);
-                warningBoxGOs[2].SetActive(false);
+                warningBox.gameObject.SetActive(false);
             });
-            warningBoxButton.onClick.AddListener(delegate ()
+            warningBox.button.onClick.AddListener(delegate ()
             {
                 menuSounds.ButtonClickGoBack();
             });
 
             // Set it inactive so that it is not show when first in the menu.
-            warningBoxGOs[0].SetActive(false);
-            warningBoxGOs[2].SetActive(false);
+            warningBox.gameObject.SetActive(false);
         }
 
         private static void SwitchToPage(GameObject newPage, GameObject originalPage)
@@ -248,414 +546,24 @@ namespace MonstrumExtendedSettingsMod
             newPage.SetActive(true);
         }
 
-        // CreateSubMenu
-        // Creates a settings sub menu.
-        // name: The name of the menu to display in the parent menu.
-        // originalPage: The original menu page to display a button to the sub menu on.
-        // buttonTransform: A reference transform of another button to position the new button.
-        // referenceOffset: The offset to use from the buttonTransform.
-        // menuSounds: A MenuSounds instance to play sounds.
-        // settings: A list of settings to allow customisation of on the page.
-        // smallOption: Whether to show certain text in a small font.
-        // topLevel: Whether the menu is a parent menu or a sub menu (whether it is at the top level or not).
-        // useResetButton: Whether to use a reset button or not.
-        private static GameObject[] CreateSubMenu(string name, GameObject originalPage, Transform buttonTransform, Vector3 referenceOffset, MenuSounds menuSounds, List<MESMSetting> settings = null, bool smallOption = false, bool topLevel = false, bool blankPage = false)
+        private static void SwitchSettings(List<GameObject> settingsToActivate, List<GameObject> settingsToDeactivate, GameObject[] buttonsToActivate, GameObject[] buttonsToDeactivate)
         {
-            GameObject[] entryButtonGOs = CreateTextButton(name, buttonTransform, referenceOffset, smallOption, topLevel);
-            Text entryButtonText = entryButtonGOs[1].GetComponentInChildren<Text>();
-            entryButtonText.rectTransform.sizeDelta = new Vector2(entryButtonText.rectTransform.sizeDelta.x * 1.75f, entryButtonText.rectTransform.sizeDelta.y);
-
-            GameObject subMenuPage = new GameObject(name.Replace(' ', '_') + "-CanvasGameObject");
-            Canvas canvas = subMenuPage.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;//RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 0;
-            subMenuPage.AddComponent<CanvasScaler>();
-            subMenuPage.AddComponent<GraphicRaycaster>();
-
-            GameObject subMenuCanvasRendererGameObject = new GameObject(name.Replace(' ', '_') + "-CanvasRendererGameObject");
-            subMenuCanvasRendererGameObject.AddComponent<CanvasRenderer>();
-            subMenuCanvasRendererGameObject.transform.SetParent(subMenuPage.transform, false);
-
-            subMenuPage.transform.SetParent(buttonTransform, false);
-            subMenuPage.transform.SetParent(clipboardTransform, true);
-
-            subMenuCanvasRendererGameObject.transform.localPosition += new Vector3(0f, topLevel ? 0f : 60f, -5f); // Move text in front of the clipboard to avoid clipping of text on the sides of the clipboard
-
-            //Debug.Log(name + " page is at " + subMenuPage.transform.position + " / " + subMenuPage.transform.localPosition + " with rotation " + subMenuPage.transform.rotation + " / " + subMenuPage.transform.localRotation);
-            //Debug.Log(name + " page Canvas Renderer is at " + subMenuCanvasRendererGameObject.transform.position + " / " + subMenuCanvasRendererGameObject.transform.localPosition + " with rotation " + subMenuCanvasRendererGameObject.transform.rotation + " / " + subMenuCanvasRendererGameObject.transform.localRotation);
-
-            Button entryButton = entryButtonGOs[1].GetComponentInChildren<Button>();
-            GameObject[] exitButtonGOs = CreateTextButton("Exit", subMenuCanvasRendererGameObject.transform/*referenceImageSmallTextAndImageButton.transform*/, new Vector3(0f, topLevel ? -315f : -375f/*topLevel ? -375f : -500f*//*topLevel ? -525f : -700f*/, 0f), false, false);
-            Button exitButton = exitButtonGOs[1].GetComponentInChildren<Button>();
-            Text exitButtonText = exitButtonGOs[1].GetComponent<Text>();
-
-            // Create reference sizes.
-            Vector2 largeReferenceSizeDelta = referenceCategoryImage.rectTransform.sizeDelta + new Vector2(0.25f * referenceCategoryImage.rectTransform.sizeDelta.x, 0);
-            Vector2 largeButtonSizeDelta = new Vector2(1.2f * largeReferenceSizeDelta.x, 3f * largeReferenceSizeDelta.y);
-            int largeButtonFontSize = (int)(1.25f * referenceCategoryText.fontSize);
-            Vector2 smallButtonSizeDelta = new Vector2(1.2f * referenceOptionImage.rectTransform.sizeDelta.x, 3f * referenceOptionImage.rectTransform.sizeDelta.y);
-            int smallButtonFontSize = (int)(1.25f * referenceOptionText.fontSize);
-
-            exitButtonText.rectTransform.sizeDelta = largeButtonSizeDelta;
-
-            entryButton.onClick.AddListener(delegate ()
+            foreach (GameObject gameObject in settingsToDeactivate)
             {
-                SwitchToPage(subMenuPage, originalPage);
-            });
-            exitButton.onClick.AddListener(delegate ()
-            {
-                SwitchToPage(originalPage, subMenuPage);
-            });
-            entryButton.onClick.AddListener(delegate ()
-            {
-                menuSounds.ButtonClickGoForward();
-            });
-            exitButton.onClick.AddListener(delegate ()
-            {
-                menuSounds.ButtonClickGoBack();
-            });
-
-            subMenuPage.SetActive(false);
-
-            string shortTitle = name.Split(new string[] { " Settings" }, System.StringSplitOptions.None)[0];
-            GameObject[] categoryTitleGOs = CreateText(shortTitle, exitButtonGOs[0].transform, new Vector3(0f, (shortTitle.Length > 10 ? 450f : 435f), 0f), false, false); // Give long titles two lines rather than one.
-            Text text = categoryTitleGOs[1].GetComponent<Text>();
-            text.rectTransform.sizeDelta = new Vector2(/*1.25f * */text.rectTransform.sizeDelta.x, 2f * text.rectTransform.sizeDelta.y);
-
-
-            if (!blankPage)
-            {
-                // Create a save button.
-                GameObject[] saveButtonGOs = CreateTextButton((topLevel ? "Save All Settings" : "Save"), exitButtonGOs[0].transform, (topLevel ? new Vector3(250f, 435f, 0f) : new Vector3(0f, 50f, 0f)), topLevel, false);
-                Button saveButton = saveButtonGOs[1].GetComponentInChildren<Button>();
-                Text saveButtonText = saveButtonGOs[1].GetComponent<Text>();
-
-                if (!topLevel)
+                if (!gameObject.name.Contains("DESCRIPTION_BOX") && !gameObject.name.Contains("DROPDOWN_BOX") && !gameObject.name.Contains("DROPDOWN_CHOICE"))
                 {
-                    saveButtonText.rectTransform.sizeDelta = smallButtonSizeDelta;
-                }
-                else
-                {
-                    saveButtonText.rectTransform.sizeDelta = largeButtonSizeDelta;
-                    saveButtonText.fontSize = smallButtonFontSize;
-                }
-                saveButton.onClick.AddListener(delegate ()
-                {
-                    MESMSetting.SaveSettings();
-                });
-
-                // Create a reset to default button
-                GameObject[] resetButtonGOs = CreateTextButton("Reset To Default (Press Save Afterwards)", exitButtonGOs[0].transform, new Vector3(-250f, 435f, 0f), true, false);
-                Button resetButton = resetButtonGOs[1].GetComponentInChildren<Button>();
-                Text resetButtonText = resetButtonGOs[1].GetComponent<Text>();
-                resetButtonText.rectTransform.sizeDelta = smallButtonSizeDelta;
-                resetButtonText.fontSize = smallButtonFontSize;
-
-                if (!topLevel)
-                {
-                    resetButton.onClick.AddListener(delegate ()
-                    {
-                        MESMSetting.ResetSettingsToDefault(settings);
-                    });
-                }
-                else
-                {
-                    resetButton.onClick.AddListener(delegate ()
-                    {
-                        MESMSetting.ResetSettingsToDefault(ModSettings.allSettings);
-                    });
-                }
-
-                if (topLevel)
-                {
-                    GameObject[] versionTextGOs = CreateText("V" + VERSION_WITH_TEXT + "\nPrecipitator", exitButtonGOs[0].transform, new Vector3(-250f, 0f, 0f), false, false);
-                    Text versionText = versionTextGOs[1].GetComponent<Text>();
-                    versionText.rectTransform.sizeDelta = smallButtonSizeDelta;
-                    versionText.fontSize /= 2;
-                }
-
-                if (!topLevel)
-                {
-                    // Create guide text in the top right on settings pages.
-                    GameObject[] guideTextGOs = CreateText("Hover over settings to view descriptions", exitButtonGOs[0].transform, new Vector3(250f, 435f, 0f), true, false);
-                    Text guideText = guideTextGOs[1].GetComponent<Text>();
-                    guideText.rectTransform.sizeDelta = smallButtonSizeDelta;
-                    guideText.fontSize = smallButtonFontSize;
-
-                    // Set up variables to correctly place settings on pages.
-                    int k = 0;
-                    Vector3 offset = new Vector3(-175f, 0f, 0f) / sizeReduction; //Vector3.zero;//new Vector3(-150f, 0f, 0f);
-                    int verticalShift = (int)(45 / sizeReduction);
-                    int maximumOptionsPerRow = 335 / verticalShift;
-                    Transform settingsReferenceTransform = subMenuCanvasRendererGameObject.transform;
-
-                    // Create pages to hold settings.
-                    List<List<GameObject[]>> settingsPages = new List<List<GameObject[]>>();
-                    settingsPages.Add(new List<GameObject[]>());
-                    for (int i = 0; i < settings.Count; i++)
-                    {
-                        if (settings[i].GetType() == typeof(MESMSettingRGB))
-                        {
-                            if (((MESMSettingRGB)settings[i]).colour == MESMSettingRGB.MESMSettingRGBColourEnum.red)
-                            {
-                                if (2 * maximumOptionsPerRow - k < 3)
-                                {
-                                    k = 2 * maximumOptionsPerRow - 1;
-                                    i--;
-                                }
-                                else if (maximumOptionsPerRow - (k % maximumOptionsPerRow) < 3)
-                                {
-                                    i--;
-                                }
-                                else
-                                {
-                                    // Create colour display text and the first component button.
-                                    GameObject[] displayTextGOs = CreateText(settings[i].modSettingsText.Replace(" Red Component", ""), settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset);
-                                    Text displayText = displayTextGOs[1].GetComponent<Text>();
-                                    settingsPages[settingsPages.Count - 1].Add(displayTextGOs);
-                                    k++;
-                                    settingsPages[settingsPages.Count - 1].Add(((MESMSettingRGB)settings[i]).CreateRGBButton(settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset, displayText));
-                                }
-                            }
-                            else
-                            {
-                                // Create another component button by using the last component's reference to the display text.
-                                settingsPages[settingsPages.Count - 1].Add(((MESMSettingRGB)settings[i]).CreateRGBButton(settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset, ((MESMSettingRGB)settings[i - 1]).displayText));
-                                /*
-                                // If the last component is being assigned, set the display text colour based on the settings.
-                                if (((MESMSettingRGB)settings[i]).colour == MESMSettingRGB.MESMSettingRGBColourEnum.blue)
-                                {
-                                    if (((MESMSettingRGB)settings[i]).userValue == -1 || ((MESMSettingRGB)settings[i - 1]).userValue == -1 || ((MESMSettingRGB)settings[i - 2]).userValue == -1)
-                                    {
-                                        ((MESMSettingRGB)settings[i]).displayText.color = referenceOptionText.color;
-                                    }
-                                    else
-                                    {
-                                        ((MESMSettingRGB)settings[i]).displayText.color = new Color(Convert.ToSingle(((MESMSettingRGB)settings[i - 2]).inputField.text) / 255f, Convert.ToSingle(((MESMSettingRGB)settings[i - 1]).inputField.text) / 255f, Convert.ToSingle(((MESMSettingRGB)settings[i]).inputField.text) / 255f);
-                                    }
-                                }
-                                */
-                            }
-                        }
-                        else
-                        {
-                            // Create a button for a setting on a certain page.
-                            settingsPages[settingsPages.Count - 1].Add(settings[i].CreateButtonForSetting(settingsReferenceTransform, new Vector3(0, -(verticalShift * k), 0f) + offset));
-                        }
-
-                        k++;
-                        if (k % maximumOptionsPerRow == 0)
-                        {
-                            offset += new Vector3(400f / sizeReduction, maximumOptionsPerRow * verticalShift, 0f);
-                            if (k == 2 * maximumOptionsPerRow && i != settings.Count - 1)
-                            {
-                                settingsPages.Add(new List<GameObject[]>());
-                                offset = new Vector3(-175f, 0f, 0f) / sizeReduction; //Vector3.zero;//new Vector3(-150f, 0f, 0f);
-                                k = 0;
-                            }
-                        }
-                    }
-                    if (settingsPages.Count > 1)
-                    {
-                        // If multiple pages will be used, disable all parent GameObjects so that one page can be reactivated later.
-                        for (int i = 1; i < settingsPages.Count; i++)
-                        {
-
-                            foreach (GameObject[] gameObjects in settingsPages[i])
-                            {
-                                foreach (GameObject gameObject in gameObjects)
-                                {
-                                    if (!gameObject.name.Contains("DESCRIPTION_BOX") && !gameObject.name.Contains("DROPDOWN_BOX") && !gameObject.name.Contains("DROPDOWN_CHOICE"))
-                                    {
-                                        gameObject.SetActive(false);
-                                    }
-                                }
-                            }
-                            /*
-                            foreach (GameObject[] gameObjects in settingsPages[i])
-                            {
-                                gameObjects[0].SetActive(false);
-                                if (gameObjects.Length > 3)
-                                {
-                                    gameObjects[2].SetActive(false);
-                                }
-                                if (gameObjects.Length > 5)
-                                {
-                                    gameObjects[4].SetActive(false);
-                                }
-                                if (gameObjects.Length > 11)
-                                {
-                                    gameObjects[12].SetActive(false); // Sliders have this many gameobjects.
-                                }
-                            }
-                            */
-                        }
-
-                        List<GameObject[]> navigationButtons = new List<GameObject[]>();
-                        for (int i = 0; i < settingsPages.Count; i++)
-                        {
-                            navigationButtons.Add(CreateTextButton("→_" + name + "_NextPage_" + (i + 1), exitButtonGOs[0].transform, new Vector3(150f, 20f, 0f), topLevel));
-                            navigationButtons.Add(CreateTextButton("←_" + name + "_LastPage_" + (i + 1), exitButtonGOs[0].transform, new Vector3(-150f, 20f, 0f), topLevel));
-                            Text navigationButtonsText1 = navigationButtons[2 * i][1].GetComponent<Text>();
-                            navigationButtonsText1.rectTransform.sizeDelta = new Vector2(navigationButtonsText1.rectTransform.sizeDelta.x / 1.5f, navigationButtonsText1.rectTransform.sizeDelta.y);
-                            Text navigationButtonsText2 = navigationButtons[2 * i + 1][1].GetComponent<Text>();
-                            navigationButtonsText2.rectTransform.sizeDelta = new Vector2(navigationButtonsText2.rectTransform.sizeDelta.x / 1.5f, navigationButtonsText2.rectTransform.sizeDelta.y);
-                            if (i > 0)
-                            {
-                                navigationButtons[2 * i][1].SetActive(false);
-                                navigationButtons[2 * i + 1][1].SetActive(false);
-                            }
-                        }
-
-                        //Debug.Log("Starting settings page next and last arrow assignment");
-                        //Debug.Log("Number of settings groups is " + settingsGroups.Count);
-                        //Debug.Log("Number of navigation buttons is " + navigationButtons.Count);
-
-                        for (int i = 0; i < settingsPages.Count; i++)
-                        {
-                            int storedIndex = i; // Passing a temporary variable to add listener - Mmmpies - https://answers.unity.com/questions/908847/passing-a-temporary-variable-to-add-listener.html - Accessed 15.12.2021
-                                                 //Debug.Log("Page " + storedIndex);
-                            GameObject nextButtonGO = navigationButtons[2 * storedIndex][1];
-                            GameObject lastButtonGO = navigationButtons[2 * storedIndex + 1][1];
-
-                            Button nextButton = nextButtonGO.GetComponentInChildren<Button>();
-                            Button lastButton = lastButtonGO.GetComponentInChildren<Button>();
-
-                            //Debug.Log("Current page buttons found");
-
-                            GameObject nextButtonFromNextPageGO;
-                            GameObject lastButtonFromNextPageGO;
-                            GameObject nextButtonFromLastPageGO;
-                            GameObject lastButtonFromLastPageGO;
-                            if (storedIndex + 1 == settingsPages.Count)
-                            {
-                                //Debug.Log("Using alt next button");
-                                nextButtonFromNextPageGO = navigationButtons[0][1];
-                                lastButtonFromNextPageGO = navigationButtons[1][1];
-                                //Debug.Log("Used alt next button");
-                            }
-                            else
-                            {
-                                nextButtonFromNextPageGO = navigationButtons[2 * (storedIndex + 1)][1];
-                                lastButtonFromNextPageGO = navigationButtons[2 * (storedIndex + 1) + 1][1];
-                            }
-                            //Debug.Log("Next page buttons found");
-                            if (storedIndex - 1 == -1)
-                            {
-                                //Debug.Log("Using alt last button");
-                                nextButtonFromLastPageGO = navigationButtons[navigationButtons.Count - 2][1];
-                                lastButtonFromLastPageGO = navigationButtons[navigationButtons.Count - 1][1];
-                                //Debug.Log("Used alt last button");
-                            }
-                            else
-                            {
-                                nextButtonFromLastPageGO = navigationButtons[2 * (storedIndex - 1)][1];
-                                lastButtonFromLastPageGO = navigationButtons[2 * (storedIndex - 1) + 1][1];
-                            }
-                            //Debug.Log("Last page buttons found");
-
-
-                            if (storedIndex + 1 == settingsPages.Count)
-                            {
-                                nextButton.onClick.AddListener(delegate ()
-                                {
-                                    //Debug.Log("Using indices 0 and " + storedIndex + " for " + settingsGroups.Count + " (Next alt)");
-                                    SwitchSettings(settingsPages[0], settingsPages[storedIndex], new GameObject[] { nextButtonFromNextPageGO, lastButtonFromNextPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
-                                });
-                            }
-                            else
-                            {
-                                //Debug.Log("Using indices " + (storedIndex + 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Next normal)");
-                                nextButton.onClick.AddListener(delegate ()
-                                {
-                                    SwitchSettings(settingsPages[storedIndex + 1], settingsPages[storedIndex], new GameObject[] { nextButtonFromNextPageGO, lastButtonFromNextPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
-                                });
-                            }
-                            //Debug.Log("Next page buttons assigned");
-
-                            if (storedIndex - 1 == -1)
-                            {
-                                //Debug.Log("Using indices " + (settingsGroups.Count - 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Last alt)");
-                                lastButton.onClick.AddListener(delegate ()
-                                {
-                                    SwitchSettings(settingsPages[settingsPages.Count - 1], settingsPages[storedIndex], new GameObject[] { nextButtonFromLastPageGO, lastButtonFromLastPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
-                                });
-                            }
-                            else
-                            {
-                                //Debug.Log("Using indices " + (storedIndex - 1) + " and " + storedIndex + " for " + settingsGroups.Count + " (Last normal)");
-                                lastButton.onClick.AddListener(delegate ()
-                                {
-                                    SwitchSettings(settingsPages[storedIndex - 1], settingsPages[storedIndex], new GameObject[] { nextButtonFromLastPageGO, lastButtonFromLastPageGO }, new GameObject[] { nextButtonGO, lastButtonGO });
-                                });
-                            }
-                            //Debug.Log("Last page buttons assigned");
-
-                            nextButton.onClick.AddListener(delegate ()
-                            {
-                                menuSounds.ButtonClickGoForward();
-                            });
-                            lastButton.onClick.AddListener(delegate ()
-                            {
-                                menuSounds.ButtonClickGoBack();
-                            });
-                        }
-                        //Debug.Log("Finished settings page next and last arrow assignment");
-                    }
-                }
-            }
-
-            return new GameObject[] { subMenuPage, subMenuCanvasRendererGameObject, entryButtonGOs[0], entryButtonGOs[1], exitButtonGOs[0], exitButtonGOs[1] };
-        }
-
-        private static GameObject[] CreateChallengesPage(GameObject originalPage, Transform buttonTransform, Vector3 referenceOffset, MenuSounds menuSounds)
-        {
-            GameObject[] challengesMenu = CreateSubMenu("Challenges", originalPage, buttonTransform, referenceOffset, menuSounds, null, false, false, true);
-
-            Transform exitButtonTransform = challengesMenu[4].transform;
-            float yOffset = 375f;
-            GameObject[] challengeNameGOs = CreateTextButton("Name", exitButtonTransform, new Vector3(-225f, yOffset, 0f));
-            GameObject[] authorGOs = CreateTextButton("Author", exitButtonTransform, new Vector3(-75f, yOffset, 0f));
-            GameObject[] difficultyGOs = CreateTextButton("Difficulty", exitButtonTransform, new Vector3(75f, yOffset, 0f));
-            GameObject[] completedGOs = CreateTextButton("Completed", exitButtonTransform, new Vector3(225f, yOffset, 0f));
-
-            int mediumFontSize = (2 * referenceOptionText.fontSize);
-            challengeNameGOs[1].GetComponent<Text>().fontSize = mediumFontSize;
-            challengeNameGOs[1].GetComponent<Text>().rectTransform.sizeDelta *= 1.4f;
-            authorGOs[1].GetComponent<Text>().fontSize = mediumFontSize;
-            authorGOs[1].GetComponent<Text>().rectTransform.sizeDelta *= 1.4f;
-            difficultyGOs[1].GetComponent<Text>().fontSize = mediumFontSize;
-            difficultyGOs[1].GetComponent<Text>().rectTransform.sizeDelta *= 1.4f;
-            completedGOs[1].GetComponent<Text>().fontSize = mediumFontSize;
-            completedGOs[1].GetComponent<Text>().rectTransform.sizeDelta *= 1.4f;
-
-            return challengesMenu;
-        }
-
-        private static void SwitchSettings(List<GameObject[]> settingsToActivate, List<GameObject[]> settingsToDeactivate, GameObject[] buttonsToActivate, GameObject[] buttonsToDeactivate)
-        {
-            foreach (GameObject[] gameObjects in settingsToDeactivate)
-            {
-                foreach (GameObject gameObject in gameObjects)
-                {
-                    if (!gameObject.name.Contains("DESCRIPTION_BOX") && !gameObject.name.Contains("DROPDOWN_BOX") && !gameObject.name.Contains("DROPDOWN_CHOICE"))
-                    {
-                        gameObject.SetActive(false);
-                    }
+                    gameObject.SetActive(false);
                 }
             }
             foreach (GameObject gameObject in buttonsToDeactivate)
             {
                 gameObject.SetActive(false);
             }
-            foreach (GameObject[] gameObjects in settingsToActivate)
+            foreach (GameObject gameObject in settingsToActivate)
             {
-                foreach (GameObject gameObject in gameObjects)
+                if (!gameObject.name.Contains("DESCRIPTION_BOX") && !gameObject.name.Contains("DROPDOWN_BOX") && !gameObject.name.Contains("DROPDOWN_CHOICE"))
                 {
-                    if (!gameObject.name.Contains("DESCRIPTION_BOX") && !gameObject.name.Contains("DROPDOWN_BOX") && !gameObject.name.Contains("DROPDOWN_CHOICE"))
-                    {
-                        gameObject.SetActive(true);
-                    }
+                    gameObject.SetActive(true);
                 }
             }
             foreach (GameObject gameObject in buttonsToActivate)
@@ -664,659 +572,594 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
-        /*
-        Code for first working canvas.
-        private static GameObject[] CreateSpecialPanel(List<Button> buttonList, UnityEngine.Object[] optionsButtonsObjects, List<UnityEngine.Object> panelComboList)
+        public class MenuMultipleChoiceButtonWithDescription : MenuDescriptionBox
         {
-            // Create Unity UI Panel via Script - prof - https://answers.unity.com/questions/1034060/create-unity-ui-panel-via-script.html - Accessed 23.10.2021
-            GameObject newCanvas = new GameObject("Canvas");
-            Canvas canvas = newCanvas.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;//RenderMode.ScreenSpaceOverlay;
-            newCanvas.AddComponent<CanvasScaler>();
-            newCanvas.AddComponent<GraphicRaycaster>();
-
-            GameObject panel = new GameObject("Panel");
-            panel.AddComponent<CanvasRenderer>();
-            panel.transform.SetParent(newCanvas.transform, false);
-
-            newCanvas.transform.position = buttonList[3].transform.position - 3f * (buttonList[3].transform.position - buttonList[1].transform.position);//new Vector3(206.7f, 17.6f, 135.0f);
-            newCanvas.transform.rotation = buttonList[3].transform.rotation;
-            newCanvas.transform.SetParent(buttonList[3].transform.parent);
-            newCanvas.transform.localScale = buttonList[3].transform.localScale;
-
-            // Can't add text to panel gameObject because it already has image... But adding to newCanvas makes text act weird and it still doesn't show up.
-            Button but = panel.AddComponent<Button>();
-            Text tex = panel.AddComponent<Text>();
-            tex.text = "MES Mod";
-            tex.font = referenceCategoryText.font;
-            tex.color = referenceCategoryText.color;
-            tex.fontSize = referenceCategoryText.fontSize;
-            tex.fontStyle = referenceCategoryText.fontStyle;
-            tex.rectTransform.sizeDelta = referenceCategoryImage.rectTransform.sizeDelta + new Vector2(0.25f * referenceCategoryImage.rectTransform.sizeDelta.x, 0);
-            tex.alignment = referenceCategoryText.alignment;
-            return new GameObject[] { newCanvas, panel };
-        }
-        */
-
-        public static GameObject[] CreateMultipleChoiceDescriptionBox(string description, string name, string[] choices, Transform referenceTransform, Vector3 referenceOffset, bool smallOption = true, bool topLevel = false)
-        {
-            float xShift = 65f / sizeReduction + Mathf.Abs((dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2);
-            //Debug.Log("dropDownOptionImage.rectTransform.sizeDelta.x = " + dropDownOptionImage.rectTransform.sizeDelta.x + ", referenceOptionImage.rectTransform.sizeDelta.x = " + referenceOptionImage.rectTransform.sizeDelta.x + ", ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction) = " + ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction) + ",(dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2 = " + (dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2 + ", Total = " + xShift);
-            float arrowShift = xShift + dropDownOptionImage.rectTransform.sizeDelta.x / 2 + 10f / sizeReduction;/*62.5f / sizeReduction;*/
-            GameObject[] nameTextGOs = CreateText(name, referenceTransform, referenceOffset - new Vector3(60f / sizeReduction, 0f, 0f), smallOption, topLevel); // Name of setting
-            GameObject[] leftImageGOs = CreateTextAndImage(name, referenceTransform, referenceOffset + new Vector3(xShift, 0f, 0f), smallOption, topLevel); // Selected choice
-            GameObject[] rightImageBoxBaseGOs = CreateImageButton(name, referenceTransform, referenceOffset + new Vector3(arrowShift, 0f, 0f), topLevel);
-            GameObject[] rightImageArrowGOs = CreateImage(name, referenceTransform, referenceOffset + new Vector3(arrowShift, 0f, 0f), topLevel);
-
-            Text nameText = nameTextGOs[1].GetComponent<Text>();
-            nameText.transform.localPosition -= new Vector3(0.25f * nameText.rectTransform.sizeDelta.x, 0f, 0f) / sizeReduction;
-            nameText.rectTransform.sizeDelta = new Vector2(1.5f * nameText.rectTransform.sizeDelta.x, 1.5f * nameText.rectTransform.sizeDelta.y);
-            nameText.raycastTarget = true;
-            nameText.alignment = TextAnchor.MiddleRight;
-
-            Image leftImage = leftImageGOs[3].GetComponent<Image>();
-            leftImage.rectTransform.sizeDelta = dropDownOptionImage.rectTransform.sizeDelta;
-            Text leftImageText = leftImageGOs[1].GetComponent<Text>();
-            Image rightImageBoxBase = rightImageBoxBaseGOs[1].GetComponent<Image>();
-            rightImageBoxBase.rectTransform.sizeDelta = dropDownButtonBoxImage.rectTransform.sizeDelta;
-            Button rightImageBoxBaseButton = rightImageBoxBaseGOs[1].GetComponent<Button>();
-            AddColourEventToImage(rightImageBoxBaseGOs[1]);
-
-            Image rightImageArrow = rightImageArrowGOs[1].GetComponent<Image>(); // Not initially disabled. Should be disabled with background box.
-            rightImageArrow.rectTransform.sizeDelta = dropDownArrowImage.rectTransform.sizeDelta;
-            rightImageArrow.sprite = dropDownArrowImage.sprite;
-            rightImageArrow.color = dropDownArrowImage.color;
-            rightImageArrow.raycastTarget = false;
-
-            // Create and resize a dropdown box and then put dropdown choices on top of it.
-            List<GameObject> dropdownGOs = new List<GameObject>();
-            GameObject[] dropdownBoxGOs = CreateImage(name + "DROPDOWN_BOX", leftImage.transform, new Vector3(0f, -2f * leftImage.rectTransform.sizeDelta.y, 0f), topLevel, referenceTransform.parent);
-            Image backgroundImage = dropdownBoxGOs[1].GetComponent<Image>();
-            if (choices.Length > 3)
+            MenuTextImage leftImage;
+            public MenuMultipleChoiceButtonWithDescription(string description, string name, string[] choices, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText)
             {
-                backgroundImage.transform.localPosition = new Vector3(0f, -leftImage.rectTransform.sizeDelta.y / 2f, 0f); // For some reason the background image is not shifted properly when there are only 3 options.
-            }
-            backgroundImage.rectTransform.sizeDelta = new Vector2(leftImage.rectTransform.sizeDelta.x, choices.Length * leftImage.rectTransform.sizeDelta.y);
-            backgroundImage.color = new Color(backgroundImage.color.r, backgroundImage.color.g, backgroundImage.color.b, 1f);
-            dropdownGOs.AddRange(dropdownBoxGOs);
-            for (int i = 0; i < choices.Length; i++)
-            {
-                GameObject[] choiceGOs = CreateTextAndImageButton(choices[i] + "_DROPDOWN_CHOICE", leftImage.transform, new Vector3(0f, (i + 1) * -leftImage.rectTransform.sizeDelta.y, 0f), smallOption, topLevel, referenceTransform.parent);
-                choiceGOs[3].GetComponent<Image>().rectTransform.sizeDelta = leftImage.rectTransform.sizeDelta;
-                dropdownGOs.AddRange(choiceGOs);
+                float xShift = Mathf.Abs((dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2);
+                Vector3 xShiftVector = new Vector3(xShift, 0f, 0f);
+                //this.gameObject.transform.localPosition += new Vector3(xShift, 0f, 0f);
 
-                int storableInt = i;
-                choiceGOs[3].GetComponent<Button>().onClick.AddListener(delegate ()
+                //Debug.Log("dropDownOptionImage.rectTransform.sizeDelta.x = " + dropDownOptionImage.rectTransform.sizeDelta.x + ", referenceOptionImage.rectTransform.sizeDelta.x = " + referenceOptionImage.rectTransform.sizeDelta.x + ", ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction) = " + ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction) + ",(dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2 = " + (dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2 + ", Total = " + xShift);
+                float arrowShift = dropDownOptionImage.rectTransform.sizeDelta.x / 2 + 10f / sizeReduction;/*62.5f / sizeReduction;*/
+                Vector3 arrowShiftVector = new Vector3(arrowShift, 0f, 0f);
+                leftImage = new MenuTextImage(name, nameTextCustomTransform, nameOffsetConstant * nameTextCustomTransform.localPosition + xShiftVector, smallText);
+                MenuImageButton rightImageBoxBaseGOs = new MenuImageButton(name, leftImage.gameObject.transform, arrowShiftVector, true);
+                MenuImage rightImageArrow = new MenuImage(name, rightImageBoxBaseGOs.gameObject.transform, Vector3.zero);
+
+                leftImage.image.rectTransform.sizeDelta = dropDownOptionImage.rectTransform.sizeDelta;
+                rightImageBoxBaseGOs.image.rectTransform.sizeDelta = dropDownButtonBoxImage.rectTransform.sizeDelta;
+
+                rightImageArrow.image.rectTransform.sizeDelta = dropDownArrowImage.rectTransform.sizeDelta;
+                rightImageArrow.image.sprite = dropDownArrowImage.sprite;
+                rightImageArrow.image.color = dropDownArrowImage.color;
+                rightImageArrow.image.raycastTarget = false;
+
+                // Create and resize a dropdown box and then put dropdown choices on top of it.
+                List<GameObject> dropdownGOs = new List<GameObject>();
+                MenuImage backgroundImage = new MenuImage(name + "DROPDOWN_BOX", leftImage.gameObject.transform, Vector3.zero);
+                backgroundImage.image.rectTransform.sizeDelta = new Vector2(leftImage.image.rectTransform.sizeDelta.x, choices.Length * leftImage.image.rectTransform.sizeDelta.y);
+                backgroundImage.image.color = new Color(backgroundImage.image.color.r, backgroundImage.image.color.g, backgroundImage.image.color.b, 1f);
+
+                for (int i = 0; i < choices.Length; i++)
                 {
-                    leftImageText.text = choices[storableInt];
-                    foreach (GameObject gameObject in dropdownGOs)
-                    {
-                        gameObject.SetActive(false);
-                    }
-                });
-            }
-            foreach (GameObject gameObject in dropdownGOs)
-            {
-                gameObject.SetActive(false);
-            }
+                    MenuTextImageButton choiceGOs = new MenuTextImageButton(choices[i] + "_DROPDOWN_CHOICE", leftImage.gameObject.transform, new Vector3(0f, (i + 1) * -leftImage.image.rectTransform.sizeDelta.y, 0f), smallText, true);
+                    choiceGOs.image.rectTransform.sizeDelta = leftImage.image.rectTransform.sizeDelta;
+                    dropdownGOs.Add(choiceGOs.gameObject);
 
-            // Add button functionality to the drop down menu.
-            rightImageBoxBaseButton.onClick.AddListener(delegate ()
-            {
-                if (dropdownBoxGOs[0].activeSelf)
-                {
-                    foreach (GameObject gameObject in dropdownGOs)
+                    int storableInt = i;
+                    choiceGOs.button.onClick.AddListener(delegate ()
                     {
-                        gameObject.SetActive(false);
-                    }
+                        Debug.Log("Updating left image (before): " + leftImage.text.text);
+                        leftImage.text.text = choices[storableInt];
+                        Debug.Log("Updating left image (after): " + leftImage.text.text);
+                        foreach (GameObject gameObject in dropdownGOs)
+                        {
+                            gameObject.SetActive(false);
+                        }
+                        choiceGOs.image.color = referenceOptionImage.color;
+                    });
+                }
+
+                // Reposition the background image. Ideally this would be done through anchoring and then a constant shift below the displayed choice, but I could not figure out how to do this.
+                if (dropdownGOs.Count % 2 == 1)
+                {
+                    // The middle choice.
+                    backgroundImage.image.transform.position = dropdownGOs[dropdownGOs.Count / 2].transform.position;
                 }
                 else
                 {
-                    foreach (GameObject gameObject in dropdownGOs)
-                    {
-                        gameObject.SetActive(true);
-                    }
+                    // The middle of the middle two choices.
+                    backgroundImage.image.transform.position = dropdownGOs[dropdownGOs.Count / 2].transform.position;
+                    backgroundImage.image.transform.position -= (dropdownGOs[(dropdownGOs.Count / 2) + 1].transform.position - dropdownGOs[dropdownGOs.Count / 2].transform.position) / 2f;
                 }
-            });
 
-            List<GameObject> allChoiceGOs = new List<GameObject>();
-            allChoiceGOs.AddRange(leftImageGOs);
-            allChoiceGOs.AddRange(rightImageBoxBaseGOs);
-            allChoiceGOs.AddRange(rightImageArrowGOs);
+                dropdownGOs.Add(backgroundImage.gameObject);
 
-            // Add a hover description box to the nameText.
-            GameObject[] descriptionTextGameObjects = CreateDescriptionBox(description, name, referenceTransform, referenceOffset, smallOption, topLevel, nameTextGOs, allChoiceGOs.ToArray());
-
-            return new GameObject[] { nameTextGOs[0], nameTextGOs[1], leftImageGOs[0], leftImageGOs[1], leftImageGOs[2], leftImageGOs[3], rightImageBoxBaseGOs[0], rightImageBoxBaseGOs[1], rightImageArrowGOs[0], rightImageArrowGOs[1], descriptionTextGameObjects[0], descriptionTextGameObjects[1], descriptionTextGameObjects[2], descriptionTextGameObjects[3] };
-        }
-
-        public static GameObject[] CreateInputFieldDescriptionBox(string description, string name, Transform referenceTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp, bool smallOption = true, bool topLevel = false)
-        {
-            GameObject[] inputFieldGOs = CreateInputField(name, referenceTransform, referenceOffset, useInt, minClamp, maxClamp, smallOption, topLevel);
-            inputFieldGOs[0].transform.localPosition += new Vector3(65f, 0f, 0f) / sizeReduction;
-            inputFieldGOs[2].transform.localPosition += new Vector3(65f, 0f, 0f) / sizeReduction;
-
-            GameObject[] textGOs = CreateText(name + "_TEXT", referenceTransform, referenceOffset, smallOption, topLevel);
-            Text nameText = textGOs[1].GetComponentInChildren<Text>();
-            nameText.transform.localPosition -= new Vector3(0.25f * nameText.rectTransform.sizeDelta.x, 0f, 0f) / sizeReduction;
-            nameText.rectTransform.sizeDelta = new Vector2(1.5f * nameText.rectTransform.sizeDelta.x, 1.5f * nameText.rectTransform.sizeDelta.y);
-            nameText.raycastTarget = true;
-            nameText.transform.localPosition -= new Vector3(60f, 0f, 0f) / sizeReduction;
-            nameText.alignment = TextAnchor.MiddleRight;
-
-            GameObject[] descriptionTextGameObjects = CreateDescriptionBox(description, name, referenceTransform, referenceOffset, smallOption, topLevel, textGOs, inputFieldGOs);
-
-            return new GameObject[] { inputFieldGOs[0], inputFieldGOs[1], inputFieldGOs[2], inputFieldGOs[3], textGOs[0], textGOs[1], descriptionTextGameObjects[0], descriptionTextGameObjects[1], descriptionTextGameObjects[2], descriptionTextGameObjects[3], inputFieldGOs[4] };
-        }
-
-        public static GameObject[] CreateBoolDescriptionBox(string description, string name, Transform referenceTransform, Vector3 referenceOffset, bool smallOption = true, bool topLevel = false)
-        {
-            GameObject[] boolButtonGameObjects = CreateBoolButton(name, referenceTransform, referenceOffset, smallOption, topLevel);
-            Text nameText = boolButtonGameObjects[5].GetComponentInChildren<Text>();
-            nameText.transform.localPosition -= new Vector3(0.25f * nameText.rectTransform.sizeDelta.x, 0f, 0f) / sizeReduction;
-            nameText.rectTransform.sizeDelta = new Vector2(1.5f * nameText.rectTransform.sizeDelta.x, 1.5f * nameText.rectTransform.sizeDelta.y);
-
-            GameObject[] descriptionTextGameObjects = CreateDescriptionBox(description, name, referenceTransform, referenceOffset, smallOption, topLevel, boolButtonGameObjects, null, 5);
-
-            return new GameObject[10] { boolButtonGameObjects[0], boolButtonGameObjects[1], boolButtonGameObjects[2], boolButtonGameObjects[3], boolButtonGameObjects[4], boolButtonGameObjects[5], descriptionTextGameObjects[0], descriptionTextGameObjects[1], descriptionTextGameObjects[2], descriptionTextGameObjects[3] };
-        }
-
-        private static GameObject[] CreateDescriptionBox(string description, string name, Transform referenceTransform, Vector3 referenceOffset, bool smallOption, bool topLevel, GameObject[] textCanvasGOs, GameObject[] additionalGOsToHideOnHover = null, int indexOfTextCanvas = 1)
-        {
-            GameObject[] descriptionTextGameObjects = CreateTextAndImage(name + "DESCRIPTION_BOX", referenceTransform, referenceOffset + new Vector3(0f, 0f, -5f), smallOption, topLevel, referenceTransform.parent);
-            //descriptionTextGameObjects[0].GetComponent<Canvas>().sortingOrder = 3;
-            //descriptionTextGameObjects[2].GetComponent<Canvas>().sortingOrder = 2;
-            Image descriptionImage = descriptionTextGameObjects[3].GetComponentInChildren<Image>();
-            descriptionImage.rectTransform.sizeDelta = new Vector2(2.75f * descriptionImage.rectTransform.sizeDelta.x, 5f * descriptionImage.rectTransform.sizeDelta.y * ((description.Length + (110f - (description.Length % 55f))) / 325f));
-            descriptionImage.color = new Color(descriptionImage.color.r, descriptionImage.color.g, descriptionImage.color.b, 1f);
-            Text text = descriptionTextGameObjects[1].GetComponentInChildren<Text>();
-            text.rectTransform.sizeDelta = new Vector2(0.975f * descriptionImage.rectTransform.sizeDelta.x, 0.975f * descriptionImage.rectTransform.sizeDelta.y);
-            text.text = description;
-
-            /*
-            // CSF Experiment
-            Image descriptionImage = descriptionTextGameObjects[3].GetComponentInChildren<Image>();
-            descriptionImage.rectTransform.sizeDelta = new Vector2(2.75f * descriptionImage.rectTransform.sizeDelta.x, 5f * descriptionImage.rectTransform.sizeDelta.y);
-            descriptionImage.color = new Color(descriptionImage.color.r, descriptionImage.color.g, descriptionImage.color.b, 1f);
-            Text text = descriptionTextGameObjects[1].GetComponentInChildren<Text>();
-            text.rectTransform.sizeDelta = descriptionImage.rectTransform.sizeDelta;
-            text.text = description;
-            ContentSizeFitter csf = descriptionTextGameObjects[1].AddComponent<ContentSizeFitter>();
-            csf.verticalFit = ContentSizeFitter.FitMode.MinSize;
-            descriptionImage.rectTransform.sizeDelta = new Vector2(descriptionImage.rectTransform.sizeDelta.x, text.rectTransform.sizeDelta.y);
-            text.rectTransform.sizeDelta = new Vector2(0.975f * descriptionImage.rectTransform.sizeDelta.x, 0.975f * descriptionImage.rectTransform.sizeDelta.y);
-            */
-
-            List<GameObject> settingsButtonGameObjects = new List<GameObject>();
-            settingsButtonGameObjects.AddRange(textCanvasGOs);
-            if (additionalGOsToHideOnHover != null)
-            {
-                settingsButtonGameObjects.AddRange(additionalGOsToHideOnHover);
-            }
-
-
-            EventTrigger trigger = textCanvasGOs[indexOfTextCanvas].AddComponent<EventTrigger>();
-            EventTrigger.Entry entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerEnter;
-            entry.callback.AddListener((eventData) =>
-            {
-                AudioSystem.instance.StartCoroutine(RevealDescriptionAfterTime(descriptionTextGameObjects, settingsButtonGameObjects, trigger));
-            });
-            trigger.triggers.Add(entry);
-
-
-            EventTrigger trigger2 = descriptionTextGameObjects[2].AddComponent<EventTrigger>();
-            EventTrigger.Entry entry2 = new EventTrigger.Entry();
-            entry2.eventID = EventTriggerType.PointerExit;
-            entry2.callback.AddListener((eventData) =>
-            {
-                foreach (GameObject gameObject in descriptionTextGameObjects)
+                foreach (GameObject gameObject in dropdownGOs)
                 {
                     gameObject.SetActive(false);
                 }
 
-                foreach (GameObject gameObject in settingsButtonGameObjects)
+                // Add button functionality to the drop down menu.
+                rightImageBoxBaseGOs.button.onClick.AddListener(delegate ()
                 {
-                    gameObject.SetActive(true);
-                }
-            });
-            trigger2.triggers.Add(entry2);
-
-            descriptionTextGameObjects[0].SetActive(false);
-            descriptionTextGameObjects[2].SetActive(false);
-
-            return descriptionTextGameObjects;
-        }
-
-        private static IEnumerator RevealDescriptionAfterTime(GameObject[] descriptionGameObjects, List<GameObject> settingsButtonGameObjects, EventTrigger trigger)
-        {
-            float t = 0f;
-            bool exitedText = false;
-            EventTrigger.Entry entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerExit;
-            entry.callback.AddListener((eventData) =>
-            {
-                exitedText = true;
-            });
-            trigger.triggers.Add(entry);
-            while (t < 0.5f)
-            {
-                t += Time.deltaTime;
-                if (exitedText)
-                {
-                    t = 0.5f;
-                }
-                yield return null;
-            }
-            if (!exitedText)
-            {
-                foreach (GameObject gameObject in descriptionGameObjects)
-                {
-                    gameObject.SetActive(true);
-                }
-
-                foreach (GameObject gameObject in settingsButtonGameObjects)
-                {
-                    gameObject.SetActive(false);
-                }
-            }
-            trigger.triggers.Remove(entry);
-        }
-
-        public static GameObject[] CreateSliderDescriptionBox(string description, string name, Transform referenceTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp, bool smallOption = true, bool topLevel = false, Transform alternativeParentTransform = null)
-        {
-            GameObject[] sliderBackgroundGOs = CreateSlider(name, referenceTransform, referenceOffset + new Vector3(102.5f, 0f, 0f), useInt, minClamp, maxClamp, smallOption, topLevel, alternativeParentTransform); // 102.5 Clyde 1
-
-            // Create an input field to hold the value for the slider and to allow for manual entry of the value.
-            GameObject[] inputFieldWithDescriptionBox = CreateInputFieldDescriptionBox(description, name, referenceTransform, referenceOffset, useInt, minClamp, maxClamp, smallOption, topLevel);
-
-            InputField inputField = inputFieldWithDescriptionBox[10].GetComponent<InputField>();
-
-            Slider slider = sliderBackgroundGOs[1].GetComponent<Slider>();
-            slider.onValueChanged.AddListener((sliderValue) => { inputField.text = sliderValue.ToString(); });
-
-            EventTrigger trigger = inputFieldWithDescriptionBox[3].GetComponent<EventTrigger>();
-            EventTrigger.Entry entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerClick;
-            entry.callback.AddListener((eventData) =>
-            {
-                inputField.StartCoroutine(UpdateSliderAfterInputField(inputField, slider));
-            });
-            trigger.triggers.Add(entry);
-
-            return new GameObject[] { inputFieldWithDescriptionBox[0], inputFieldWithDescriptionBox[1], inputFieldWithDescriptionBox[2], inputFieldWithDescriptionBox[3], inputFieldWithDescriptionBox[4], inputFieldWithDescriptionBox[5], inputFieldWithDescriptionBox[6], inputFieldWithDescriptionBox[7], inputFieldWithDescriptionBox[8], inputFieldWithDescriptionBox[9], inputFieldWithDescriptionBox[10], sliderBackgroundGOs[0], sliderBackgroundGOs[1] };
-        }
-
-        private static IEnumerator UpdateSliderAfterInputField(InputField inputField, Slider slider)
-        {
-            yield return null;
-            while (inputField.isFocused)
-            {
-                yield return null;
-            }
-            // This is where you should update the slider
-            slider.value = Convert.ToSingle(inputField.text);
-            yield break;
-        }
-
-        public static GameObject[] CreateSlider(string name, Transform referenceTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp, bool smallOption = true, bool topLevel = false, Transform alternativeParentTransform = null)
-        {
-            // Unity Slider in 4 Minutes - [Unity Tutorial] - Tarodev - https://youtu.be/nTLgzvklgU8 - Accessed 03.01.2022
-            GameObject[] sliderBackgroundGOs = CreateImage(name, referenceTransform, referenceOffset, topLevel, alternativeParentTransform);
-
-            Slider slider = sliderBackgroundGOs[1].AddComponent<Slider>();
-            slider.colors = referenceSlider.colors;
-            slider.direction = referenceSlider.direction;
-            slider.navigation = referenceSlider.navigation;
-            slider.spriteState = referenceSlider.spriteState;
-            slider.transition = referenceSlider.transition;
-            //slider.wholeNumbers = referenceSlider.wholeNumbers;
-            slider.wholeNumbers = useInt ? true : false;
-            slider.minValue = minClamp;
-            slider.maxValue = maxClamp;
-
-            Image sliderBackgroundImage = sliderBackgroundGOs[1].GetComponent<Image>();
-            sliderBackgroundImage.sprite = referenceSliderBackgroundImage.sprite;
-            sliderBackgroundImage.type = referenceSliderBackgroundImage.type;
-            sliderBackgroundImage.material = referenceSliderBackgroundImage.material;
-            //sliderBackgroundImage.color = referenceSliderBackgroundImage.color;
-
-            GameObject[] fillGOs = CreateImage(name, referenceTransform, referenceOffset, topLevel, sliderBackgroundGOs[1].transform);
-            Image fillImage = fillGOs[1].GetComponent<Image>();
-            fillImage.sprite = referenceSliderFillImage.sprite;
-            fillImage.type = referenceSliderFillImage.type;
-            fillImage.material = referenceSliderFillImage.material;
-            fillImage.color = referenceSliderFillImage.color;
-            fillImage.raycastTarget = false;
-
-            GameObject[] handleGOs = CreateImage(name, referenceTransform, referenceOffset, topLevel, sliderBackgroundGOs[1].transform);
-            Image handleImage = handleGOs[1].GetComponent<Image>();
-            handleImage.sprite = referenceSliderHandleImage.sprite;
-            handleImage.type = referenceSliderHandleImage.type;
-            handleImage.material = referenceSliderHandleImage.material;
-            handleImage.color = referenceSliderHandleImage.color;
-            handleImage.raycastTarget = false;
-            handleImage.rectTransform.sizeDelta = referenceBoolButtonImage.rectTransform.sizeDelta;
-
-            //Debug.Log("-----\nReference rects:\nBackground = " + referenceSliderBackgroundImage.rectTransform.rect + "\nFill = " + referenceSliderFillImage.rectTransform.rect + "\nHandle = " + referenceSliderHandleImage.rectTransform.rect + "\n-----\nReference sizeDeltas:\nBackground = " + referenceSliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + referenceSliderFillImage.rectTransform.sizeDelta + "\nHandle = " + referenceSliderHandleImage.rectTransform.sizeDelta);
-            //Debug.Log("-----\nRects before assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.rect + "\nFill = " + fillImage.rectTransform.rect + "\n Handle = " + handleImage.rectTransform.rect + "\n-----\nSizeDeltas before assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + fillImage.rectTransform.sizeDelta + "\nHandle = " + handleImage.rectTransform.sizeDelta);
-
-            float fillHeightBefore = fillImage.rectTransform.rect.height;
-            float handleHeightBefore = handleImage.rectTransform.rect.height;
-
-            // The slider makes the fill and handle rects not be centred / zeroed anymore and increases them 100 in height / -50 in sizeDelta.
-            slider.image = handleImage;//sliderBackgroundImage;
-            slider.fillRect = fillImage.rectTransform;
-            slider.handleRect = handleImage.rectTransform;
-
-            //Debug.Log("-----\nRects after assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.rect + "\nFill = " + fillImage.rectTransform.rect + "\n Handle = " + handleImage.rectTransform.rect + "\n-----\nSizeDeltas after assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + fillImage.rectTransform.sizeDelta + "\nHandle = " + handleImage.rectTransform.sizeDelta);
-
-            float fillHeightDifference = fillImage.rectTransform.rect.height - fillHeightBefore;
-            float handleHeightDifference = handleImage.rectTransform.rect.height - handleHeightBefore;
-
-            sliderBackgroundImage.rectTransform.sizeDelta = new Vector2(0.945f * sliderBackgroundImage.rectTransform.sizeDelta.x, sliderBackgroundImage.rectTransform.sizeDelta.y / 2f);//slider.image.rectTransform.sizeDelta = new Vector2(slider.image.rectTransform.sizeDelta.x, slider.image.rectTransform.sizeDelta.y / 2f);
-            slider.fillRect.sizeDelta = new Vector2(/*2f * */referenceSliderFillImage.rectTransform.sizeDelta.x, slider.fillRect.sizeDelta.y - fillHeightDifference - fillHeightBefore / 2f);
-            slider.handleRect.sizeDelta = new Vector2(slider.handleRect.sizeDelta.x, slider.handleRect.sizeDelta.y - handleHeightDifference);
-
-            // Scale the slider and adjust for slider scaling
-            slider.transform.localScale = new Vector3(0.5f, 1f, 1f); // how to change the scale property of rect transform unity - Obnoxious Oystercatcher - https://www.codegrepper.com/code-examples/csharp/how+to+change+the+scale+property+of+rect+transform+unity - Accessed 03.01.2022
-            handleImage.transform.localScale = new Vector3(2f, 1f, 1f);
-
-            //Debug.Log("-----\nRects after correction:\nBackground = " + sliderBackgroundImage.rectTransform.rect + "\nFill = " + fillImage.rectTransform.rect + "\n Handle = " + handleImage.rectTransform.rect + "\n-----\nSizeDeltas after correction:\nBackground = " + sliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + fillImage.rectTransform.sizeDelta + "\nHandle = " + handleImage.rectTransform.sizeDelta);
-            return sliderBackgroundGOs;
-        }
-
-        public static GameObject[] CreateBoolButton(string name, Transform referenceTransform, Vector3 referenceOffset, bool smallOption = true, bool topLevel = false)
-        {
-            GameObject[] textAndImageGameObjects = CreateTextAndImageButton(name, referenceTransform, referenceOffset, smallOption, topLevel);
-            Image smallImage = textAndImageGameObjects[3].GetComponentInChildren<Image>();
-            smallImage.rectTransform.sizeDelta = referenceBoolButtonImage.rectTransform.sizeDelta;
-            GameObject[] smallTextGameObject = CreateText(name + "_ImageText", referenceTransform, referenceOffset, smallOption, topLevel);
-            smallTextGameObject[0].transform.SetParent(referenceTransform, false);
-            Text smallText = textAndImageGameObjects[1].GetComponentInChildren<Text>();
-            Text independentText = smallTextGameObject[1].GetComponentInChildren<Text>();
-            independentText.raycastTarget = true;
-            independentText.transform.localPosition -= new Vector3(60f, 0f, 0f) / sizeReduction;
-            independentText.alignment = TextAnchor.MiddleRight;
-            smallText.text = "X";
-            smallText.font = referenceBoolButtonText.font;
-            smallText.color = referenceBoolButtonText.color;
-            smallText.fontSize = referenceBoolButtonText.fontSize;
-            smallText.fontStyle = referenceBoolButtonText.fontStyle;
-            smallText.rectTransform.sizeDelta = referenceBoolButtonImage.rectTransform.sizeDelta;
-            smallText.alignment = referenceBoolButtonText.alignment;
-            smallText.transform.localPosition += new Vector3(65f, 0f, 0f) / sizeReduction;
-            smallImage.transform.localPosition += new Vector3(65f, 0f, 0f) / sizeReduction;
-
-            Button smallButton = textAndImageGameObjects[3].GetComponentInChildren<Button>();
-            smallButton.onClick.AddListener(delegate ()
-                {
-                    if (smallText.text.Equals("X"))
+                    if (backgroundImage.gameObject.activeSelf)
                     {
-                        smallText.text = string.Empty;
+                        foreach (GameObject gameObject in dropdownGOs)
+                        {
+                            gameObject.SetActive(false);
+                        }
                     }
                     else
                     {
-                        smallText.text = "X";
+                        foreach (GameObject gameObject in dropdownGOs)
+                        {
+                            gameObject.SetActive(true);
+                        }
                     }
                 });
-            //Debug.Log("Bool button positions: Image = " + smallImage.transform.position + ", Independent Text: " + textAndImageGameObjects[1].GetComponentInChildren<Text>().transform.position + ", Small Text = " + smallText.transform.position);
-            return new GameObject[6] { textAndImageGameObjects[0], textAndImageGameObjects[1], textAndImageGameObjects[2], textAndImageGameObjects[3], smallTextGameObject[0], smallTextGameObject[1] };
-        }
+            }
 
-        public static GameObject[] CreateInputField(string name, Transform referenceTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp, bool smallOption = true, bool topLevel = false)
-        {
-            GameObject[] canvasGameObjects = CreateTextAndImage(name, referenceTransform, referenceOffset, smallOption, topLevel);
-
-            Image image = canvasGameObjects[3].GetComponentInChildren<Image>();
-            image.rectTransform.sizeDelta = new Vector2((image.rectTransform.sizeDelta.x / 2.25f) / sizeReduction, image.rectTransform.sizeDelta.y);
-
-
-            GameObject inputFieldGameObject = new GameObject(name.Replace(' ', '_') + "-InputFieldGameObject");
-            InputField inputField = inputFieldGameObject.AddComponent<InputField>();
-            inputFieldGameObject.transform.SetParent(canvasGameObjects[3].transform, false);
-            inputFieldGameObject.transform.localPosition = Vector3.zero;
-
-            Text text = canvasGameObjects[1].GetComponentInChildren<Text>();
-            text.rectTransform.sizeDelta = image.rectTransform.sizeDelta;
-
-            inputField.targetGraphic = image;
-            inputField.textComponent = text;
-            inputField.text = "This is an input field";
-
-            EventTrigger trigger = canvasGameObjects[3].AddComponent<EventTrigger>();
-            EventTrigger.Entry entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerClick;
-            entry.callback.AddListener((eventData) =>
+            public override Text ValueText()
             {
-                inputField.ActivateInputField();
-                inputField.StartCoroutine(InputFieldInputValidation(inputField, useInt, minClamp, maxClamp));
-            });
-            trigger.triggers.Add(entry);
-
-            EventTrigger.Entry entry2 = new EventTrigger.Entry();
-            entry2.eventID = EventTriggerType.PointerEnter;
-            entry2.callback.AddListener((eventData) => { image.color = new Color(245f / 255f, 210f / 255f, 140f / 255f, referenceOptionImage.color.a); });
-            trigger.triggers.Add(entry2);
-
-            EventTrigger.Entry entry3 = new EventTrigger.Entry();
-            entry3.eventID = EventTriggerType.PointerExit;
-            entry3.callback.AddListener((eventData) => { image.color = referenceOptionImage.color; });
-            trigger.triggers.Add(entry3);
-
-            //Debug.Log("Image is at " + image.transform.position + " and input field is at " + inputField.transform.position + " with text at " + text.transform.position);
-            return new GameObject[] { canvasGameObjects[0], canvasGameObjects[1], canvasGameObjects[2], canvasGameObjects[3], inputFieldGameObject };
+                Debug.Log("Left Image Text value: " + leftImage.text.text);
+                return leftImage.text;
+            }
         }
 
-        private static IEnumerator InputFieldInputValidation(InputField inputField, bool useInt, float minClamp, float maxClamp)
+        public class MenuBoolButtonWithDescription : MenuDescriptionBox
         {
-            yield return null;
-            while (inputField.isFocused)
+            MenuBoolButton menuBoolButton;
+            public MenuBoolButtonWithDescription(string description, string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText)
+            {
+                menuBoolButton = new MenuBoolButton(name, nameTextCustomTransform, nameOffsetConstant * nameTextCustomTransform.localPosition, smallText);
+            }
+
+            public override Text ValueText()
+            {
+                return menuBoolButton.text;
+            }
+        }
+
+        public class MenuSliderInputFieldWithDescription : MenuInputFieldWithDescription
+        {
+            // Use an input field as part of the base to hold the value for the slider and to allow for manual entry of the value.
+            public MenuSlider menuSlider;
+            public MenuSliderInputFieldWithDescription(string description, string name, Transform parentTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp, bool smallText = true) : base(description, name, parentTransform, referenceOffset, useInt, minClamp, maxClamp, smallText)
+            {
+                menuSlider = new MenuSlider(name, nameTextCustomTransform, nameOffsetConstant * nameTextCustomTransform.localPosition + new Vector3(62.5f, 0f, 0f), useInt, minClamp, maxClamp);
+                menuSlider.slider.onValueChanged.AddListener((sliderValue) => { menuInputField.inputField.text = sliderValue.ToString(); });
+
+                EventTrigger.Entry entry = new EventTrigger.Entry();
+                entry.eventID = EventTriggerType.PointerClick;
+                entry.callback.AddListener((eventData) =>
+                {
+                    menuInputField.inputField.StartCoroutine(UpdateSliderAfterInputField(menuInputField.inputField, menuSlider.slider));
+                });
+                menuInputField.eventTrigger.triggers.Add(entry);
+            }
+
+            private static IEnumerator UpdateSliderAfterInputField(InputField inputField, Slider slider)
             {
                 yield return null;
-            }
-            // This is where you should verify inputs
-            if (useInt)
-            {
-                float floatValue = Convert.ToSingle(inputField.text);
-                float roundedInt = Mathf.RoundToInt(floatValue);
-                inputField.text = roundedInt.ToString();
-            }
-            if (minClamp != 0f || maxClamp != 0f)
-            {
-                float fieldValue = Convert.ToSingle(inputField.text);
-                if (fieldValue > maxClamp)
+                while (inputField.isFocused)
                 {
-                    inputField.text = maxClamp.ToString();
+                    yield return null;
                 }
-                else if (fieldValue < minClamp)
+                // This is where you should update the slider
+                slider.value = Convert.ToSingle(inputField.text);
+                yield break;
+            }
+        }
+
+        public class MenuInputFieldWithDescription : MenuDescriptionBox
+        {
+            public MenuInputField menuInputField;
+            public MenuInputFieldWithDescription(string description, string name, Transform parentTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText)
+            {
+                menuInputField = new MenuInputField(name, nameTextCustomTransform, nameOffsetConstant * nameTextCustomTransform.localPosition, useInt, minClamp, maxClamp, smallText);
+            }
+
+            public override Text ValueText()
+            {
+                return menuInputField.inputField.textComponent;
+            }
+        }
+
+        // To fix hover don't make parents children of nameMenuText.
+        public abstract class MenuDescriptionBox : GameObjectFollowingTransform
+        {
+            protected static float nameOffsetConstant = -1.7f;
+            public MenuTextImage descriptionMenuTextImage;
+            private MenuText nameMenuText;
+            protected Transform nameTextCustomTransform;
+            public MenuDescriptionBox(string description, string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name + "DESCRIPTION_BOX_BASE", parentTransform, referenceOffset)
+            {
+                // Create a graphic for the description box with a canvas that follows a separate transform and has a higher sorting order to allow it to be displayed on top of other settings.
+                CanvasFollowingTransform descriptionBoxCanvas = new CanvasFollowingTransform(name, gameObject.transform, Vector3.zero);
+                descriptionMenuTextImage = new MenuTextImage(name + "DESCRIPTION_BOX", descriptionBoxCanvas.gameObject.transform, new Vector3(0f, 0f, -5f));
+                descriptionBoxCanvas.gameObject.transform.SetParent(parentTransform.parent, true);
+                descriptionBoxCanvas.canvas.sortingOrder = 1;
+
+                descriptionMenuTextImage.image.rectTransform.sizeDelta = new Vector2(2.75f * descriptionMenuTextImage.image.rectTransform.sizeDelta.x, 5f * descriptionMenuTextImage.image.rectTransform.sizeDelta.y * ((description.Length + (110f - (description.Length % 55f))) / 325f));
+                descriptionMenuTextImage.image.color = new Color(descriptionMenuTextImage.image.color.r, descriptionMenuTextImage.image.color.g, descriptionMenuTextImage.image.color.b, 1f);
+                descriptionMenuTextImage.text.rectTransform.sizeDelta = new Vector2(0.975f * descriptionMenuTextImage.image.rectTransform.sizeDelta.x, 0.975f * descriptionMenuTextImage.image.rectTransform.sizeDelta.y);
+                descriptionMenuTextImage.text.text = description;
+
+                GameObjectFollowingTransform nameTextParent = new GameObjectFollowingTransform(name, gameObject.transform, -(new Vector3(0.25f * referenceOptionImage.rectTransform.sizeDelta.x, 0f, 0f) / sizeReduction + new Vector3(60f, 0f, 0f) / sizeReduction));
+                nameTextCustomTransform = nameTextParent.gameObject.transform;
+
+                nameMenuText = new MenuText(name, nameTextCustomTransform, Vector3.zero, smallText);
+                nameMenuText.text.rectTransform.sizeDelta = new Vector2(1.5f * nameMenuText.text.rectTransform.sizeDelta.x, 1.5f * nameMenuText.text.rectTransform.sizeDelta.y);
+                nameMenuText.text.raycastTarget = true;
+                nameMenuText.text.alignment = TextAnchor.MiddleRight;
+
+                //descriptionTextGameObjects[0].GetComponent<Canvas>().sortingOrder = 3;
+                //descriptionTextGameObjects[2].GetComponent<Canvas>().sortingOrder = 2;
+
+                /*
+                // CSF Experiment
+                Image descriptionImage = descriptionTextGameObjects[3].GetComponentInChildren<Image>();
+                descriptionImage.rectTransform.sizeDelta = new Vector2(2.75f * descriptionImage.rectTransform.sizeDelta.x, 5f * descriptionImage.rectTransform.sizeDelta.y);
+                descriptionImage.color = new Color(descriptionImage.color.r, descriptionImage.color.g, descriptionImage.color.b, 1f);
+                Text text = descriptionTextGameObjects[1].GetComponentInChildren<Text>();
+                text.rectTransform.sizeDelta = descriptionImage.rectTransform.sizeDelta;
+                text.text = description;
+                ContentSizeFitter csf = descriptionTextGameObjects[1].AddComponent<ContentSizeFitter>();
+                csf.verticalFit = ContentSizeFitter.FitMode.MinSize;
+                descriptionImage.rectTransform.sizeDelta = new Vector2(descriptionImage.rectTransform.sizeDelta.x, text.rectTransform.sizeDelta.y);
+                text.rectTransform.sizeDelta = new Vector2(0.975f * descriptionImage.rectTransform.sizeDelta.x, 0.975f * descriptionImage.rectTransform.sizeDelta.y);
+                */
+
+                EventTrigger trigger = nameMenuText.gameObject.AddComponent<EventTrigger>();
+                EventTrigger.Entry entry = new EventTrigger.Entry();
+                entry.eventID = EventTriggerType.PointerEnter;
+                entry.callback.AddListener((eventData) =>
                 {
-                    inputField.text = minClamp.ToString();
+                    AudioSystem.instance.StartCoroutine(RevealDescriptionAfterTime(descriptionMenuTextImage.gameObject, nameMenuText.gameObject, trigger));
+                });
+                trigger.triggers.Add(entry);
+
+                EventTrigger trigger2 = descriptionMenuTextImage.gameObject.AddComponent<EventTrigger>();
+                EventTrigger.Entry entry2 = new EventTrigger.Entry();
+                entry2.eventID = EventTriggerType.PointerExit;
+                entry2.callback.AddListener((eventData) =>
+                {
+                    descriptionMenuTextImage.gameObject.SetActive(false);
+
+                    nameMenuText.gameObject.SetActive(true);
+                });
+                trigger2.triggers.Add(entry2);
+
+                descriptionMenuTextImage.gameObject.SetActive(false);
+            }
+
+            public abstract Text ValueText();
+
+            private static IEnumerator RevealDescriptionAfterTime(GameObject descriptionGameObject, GameObject settingsButtonGameObject, EventTrigger trigger)
+            {
+                float t = 0f;
+                bool exitedText = false;
+                EventTrigger.Entry entry = new EventTrigger.Entry();
+                entry.eventID = EventTriggerType.PointerExit;
+                entry.callback.AddListener((eventData) =>
+                {
+                    exitedText = true;
+                });
+                trigger.triggers.Add(entry);
+                while (t < 0.5f)
+                {
+                    t += Time.deltaTime;
+                    if (exitedText)
+                    {
+                        t = 0.5f;
+                    }
+                    yield return null;
+                }
+                if (!exitedText)
+                {
+                    descriptionGameObject.SetActive(true);
+
+                    settingsButtonGameObject.SetActive(false);
+                }
+                trigger.triggers.Remove(entry);
+            }
+        }
+
+        public class MenuSlider : MenuImage
+        {
+            public Slider slider;
+            public Image fillImage;
+            public Image handleImage;
+            public MenuSlider(string name, Transform parentTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp) : base(name, parentTransform, referenceOffset)
+            {
+                // Unity Slider in 4 Minutes - [Unity Tutorial] - Tarodev - https://youtu.be/nTLgzvklgU8 - Accessed 03.01.2022
+                slider = gameObject.AddComponent<Slider>();
+                slider.colors = referenceSlider.colors;
+                slider.direction = referenceSlider.direction;
+                slider.navigation = referenceSlider.navigation;
+                slider.spriteState = referenceSlider.spriteState;
+                slider.transition = referenceSlider.transition;
+                //slider.wholeNumbers = referenceSlider.wholeNumbers;
+                slider.wholeNumbers = useInt;
+                slider.minValue = minClamp;
+                slider.maxValue = maxClamp;
+
+                image.sprite = referenceSliderBackgroundImage.sprite;
+                image.type = referenceSliderBackgroundImage.type;
+                image.material = referenceSliderBackgroundImage.material;
+                //sliderBackgroundImage.color = referenceSliderBackgroundImage.color;
+
+                MenuImage fillMenuImage = new MenuImage(name, gameObject.transform, Vector3.zero);
+                fillImage = fillMenuImage.image;
+                fillImage.sprite = referenceSliderFillImage.sprite;
+                fillImage.type = referenceSliderFillImage.type;
+                fillImage.material = referenceSliderFillImage.material;
+                fillImage.color = referenceSliderFillImage.color;
+                fillImage.raycastTarget = false;
+
+                MenuImage handleMenuImage = new MenuImage(name, gameObject.transform, Vector3.zero);
+                handleImage = handleMenuImage.image;
+                handleImage.sprite = referenceSliderHandleImage.sprite;
+                handleImage.type = referenceSliderHandleImage.type;
+                handleImage.material = referenceSliderHandleImage.material;
+                handleImage.color = referenceSliderHandleImage.color;
+                handleImage.raycastTarget = false;
+                handleImage.rectTransform.sizeDelta = referenceBoolButtonImage.rectTransform.sizeDelta;
+
+                //Debug.Log("-----\nReference rects:\nBackground = " + referenceSliderBackgroundImage.rectTransform.rect + "\nFill = " + referenceSliderFillImage.rectTransform.rect + "\nHandle = " + referenceSliderHandleImage.rectTransform.rect + "\n-----\nReference sizeDeltas:\nBackground = " + referenceSliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + referenceSliderFillImage.rectTransform.sizeDelta + "\nHandle = " + referenceSliderHandleImage.rectTransform.sizeDelta);
+                //Debug.Log("-----\nRects before assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.rect + "\nFill = " + fillImage.rectTransform.rect + "\n Handle = " + handleImage.rectTransform.rect + "\n-----\nSizeDeltas before assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + fillImage.rectTransform.sizeDelta + "\nHandle = " + handleImage.rectTransform.sizeDelta);
+
+                float fillHeightBefore = fillImage.rectTransform.rect.height;
+                float handleHeightBefore = handleImage.rectTransform.rect.height;
+
+                // The slider makes the fill and handle rects not be centred / zeroed anymore and increases them 100 in height / -50 in sizeDelta.
+                slider.image = handleImage;//sliderBackgroundImage;
+                slider.fillRect = fillImage.rectTransform;
+                slider.handleRect = handleImage.rectTransform;
+
+                //Debug.Log("-----\nRects after assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.rect + "\nFill = " + fillImage.rectTransform.rect + "\n Handle = " + handleImage.rectTransform.rect + "\n-----\nSizeDeltas after assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + fillImage.rectTransform.sizeDelta + "\nHandle = " + handleImage.rectTransform.sizeDelta);
+
+                float fillHeightDifference = fillImage.rectTransform.rect.height - fillHeightBefore;
+                float handleHeightDifference = handleImage.rectTransform.rect.height - handleHeightBefore;
+
+                image.rectTransform.sizeDelta = new Vector2(0.945f * image.rectTransform.sizeDelta.x, image.rectTransform.sizeDelta.y / 2f);//slider.image.rectTransform.sizeDelta = new Vector2(slider.image.rectTransform.sizeDelta.x, slider.image.rectTransform.sizeDelta.y / 2f);
+                slider.fillRect.sizeDelta = new Vector2(/*2f * */referenceSliderFillImage.rectTransform.sizeDelta.x, slider.fillRect.sizeDelta.y - fillHeightDifference - fillHeightBefore / 2f);
+                slider.handleRect.sizeDelta = new Vector2(slider.handleRect.sizeDelta.x, slider.handleRect.sizeDelta.y - handleHeightDifference / 2f);
+
+                // Scale the slider and adjust for slider scaling
+                slider.transform.localScale = new Vector3(0.5f, 1f, 1f); // how to change the scale property of rect transform unity - Obnoxious Oystercatcher - https://www.codegrepper.com/code-examples/csharp/how+to+change+the+scale+property+of+rect+transform+unity - Accessed 03.01.2022
+                handleImage.transform.localScale = new Vector3(2f, 1f, 1f);
+
+                //Debug.Log("-----\nRects after correction:\nBackground = " + sliderBackgroundImage.rectTransform.rect + "\nFill = " + fillImage.rectTransform.rect + "\n Handle = " + handleImage.rectTransform.rect + "\n-----\nSizeDeltas after correction:\nBackground = " + sliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + fillImage.rectTransform.sizeDelta + "\nHandle = " + handleImage.rectTransform.sizeDelta);
+
+            }
+        }
+
+
+        public class MenuBoolButton : MenuTextImageButton
+        {
+            public MenuBoolButton(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText, true)
+            {
+                image.rectTransform.sizeDelta = referenceBoolButtonImage.rectTransform.sizeDelta;
+
+                text.text = "X";
+                text.font = referenceBoolButtonText.font;
+                text.color = referenceBoolButtonText.color;
+                text.fontSize = referenceBoolButtonText.fontSize;
+                text.fontStyle = referenceBoolButtonText.fontStyle;
+                text.rectTransform.sizeDelta = referenceBoolButtonImage.rectTransform.sizeDelta;
+                text.alignment = referenceBoolButtonText.alignment;
+
+                button.onClick.AddListener(delegate ()
+                    {
+                        if (text.text.Equals("X"))
+                        {
+                            text.text = string.Empty;
+                        }
+                        else
+                        {
+                            text.text = "X";
+                        }
+                    });
+            }
+        }
+
+        public class MenuInputField : MenuTextImage
+        {
+            public InputField inputField;
+            public EventTrigger eventTrigger;
+            public MenuInputField(string name, Transform parentTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText, true)
+            {
+                image.rectTransform.sizeDelta = new Vector2((image.rectTransform.sizeDelta.x / 2.25f) / sizeReduction, image.rectTransform.sizeDelta.y);
+
+                inputField = gameObject.AddComponent<InputField>();
+
+                text.rectTransform.sizeDelta = image.rectTransform.sizeDelta;
+
+                inputField.targetGraphic = image;
+                inputField.textComponent = text;
+                inputField.text = "This is an input field";
+
+                eventTrigger = gameObject.AddComponent<EventTrigger>();
+                EventTrigger.Entry pointerClickEvent = new EventTrigger.Entry();
+                pointerClickEvent.eventID = EventTriggerType.PointerClick;
+                pointerClickEvent.callback.AddListener((eventData) =>
+                {
+                    inputField.ActivateInputField();
+                    inputField.StartCoroutine(InputFieldInputValidation(inputField, useInt, minClamp, maxClamp));
+                });
+                eventTrigger.triggers.Add(pointerClickEvent);
+
+                EventTrigger.Entry pointerEnterEvent = new EventTrigger.Entry();
+                pointerEnterEvent.eventID = EventTriggerType.PointerEnter;
+                pointerEnterEvent.callback.AddListener((eventData) => { image.color = new Color(245f / 255f, 210f / 255f, 140f / 255f, referenceOptionImage.color.a); });
+                eventTrigger.triggers.Add(pointerEnterEvent);
+
+                EventTrigger.Entry pointerExitEvent = new EventTrigger.Entry();
+                pointerExitEvent.eventID = EventTriggerType.PointerExit;
+                pointerExitEvent.callback.AddListener((eventData) => { image.color = referenceOptionImage.color; });
+                eventTrigger.triggers.Add(pointerExitEvent);
+            }
+
+            private static IEnumerator InputFieldInputValidation(InputField inputField, bool useInt, float minClamp, float maxClamp)
+            {
+                yield return null;
+                while (inputField.isFocused)
+                {
+                    yield return null;
+                }
+                // This is where you should verify inputs
+                if (useInt)
+                {
+                    float floatValue = Convert.ToSingle(inputField.text);
+                    float roundedInt = Mathf.RoundToInt(floatValue);
+                    inputField.text = roundedInt.ToString();
+                }
+                if (minClamp != 0f || maxClamp != 0f)
+                {
+                    float fieldValue = Convert.ToSingle(inputField.text);
+                    if (fieldValue > maxClamp)
+                    {
+                        inputField.text = maxClamp.ToString();
+                    }
+                    else if (fieldValue < minClamp)
+                    {
+                        inputField.text = minClamp.ToString();
+                    }
+                }
+                yield break;
+            }
+        }
+
+        public class MenuTextImageButton : MenuTextImage
+        {
+            public Button button;
+            public MenuTextImageButton(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true, bool addColourEventToImage = false) : base(name, parentTransform, referenceOffset, smallText, addColourEventToImage)
+            {
+                button = this.gameObject.AddComponent<Button>();
+            }
+        }
+
+        public class MenuTextImage : MenuImage
+        {
+            public Text text;
+            public MenuTextImage(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true, bool addColourEventToImage = false) : base(name, parentTransform, referenceOffset, addColourEventToImage)
+            {
+                MenuText menuText = new MenuText(name, this.gameObject.transform, Vector3.zero, smallText);
+                text = menuText.text;
+            }
+        }
+
+        public class MenuImageButton : MenuImage
+        {
+            public Button button;
+            public MenuImageButton(string name, Transform parentTransform, Vector3 referenceOffset, bool addColourEvent = false) : base(name, parentTransform, referenceOffset, addColourEvent)
+            {
+                button = this.gameObject.AddComponent<Button>();
+            }
+        }
+
+        public class MenuImage : CanvasRenderable
+        {
+            public Image image;
+            public MenuImage(string name, Transform parentTransform, Vector3 referenceOffset, bool addColourEvent = false) : base(name, parentTransform, referenceOffset)
+            {
+                image = this.gameObject.AddComponent<Image>();
+                image.rectTransform.sizeDelta = referenceOptionImage.rectTransform.sizeDelta;
+                image.sprite = referenceOptionImage.sprite;
+                image.type = referenceOptionImage.type;
+                image.material = referenceOptionImage.material;
+                image.color = referenceOptionImage.color;
+
+                if (addColourEvent)
+                {
+                    EventTrigger trigger = this.gameObject.AddComponent<EventTrigger>();
+                    EventTrigger.Entry entry = new EventTrigger.Entry();
+                    entry.eventID = EventTriggerType.PointerEnter;
+                    entry.callback.AddListener((eventData) => { image.color = new Color(245f / 255f, 210f / 255f, 140f / 255f, referenceOptionImage.color.a); });
+                    trigger.triggers.Add(entry);
+
+                    EventTrigger.Entry entry2 = new EventTrigger.Entry();
+                    entry2.eventID = EventTriggerType.PointerExit;
+                    entry2.callback.AddListener((eventData) => { image.color = referenceOptionImage.color; });
+                    trigger.triggers.Add(entry2);
                 }
             }
-            yield break;
         }
 
-        private static GameObject[] CreateTextAndImage(string name, Transform referenceTransform, Vector3 referenceOffset, bool smallOption = true, bool topLevel = false, Transform alternativeParentTransform = null)
+
+        private class MenuTextButton : MenuText
         {
-            // Order of creation matters with layering
-            GameObject[] canvasGameObjectsImageButton = CreateImage(name, referenceTransform, referenceOffset, topLevel);
-            GameObject[] canvasGameObjectsText = CreateText(name, referenceTransform, referenceOffset, smallOption, topLevel);
-
-            if (alternativeParentTransform != null)
+            public Button button;
+            public MenuTextButton(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText)
             {
-                //Debug.Log("Setting alternative transform for TextAndImage");
-                canvasGameObjectsImageButton[0].transform.SetParent(alternativeParentTransform, true);
-                canvasGameObjectsText[0].transform.SetParent(alternativeParentTransform, true);
-            }
+                button = this.gameObject.AddComponent<Button>();
+                text.raycastTarget = true;
 
-            //Debug.Log("-----\nCreated " + canvasGameObjectsText[0].name + ":\nPosition: " + canvasGameObjectsText[0].transform.position + " / " + canvasGameObjectsText[0].transform.localPosition + "\nRotation: " + canvasGameObjectsText[0].transform.rotation + " / " + canvasGameObjectsText[0].transform.localRotation + "\n...and " + canvasGameObjectsImageButton[1].name + ":\nPosition: " + canvasGameObjectsImageButton[1].transform.position + " / " + canvasGameObjectsImageButton[1].transform.localPosition + "\nRotation: " + canvasGameObjectsImageButton[1].transform.rotation + " / " + canvasGameObjectsImageButton[1].transform.localRotation + "\n-----");
-            return new GameObject[] { canvasGameObjectsText[0], canvasGameObjectsText[1], canvasGameObjectsImageButton[0], canvasGameObjectsImageButton[1] };
+                EventTrigger trigger = text.gameObject.AddComponent<EventTrigger>();
+                EventTrigger.Entry entry = new EventTrigger.Entry();
+                entry.eventID = EventTriggerType.PointerEnter;
+                entry.callback.AddListener((eventData) => { text.color = Color.black; });
+                trigger.triggers.Add(entry);
+
+                EventTrigger.Entry entry2 = new EventTrigger.Entry();
+                entry2.eventID = EventTriggerType.PointerExit;
+                entry2.callback.AddListener((eventData) => { text.color = referenceCategoryText.color; });
+                trigger.triggers.Add(entry2);
+
+                button.onClick.AddListener(delegate ()
+                {
+                    text.color = referenceCategoryText.color;
+                });
+
+                //Debug.Log("-----\nCreated " + canvasGameObjects[0].name + ":\nPosition: " + canvasGameObjects[0].transform.position + " / " + canvasGameObjects[0].transform.localPosition + "\nRotation: " + canvasGameObjects[0].transform.rotation + " / " + canvasGameObjects[0].transform.localRotation + "\n...and " + canvasGameObjects[1].name + ":\nPosition: " + canvasGameObjects[1].transform.position + " / " + canvasGameObjects[1].transform.localPosition + "\nRotation: " + canvasGameObjects[1].transform.rotation + " / " + canvasGameObjects[1].transform.localRotation + "\n-----");
+            }
         }
 
-        private static GameObject[] CreateTextAndImageButton(string name, Transform referenceTransform, Vector3 referenceOffset, bool smallOption = true, bool topLevel = false, Transform alternativeParentTransform = null, bool addColourEvent = true)
+        public class MenuText : CanvasRenderable
         {
-            // Order of creation matters with layering
-            GameObject[] canvasGameObjectsImageButton = CreateImageButton(name, referenceTransform, referenceOffset, topLevel);
-            GameObject[] canvasGameObjectsText = CreateText(name, referenceTransform, referenceOffset, smallOption, topLevel);
-
-            Button button = canvasGameObjectsImageButton[1].GetComponentInChildren<Button>();
-            if (addColourEvent)
+            public Text text;
+            public MenuText(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name, parentTransform, referenceOffset)
             {
-                AddColourEventToImage(canvasGameObjectsImageButton[1]);
-            }
+                text = this.gameObject.AddComponent<Text>();
+                text.text = name.Split(new string[] { "_" }, System.StringSplitOptions.None)[0];
+                text.font = referenceCategoryText.font;
+                text.color = referenceCategoryText.color;
+                text.fontSize = referenceCategoryText.fontSize;
+                text.fontStyle = referenceCategoryText.fontStyle;
+                text.raycastTarget = false;
+                if (smallText)
+                {
+                    text.rectTransform.sizeDelta = referenceOptionImage.rectTransform.sizeDelta;
 
-            if (alternativeParentTransform != null)
-            {
-                //Debug.Log("Setting alternative transform for TextAndImageButton");
-                canvasGameObjectsImageButton[0].transform.SetParent(alternativeParentTransform, true);
-                canvasGameObjectsText[0].transform.SetParent(alternativeParentTransform, true);
-            }
+                    text.fontSize = referenceOptionText.fontSize;
+                    text.color = referenceOptionText.color;
+                    text.fontStyle = referenceOptionText.fontStyle;
 
-            //Debug.Log("-----\nCreated " + canvasGameObjectsText[0].name + ":\nPosition: " + canvasGameObjectsText[0].transform.position + " / " + canvasGameObjectsText[0].transform.localPosition + "\nRotation: " + canvasGameObjectsText[0].transform.rotation + " / " + canvasGameObjectsText[0].transform.localRotation + "\n...and " + canvasGameObjectsImageButton[1].name + ":\nPosition: " + canvasGameObjectsImageButton[1].transform.position + " / " + canvasGameObjectsImageButton[1].transform.localPosition + "\nRotation: " + canvasGameObjectsImageButton[1].transform.rotation + " / " + canvasGameObjectsImageButton[1].transform.localRotation + "\n-----");
-            return new GameObject[] { canvasGameObjectsText[0], canvasGameObjectsText[1], canvasGameObjectsImageButton[0], canvasGameObjectsImageButton[1] };
+                    // Overlay text blocking buttons under it. - JAKJ - https://forum.unity.com/threads/overlay-text-blocking-buttons-under-it.265680/ - Accessed 24.10.2021 [Used for old code]
+                    // Can just use text.raycastTarget = false instead
+                    //Debug.Log("Small text rect is " + referenceOptionText.rectTransform.sizeDelta + " and big text rect is " + referenceCategoryText.rectTransform.sizeDelta);
+                    //Debug.Log("Small image rect is " + referenceOptionImage.rectTransform.sizeDelta + " and big image rect is " + referenceCategoryImage.rectTransform.sizeDelta);
+                }
+                else
+                {
+                    text.rectTransform.sizeDelta = referenceCategoryImage.rectTransform.sizeDelta + new Vector2(0.25f * referenceCategoryImage.rectTransform.sizeDelta.x, 0);
+                }
+                text.alignment = referenceCategoryText.alignment;
+            }
         }
 
-        private static void AddColourEventToImage(GameObject imageCanvasGameObject)
+        public abstract class CanvasRenderable : GameObjectFollowingTransform
         {
-            Image image = imageCanvasGameObject.GetComponentInChildren<Image>();
-            EventTrigger trigger = imageCanvasGameObject.AddComponent<EventTrigger>();
-            EventTrigger.Entry entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerEnter;
-            entry.callback.AddListener((eventData) => { image.color = new Color(245f / 255f, 210f / 255f, 140f / 255f, referenceOptionImage.color.a); });
-            trigger.triggers.Add(entry);
-
-            EventTrigger.Entry entry2 = new EventTrigger.Entry();
-            entry2.eventID = EventTriggerType.PointerExit;
-            entry2.callback.AddListener((eventData) => { image.color = referenceOptionImage.color; });
-            trigger.triggers.Add(entry2);
+            protected CanvasRenderable(string name, Transform parentTransform, Vector3 referenceOffset) : base(name + "-CanvasRendererGameObject", parentTransform, referenceOffset)
+            {
+                this.gameObject.AddComponent<CanvasRenderer>();
+            }
         }
 
-        private static GameObject[] CreateTextButton(string name, Transform referenceTransform, Vector3 referenceOffset, bool smallOption = true, bool topLevel = false)
+        public class CanvasFollowingTransform : GameObjectFollowingTransform
         {
-            GameObject[] canvasGameObjects = CreateText(name, referenceTransform, referenceOffset, smallOption, topLevel);
-            Button button = canvasGameObjects[1].AddComponent<Button>();
-            Text text = canvasGameObjects[1].GetComponentInChildren<Text>();
-            text.raycastTarget = true;
-
-            EventTrigger trigger = canvasGameObjects[1].AddComponent<EventTrigger>();
-            EventTrigger.Entry entry = new EventTrigger.Entry();
-            entry.eventID = EventTriggerType.PointerEnter;
-            entry.callback.AddListener((eventData) => { text.color = Color.black; });
-            trigger.triggers.Add(entry);
-
-            EventTrigger.Entry entry2 = new EventTrigger.Entry();
-            entry2.eventID = EventTriggerType.PointerExit;
-            entry2.callback.AddListener((eventData) => { text.color = referenceCategoryText.color; });
-            trigger.triggers.Add(entry2);
-
-            //Debug.Log("-----\nCreated " + canvasGameObjects[0].name + ":\nPosition: " + canvasGameObjects[0].transform.position + " / " + canvasGameObjects[0].transform.localPosition + "\nRotation: " + canvasGameObjects[0].transform.rotation + " / " + canvasGameObjects[0].transform.localRotation + "\n...and " + canvasGameObjects[1].name + ":\nPosition: " + canvasGameObjects[1].transform.position + " / " + canvasGameObjects[1].transform.localPosition + "\nRotation: " + canvasGameObjects[1].transform.rotation + " / " + canvasGameObjects[1].transform.localRotation + "\n-----");
-            return canvasGameObjects;
+            public Canvas canvas;
+            public CanvasFollowingTransform(string name, Transform parentTransform, Vector3 referenceOffset) : base(name + "-CanvasGameObject", parentTransform, referenceOffset)
+            {
+                // Create Unity UI Panel via Script - prof - https://answers.unity.com/questions/1034060/create-unity-ui-panel-via-script.html - Accessed 23.10.2021
+                canvas = this.gameObject.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.WorldSpace;//RenderMode.ScreenSpaceOverlay;
+                canvas.sortingOrder = 0;
+                this.gameObject.AddComponent<CanvasScaler>();
+                this.gameObject.AddComponent<GraphicRaycaster>();
+            }
         }
 
-        private static GameObject[] CreateText(string name, Transform referenceTransform, Vector3 referenceOffset, bool smallOption = true, bool topLevel = false)
+        public class GameObjectFollowingTransform
         {
-            GameObject[] canvasGameObjects = CreateCanvasGameObjects(name, referenceTransform, referenceOffset, topLevel);
-            Text text = canvasGameObjects[1].AddComponent<Text>();
-            CustomiseText(text, name, smallOption/*, canvasGameObjects[1]*/);
-            return canvasGameObjects;
+            public GameObject gameObject;
+
+            public GameObjectFollowingTransform(string name, Transform parentTransform, Vector3 referenceOffset)
+            {
+                this.gameObject = new GameObject(name.Replace(' ', '_'));
+                this.gameObject.transform.SetParent(parentTransform, false);
+                this.gameObject.transform.localPosition += referenceOffset;
+            }
         }
 
-        private static void CustomiseText(Text text, string name, bool smallOption/*, GameObject referenceCanvasGameObject*/)
+        public static GameObject GameObjectArrayToSingleParent(string name, GameObject[] array)
         {
-            text.text = name.Split(new string[] { "_" }, System.StringSplitOptions.None)[0];
-            text.font = referenceCategoryText.font;
-            text.color = referenceCategoryText.color;
-            text.fontSize = referenceCategoryText.fontSize;
-            text.fontStyle = referenceCategoryText.fontStyle;
-            text.raycastTarget = false;
-            if (smallOption)
+            // Only combine GameObjects if there are at least two.
+            if (array != null && array.Length > 1)
             {
-                text.rectTransform.sizeDelta = referenceOptionImage.rectTransform.sizeDelta;
-
-                text.fontSize = referenceOptionText.fontSize;
-                text.color = referenceOptionText.color;
-                text.fontStyle = referenceOptionText.fontStyle;
-
-                // Overlay text blocking buttons under it. - JAKJ - https://forum.unity.com/threads/overlay-text-blocking-buttons-under-it.265680/ - Accessed 24.10.2021 [Used for old code]
-                // Can just use text.raycastTarget = false instead
-                //Debug.Log("Small text rect is " + referenceOptionText.rectTransform.sizeDelta + " and big text rect is " + referenceCategoryText.rectTransform.sizeDelta);
-                //Debug.Log("Small image rect is " + referenceOptionImage.rectTransform.sizeDelta + " and big image rect is " + referenceCategoryImage.rectTransform.sizeDelta);
+                GameObject parent = new GameObject(name);
+                parent.transform.SetParent(array[0].transform.parent);
+                foreach (GameObject child in array)
+                {
+                    child.transform.SetParent(parent.transform);
+                }
+                return parent;
             }
-            else
-            {
-                text.rectTransform.sizeDelta = referenceCategoryImage.rectTransform.sizeDelta + new Vector2(0.25f * referenceCategoryImage.rectTransform.sizeDelta.x, 0);
-            }
-            text.alignment = referenceCategoryText.alignment;
-        }
-
-        private static GameObject[] CreateImageButton(string name, Transform referenceTransform, Vector3 referenceOffset, bool topLevel)
-        {
-            GameObject[] canvasGameObjects = CreateImage(name, referenceTransform, referenceOffset, topLevel);
-            Button button = canvasGameObjects[1].AddComponent<Button>();
-            return canvasGameObjects;
-        }
-
-        private static GameObject[] CreateImage(string name, Transform referenceTransform, Vector3 referenceOffset, bool topLevel, Transform alternativeParentTransform = null)
-        {
-            GameObject[] canvasGameObjects = CreateCanvasGameObjects(name, referenceTransform, referenceOffset, topLevel);
-            Image image = canvasGameObjects[1].AddComponent<Image>();
-            image.rectTransform.sizeDelta = referenceOptionImage.rectTransform.sizeDelta;
-            image.sprite = referenceOptionImage.sprite;
-            image.type = referenceOptionImage.type;
-            image.material = referenceOptionImage.material;
-            image.color = referenceOptionImage.color;
-
-            if (alternativeParentTransform != null)
-            {
-                //Debug.Log("Setting alternative transform for Image");
-                canvasGameObjects[0].transform.SetParent(alternativeParentTransform, true);
-            }
-            return canvasGameObjects;
-        }
-
-        private static GameObject[] CreateCanvasGameObjects(string name, Transform referenceTransform, Vector3 referenceOffset, bool topLevel)
-        {
-            // Create Unity UI Panel via Script - prof - https://answers.unity.com/questions/1034060/create-unity-ui-panel-via-script.html - Accessed 23.10.2021
-            GameObject canvasGameObject = new GameObject(name.Replace(' ', '_') + "-CanvasGameObject");
-            Canvas canvas = canvasGameObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;//RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 0;
-            canvasGameObject.AddComponent<CanvasScaler>();
-            canvasGameObject.AddComponent<GraphicRaycaster>();
-
-            GameObject canvasRendererGameObject = CreateCanvasRendererGameObject(name, canvasGameObject.transform);
-
-            if (topLevel)
-            {
-                canvasGameObject.transform.SetParent(referenceTransform.parent, false);
-            }
-            else
-            {
-                canvasGameObject.transform.SetParent(referenceTransform, false);
-            }
-
-            canvasGameObject.transform.localPosition = Vector3.zero;
-            canvasGameObject.transform.localRotation = Quaternion.identity;
-
-            if (topLevel)
-            {
-                canvasGameObject.transform.position += referenceOffset;
-            }
-            else
-            {
-                canvasGameObject.transform.localPosition += referenceOffset;
-            }
-
-            return new GameObject[] { canvasGameObject, canvasRendererGameObject };
-        }
-
-        private static GameObject CreateCanvasRendererGameObject(string name, Transform parentTransform)
-        {
-            GameObject canvasRendererGameObject = new GameObject(name.Replace(' ', '_') + "-CanvasRendererGameObject");
-            canvasRendererGameObject.AddComponent<CanvasRenderer>();
-            canvasRendererGameObject.transform.SetParent(parentTransform, false);
-            return canvasRendererGameObject;
+            return null;
         }
 
         public class MESMSettingRGB : MESMSetting<int>
@@ -1398,15 +1241,15 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
-            public GameObject[] CreateRGBButton(Transform referenceTransform, Vector3 referenceOffset, Text displayText)
+            public GameObject CreateRGBButton(Transform referenceTransform, Vector3 referenceOffset, Text displayText)
             {
                 this.displayText = displayText;
                 base.CreateButtonForSetting(referenceTransform, referenceOffset); // Creates and assigns settingsButton
 
                 // Edit settingsButton
-                inputField = settingsButton[10].GetComponent<InputField>();
+                inputField = settingsButton.GetComponentInChildren<InputField>();
 
-                EventTrigger trigger = settingsButton[3].GetComponent<EventTrigger>();
+                EventTrigger trigger = settingsButton.GetComponentInChildren<EventTrigger>();
                 EventTrigger.Entry entry = new EventTrigger.Entry();
                 entry.eventID = EventTriggerType.PointerClick;
 
@@ -1416,7 +1259,7 @@ namespace MonstrumExtendedSettingsMod
                 });
                 trigger.triggers.Add(entry);
 
-                Slider slider = settingsButton[12].GetComponent<Slider>();
+                Slider slider = settingsButton.GetComponentInChildren<Slider>();
                 slider.onValueChanged.AddListener((sliderValue) => { ChangeTextColour(); });
 
                 ChangeTextColour();
