@@ -48,11 +48,11 @@ namespace MonstrumExtendedSettingsMod
         {
             public ChallengesMenu(GameObject parentPage, Vector3 entryButtonOffset) : base("Challenges", parentPage, Vector3.zero, parentPage.transform, entryButtonOffset)
             {
-                float yOffset = 375f;
-                MenuTextButton challengeName = new MenuTextButton("Name", exitButtonGO.transform, new Vector3(-225f, yOffset, 0f));
-                MenuTextButton author = new MenuTextButton("Author", exitButtonGO.transform, new Vector3(-75f, yOffset, 0f));
-                MenuTextButton difficulty = new MenuTextButton("Difficulty", exitButtonGO.transform, new Vector3(75f, yOffset, 0f));
-                MenuTextButton completed = new MenuTextButton("Completed", exitButtonGO.transform, new Vector3(225f, yOffset, 0f));
+                float yOffset = 385f;
+                MenuTextButton challengeName = new MenuTextButton("Name", gameObject.transform, exitButtonGO.transform, new Vector3(-225f, yOffset, 0f));
+                MenuTextButton author = new MenuTextButton("Author", gameObject.transform, exitButtonGO.transform, new Vector3(-75f, yOffset, 0f));
+                MenuTextButton difficulty = new MenuTextButton("Difficulty", gameObject.transform, exitButtonGO.transform, new Vector3(75f, yOffset, 0f));
+                MenuTextButton completed = new MenuTextButton("Completed", gameObject.transform, exitButtonGO.transform, new Vector3(225f, yOffset, 0f));
 
                 int mediumFontSize = (2 * referenceOptionText.fontSize);
                 challengeName.text.fontSize = mediumFontSize;
@@ -63,6 +63,8 @@ namespace MonstrumExtendedSettingsMod
                 difficulty.text.rectTransform.sizeDelta = challengeName.text.rectTransform.sizeDelta;
                 completed.text.fontSize = challengeName.text.fontSize;
                 completed.text.rectTransform.sizeDelta = challengeName.text.rectTransform.sizeDelta;
+
+                ChallengesList challengesList = new ChallengesList("ChallengesList", gameObject.transform, new Vector3(0f, -175f, -7.5f));
             }
         }
 
@@ -791,10 +793,50 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
+        public class MenuScrollbar : GameObjectFollowingTransform
+        {
+            public Scrollbar scrollbar;
+            public Image fillImage;
+            public Image handleImage;
+            public MenuScrollbar(string name, Transform parentTransform, Vector3 referenceOffset, Vector2 rectSize) : base(name, parentTransform, referenceOffset)
+            {
+                MenuImage menuFillImage = new MenuImage(name, gameObject.transform, Vector3.zero);
+                fillImage = menuFillImage.image;
+                fillImage.sprite = referenceSliderBackgroundImage.sprite;
+                fillImage.type = referenceSliderBackgroundImage.type;
+                fillImage.material = referenceSliderBackgroundImage.material;
+
+                MenuImage handleMenuImage = new MenuImage(name, menuFillImage.gameObject.transform, Vector3.zero);
+                handleImage = handleMenuImage.image;
+                handleImage.sprite = referenceSliderHandleImage.sprite;
+                handleImage.type = referenceSliderHandleImage.type;
+                handleImage.material = referenceSliderHandleImage.material;
+                handleImage.color = referenceSliderHandleImage.color;
+                handleImage.rectTransform.sizeDelta = referenceBoolButtonImage.rectTransform.sizeDelta / 2f;
+
+                RectTransform scrollbarRect = gameObject.AddComponent<RectTransform>();
+                scrollbarRect.sizeDelta = rectSize;
+
+                HorizontalLayoutGroup horizontalLayoutGroup = gameObject.AddComponent<HorizontalLayoutGroup>();
+                horizontalLayoutGroup.padding = new RectOffset(5, 5, 5, 5);
+                horizontalLayoutGroup.childAlignment = TextAnchor.MiddleRight;
+                horizontalLayoutGroup.childForceExpandWidth = false;
+                horizontalLayoutGroup.childForceExpandHeight = true;
+
+                scrollbar = gameObject.AddComponent<Scrollbar>();
+                scrollbar.colors = referenceSlider.colors;
+                scrollbar.direction = Scrollbar.Direction.BottomToTop;
+                scrollbar.navigation = referenceSlider.navigation;
+                scrollbar.spriteState = referenceSlider.spriteState;
+                scrollbar.transition = referenceSlider.transition;
+                scrollbar.image = handleImage;
+                scrollbar.handleRect = handleImage.rectTransform;
+            }
+        }
+
         public class MenuSlider : MenuImage
         {
             public Slider slider;
-            public Image fillImage;
             public Image handleImage;
             public MenuSlider(string name, Transform parentTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp) : base(name, parentTransform, referenceOffset)
             {
@@ -813,41 +855,28 @@ namespace MonstrumExtendedSettingsMod
                 image.type = referenceSliderBackgroundImage.type;
                 image.material = referenceSliderBackgroundImage.material;
 
-                MenuImage fillMenuImage = new MenuImage(name, gameObject.transform, Vector3.zero);
-                fillImage = fillMenuImage.image;
-                fillImage.sprite = referenceSliderFillImage.sprite;
-                fillImage.type = referenceSliderFillImage.type;
-                fillImage.material = referenceSliderFillImage.material;
-                fillImage.color = referenceSliderFillImage.color;
-                fillImage.raycastTarget = false;
-
                 MenuImage handleMenuImage = new MenuImage(name, gameObject.transform, Vector3.zero);
                 handleImage = handleMenuImage.image;
                 handleImage.sprite = referenceSliderHandleImage.sprite;
                 handleImage.type = referenceSliderHandleImage.type;
                 handleImage.material = referenceSliderHandleImage.material;
                 handleImage.color = referenceSliderHandleImage.color;
-                handleImage.raycastTarget = false;
                 handleImage.rectTransform.sizeDelta = referenceBoolButtonImage.rectTransform.sizeDelta;
 
                 //Debug.Log("-----\nReference rects:\nBackground = " + referenceSliderBackgroundImage.rectTransform.rect + "\nFill = " + referenceSliderFillImage.rectTransform.rect + "\nHandle = " + referenceSliderHandleImage.rectTransform.rect + "\n-----\nReference sizeDeltas:\nBackground = " + referenceSliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + referenceSliderFillImage.rectTransform.sizeDelta + "\nHandle = " + referenceSliderHandleImage.rectTransform.sizeDelta);
                 //Debug.Log("-----\nRects before assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.rect + "\nFill = " + fillImage.rectTransform.rect + "\n Handle = " + handleImage.rectTransform.rect + "\n-----\nSizeDeltas before assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + fillImage.rectTransform.sizeDelta + "\nHandle = " + handleImage.rectTransform.sizeDelta);
 
-                float fillHeightBefore = fillImage.rectTransform.rect.height;
                 float handleHeightBefore = handleImage.rectTransform.rect.height;
 
                 // The slider makes the fill and handle rects not be centred / zeroed anymore and increases them 100 in height / -50 in sizeDelta.
                 slider.image = handleImage;//sliderBackgroundImage;
-                slider.fillRect = fillImage.rectTransform;
                 slider.handleRect = handleImage.rectTransform;
 
                 //Debug.Log("-----\nRects after assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.rect + "\nFill = " + fillImage.rectTransform.rect + "\n Handle = " + handleImage.rectTransform.rect + "\n-----\nSizeDeltas after assignment to slider:\nBackground = " + sliderBackgroundImage.rectTransform.sizeDelta + "\nFill = " + fillImage.rectTransform.sizeDelta + "\nHandle = " + handleImage.rectTransform.sizeDelta);
 
-                float fillHeightDifference = fillImage.rectTransform.rect.height - fillHeightBefore;
                 float handleHeightDifference = handleImage.rectTransform.rect.height - handleHeightBefore;
 
                 image.rectTransform.sizeDelta = new Vector2(0.945f * image.rectTransform.sizeDelta.x, image.rectTransform.sizeDelta.y / 2f);//slider.image.rectTransform.sizeDelta = new Vector2(slider.image.rectTransform.sizeDelta.x, slider.image.rectTransform.sizeDelta.y / 2f);
-                slider.fillRect.sizeDelta = new Vector2(referenceSliderFillImage.rectTransform.sizeDelta.x, slider.fillRect.sizeDelta.y - fillHeightDifference - fillHeightBefore / 2f);
                 slider.handleRect.sizeDelta = new Vector2(slider.handleRect.sizeDelta.x, slider.handleRect.sizeDelta.y - handleHeightDifference / 2f);
 
                 // Scale the slider and adjust for slider scaling
@@ -1115,6 +1144,55 @@ namespace MonstrumExtendedSettingsMod
                 this.gameObject = new GameObject(name.Replace(' ', '_'));
                 this.gameObject.transform.SetParent(parentTransform, false);
                 this.gameObject.transform.localPosition += referenceOffset;
+            }
+        }
+
+        public class ChallengesList : MenuImage
+        {
+            public ChallengesList(string name, Transform parentTransform, Vector3 referenceOffset) : base(name, parentTransform, referenceOffset)
+            {
+                Mask mask = gameObject.AddComponent<Mask>();
+
+                // Adjust the area and opacity of the image.
+                image.rectTransform.sizeDelta = new Vector2(5f * image.rectTransform.sizeDelta.x, 15f * image.rectTransform.sizeDelta.y); // Big variant
+                image.color = new Color(image.color.r, image.color.g, image.color.b, 0.5f);
+
+                GameObjectFollowingTransform contentGameObject = new GameObjectFollowingTransform(name, gameObject.transform, Vector3.zero);
+                RectTransform contentRect = contentGameObject.gameObject.AddComponent<RectTransform>();
+                //contentRect.sizeDelta = new Vector2(0.975f * image.rectTransform.sizeDelta.x, 0.975f * image.rectTransform.sizeDelta.y); // Might not be necessary. y is controlled automatically.
+                contentRect.pivot = new Vector2(0.5f, 1f); // Make rect centre at the top centre of the list.
+                VerticalLayoutGroup verticalLayoutGroup = contentGameObject.gameObject.AddComponent<VerticalLayoutGroup>();
+                verticalLayoutGroup.padding = new RectOffset(10, 10, 10, 10);
+                verticalLayoutGroup.spacing = 10;
+                verticalLayoutGroup.childAlignment = TextAnchor.UpperCenter; // Might not be necessary due to contentSizeFitter.
+                verticalLayoutGroup.childControlWidth = false;
+                verticalLayoutGroup.childControlHeight = false;
+                verticalLayoutGroup.childForceExpandWidth = false;
+                verticalLayoutGroup.childForceExpandHeight = false;
+                ContentSizeFitter contentSizeFitter = contentGameObject.gameObject.AddComponent<ContentSizeFitter>();
+                contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                for (int i = 1; i <= 50; i++)
+                {
+                    MenuImage background = new MenuImage("Challenge " + i, contentGameObject.gameObject.transform, Vector3.zero);
+                    background.image.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x, background.image.rectTransform.sizeDelta.y);
+                    background.image.color = Color.clear;
+                    HorizontalLayoutGroup horizontalLayoutGroup = background.gameObject.AddComponent<HorizontalLayoutGroup>();
+
+                    MenuTextImage menuTextImageName = new MenuTextImage("C" + i + " Name", background.gameObject.transform, Vector3.zero);
+                    MenuTextImage menuTextImageAuthor = new MenuTextImage("C" + i + " Author", background.gameObject.transform, Vector3.zero);
+                    MenuTextImage menuTextImageDifficulty = new MenuTextImage("C" + i + " Difficulty", background.gameObject.transform, Vector3.zero);
+                    MenuTextImage menuTextImageCompleted = new MenuTextImage("C" + i + " Completed", background.gameObject.transform, Vector3.zero);
+                }
+
+                MenuScrollbar menuScrollbar = new MenuScrollbar(name, parentTransform, referenceOffset + new Vector3(20f, 0f, 0f), image.rectTransform.sizeDelta);
+
+                ScrollRect scrollRect = gameObject.AddComponent<ScrollRect>();
+                scrollRect.horizontal = false;
+                scrollRect.vertical = true;
+                scrollRect.verticalScrollbar = menuScrollbar.scrollbar;
+                scrollRect.content = contentRect;
+                scrollRect.scrollSensitivity = 15;
             }
         }
 
