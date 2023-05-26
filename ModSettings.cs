@@ -44,7 +44,7 @@ namespace MonstrumExtendedSettingsMod
             public string category;
             //private int linesToResult;
             private bool childSetting;
-            protected MenuDescriptionBox settingsButton;
+            public MenuDescriptionBox settingsButton;
 
             public MESMSetting(string modSettingsText, string modSettingsDescription, bool childSetting, string defaultValueString)
             {
@@ -1268,6 +1268,12 @@ namespace MonstrumExtendedSettingsMod
                         spawnProtection.Add(false);
                         playerMovementSpeedDynamicMultiplier.Add(playerMovementSpeedStartMultiplier);
                         staminaTimer.Add(0f);
+                    }
+                    if (ChallengesList.challenges != null && ChallengesList.challenges.Count > 0)
+                    {
+                        useSpeedrunTimer = true;
+                        currentChallenge = ChallengesList.challenges[0];
+                        Debug.Log("Current challenge is " + currentChallenge.name);
                     }
                     // This is already done when creating variables.
                     StringBuilder settingsLogger = new StringBuilder("Listing all settings:\t ");
@@ -3579,6 +3585,7 @@ namespace MonstrumExtendedSettingsMod
             public static float playerMovementSpeedStartMultiplier;
             public static List<float> playerMovementSpeedDynamicMultiplier;
             public static List<float> staminaTimer;
+            public static Challenge currentChallenge;
 
             // Late Declaration (After Generation) Needed
             public static float playerMovementSpeedEndMultiplier;

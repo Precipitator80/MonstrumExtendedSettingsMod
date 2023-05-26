@@ -359,7 +359,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                         else
                         {
-                            ModSettings.ShowTextOnScreen(ModSettings.finalTime.ToString());
+                            ModSettings.ShowTextOnScreen(ModSettings.finalTime);
                         }
                     }
                     else if (ModSettings.scavengerMode)
@@ -1652,9 +1652,14 @@ namespace MonstrumExtendedSettingsMod
             {
                 if (ModSettings.useSpeedrunTimer)
                 {
-                    ModSettings.finalTime = Mathf.FloorToInt(ModSettings.speedrunTimer.TimeElapsed / 60f).ToString() + ":" + (ModSettings.speedrunTimer.TimeElapsed % 60f).ToString("00.000000");
-                    Debug.Log("Speedrun timer when exiting ship: " + ModSettings.finalTime + ". This occurred at " + DateTime.Now + " local / " + DateTime.UtcNow + " UTC");
+                    float finalTime = ModSettings.speedrunTimer.TimeElapsed;
                     ModSettings.speedrunTimer.StopTimer();
+                    ModSettings.finalTime = Mathf.FloorToInt(finalTime / 60f).ToString() + ":" + (finalTime % 60f).ToString("00.000000");
+                    Debug.Log("Speedrun timer when exiting ship: " + ModSettings.finalTime + ". This occurred at " + DateTime.Now + " local / " + DateTime.UtcNow + " UTC");
+                    if (ModSettings.currentChallenge != null)
+                    {
+                        ChallengeParser.UpdateChallengeTime(ModSettings.currentChallenge, TimeSpan.FromSeconds((double)finalTime));
+                    }
                 }
                 if (ModSettings.debugMode)
                 {

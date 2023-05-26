@@ -42,28 +42,45 @@ namespace MonstrumExtendedSettingsMod
         private static int largeButtonFontSize;
         private static Vector2 smallButtonSizeDelta;
         private static int smallButtonFontSize;
+        private static int mediumFontSize;
+
+        private class ChallengeSubPage : SubMenu
+        {
+            public Text completionTime;
+            public ChallengeSubPage(Challenge challenge, GameObject parentPage, Vector3 parentPageOffset, Button entryButton) : base(challenge.name, parentPage, parentPageOffset, entryButton)
+            {
+                GameObjectFollowingRectTransform gridParent = new GameObjectFollowingRectTransform(challenge.name, gameObject.transform, new Vector3(0f, -50f, 0));
+                gridParent.rectTransform.sizeDelta = new Vector2(5f * gridParent.rectTransform.sizeDelta.x, 7.5f * gridParent.rectTransform.sizeDelta.y);
+                GridLayoutGroup parentGridLayoutGroup = gridParent.gameObject.AddComponent<GridLayoutGroup>();
+                parentGridLayoutGroup.cellSize = new Vector2(gridParent.rectTransform.sizeDelta.x / 2, gridParent.rectTransform.sizeDelta.y / 2);
+
+                string[] categories = new string[] { "Author", "Completed", "Difficulty", "Completion Time" };
+                Text[] categoriesTextElements = new Text[categories.Length];
+                for (int i = 0; i < categories.Length; i++)
+                {
+                    GameObjectFollowingRectTransform categoryParent = new GameObjectFollowingRectTransform(categories[i], gridParent.gameObject.transform, Vector3.zero);
+                    GridLayoutGroup categoryGridLayoutGroup = categoryParent.gameObject.AddComponent<GridLayoutGroup>();
+                    categoryGridLayoutGroup.cellSize = new Vector2(parentGridLayoutGroup.cellSize.x, parentGridLayoutGroup.cellSize.y / 2);
+                    MenuText title = new MenuText(categories[i], categoryParent.gameObject.transform, Vector3.zero);
+                    MenuText textElement = new MenuText(categories[i], categoryParent.gameObject.transform, Vector3.zero);
+                    title.text.fontSize = mediumFontSize;
+                    textElement.text.fontSize = title.text.fontSize;
+                    categoriesTextElements[i] = textElement.text;
+                }
+                categoriesTextElements[0].text = challenge.author;
+                categoriesTextElements[1].text = challenge.completionTime != TimeSpan.MaxValue ? "✓" : "×";
+                categoriesTextElements[2].text = challenge.difficulty;
+                categoriesTextElements[3].text = challenge.CompletionTimeString();
+
+                ChallengeSettingsList challengeSettingsList = new ChallengeSettingsList(challenge.name, gameObject.transform, gridParent.gameObject.transform.localPosition - new Vector3(0f, 40f + parentGridLayoutGroup.cellSize.y * 2, 0f), challenge.settings);
+            }
+        }
 
         // Menu to provide functionality to save and load presets / challenges.
         private class ChallengesMenu : SubMenu
         {
             public ChallengesMenu(GameObject parentPage, Vector3 entryButtonOffset) : base("Challenges", parentPage, Vector3.zero, parentPage.transform, entryButtonOffset)
             {
-                float yOffset = 385f;
-                MenuTextButton challengeName = new MenuTextButton("Name", gameObject.transform, exitButtonGO.transform, new Vector3(-225f, yOffset, 0f));
-                MenuTextButton author = new MenuTextButton("Author", gameObject.transform, exitButtonGO.transform, new Vector3(-75f, yOffset, 0f));
-                MenuTextButton difficulty = new MenuTextButton("Difficulty", gameObject.transform, exitButtonGO.transform, new Vector3(75f, yOffset, 0f));
-                MenuTextButton completed = new MenuTextButton("Completed", gameObject.transform, exitButtonGO.transform, new Vector3(225f, yOffset, 0f));
-
-                int mediumFontSize = (2 * referenceOptionText.fontSize);
-                challengeName.text.fontSize = mediumFontSize;
-                challengeName.text.rectTransform.sizeDelta *= 1.4f;
-                author.text.fontSize = challengeName.text.fontSize;
-                author.text.rectTransform.sizeDelta = challengeName.text.rectTransform.sizeDelta;
-                difficulty.text.fontSize = challengeName.text.fontSize;
-                difficulty.text.rectTransform.sizeDelta = challengeName.text.rectTransform.sizeDelta;
-                completed.text.fontSize = challengeName.text.fontSize;
-                completed.text.rectTransform.sizeDelta = challengeName.text.rectTransform.sizeDelta;
-
                 ChallengesList challengesList = new ChallengesList("ChallengesList", gameObject.transform, new Vector3(0f, -175f, -7.5f));
             }
         }
@@ -295,25 +312,27 @@ namespace MonstrumExtendedSettingsMod
             // parentPageOffset: The offset from the parent page to use for hte sub page.
             // entryButtonParentTransform: A reference transform of another button to position the entry button.
             // entryButtonOffset: The offset from the entryButtonParentTransform to use.
-            protected SubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Transform entryButtonParentTransform, Vector3 entryButtonOffset) : base(name, parentPage.transform, parentPageOffset)
+            protected SubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Transform entryButtonParentTransform, Vector3 entryButtonOffset) : this(name, parentPage, parentPageOffset)
+            {
+                MenuTextButton entryButton = new MenuTextButton(name, entryButtonParentTransform, entryButtonOffset, false);
+                entryButton.text.rectTransform.sizeDelta = new Vector2(2f * entryButton.text.rectTransform.sizeDelta.x, entryButton.text.rectTransform.sizeDelta.y);
+                AddListenersToEntryButton(entryButton.button, parentPage);
+            }
+
+            protected SubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Button entryButton) : this(name, parentPage, parentPageOffset)
+            {
+                AddListenersToEntryButton(entryButton, parentPage);
+            }
+
+            private SubMenu(string name, GameObject parentPage, Vector3 parentPageOffset) : base(name, parentPage.transform, parentPageOffset)
             {
                 this.gameObject.transform.SetParent(clipboardTransform, true); // Use the clipboardTransform so that a sub menu is displayed even when parent menus are disabled.
 
-                MenuTextButton entryButton = new MenuTextButton(name, entryButtonParentTransform, entryButtonOffset, false);
-                entryButton.text.rectTransform.sizeDelta = new Vector2(2f * entryButton.text.rectTransform.sizeDelta.x, entryButton.text.rectTransform.sizeDelta.y);
                 MenuTextButton exitButton = new MenuTextButton("Exit", this.gameObject.transform, new Vector3(0f, -375f, 0f), false);
                 exitButtonGO = exitButton.gameObject;
-                entryButton.button.onClick.AddListener(delegate ()
-                {
-                    SwitchToPage(this.gameObject, parentPage);
-                });
                 exitButton.button.onClick.AddListener(delegate ()
                 {
                     SwitchToPage(parentPage, this.gameObject);
-                });
-                entryButton.button.onClick.AddListener(delegate ()
-                {
-                    menuSounds.ButtonClickGoForward();
                 });
                 exitButton.button.onClick.AddListener(delegate ()
                 {
@@ -325,6 +344,18 @@ namespace MonstrumExtendedSettingsMod
                 titleText.text.rectTransform.sizeDelta = new Vector2(titleText.text.rectTransform.sizeDelta.x, 2f * titleText.text.rectTransform.sizeDelta.y);
 
                 this.gameObject.SetActive(false);
+            }
+
+            private void AddListenersToEntryButton(Button entryButton, GameObject parentPage)
+            {
+                entryButton.onClick.AddListener(delegate ()
+                {
+                    SwitchToPage(this.gameObject, parentPage);
+                });
+                entryButton.onClick.AddListener(delegate ()
+                {
+                    menuSounds.ButtonClickGoForward();
+                });
             }
         }
 
@@ -469,6 +500,7 @@ namespace MonstrumExtendedSettingsMod
             largeButtonFontSize = (int)(1.25f * referenceCategoryText.fontSize);
             smallButtonSizeDelta = new Vector2(1.2f * referenceOptionImage.rectTransform.sizeDelta.x, 3f * referenceOptionImage.rectTransform.sizeDelta.y);
             smallButtonFontSize = (int)(1.25f * referenceOptionText.fontSize);
+            mediumFontSize = (2 * referenceOptionText.fontSize);
 
             // Create the initial navigation sub menu.
             NavigationSubMenu navigationSubMenu = new NavigationSubMenu("MES Mod", optionsUI.optionsButtons, new Vector3(0f, 140f, -5f), buttonList[3].transform.parent, (buttonList[3].transform.localPosition - buttonList[3].transform.parent.localPosition) - 3f * (buttonList[3].transform.localPosition - buttonList[1].transform.localPosition));
@@ -1014,6 +1046,65 @@ namespace MonstrumExtendedSettingsMod
             public MenuImageButton(string name, Transform parentTransform, Vector3 referenceOffset, bool addColourEvent = false) : base(name, parentTransform, referenceOffset, addColourEvent)
             {
                 button = this.gameObject.AddComponent<Button>();
+
+                if (addColourEvent)
+                {
+                    button.onClick.AddListener(delegate ()
+                    {
+                        image.color = referenceOptionImage.color;
+                    });
+                }
+            }
+        }
+
+        public class MenuList : MenuImage
+        {
+            protected GameObjectFollowingRectTransform contentGameObject; // GameObject to hold any items displayed in the list.
+            public MenuList(string name, Transform parentTransform, Vector3 referenceOffset, Vector2 rectSize, string[] headers) : base(name, parentTransform, referenceOffset)
+            {
+                Mask mask = gameObject.AddComponent<Mask>(); // Mask to hide entries outside of the image.
+
+                // Adjust the area and opacity of the image.
+                image.rectTransform.sizeDelta = rectSize;
+                image.color = new Color(image.color.r, image.color.g, image.color.b, 0.5f);
+
+                contentGameObject = new GameObjectFollowingRectTransform(name, gameObject.transform, Vector3.zero);
+                //contentRect.sizeDelta = new Vector2(0.975f * image.rectTransform.sizeDelta.x, 0.975f * image.rectTransform.sizeDelta.y); // Might not be necessary. y is controlled automatically.
+                contentGameObject.rectTransform.pivot = new Vector2(0.5f, 1f); // Make rect centre at the top centre of the list.
+                VerticalLayoutGroup verticalLayoutGroup = contentGameObject.gameObject.AddComponent<VerticalLayoutGroup>();
+                //verticalLayoutGroup.padding = new RectOffset(10, 10, 10, 10);
+                verticalLayoutGroup.spacing = 5;
+                verticalLayoutGroup.childAlignment = TextAnchor.UpperCenter; // Might not be necessary due to contentSizeFitter.
+                verticalLayoutGroup.childControlWidth = false;
+                verticalLayoutGroup.childControlHeight = false;
+                verticalLayoutGroup.childForceExpandWidth = false;
+                verticalLayoutGroup.childForceExpandHeight = false;
+
+                ContentSizeFitter contentSizeFitter = contentGameObject.gameObject.AddComponent<ContentSizeFitter>(); // Changes the content rect height to fit all the list items.
+                contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                // Vertical scrollbar on the right side of the list.
+                MenuScrollbar menuScrollbar = new MenuScrollbar(name, parentTransform, referenceOffset + new Vector3(20f, 0f, 0f), image.rectTransform.sizeDelta);
+
+                ScrollRect scrollRect = gameObject.AddComponent<ScrollRect>();
+                scrollRect.horizontal = false;
+                scrollRect.vertical = true;
+                scrollRect.verticalScrollbar = menuScrollbar.scrollbar;
+                scrollRect.content = contentGameObject.rectTransform;
+                scrollRect.scrollSensitivity = 15;
+
+                GameObjectFollowingRectTransform headersParent = new GameObjectFollowingRectTransform("HeadersParent", parentTransform, referenceOffset + new Vector3(0f, image.rectTransform.sizeDelta.y / 2f + 15f, 0f));
+                headersParent.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x, 1.5f * headersParent.rectTransform.sizeDelta.y);
+
+                HorizontalLayoutGroup horizontalLayoutGroup = headersParent.gameObject.AddComponent<HorizontalLayoutGroup>();
+                horizontalLayoutGroup.childControlWidth = false;
+
+                foreach (string header in headers)
+                {
+                    MenuTextButton headerMenuTextButton = new MenuTextButton(header, headersParent.gameObject.transform, Vector3.zero);
+                    headerMenuTextButton.text.fontSize = mediumFontSize;
+                    headerMenuTextButton.text.rectTransform.sizeDelta = new Vector2(headersParent.rectTransform.sizeDelta.x / headers.Length, headersParent.rectTransform.sizeDelta.y);
+                }
             }
         }
 
@@ -1032,15 +1123,15 @@ namespace MonstrumExtendedSettingsMod
                 if (addColourEvent)
                 {
                     EventTrigger trigger = this.gameObject.AddComponent<EventTrigger>();
-                    EventTrigger.Entry entry = new EventTrigger.Entry();
-                    entry.eventID = EventTriggerType.PointerEnter;
-                    entry.callback.AddListener((eventData) => { image.color = new Color(245f / 255f, 210f / 255f, 140f / 255f, referenceOptionImage.color.a); });
-                    trigger.triggers.Add(entry);
+                    EventTrigger.Entry pointerEnter = new EventTrigger.Entry();
+                    pointerEnter.eventID = EventTriggerType.PointerEnter;
+                    pointerEnter.callback.AddListener((eventData) => { image.color = new Color(245f / 255f, 210f / 255f, 140f / 255f, referenceOptionImage.color.a); });
+                    trigger.triggers.Add(pointerEnter);
 
-                    EventTrigger.Entry entry2 = new EventTrigger.Entry();
-                    entry2.eventID = EventTriggerType.PointerExit;
-                    entry2.callback.AddListener((eventData) => { image.color = referenceOptionImage.color; });
-                    trigger.triggers.Add(entry2);
+                    EventTrigger.Entry pointerExit = new EventTrigger.Entry();
+                    pointerExit.eventID = EventTriggerType.PointerExit;
+                    pointerExit.callback.AddListener((eventData) => { image.color = referenceOptionImage.color; });
+                    trigger.triggers.Add(pointerExit);
                 }
             }
         }
@@ -1135,6 +1226,16 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
+        public class GameObjectFollowingRectTransform : GameObjectFollowingTransform
+        {
+            public RectTransform rectTransform;
+            public GameObjectFollowingRectTransform(string name, Transform parentTransform, Vector3 referenceOffset) : base(name, parentTransform, referenceOffset)
+            {
+                rectTransform = gameObject.AddComponent<RectTransform>();
+                rectTransform.sizeDelta = referenceOptionImage.rectTransform.sizeDelta;
+            }
+        }
+
         public class GameObjectFollowingTransform
         {
             public GameObject gameObject;
@@ -1147,52 +1248,52 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
-        public class ChallengesList : MenuImage
+        public class ChallengeSettingsList : MenuList
         {
-            public ChallengesList(string name, Transform parentTransform, Vector3 referenceOffset) : base(name, parentTransform, referenceOffset)
+            private static readonly string[] headers = new string[] { "Setting", "Value" };
+            public ChallengeSettingsList(string name, Transform parentTransform, Vector3 referenceOffset, List<MESMSettingCompact> settings) : base(name, parentTransform, referenceOffset, new Vector2(3.5f * referenceOptionImage.rectTransform.sizeDelta.x, 7.5f * referenceOptionImage.rectTransform.sizeDelta.y), headers)
             {
-                Mask mask = gameObject.AddComponent<Mask>();
-
-                // Adjust the area and opacity of the image.
-                image.rectTransform.sizeDelta = new Vector2(5f * image.rectTransform.sizeDelta.x, 15f * image.rectTransform.sizeDelta.y); // Big variant
-                image.color = new Color(image.color.r, image.color.g, image.color.b, 0.5f);
-
-                GameObjectFollowingTransform contentGameObject = new GameObjectFollowingTransform(name, gameObject.transform, Vector3.zero);
-                RectTransform contentRect = contentGameObject.gameObject.AddComponent<RectTransform>();
-                //contentRect.sizeDelta = new Vector2(0.975f * image.rectTransform.sizeDelta.x, 0.975f * image.rectTransform.sizeDelta.y); // Might not be necessary. y is controlled automatically.
-                contentRect.pivot = new Vector2(0.5f, 1f); // Make rect centre at the top centre of the list.
-                VerticalLayoutGroup verticalLayoutGroup = contentGameObject.gameObject.AddComponent<VerticalLayoutGroup>();
-                verticalLayoutGroup.padding = new RectOffset(10, 10, 10, 10);
-                verticalLayoutGroup.spacing = 10;
-                verticalLayoutGroup.childAlignment = TextAnchor.UpperCenter; // Might not be necessary due to contentSizeFitter.
-                verticalLayoutGroup.childControlWidth = false;
-                verticalLayoutGroup.childControlHeight = false;
-                verticalLayoutGroup.childForceExpandWidth = false;
-                verticalLayoutGroup.childForceExpandHeight = false;
-                ContentSizeFitter contentSizeFitter = contentGameObject.gameObject.AddComponent<ContentSizeFitter>();
-                contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-                for (int i = 1; i <= 50; i++)
+                foreach (MESMSettingCompact setting in settings)
                 {
-                    MenuImage background = new MenuImage("Challenge " + i, contentGameObject.gameObject.transform, Vector3.zero);
-                    background.image.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x, background.image.rectTransform.sizeDelta.y);
-                    background.image.color = Color.clear;
+                    MenuImage background = new MenuImageButton(setting.name, contentGameObject.gameObject.transform, Vector3.zero);
+                    background.image.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x, 2f * background.image.rectTransform.sizeDelta.y);
                     HorizontalLayoutGroup horizontalLayoutGroup = background.gameObject.AddComponent<HorizontalLayoutGroup>();
+                    horizontalLayoutGroup.childControlWidth = false;
 
-                    MenuTextImage menuTextImageName = new MenuTextImage("C" + i + " Name", background.gameObject.transform, Vector3.zero);
-                    MenuTextImage menuTextImageAuthor = new MenuTextImage("C" + i + " Author", background.gameObject.transform, Vector3.zero);
-                    MenuTextImage menuTextImageDifficulty = new MenuTextImage("C" + i + " Difficulty", background.gameObject.transform, Vector3.zero);
-                    MenuTextImage menuTextImageCompleted = new MenuTextImage("C" + i + " Completed", background.gameObject.transform, Vector3.zero);
+                    MenuText settingName = new MenuText(setting.name, background.gameObject.transform, Vector3.zero);
+                    MenuText settingValue = new MenuText(setting.value, background.gameObject.transform, Vector3.zero);
+                    settingName.text.rectTransform.sizeDelta = new Vector2(background.image.rectTransform.sizeDelta.x / 2, settingName.text.rectTransform.sizeDelta.y);
+                    settingValue.text.rectTransform.sizeDelta = settingName.text.rectTransform.sizeDelta;
                 }
+            }
+        }
 
-                MenuScrollbar menuScrollbar = new MenuScrollbar(name, parentTransform, referenceOffset + new Vector3(20f, 0f, 0f), image.rectTransform.sizeDelta);
+        public class ChallengesList : MenuList
+        {
+            private static readonly string[] headers = new string[] { "Name", "Author", "Difficulty", "Completed" };
+            public static List<Challenge> challenges;
+            public ChallengesList(string name, Transform parentTransform, Vector3 referenceOffset) : base(name, parentTransform, referenceOffset, new Vector2(5f * referenceOptionImage.rectTransform.sizeDelta.x, 15f * referenceOptionImage.rectTransform.sizeDelta.y), headers)
+            {
+                challenges = ChallengeParser.ReadAllChallenges();
+                foreach (Challenge challenge in challenges)
+                {
+                    MenuImageButton background = new MenuImageButton(challenge.name, contentGameObject.gameObject.transform, Vector3.zero, true);
+                    background.image.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x, 2f * background.image.rectTransform.sizeDelta.y);
+                    HorizontalLayoutGroup horizontalLayoutGroup = background.gameObject.AddComponent<HorizontalLayoutGroup>();
+                    horizontalLayoutGroup.childControlWidth = false;
 
-                ScrollRect scrollRect = gameObject.AddComponent<ScrollRect>();
-                scrollRect.horizontal = false;
-                scrollRect.vertical = true;
-                scrollRect.verticalScrollbar = menuScrollbar.scrollbar;
-                scrollRect.content = contentRect;
-                scrollRect.scrollSensitivity = 15;
+                    MenuText menuTextImageName = new MenuText(challenge.name, background.gameObject.transform, Vector3.zero);
+                    MenuText menuTextImageAuthor = new MenuText(challenge.author, background.gameObject.transform, Vector3.zero);
+                    MenuText menuTextImageDifficulty = new MenuText(challenge.difficulty, background.gameObject.transform, Vector3.zero);
+                    MenuText menuTextImageCompleted = new MenuText(challenge.completionTime == TimeSpan.MaxValue ? "Uncompleted" : challenge.CompletionTimeString(), background.gameObject.transform, Vector3.zero);
+                    menuTextImageName.text.rectTransform.sizeDelta = new Vector2(background.image.rectTransform.sizeDelta.x / 4, menuTextImageName.text.rectTransform.sizeDelta.y);
+                    menuTextImageAuthor.text.rectTransform.sizeDelta = menuTextImageName.text.rectTransform.sizeDelta;
+                    menuTextImageDifficulty.text.rectTransform.sizeDelta = menuTextImageName.text.rectTransform.sizeDelta;
+                    menuTextImageCompleted.text.rectTransform.sizeDelta = menuTextImageName.text.rectTransform.sizeDelta;
+
+                    // Create a submenu for the challenge.
+                    ChallengeSubPage challengeSubPage = new ChallengeSubPage(challenge, parentTransform.gameObject, Vector3.zero, background.button);
+                }
             }
         }
 
