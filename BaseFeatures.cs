@@ -5451,7 +5451,14 @@ namespace MonstrumExtendedSettingsMod
                     {
                         if (!ModSettings.errorWhileReadingModSettings)
                         {
-                            loadingBackground.text.text += "\n\nMonstrum Extended Settings Mod Version " + VERSION_WITH_TEXT + " Active";
+                            if (ModSettings.currentChallenge == null)
+                            {
+                                loadingBackground.text.text += "\n\nMonstrum Extended Settings Mod Version " + VERSION_WITH_TEXT + " Active";
+                            }
+                            else
+                            {
+                                loadingBackground.text.text += "\n\nMESM Version " + VERSION_WITH_TEXT + " Active With Challenge: " + ModSettings.currentChallenge.name;
+                            }
                         }
                         else
                         {

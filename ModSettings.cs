@@ -343,11 +343,12 @@ namespace MonstrumExtendedSettingsMod
 
         public class MESMSettingString : MESMSetting
         {
-            public MESMSettingString(string modSettingsText, string modSettingsDescription, string defaultValue, bool absoluteValue = false, bool childSetting = false) : base(modSettingsText, modSettingsDescription, childSetting, defaultValue)
+            public MESMSettingString(string modSettingsText, string modSettingsDescription, string defaultValue, bool absoluteValue = false, bool childSetting = false, bool readOnlySetting = false) : base(modSettingsText, modSettingsDescription, childSetting, defaultValue)
             {
                 this.defaultValue = defaultValue;
                 this.userValue = modSettingsExist ? modSettings[this.modSettingsLine] : defaultValue;
                 this.userValueString = this.userValue.ToString();
+                this.readOnlySetting = readOnlySetting;
             }
 
             public override MenuDescriptionBox CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
@@ -355,11 +356,13 @@ namespace MonstrumExtendedSettingsMod
                 MenuInputFieldWithDescription menuInputFieldWithDescription = new MenuInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, false, 0f, 0f);
                 settingsButton = menuInputFieldWithDescription;
                 menuInputFieldWithDescription.menuInputField.inputField.text = userValue.ToString();
+                menuInputFieldWithDescription.menuInputField.inputField.readOnly = readOnlySetting;
                 return settingsButton;
             }
 
             public string defaultValue;
             public string userValue;
+            private bool readOnlySetting;
         }
 
         public class MESMSettingMultipleChoice : MESMSettingString
@@ -1231,6 +1234,7 @@ namespace MonstrumExtendedSettingsMod
                         useSpeedrunTimer = true;
                     }
                     logDebugText = new MESMSetting<bool>("Log Debug Text", "Lets the game log a lot of extra information that lags the game but can be useful when fixing bugs", false).userValue;
+                    currentChallengeNameMESMS = new MESMSettingString("Current Challenge Name", "The name of the currently selected challenge. This setting is used as a reference for the mod's code and should only be edited by loading a challenge through the challenges menu", "None", false, false, true);
 
                     // Challenge Test
                     if (firstTimeReadingSettings)
@@ -1269,11 +1273,51 @@ namespace MonstrumExtendedSettingsMod
                         playerMovementSpeedDynamicMultiplier.Add(playerMovementSpeedStartMultiplier);
                         staminaTimer.Add(0f);
                     }
-                    if (ChallengesList.challenges != null && ChallengesList.challenges.Count > 0)
+                    currentChallenge = null;
+                    Debug.Log("Checking Challenge 1");
+                    if (ChallengesList.challenges != null && ChallengesList.challenges.Count > 0 && !currentChallengeNameMESMS.userValue.Equals(currentChallengeNameMESMS.defaultValue))
                     {
-                        useSpeedrunTimer = true;
-                        currentChallenge = ChallengesList.challenges[0];
-                        Debug.Log("Current challenge is " + currentChallenge.name);
+                        Debug.Log("Checking Challenge 2");
+                        foreach (Challenge challenge in ChallengesList.challenges)
+                        {
+                            if (challenge.name.Equals(currentChallengeNameMESMS.userValue))
+                            {
+                                Debug.Log("Checking Challenge 3");
+                                bool matchingAllSettings = true;
+                                for (int i = 0; i < allSettings.Count && matchingAllSettings; i++)
+                                {
+                                    // Ensure any settings that are not equal to their default value are found in the challenge and match its defined value.
+                                    if (!allSettings[i].userValueString.Equals(allSettings[i].defaultValueString) && allSettings[i] != currentChallengeNameMESMS)
+                                    {
+                                        Debug.Log("Discrepancy found! " + allSettings[i].userValueString + " for setting " + allSettings[i].modSettingsText + " does not equal " + allSettings[i].defaultValueString);
+                                        bool matchesSetting = false;
+                                        foreach (MESMSettingCompact challengeSetting in challenge.settings)
+                                        {
+                                            // Pass if the challenge contains the non-default default setting and matches its value.
+                                            if (challengeSetting.name.Equals(allSettings[i].modSettingsText) && challengeSetting.value == allSettings[i].userValueString)
+                                            {
+                                                matchesSetting = true;
+                                                break;
+                                            }
+                                        }
+
+                                        // Update the matchesAllSettings variable. If this check failed, the all settings loop will terminate.
+                                        matchingAllSettings = matchesSetting;
+                                    }
+                                }
+                                if (matchingAllSettings)
+                                {
+                                    useSpeedrunTimer = true;
+                                    currentChallenge = challenge;
+                                    Debug.Log("Current challenge is " + currentChallenge.name);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    if (currentChallenge == null)
+                    {
+                        currentChallengeNameMESMS.userValue = currentChallengeNameMESMS.defaultValue;
                     }
                     // This is already done when creating variables.
                     StringBuilder settingsLogger = new StringBuilder("Listing all settings:\t ");
@@ -3568,6 +3612,7 @@ namespace MonstrumExtendedSettingsMod
             public static string finalTime;
             public static bool showSpeedrunTimerOnScreen;
             public static bool logDebugText;
+            public static MESMSettingString currentChallengeNameMESMS;
 
             // Other Variables Used In Code
             // Early Declaration Needed

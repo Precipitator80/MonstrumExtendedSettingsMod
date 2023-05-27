@@ -203,12 +203,36 @@ namespace MonstrumExtendedSettingsMod
 
             public void ApplyChallenge()
             {
-                // Apply each setting and then apply each default value.
+                MESMSetting.ResetSettingsToDefault(ModSettings.allSettings);
+                if (settings == null)
+                {
+                    Debug.Log("Settings is null");
+                }
+                foreach (MESMSettingCompact setting in settings)
+                {
+                    setting.ApplySetting();
+                }
+                ModSettings.currentChallenge = this;
+                if (ModSettings.currentChallengeNameMESMS == null)
+                {
+                    Debug.Log("CC is null");
+                }
+                if (ModSettings.currentChallengeNameMESMS.settingsButton == null)
+                {
+                    Debug.Log("CCSB is null");
+                }
+                ModSettings.currentChallengeNameMESMS.settingsButton.SetText(this.name);
+                MESMSetting.SaveSettings();
             }
 
             public string CompletionTimeString()
             {
-                return string.Format("{0:D2}:{1:D2}:{2:D2}", completionTime.Hours, completionTime.Minutes, completionTime.Seconds);
+                if (completionTime == TimeSpan.MaxValue)
+                {
+                    return "Uncompleted";
+                }
+                string fullString = string.Format("{0:D2}:{1:D2}:{2:D2}", completionTime.Hours, completionTime.Minutes, completionTime.Seconds);
+                return fullString.Substring(0, fullString.Length - 3);
             }
         }
 

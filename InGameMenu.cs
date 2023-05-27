@@ -53,6 +53,7 @@ namespace MonstrumExtendedSettingsMod
                 gridParent.rectTransform.sizeDelta = new Vector2(5f * gridParent.rectTransform.sizeDelta.x, 7.5f * gridParent.rectTransform.sizeDelta.y);
                 GridLayoutGroup parentGridLayoutGroup = gridParent.gameObject.AddComponent<GridLayoutGroup>();
                 parentGridLayoutGroup.cellSize = new Vector2(gridParent.rectTransform.sizeDelta.x / 2, gridParent.rectTransform.sizeDelta.y / 2);
+                parentGridLayoutGroup.spacing = new Vector2(0f, 10f);
 
                 string[] categories = new string[] { "Author", "Completed", "Difficulty", "Completion Time" };
                 Text[] categoriesTextElements = new Text[categories.Length];
@@ -73,6 +74,24 @@ namespace MonstrumExtendedSettingsMod
                 categoriesTextElements[3].text = challenge.CompletionTimeString();
 
                 ChallengeSettingsList challengeSettingsList = new ChallengeSettingsList(challenge.name, gameObject.transform, gridParent.gameObject.transform.localPosition - new Vector3(0f, 40f + parentGridLayoutGroup.cellSize.y * 2, 0f), challenge.settings);
+
+                // Create a load button.
+                MenuTextButton loadButton = new MenuTextButton("Load Challenge", gameObject.transform, new Vector3(250f, 60f, 0f));
+                loadButton.text.rectTransform.sizeDelta = largeButtonSizeDelta;
+                loadButton.text.fontSize = smallButtonFontSize;
+                loadButton.button.onClick.AddListener(delegate ()
+                {
+                    challenge.ApplyChallenge();
+                });
+
+                // Create a delete button.
+                MenuTextButton deleteButton = new MenuTextButton("Delete Challenge", gameObject.transform, new Vector3(-250f, 60f, 0f));
+                deleteButton.text.rectTransform.sizeDelta = largeButtonSizeDelta;
+                deleteButton.text.fontSize = smallButtonFontSize;
+                deleteButton.button.onClick.AddListener(delegate ()
+                {
+                    Debug.Log("Delete challenge: " + challenge.name);
+                });
             }
         }
 
@@ -685,7 +704,7 @@ namespace MonstrumExtendedSettingsMod
 
             public override void SetText(string value)
             {
-                menuBoolButton.text.text = value;
+                menuBoolButton.SetValueAndUpdateText(bool.Parse(value));
             }
         }
 
