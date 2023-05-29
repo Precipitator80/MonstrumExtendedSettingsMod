@@ -260,6 +260,13 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            public MESMSettingCompact(MESMSetting fullSetting)
+            {
+                this.name = fullSetting.modSettingsText;
+                this.value = fullSetting.userValueString;
+                this.fullSetting = fullSetting;
+            }
+
             public bool ApplySetting()
             {
                 if (fullSetting != null && fullSetting.settingsButton != null)
