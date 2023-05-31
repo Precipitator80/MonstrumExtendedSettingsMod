@@ -33,7 +33,7 @@ namespace MonstrumExtendedSettingsMod
 
         private static MenuSounds menuSounds;
 
-        public static MenuTextImageButton warningBox;
+        public static WarningBox globalWarningBox;
 
         private static float sizeReduction;
 
@@ -46,33 +46,102 @@ namespace MonstrumExtendedSettingsMod
 
         public class ChallengeCreator : ChallengeSubPage
         {
+            private static readonly int MIN_DIFFICULTY = 0;
+            private static readonly int MAX_DIFFICULTY = 10;
+            private static readonly int DEFAULT_DIFFICULTY = 2;
+            public static readonly string DIFFICULTY_HEADER = "Difficulty (" + MIN_DIFFICULTY + "-" + MAX_DIFFICULTY + ")";
+            private static Challenge challengeBeingSaved;
+
             public ChallengeCreator(GameObject parentPage, Vector3 parentPageOffset, Button entryButton) : base("Challenge Creator", parentPage, parentPageOffset, entryButton)
             {
+                parentGridLayoutGroup.cellSize = new Vector2(gridParent.rectTransform.sizeDelta.x / 2, gridParent.rectTransform.sizeDelta.y / 3);
+                parentGridLayoutGroup.spacing = new Vector2(0f, 6.66f);
+
+                string[] categories = new string[] { "Challenge Name", "Author", DIFFICULTY_HEADER };
+
+                MenuText nameText = new MenuText(categories[0], gridParent.gameObject.transform, Vector3.zero);
+                MenuInputField nameInput = new MenuTextInputField(categories[0], gridParent.gameObject.transform, Vector3.zero);
+                nameText.text.fontSize = mediumFontSize;
+                nameInput.text.fontSize = nameText.text.fontSize;
+                nameInput.text.rectTransform.sizeDelta = parentGridLayoutGroup.cellSize;
+                nameInput.placeholderText.fontSize = nameInput.text.fontSize;
+                nameInput.placeholderText.rectTransform.sizeDelta = nameInput.text.rectTransform.sizeDelta;
+                nameInput.placeholderText.color = new Color(0.25f, 0.25f, 0.25f, 1f);
+                nameInput.placeholderText.text = "Your Challenge Name";
+
+                MenuText authorText = new MenuText(categories[1], gridParent.gameObject.transform, Vector3.zero);
+                MenuInputField authorInput = new MenuTextInputField(categories[1], gridParent.gameObject.transform, Vector3.zero);
+                authorText.text.fontSize = nameText.text.fontSize;
+                authorInput.text.fontSize = authorText.text.fontSize;
+                authorInput.text.rectTransform.sizeDelta = nameInput.text.rectTransform.sizeDelta;
+                authorInput.placeholderText.fontSize = authorInput.text.fontSize;
+                authorInput.placeholderText.rectTransform.sizeDelta = authorInput.text.rectTransform.sizeDelta;
+                authorInput.placeholderText.color = nameInput.placeholderText.color;
+                authorInput.placeholderText.text = "Your Author Name";
+
+                MenuText difficultyText = new MenuText(categories[2], gridParent.gameObject.transform, Vector3.zero);
+                MenuInputField difficultyInput = new MenuNumericInputField(categories[2], gridParent.gameObject.transform, Vector3.zero, true, MIN_DIFFICULTY, MAX_DIFFICULTY);
+                difficultyText.text.fontSize = nameText.text.fontSize;
+                difficultyInput.text.fontSize = difficultyText.text.fontSize;
+                difficultyInput.text.rectTransform.sizeDelta = nameInput.text.rectTransform.sizeDelta;
+                difficultyInput.placeholderText.fontSize = difficultyInput.text.fontSize;
+                difficultyInput.placeholderText.rectTransform.sizeDelta = difficultyInput.text.rectTransform.sizeDelta;
+                difficultyInput.placeholderText.color = nameInput.placeholderText.color;
+                difficultyInput.placeholderText.text = "Default Game Is " + DEFAULT_DIFFICULTY;
+
                 entryButton.onClick.AddListener(delegate ()
                 {
-                    Challenge challenge = new Challenge();
+                    challengeBeingSaved = new Challenge();
                     foreach (MESMSetting setting in ModSettings.allSettings)
                     {
                         if (!setting.userValueString.Equals(setting.defaultValueString) && setting != ModSettings.currentChallengeNameMESMS)
                         {
-                            challenge.settings.Add(new MESMSettingCompact(setting));
+                            challengeBeingSaved.settings.Add(new MESMSettingCompact(setting));
                         }
                     }
-                    AddOrRefreshChallengeSettingsList(challenge);
+                    AddOrRefreshChallengeSettingsList(challengeBeingSaved);
                 });
 
-                parentGridLayoutGroup.cellSize = new Vector2(gridParent.rectTransform.sizeDelta.x / 2, gridParent.rectTransform.sizeDelta.y / 3);
-                parentGridLayoutGroup.spacing = new Vector2(0f, 6.66f);
-
-                string[] categories = new string[] { "Challenge Name", "Author", "Difficulty" };
-                for (int i = 0; i < categories.Length; i++)
+                // Create a save button.
+                MenuTextButton saveButton = new MenuTextButton("Save Challenge", gameObject.transform, new Vector3(250f, 60f, 0f));
+                saveButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
+                saveButton.text.fontSize = smallButtonFontSize;
+                saveButton.button.onClick.AddListener(delegate ()
                 {
-                    MenuText title = new MenuText(categories[i], gridParent.gameObject.transform, Vector3.zero);
-                    MenuInputField input = new MenuInputField(categories[i], gridParent.gameObject.transform, Vector3.zero, true, 0f, 10f);
-                    title.text.fontSize = mediumFontSize;
-                    input.text.fontSize = title.text.fontSize;
-                    input.text.rectTransform.sizeDelta = parentGridLayoutGroup.cellSize;
-                }
+                    globalWarningBox.Show();
+
+                    // Ensure the fields are filled in.
+                    if (String.IsNullOrEmpty(nameInput.text.text) || String.IsNullOrEmpty(authorInput.text.text) || String.IsNullOrEmpty(difficultyInput.text.text))
+                    {
+                        globalWarningBox.text.text = "Please ensure that all fields are filled in.\n\nOK";
+                        return;
+                    }
+
+                    // Ensure the challenge name is unique.
+                    foreach (Challenge challenge in ChallengesList.challenges)
+                    {
+                        if (challenge.name.Equals(nameInput.text.text))
+                        {
+                            globalWarningBox.text.text = "This challenge name is already in use!\nPlease ensure that you are using a unique name.\n\nOK";
+                            return;
+                        }
+                    }
+
+                    // Save the challenge.
+                    challengeBeingSaved.name = nameInput.text.text;
+                    challengeBeingSaved.author = authorInput.text.text;
+                    challengeBeingSaved.difficulty = difficultyInput.text.text;
+                    ChallengeParser.SaveChallenge(challengeBeingSaved);
+                    globalWarningBox.text.text = "Challenge saved successfully!\n\nOK";
+
+                    // Clear the name and difficulty buttons for future saving.
+                    nameInput.Clear();
+                    difficultyInput.Clear();
+
+                    // Refresh the challenges list and return to it in the menu.
+                    ChallengesList.RefreshList();
+                    exitButton.onClick.Invoke(); // How to trigger a button click from script - DiegoSLTS - https://answers.unity.com/questions/945299/how-to-trigger-a-button-click-from-script.html - Accessed 31.05.2023
+                });
             }
         }
 
@@ -80,7 +149,7 @@ namespace MonstrumExtendedSettingsMod
         {
             public ChallengeViewer(Challenge challenge, GameObject parentPage, Vector3 parentPageOffset, Button entryButton) : base(challenge, parentPage, parentPageOffset, entryButton)
             {
-                string[] categories = new string[] { "Author", "Completed", "Difficulty", "Completion Time" };
+                string[] categories = new string[] { "Author", "Completed", ChallengeCreator.DIFFICULTY_HEADER, "Completion Time" };
                 Text[] categoriesTextElements = new Text[categories.Length];
                 for (int i = 0; i < categories.Length; i++)
                 {
@@ -107,6 +176,9 @@ namespace MonstrumExtendedSettingsMod
                     challenge.ApplyChallenge();
                 });
 
+                // Create a deletion confirmation window.
+                WarningBox deletionConfirmationWindow = new WarningBox("DeletionConfirmationWindow");
+
                 // Create a delete button.
                 MenuTextButton deleteButton = new MenuTextButton("Delete Challenge", gameObject.transform, new Vector3(-250f, 60f, 0f));
                 deleteButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
@@ -114,6 +186,13 @@ namespace MonstrumExtendedSettingsMod
                 deleteButton.button.onClick.AddListener(delegate ()
                 {
                     Debug.Log("Delete challenge: " + challenge.name);
+
+                    // Load confirmation window.
+                    deletionConfirmationWindow.Show();
+
+                    // Delete the challenge and return to the challenges list.
+                    //ChallengeParser.DeleteChallenge(challenge);
+                    //exitButton.onClick.Invoke();
                 });
             }
         }
@@ -165,10 +244,7 @@ namespace MonstrumExtendedSettingsMod
                 refreshButton.text.fontSize = smallButtonFontSize;
                 refreshButton.button.onClick.AddListener(delegate ()
                 {
-                    challengesList.ClearList();
-
-                    // Refresh list components
-                    challengesList.PopulateList(gameObject.transform);
+                    ChallengesList.RefreshList();
                 });
 
                 MenuTextButton newChallengeButton = new MenuTextButton("Save New Challenge", gameObject.transform, new Vector3(250f, 60f, 0f));
@@ -404,6 +480,7 @@ namespace MonstrumExtendedSettingsMod
         public abstract class SubMenu : CanvasFollowingTransform
         {
             protected GameObject exitButtonGO;
+            protected Button exitButton;
 
             // name: The name of the menu to display in the parent menu.
             // parentPage: The parent menu page to display a button to the sub menu on.
@@ -426,13 +503,14 @@ namespace MonstrumExtendedSettingsMod
             {
                 this.gameObject.transform.SetParent(clipboardTransform, true); // Use the clipboardTransform so that a sub menu is displayed even when parent menus are disabled.
 
-                MenuTextButton exitButton = new MenuTextButton("Exit", this.gameObject.transform, new Vector3(0f, -375f, 0f), false);
-                exitButtonGO = exitButton.gameObject;
-                exitButton.button.onClick.AddListener(delegate ()
+                MenuTextButton menuExitButton = new MenuTextButton("Exit", this.gameObject.transform, new Vector3(0f, -375f, 0f), false);
+                exitButtonGO = menuExitButton.gameObject;
+                exitButton = menuExitButton.button;
+                menuExitButton.button.onClick.AddListener(delegate ()
                 {
                     SwitchToPage(parentPage, this.gameObject);
                 });
-                exitButton.button.onClick.AddListener(delegate ()
+                menuExitButton.button.onClick.AddListener(delegate ()
                 {
                     menuSounds.ButtonClickGoBack();
                 });
@@ -600,6 +678,20 @@ namespace MonstrumExtendedSettingsMod
             smallButtonFontSize = (int)(1.25f * referenceOptionText.fontSize);
             mediumFontSize = (2 * referenceOptionText.fontSize);
 
+            // Create a warning box to alert the user of restart conditions and errors.
+            // Use a base canvas and adjust its sorting order to appear on top of the menu buttons.
+            globalWarningBox = new WarningBox("GlobalWarningBox", optionsUI.optionsButtons.transform, new Vector3(0f, 0f, -7.5f));
+
+            // Add functionality to the box.
+            globalWarningBox.button.onClick.AddListener(delegate ()
+            {
+                globalWarningBox.Hide();
+            });
+            globalWarningBox.button.onClick.AddListener(delegate ()
+            {
+                menuSounds.ButtonClickGoBack();
+            });
+
             // Create the initial navigation sub menu.
             NavigationSubMenu navigationSubMenu = new NavigationSubMenu("MES Mod", optionsUI.optionsButtons, new Vector3(0f, 140f, -5f), buttonList[3].transform.parent, (buttonList[3].transform.localPosition - buttonList[3].transform.parent.localPosition) - 3f * (buttonList[3].transform.localPosition - buttonList[1].transform.localPosition));
 
@@ -634,36 +726,10 @@ namespace MonstrumExtendedSettingsMod
             }
 
             ChallengesMenu challengesMenu = new ChallengesMenu(navigationSubMenu.gameObject, new Vector3(0f, -(52.5f * categories.Count), 0f));
-
-            // Create a warning box to alert the user of restart conditions and errors.
-            // Use a base canvas and adjust its sorting order to appear on top of the menu buttons.
-            CanvasFollowingTransform warningBoxCanvas = new CanvasFollowingTransform("WarningBox", optionsUI.optionsButtons.transform, new Vector3(0f, 0f, -7.5f));
-            warningBox = new MenuTextImageButton("WarningBox", warningBoxCanvas.gameObject.transform, Vector3.zero);
-            warningBoxCanvas.gameObject.transform.SetParent(clipboardTransform, true);
-            warningBoxCanvas.canvas.sortingOrder = 2;
-
-            // Adjust the area and opacity of the image.
-            warningBox.image.rectTransform.sizeDelta = new Vector2(5f * warningBox.image.rectTransform.sizeDelta.x, 15f * warningBox.image.rectTransform.sizeDelta.y); // Big variant
-            warningBox.image.color = new Color(warningBox.image.color.r, warningBox.image.color.g, warningBox.image.color.b, 1f);
-
-            // Change the area and size of the text.
-            warningBox.text.rectTransform.sizeDelta = new Vector2(0.975f * warningBox.image.rectTransform.sizeDelta.x, 0.975f * warningBox.image.rectTransform.sizeDelta.y);
-
-            // Add functionality to the box.
-            warningBox.button.onClick.AddListener(delegate ()
-            {
-                warningBox.gameObject.SetActive(false);
-            });
-            warningBox.button.onClick.AddListener(delegate ()
-            {
-                menuSounds.ButtonClickGoBack();
-            });
-
-            // Set it inactive so that it is not show when first in the menu.
-            warningBox.gameObject.SetActive(false);
         }
 
         // Method to switch between sub pages and settings sub-sub-pages
+
         private static void SwitchToPage(GameObject newPage, GameObject originalPage)
         {
             originalPage.SetActive(false);
@@ -787,7 +853,7 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
-        public class MenuSliderInputFieldWithDescription : MenuInputFieldWithDescription
+        public class MenuSliderInputFieldWithDescription : MenuNumericInputFieldWithDescription
         {
             // Use an input field as part of the base to hold the value for the slider and to allow for manual entry of the value.
             public MenuSlider menuSlider;
@@ -818,12 +884,28 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
-        public class MenuInputFieldWithDescription : MenuDescriptionBox
+        public class MenuTextInputFieldWithDescription : MenuInputFieldWithDescription
+        {
+            public MenuTextInputFieldWithDescription(string description, string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText, new MenuTextInputField(name, parentTransform, Vector3.zero, smallText))
+            {
+            }
+        }
+
+        public class MenuNumericInputFieldWithDescription : MenuInputFieldWithDescription
+        {
+            public MenuNumericInputFieldWithDescription(string description, string name, Transform parentTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText, new MenuNumericInputField(name, parentTransform, Vector3.zero, useInt, minClamp, maxClamp, smallText))
+            {
+            }
+        }
+
+        public abstract class MenuInputFieldWithDescription : MenuDescriptionBox
         {
             public MenuInputField menuInputField;
-            public MenuInputFieldWithDescription(string description, string name, Transform parentTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText)
+            public MenuInputFieldWithDescription(string description, string name, Transform parentTransform, Vector3 referenceOffset, bool smallText, MenuInputField menuInputField) : base(description, name, parentTransform, referenceOffset, smallText)
             {
-                menuInputField = new MenuInputField(name, nameTextCustomTransform, nameOffsetConstant * nameTextCustomTransform.localPosition, useInt, minClamp, maxClamp, smallText);
+                this.menuInputField = menuInputField;
+                this.menuInputField.gameObject.transform.SetParent(nameTextCustomTransform);
+                this.menuInputField.gameObject.transform.localPosition = nameOffsetConstant * nameTextCustomTransform.localPosition;
             }
 
             public override string GetText()
@@ -1052,31 +1134,81 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
-        public class MenuInputField : MenuTextImage
+        public class MenuTextInputField : MenuInputField
+        {
+            public MenuTextInputField(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText)
+            {
+                inputField.contentType = InputField.ContentType.Alphanumeric;
+                inputField.onValidateInput += delegate (string input, int charIndex, char addedChar) { return AvoidComma(addedChar); };
+            }
+
+            private char AvoidComma(char addedChar)
+            {
+                return addedChar == ',' ? '\0' : addedChar;
+            }
+        }
+
+        public class MenuNumericInputField : MenuInputField
+        {
+            float minClamp;
+            float maxClamp;
+
+            public MenuNumericInputField(string name, Transform parentTransform, Vector3 referenceOffset, bool useInt, float minClamp = 0f, float maxClamp = 0f, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText)
+            {
+                this.minClamp = minClamp;
+                this.maxClamp = maxClamp;
+
+                if (useInt)
+                {
+                    inputField.contentType = InputField.ContentType.IntegerNumber;
+                }
+                else
+                {
+                    inputField.contentType = InputField.ContentType.DecimalNumber;
+                }
+                if (minClamp != 0f || maxClamp != 0f)
+                {
+                    inputField.onEndEdit.AddListener(delegate { ValidateNumber(); });
+                    placeholderText.text = string.Concat(minClamp, " - ", maxClamp);
+                }
+            }
+
+            private void ValidateNumber()
+            {
+                float fieldValue = Convert.ToSingle(inputField.text);
+                if (fieldValue > maxClamp)
+                {
+                    inputField.text = maxClamp.ToString();
+                }
+                else if (fieldValue < minClamp)
+                {
+                    inputField.text = minClamp.ToString();
+                }
+            }
+        }
+
+        // Help, how restrict input field? - gorbit99 - https://forum.unity.com/threads/help-how-restrict-input-field.1147283/ - Accessed 31.05.2023
+        public abstract class MenuInputField : MenuTextImage
         {
             public InputField inputField;
             public EventTrigger eventTrigger;
-            public MenuInputField(string name, Transform parentTransform, Vector3 referenceOffset, bool useInt, float minClamp, float maxClamp, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText, true)
+            public Text placeholderText;
+
+            public MenuInputField(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText, true)
             {
                 image.rectTransform.sizeDelta = new Vector2((image.rectTransform.sizeDelta.x / 2.25f) / sizeReduction, image.rectTransform.sizeDelta.y);
-
-                inputField = gameObject.AddComponent<InputField>();
-
                 text.rectTransform.sizeDelta = image.rectTransform.sizeDelta;
 
+                inputField = gameObject.AddComponent<InputField>();
                 inputField.targetGraphic = image;
                 inputField.textComponent = text;
-                inputField.text = "This is an input field";
+
+                MenuText placeholderMenuText = new MenuText("Empty", gameObject.transform, Vector3.zero, smallText);
+                placeholderText = placeholderMenuText.text;
+                placeholderText.color = Color.red;
+                inputField.placeholder = placeholderText;
 
                 eventTrigger = gameObject.AddComponent<EventTrigger>();
-                EventTrigger.Entry pointerClickEvent = new EventTrigger.Entry();
-                pointerClickEvent.eventID = EventTriggerType.PointerClick;
-                pointerClickEvent.callback.AddListener((eventData) =>
-                {
-                    inputField.ActivateInputField();
-                    inputField.StartCoroutine(InputFieldInputValidation(inputField, useInt, minClamp, maxClamp));
-                });
-                eventTrigger.triggers.Add(pointerClickEvent);
 
                 EventTrigger.Entry pointerEnterEvent = new EventTrigger.Entry();
                 pointerEnterEvent.eventID = EventTriggerType.PointerEnter;
@@ -1089,33 +1221,48 @@ namespace MonstrumExtendedSettingsMod
                 eventTrigger.triggers.Add(pointerExitEvent);
             }
 
-            private static IEnumerator InputFieldInputValidation(InputField inputField, bool useInt, float minClamp, float maxClamp)
+            // Csharp Unity - How can I clear an InputField - Programmer - https://stackoverflow.com/questions/37754617/c-sharp-unity-how-can-i-clear-an-inputfield - Accessed 31.05.2023
+            public void Clear()
             {
-                yield return null;
-                while (inputField.isFocused)
-                {
-                    yield return null;
-                }
-                // This is where you should verify inputs
-                if (useInt)
-                {
-                    float floatValue = Convert.ToSingle(inputField.text);
-                    float roundedInt = Mathf.RoundToInt(floatValue);
-                    inputField.text = roundedInt.ToString();
-                }
-                if (minClamp != 0f || maxClamp != 0f)
-                {
-                    float fieldValue = Convert.ToSingle(inputField.text);
-                    if (fieldValue > maxClamp)
-                    {
-                        inputField.text = maxClamp.ToString();
-                    }
-                    else if (fieldValue < minClamp)
-                    {
-                        inputField.text = minClamp.ToString();
-                    }
-                }
-                yield break;
+                inputField.Select();
+                inputField.text = string.Empty;
+            }
+        }
+
+        public class WarningBox : MenuTextImageButton
+        {
+            // This should only be called if globalWarningBox has been initialised.
+            public WarningBox(string name, bool smallText = true, bool addColourEventToImage = false) : this(name, globalWarningBox.gameObject.transform, Vector3.zero, smallText, addColourEventToImage)
+            {
+            }
+
+            public WarningBox(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true, bool addColourEventToImage = false) : base(name, parentTransform, referenceOffset, smallText, addColourEventToImage)
+            {
+                CanvasFollowingTransform warningBoxCanvas = new CanvasFollowingTransform(name, parentTransform, referenceOffset);
+
+                this.gameObject.transform.SetParent(warningBoxCanvas.gameObject.transform);
+                warningBoxCanvas.gameObject.transform.SetParent(clipboardTransform, true);
+                warningBoxCanvas.canvas.sortingOrder = 2;
+
+                // Adjust the area and opacity of the image.
+                image.rectTransform.sizeDelta = new Vector2(5f * image.rectTransform.sizeDelta.x, 15f * image.rectTransform.sizeDelta.y); // Big variant
+                image.color = new Color(image.color.r, image.color.g, image.color.b, 1f);
+
+                // Change the area and size of the text.
+                text.rectTransform.sizeDelta = new Vector2(0.975f * image.rectTransform.sizeDelta.x, 0.975f * image.rectTransform.sizeDelta.y);
+
+                // Set it inactive so that it is not show when first in the menu.
+                Hide();
+            }
+
+            public void Show()
+            {
+                gameObject.SetActive(true);
+            }
+
+            public void Hide()
+            {
+                gameObject.SetActive(false);
             }
         }
 
@@ -1155,7 +1302,7 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
-        public class MenuList : MenuImage
+        public abstract class MenuList : MenuImage
         {
             public GameObjectFollowingRectTransform contentGameObject; // GameObject to hold any items displayed in the list.
             public MenuList(string name, Transform parentTransform, Vector3 referenceOffset, Vector2 rectSize, string[] headers) : base(name, parentTransform, referenceOffset)
@@ -1382,15 +1529,20 @@ namespace MonstrumExtendedSettingsMod
 
         public class ChallengesList : MenuList
         {
-            private static readonly string[] headers = new string[] { "Name", "Author", "Difficulty", "Completed" };
+            private static readonly string[] headers = new string[] { "Name", "Author", ChallengeCreator.DIFFICULTY_HEADER, "Completed" };
             public static List<Challenge> challenges;
             private ChallengeViewer challengeViewer;
+            public static ChallengesList instance;
             public ChallengesList(string name, Transform parentTransform, Vector3 referenceOffset) : base(name, parentTransform, referenceOffset, new Vector2(5f * referenceOptionImage.rectTransform.sizeDelta.x, 15f * referenceOptionImage.rectTransform.sizeDelta.y), headers)
             {
-                PopulateList(parentTransform);
+                PopulateList();
+                if (instance == null)
+                {
+                    instance = this;
+                }
             }
 
-            public void PopulateList(Transform parentTransform)
+            public void PopulateList()
             {
                 challenges = ChallengeParser.ReadAllChallenges();
                 foreach (Challenge challenge in challenges)
@@ -1410,7 +1562,7 @@ namespace MonstrumExtendedSettingsMod
                     menuTextImageCompleted.text.rectTransform.sizeDelta = menuTextImageName.text.rectTransform.sizeDelta;
 
                     // Create a submenu for the challenge.
-                    challengeViewer = new ChallengeViewer(challenge, parentTransform.gameObject, Vector3.zero, background.button);
+                    challengeViewer = new ChallengeViewer(challenge, gameObject.transform.parent.gameObject, Vector3.zero, background.button);
                 }
             }
 
@@ -1418,6 +1570,12 @@ namespace MonstrumExtendedSettingsMod
             {
                 Destroy(challengeViewer.gameObject);
                 base.ClearList();
+            }
+
+            public static void RefreshList()
+            {
+                instance.ClearList();
+                instance.PopulateList();
             }
         }
 

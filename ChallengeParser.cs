@@ -20,37 +20,40 @@ namespace MonstrumExtendedSettingsMod
             private static readonly string COMPLETION_TIMES_FILE_NAME = "challengeCompletionTimes.txt";
             //public static readonly string TIME_FORMAT = "hh\\:mm\\:ss\\.ff";
 
-            public static void SaveChallenge(string name, string author, string difficulty)
+            public static void SaveChallenge(Challenge challenge)
             {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.Append(NAME_IDENTIFIER);
                 stringBuilder.Append(SEPARATOR);
-                stringBuilder.Append(name);
+                stringBuilder.Append(challenge.name);
                 stringBuilder.Append("\n");
                 stringBuilder.Append(AUTHOR_IDENTIFIER);
                 stringBuilder.Append(SEPARATOR);
-                stringBuilder.Append(author);
+                stringBuilder.Append(challenge.author);
                 stringBuilder.Append("\n");
                 stringBuilder.Append(DIFFICULTY_IDENTIFIER);
                 stringBuilder.Append(SEPARATOR);
-                stringBuilder.Append(difficulty);
+                stringBuilder.Append(challenge.difficulty);
                 stringBuilder.Append("\n");
                 stringBuilder.Append(VERSION_IDENTIFIER);
                 stringBuilder.Append(SEPARATOR);
                 stringBuilder.Append(ExtendedSettingsModScript.VERSION_WITH_TEXT);
                 stringBuilder.Append("\n");
                 stringBuilder.Append(REFERENCE_LINE);
-                foreach (MESMSetting mESMSetting in ModSettings.allSettings)
+                foreach (MESMSettingCompact setting in challenge.settings)
                 {
-                    if (!mESMSetting.userValueString.Equals(mESMSetting.defaultValueString))
-                    {
-                        stringBuilder.Append("\n");
-                        stringBuilder.Append(mESMSetting.modSettingsText);
-                        stringBuilder.Append(SEPARATOR);
-                        stringBuilder.Append(mESMSetting.userValueString);
-                    }
+                    stringBuilder.Append("\n");
+                    stringBuilder.Append(setting.name);
+                    stringBuilder.Append(SEPARATOR);
+                    stringBuilder.Append(setting.value);
                 }
-                File.WriteAllText(CHALLENGE_FOLDER + name + ".txt", stringBuilder.ToString());
+                File.WriteAllText(CHALLENGE_FOLDER + challenge.name + ".txt", stringBuilder.ToString());
+            }
+
+            public static void DeleteChallenge(Challenge challenge)
+            {
+                File.Delete(CHALLENGE_FOLDER + challenge.name + ".txt");
+                ChallengesList.RefreshList();
             }
 
             public static List<Challenge> ReadAllChallenges()

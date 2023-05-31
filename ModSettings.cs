@@ -223,7 +223,7 @@ namespace MonstrumExtendedSettingsMod
                             warningBoxTextStringBuilder.Append(badlyFormattedSetting);
                         }
                         warningBoxTextStringBuilder.Append("\n----------\nSettings have not been saved. Restart if unable to fix.\n\n");
-                        warningBox.gameObject.SetActive(true);
+                        globalWarningBox.Show();
                     }
                     else
                     {
@@ -271,10 +271,10 @@ namespace MonstrumExtendedSettingsMod
                         }
                         warningBoxTextStringBuilder.Append(".");
 
-                        warningBox.gameObject.SetActive(true);
+                        globalWarningBox.Show();
                     }
                     warningBoxTextStringBuilder.Append("\n\nOK");
-                    warningBox.text.text = warningBoxTextStringBuilder.ToString();
+                    globalWarningBox.text.text = warningBoxTextStringBuilder.ToString();
                 }
                 else
                 {
@@ -353,7 +353,7 @@ namespace MonstrumExtendedSettingsMod
 
             public override MenuDescriptionBox CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
             {
-                MenuInputFieldWithDescription menuInputFieldWithDescription = new MenuInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, false, 0f, 0f);
+                MenuInputFieldWithDescription menuInputFieldWithDescription = new MenuTextInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset);
                 settingsButton = menuInputFieldWithDescription;
                 menuInputFieldWithDescription.menuInputField.inputField.text = userValue.ToString();
                 menuInputFieldWithDescription.menuInputField.inputField.readOnly = readOnlySetting;
@@ -453,7 +453,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                     else
                     {
-                        menuInputFieldWithDescription = new MenuInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
+                        menuInputFieldWithDescription = new MenuNumericInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
                         settingsButton = menuInputFieldWithDescription;
                     }
                     menuInputFieldWithDescription.menuInputField.inputField.text = userValue.ToString();
