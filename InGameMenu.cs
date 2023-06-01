@@ -34,6 +34,7 @@ namespace MonstrumExtendedSettingsMod
         private static MenuSounds menuSounds;
 
         public static WarningBox globalWarningBox;
+        public static WarningBox deletionConfirmationBox;
 
         private static float sizeReduction;
 
@@ -52,7 +53,7 @@ namespace MonstrumExtendedSettingsMod
             public static readonly string DIFFICULTY_HEADER = "Difficulty (" + MIN_DIFFICULTY + "-" + MAX_DIFFICULTY + ")";
             private static Challenge challengeBeingSaved;
 
-            public ChallengeCreator(GameObject parentPage, Vector3 parentPageOffset, Button entryButton) : base("Challenge Creator", parentPage, parentPageOffset, entryButton)
+            public ChallengeCreator(GameObject parentPage, Vector3 parentPageOffset, Button entryButton, ChallengesMenu challengesMenu) : base("Challenge Creator", parentPage, parentPageOffset, entryButton)
             {
                 parentGridLayoutGroup.cellSize = new Vector2(gridParent.rectTransform.sizeDelta.x / 2, gridParent.rectTransform.sizeDelta.y / 3);
                 parentGridLayoutGroup.spacing = new Vector2(0f, 6.66f);
@@ -60,7 +61,7 @@ namespace MonstrumExtendedSettingsMod
                 string[] categories = new string[] { "Challenge Name", "Author", DIFFICULTY_HEADER };
 
                 MenuText nameText = new MenuText(categories[0], gridParent.gameObject.transform, Vector3.zero);
-                MenuInputField nameInput = new MenuTextInputField(categories[0], gridParent.gameObject.transform, Vector3.zero);
+                MenuInputField nameInput = new MenuTextInputField(categories[0], gridParent.gameObject.transform, Vector3.zero, 23);
                 nameText.text.fontSize = mediumFontSize;
                 nameInput.text.fontSize = nameText.text.fontSize;
                 nameInput.text.rectTransform.sizeDelta = parentGridLayoutGroup.cellSize;
@@ -70,7 +71,7 @@ namespace MonstrumExtendedSettingsMod
                 nameInput.placeholderText.text = "Your Challenge Name";
 
                 MenuText authorText = new MenuText(categories[1], gridParent.gameObject.transform, Vector3.zero);
-                MenuInputField authorInput = new MenuTextInputField(categories[1], gridParent.gameObject.transform, Vector3.zero);
+                MenuInputField authorInput = new MenuTextInputField(categories[1], gridParent.gameObject.transform, Vector3.zero, 23);
                 authorText.text.fontSize = nameText.text.fontSize;
                 authorInput.text.fontSize = authorText.text.fontSize;
                 authorInput.text.rectTransform.sizeDelta = nameInput.text.rectTransform.sizeDelta;
@@ -139,7 +140,7 @@ namespace MonstrumExtendedSettingsMod
                     difficultyInput.Clear();
 
                     // Refresh the challenges list and return to it in the menu.
-                    ChallengesList.RefreshList();
+                    challengesMenu.challengesList.RefreshList();
                     exitButton.onClick.Invoke(); // How to trigger a button click from script - DiegoSLTS - https://answers.unity.com/questions/945299/how-to-trigger-a-button-click-from-script.html - Accessed 31.05.2023
                 });
             }
@@ -147,7 +148,9 @@ namespace MonstrumExtendedSettingsMod
 
         public class ChallengeViewer : ChallengeSubPage
         {
-            public ChallengeViewer(Challenge challenge, GameObject parentPage, Vector3 parentPageOffset, Button entryButton) : base(challenge, parentPage, parentPageOffset, entryButton)
+            public static Challenge challengeBeingDeleted;
+            public static Button currentExitButton;
+            public ChallengeViewer(Challenge challenge, GameObject parentPage, Vector3 parentPageOffset, MenuImageButton entryImageButton, ChallengesList challengesList) : base(challenge, parentPage, parentPageOffset, entryImageButton.button)
             {
                 string[] categories = new string[] { "Author", "Completed", ChallengeCreator.DIFFICULTY_HEADER, "Completion Time" };
                 Text[] categoriesTextElements = new Text[categories.Length];
@@ -173,11 +176,20 @@ namespace MonstrumExtendedSettingsMod
                 loadButton.text.fontSize = smallButtonFontSize;
                 loadButton.button.onClick.AddListener(delegate ()
                 {
+                    menuSounds.ButtonClickGoForward();
                     challenge.ApplyChallenge();
-                });
+                    Debug.Log("Loaded challenge: " + challenge.name);
 
-                // Create a deletion confirmation window.
-                WarningBox deletionConfirmationWindow = new WarningBox("DeletionConfirmationWindow");
+                    string newString = string.Concat("Challenge loaded successfully!\n\n", challenge.name);
+                    if (!string.IsNullOrEmpty(globalWarningBox.text.text))
+                    {
+                        newString = string.Concat(newString, "\n\n", globalWarningBox.text.text);
+                    }
+                    globalWarningBox.Show(newString);
+                    exitButton.onClick.Invoke();
+
+                    challengesList.RefreshList();
+                });
 
                 // Create a delete button.
                 MenuTextButton deleteButton = new MenuTextButton("Delete Challenge", gameObject.transform, new Vector3(-250f, 60f, 0f));
@@ -185,15 +197,17 @@ namespace MonstrumExtendedSettingsMod
                 deleteButton.text.fontSize = smallButtonFontSize;
                 deleteButton.button.onClick.AddListener(delegate ()
                 {
-                    Debug.Log("Delete challenge: " + challenge.name);
-
                     // Load confirmation window.
-                    deletionConfirmationWindow.Show();
-
-                    // Delete the challenge and return to the challenges list.
-                    //ChallengeParser.DeleteChallenge(challenge);
-                    //exitButton.onClick.Invoke();
+                    menuSounds.ButtonClickGoForward();
+                    challengeBeingDeleted = challenge;
+                    currentExitButton = exitButton;
+                    deletionConfirmationBox.Show("Are you sure you wish to delete the following challenge?\n\n" + challenge.name);
                 });
+
+                // Version Text
+                MenuText versionText = new MenuText("Created In\nV" + challenge.version, gameObject.transform, new Vector3(-250f, -375f, 0f), false);
+                versionText.text.rectTransform.sizeDelta = smallButtonSizeDelta;
+                versionText.text.fontSize /= 2;
             }
         }
 
@@ -233,29 +247,31 @@ namespace MonstrumExtendedSettingsMod
         }
 
         // Menu to provide functionality to save and load presets / challenges.
-        private class ChallengesMenu : SubMenu
+        public class ChallengesMenu : SubMenu
         {
+            public ChallengesList challengesList;
             public ChallengesMenu(GameObject parentPage, Vector3 entryButtonOffset) : base("Challenges", parentPage, Vector3.zero, parentPage.transform, entryButtonOffset)
             {
-                ChallengesList challengesList = new ChallengesList("ChallengesList", gameObject.transform, new Vector3(0f, -175f, -7.5f));
+                entryButton.onClick.AddListener(delegate ()
+                {
+                    Debug.Log("Created challenges list");
+                    challengesList = new ChallengesList("ChallengesList", gameObject.transform, new Vector3(0f, -175f, -7.5f));
+                    challengesList.RefreshList();
+                });
 
                 MenuTextButton refreshButton = new MenuTextButton("Refresh List", gameObject.transform, new Vector3(-250f, 60f, 0f));
                 refreshButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
                 refreshButton.text.fontSize = smallButtonFontSize;
                 refreshButton.button.onClick.AddListener(delegate ()
                 {
-                    ChallengesList.RefreshList();
+                    challengesList.RefreshList();
                 });
 
                 MenuTextButton newChallengeButton = new MenuTextButton("Save New Challenge", gameObject.transform, new Vector3(250f, 60f, 0f));
                 newChallengeButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
                 newChallengeButton.text.fontSize = smallButtonFontSize;
-                newChallengeButton.button.onClick.AddListener(delegate ()
-                 {
-                     Debug.Log("Save New Challenge");
-                 });
 
-                ChallengeCreator challengeCreator = new ChallengeCreator(gameObject, Vector3.zero, newChallengeButton.button);
+                ChallengeCreator challengeCreator = new ChallengeCreator(gameObject, Vector3.zero, newChallengeButton.button, this);
             }
         }
 
@@ -481,6 +497,7 @@ namespace MonstrumExtendedSettingsMod
         {
             protected GameObject exitButtonGO;
             protected Button exitButton;
+            protected Button entryButton;
 
             // name: The name of the menu to display in the parent menu.
             // parentPage: The parent menu page to display a button to the sub menu on.
@@ -489,14 +506,16 @@ namespace MonstrumExtendedSettingsMod
             // entryButtonOffset: The offset from the entryButtonParentTransform to use.
             protected SubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Transform entryButtonParentTransform, Vector3 entryButtonOffset) : this(name, parentPage, parentPageOffset)
             {
-                MenuTextButton entryButton = new MenuTextButton(name, entryButtonParentTransform, entryButtonOffset, false);
-                entryButton.text.rectTransform.sizeDelta = new Vector2(2f * entryButton.text.rectTransform.sizeDelta.x, entryButton.text.rectTransform.sizeDelta.y);
-                AddListenersToEntryButton(entryButton.button, parentPage);
+                MenuTextButton menuEntryButton = new MenuTextButton(name, entryButtonParentTransform, entryButtonOffset, false);
+                entryButton = menuEntryButton.button;
+                menuEntryButton.text.rectTransform.sizeDelta = new Vector2(2f * menuEntryButton.text.rectTransform.sizeDelta.x, menuEntryButton.text.rectTransform.sizeDelta.y);
+                AddListenersToEntryButton(parentPage);
             }
 
             protected SubMenu(string name, GameObject parentPage, Vector3 parentPageOffset, Button entryButton) : this(name, parentPage, parentPageOffset)
             {
-                AddListenersToEntryButton(entryButton, parentPage);
+                this.entryButton = entryButton;
+                AddListenersToEntryButton(parentPage);
             }
 
             private SubMenu(string name, GameObject parentPage, Vector3 parentPageOffset) : base(name, parentPage.transform, parentPageOffset)
@@ -508,11 +527,9 @@ namespace MonstrumExtendedSettingsMod
                 exitButton = menuExitButton.button;
                 menuExitButton.button.onClick.AddListener(delegate ()
                 {
-                    SwitchToPage(parentPage, this.gameObject);
-                });
-                menuExitButton.button.onClick.AddListener(delegate ()
-                {
                     menuSounds.ButtonClickGoBack();
+                    menuExitButton.text.color = referenceCategoryText.color; // Event to reset text colour when clicking on a button to fix highlights persisting when going in and out of a sub menu.
+                    SwitchToPage(parentPage, this.gameObject);
                 });
 
                 string shortTitle = name.Split(new string[] { " Settings" }, System.StringSplitOptions.None)[0];
@@ -522,16 +539,23 @@ namespace MonstrumExtendedSettingsMod
                 this.gameObject.SetActive(false);
             }
 
-            private void AddListenersToEntryButton(Button entryButton, GameObject parentPage)
+            private void AddListenersToEntryButton(GameObject parentPage)
             {
                 entryButton.onClick.AddListener(delegate ()
                 {
+                    menuSounds.ButtonClickGoForward();
                     SwitchToPage(this.gameObject, parentPage);
                 });
-                entryButton.onClick.AddListener(delegate ()
+
+                // Event to reset text colour when clicking on a button to fix highlights persisting when going in and out of a sub menu.
+                Text text = entryButton.gameObject.GetComponentInChildren<Text>();
+                if (text != null)
                 {
-                    menuSounds.ButtonClickGoForward();
-                });
+                    entryButton.onClick.AddListener(delegate ()
+                    {
+                        text.color = referenceCategoryText.color;
+                    });
+                }
             }
         }
 
@@ -685,11 +709,8 @@ namespace MonstrumExtendedSettingsMod
             // Add functionality to the box.
             globalWarningBox.button.onClick.AddListener(delegate ()
             {
-                globalWarningBox.Hide();
-            });
-            globalWarningBox.button.onClick.AddListener(delegate ()
-            {
                 menuSounds.ButtonClickGoBack();
+                globalWarningBox.Hide();
             });
 
             // Create the initial navigation sub menu.
@@ -726,6 +747,32 @@ namespace MonstrumExtendedSettingsMod
             }
 
             ChallengesMenu challengesMenu = new ChallengesMenu(navigationSubMenu.gameObject, new Vector3(0f, -(52.5f * categories.Count), 0f));
+
+            // Create a deletion confirmation window.
+            deletionConfirmationBox = new WarningBox("DeletionConfirmationWindow");
+            deletionConfirmationBox.text.fontSize = mediumFontSize;
+            MenuTextImageButton noButton = new MenuTextImageButton("No", deletionConfirmationBox.gameObject.transform, new Vector3(135f, -115f, 0f), false, true);
+            MenuTextImageButton yesButton = new MenuTextImageButton("Yes", deletionConfirmationBox.gameObject.transform, new Vector3(-135f, -115f, 0f), false, true);
+            noButton.image.rectTransform.sizeDelta = new Vector2(1.5f * noButton.image.rectTransform.sizeDelta.x, 2f * noButton.image.rectTransform.sizeDelta.y);
+            yesButton.image.rectTransform.sizeDelta = noButton.image.rectTransform.sizeDelta;
+            noButton.button.onClick.AddListener(delegate ()
+            {
+                menuSounds.ButtonClickGoBack();
+                noButton.image.color = referenceOptionImage.color;
+
+                deletionConfirmationBox.Hide();
+            });
+            yesButton.button.onClick.AddListener(delegate ()
+            {
+                menuSounds.ButtonClickGoForward();
+                yesButton.image.color = referenceOptionImage.color;
+
+                // Delete the challenge and return to the challenges list.
+                ChallengeParser.DeleteChallenge(ChallengeViewer.challengeBeingDeleted);
+                challengesMenu.challengesList.RefreshList();
+                ChallengeViewer.currentExitButton.onClick.Invoke();
+                deletionConfirmationBox.Hide();
+            });
         }
 
         // Method to switch between sub pages and settings sub-sub-pages
@@ -886,7 +933,7 @@ namespace MonstrumExtendedSettingsMod
 
         public class MenuTextInputFieldWithDescription : MenuInputFieldWithDescription
         {
-            public MenuTextInputFieldWithDescription(string description, string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText, new MenuTextInputField(name, parentTransform, Vector3.zero, smallText))
+            public MenuTextInputFieldWithDescription(string description, string name, Transform parentTransform, Vector3 referenceOffset, int maxLength = 0, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText, new MenuTextInputField(name, parentTransform, Vector3.zero, maxLength, smallText))
             {
             }
         }
@@ -1136,10 +1183,14 @@ namespace MonstrumExtendedSettingsMod
 
         public class MenuTextInputField : MenuInputField
         {
-            public MenuTextInputField(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText)
+            public MenuTextInputField(string name, Transform parentTransform, Vector3 referenceOffset, int maxLength = 0, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText)
             {
                 inputField.contentType = InputField.ContentType.Alphanumeric;
                 inputField.onValidateInput += delegate (string input, int charIndex, char addedChar) { return AvoidComma(addedChar); };
+                if (maxLength > 0)
+                {
+                    inputField.characterLimit = maxLength;
+                }
             }
 
             private char AvoidComma(char addedChar)
@@ -1175,14 +1226,17 @@ namespace MonstrumExtendedSettingsMod
 
             private void ValidateNumber()
             {
-                float fieldValue = Convert.ToSingle(inputField.text);
-                if (fieldValue > maxClamp)
+                if (!string.IsNullOrEmpty(inputField.text))
                 {
-                    inputField.text = maxClamp.ToString();
-                }
-                else if (fieldValue < minClamp)
-                {
-                    inputField.text = minClamp.ToString();
+                    float fieldValue = Convert.ToSingle(inputField.text);
+                    if (fieldValue > maxClamp)
+                    {
+                        inputField.text = maxClamp.ToString();
+                    }
+                    else if (fieldValue < minClamp)
+                    {
+                        inputField.text = minClamp.ToString();
+                    }
                 }
             }
         }
@@ -1260,6 +1314,12 @@ namespace MonstrumExtendedSettingsMod
                 gameObject.SetActive(true);
             }
 
+            public void Show(string message)
+            {
+                text.text = message;
+                Show();
+            }
+
             public void Hide()
             {
                 gameObject.SetActive(false);
@@ -1296,7 +1356,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     button.onClick.AddListener(delegate ()
                     {
-                        image.color = referenceOptionImage.color;
+                        image.color = baseColor;
                     });
                 }
             }
@@ -1365,6 +1425,9 @@ namespace MonstrumExtendedSettingsMod
         public class MenuImage : CanvasRenderable
         {
             public Image image;
+            public static Color DEFAULT_BASE_COLOUR;
+            public Color baseColor;
+            private static readonly Color DEFAULT_HIGHLIGHT_COLOUR = new Color(245f / 255f, 210f / 255f, 140f / 255f, 1f);
             public MenuImage(string name, Transform parentTransform, Vector3 referenceOffset, bool addColourEvent = false) : base(name, parentTransform, referenceOffset)
             {
                 image = this.gameObject.AddComponent<Image>();
@@ -1373,23 +1436,24 @@ namespace MonstrumExtendedSettingsMod
                 image.type = referenceOptionImage.type;
                 image.material = referenceOptionImage.material;
                 image.color = referenceOptionImage.color;
+                DEFAULT_BASE_COLOUR = referenceOptionImage.color;
+                baseColor = DEFAULT_BASE_COLOUR;
 
                 if (addColourEvent)
                 {
                     EventTrigger trigger = this.gameObject.AddComponent<EventTrigger>();
                     EventTrigger.Entry pointerEnter = new EventTrigger.Entry();
                     pointerEnter.eventID = EventTriggerType.PointerEnter;
-                    pointerEnter.callback.AddListener((eventData) => { image.color = new Color(245f / 255f, 210f / 255f, 140f / 255f, referenceOptionImage.color.a); });
+                    pointerEnter.callback.AddListener((eventData) => { image.color = DEFAULT_HIGHLIGHT_COLOUR; });
                     trigger.triggers.Add(pointerEnter);
 
                     EventTrigger.Entry pointerExit = new EventTrigger.Entry();
                     pointerExit.eventID = EventTriggerType.PointerExit;
-                    pointerExit.callback.AddListener((eventData) => { image.color = referenceOptionImage.color; });
+                    pointerExit.callback.AddListener((eventData) => { image.color = baseColor; });
                     trigger.triggers.Add(pointerExit);
                 }
             }
         }
-
 
         private class MenuTextButton : MenuText
         {
@@ -1403,6 +1467,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 button = this.gameObject.AddComponent<Button>();
                 text.raycastTarget = true;
+                text.color = referenceCategoryText.color; // Consistent hover colour.
 
                 EventTrigger trigger = text.gameObject.AddComponent<EventTrigger>();
                 EventTrigger.Entry textHighlight = new EventTrigger.Entry();
@@ -1414,12 +1479,6 @@ namespace MonstrumExtendedSettingsMod
                 textHighlightReset.eventID = EventTriggerType.PointerExit;
                 textHighlightReset.callback.AddListener((eventData) => { text.color = referenceCategoryText.color; });
                 trigger.triggers.Add(textHighlightReset);
-
-                // Event to reset text colour when clicking on a button to fix highlights persisting when going in and out of a sub menu.
-                button.onClick.AddListener(delegate ()
-                {
-                    text.color = referenceCategoryText.color;
-                });
 
                 //Debug.Log("-----\nCreated " + canvasGameObjects[0].name + ":\nPosition: " + canvasGameObjects[0].transform.position + " / " + canvasGameObjects[0].transform.localPosition + "\nRotation: " + canvasGameObjects[0].transform.rotation + " / " + canvasGameObjects[0].transform.localRotation + "\n...and " + canvasGameObjects[1].name + ":\nPosition: " + canvasGameObjects[1].transform.position + " / " + canvasGameObjects[1].transform.localPosition + "\nRotation: " + canvasGameObjects[1].transform.rotation + " / " + canvasGameObjects[1].transform.localRotation + "\n-----");
             }
@@ -1442,7 +1501,7 @@ namespace MonstrumExtendedSettingsMod
                     text.rectTransform.sizeDelta = referenceOptionImage.rectTransform.sizeDelta;
 
                     text.fontSize = referenceOptionText.fontSize;
-                    text.color = referenceOptionText.color;
+                    text.color = referenceOptionText.color; // Causes inconsistent colour when unhovering on buttons but is good for non-button text.
                     text.fontStyle = referenceOptionText.fontStyle;
 
                     // Overlay text blocking buttons under it. - JAKJ - https://forum.unity.com/threads/overlay-text-blocking-buttons-under-it.265680/ - Accessed 24.10.2021 [Used for old code]
@@ -1531,51 +1590,75 @@ namespace MonstrumExtendedSettingsMod
         {
             private static readonly string[] headers = new string[] { "Name", "Author", ChallengeCreator.DIFFICULTY_HEADER, "Completed" };
             public static List<Challenge> challenges;
-            private ChallengeViewer challengeViewer;
-            public static ChallengesList instance;
+            private List<ChallengeViewer> challengeViewers;
             public ChallengesList(string name, Transform parentTransform, Vector3 referenceOffset) : base(name, parentTransform, referenceOffset, new Vector2(5f * referenceOptionImage.rectTransform.sizeDelta.x, 15f * referenceOptionImage.rectTransform.sizeDelta.y), headers)
             {
-                PopulateList();
-                if (instance == null)
-                {
-                    instance = this;
-                }
+                challengeViewers = new List<ChallengeViewer>();
             }
 
             public void PopulateList()
             {
-                challenges = ChallengeParser.ReadAllChallenges();
+                ChallengeParser.ReadAllChallenges();
                 foreach (Challenge challenge in challenges)
                 {
-                    MenuImageButton background = new MenuImageButton(challenge.name, contentGameObject.gameObject.transform, Vector3.zero, true);
-                    background.image.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x, 2f * background.image.rectTransform.sizeDelta.y);
-                    HorizontalLayoutGroup horizontalLayoutGroup = background.gameObject.AddComponent<HorizontalLayoutGroup>();
+                    MenuImageButton backgroundImageEntryButton = new MenuImageButton(challenge.name, contentGameObject.gameObject.transform, Vector3.zero, true);
+                    backgroundImageEntryButton.image.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x, 2f * backgroundImageEntryButton.image.rectTransform.sizeDelta.y);
+                    HorizontalLayoutGroup horizontalLayoutGroup = backgroundImageEntryButton.gameObject.AddComponent<HorizontalLayoutGroup>();
                     horizontalLayoutGroup.childControlWidth = false;
 
-                    MenuText menuTextImageName = new MenuText(challenge.name, background.gameObject.transform, Vector3.zero);
-                    MenuText menuTextImageAuthor = new MenuText(challenge.author, background.gameObject.transform, Vector3.zero);
-                    MenuText menuTextImageDifficulty = new MenuText(challenge.difficulty, background.gameObject.transform, Vector3.zero);
-                    MenuText menuTextImageCompleted = new MenuText(challenge.completionTime == TimeSpan.MaxValue ? "Uncompleted" : challenge.CompletionTimeString(), background.gameObject.transform, Vector3.zero);
-                    menuTextImageName.text.rectTransform.sizeDelta = new Vector2(background.image.rectTransform.sizeDelta.x / 4, menuTextImageName.text.rectTransform.sizeDelta.y);
+                    MenuText menuTextImageName = new MenuText(challenge.name, backgroundImageEntryButton.gameObject.transform, Vector3.zero);
+                    MenuText menuTextImageAuthor = new MenuText(challenge.author, backgroundImageEntryButton.gameObject.transform, Vector3.zero);
+                    MenuText menuTextImageDifficulty = new MenuText(challenge.difficulty, backgroundImageEntryButton.gameObject.transform, Vector3.zero);
+                    MenuText menuTextImageCompleted = new MenuText(challenge.completionTime == TimeSpan.MaxValue ? "Uncompleted" : challenge.CompletionTimeString(), backgroundImageEntryButton.gameObject.transform, Vector3.zero);
+                    menuTextImageName.text.rectTransform.sizeDelta = new Vector2(backgroundImageEntryButton.image.rectTransform.sizeDelta.x / 4, menuTextImageName.text.rectTransform.sizeDelta.y);
                     menuTextImageAuthor.text.rectTransform.sizeDelta = menuTextImageName.text.rectTransform.sizeDelta;
                     menuTextImageDifficulty.text.rectTransform.sizeDelta = menuTextImageName.text.rectTransform.sizeDelta;
                     menuTextImageCompleted.text.rectTransform.sizeDelta = menuTextImageName.text.rectTransform.sizeDelta;
 
-                    // Create a submenu for the challenge.
-                    challengeViewer = new ChallengeViewer(challenge, gameObject.transform.parent.gameObject, Vector3.zero, background.button);
+                    // Create a submenu for the challenge only when the entry is first clicked on.
+                    bool createdChallengeViewer = false;
+                    backgroundImageEntryButton.button.onClick.AddListener(delegate ()
+                    {
+                        if (!createdChallengeViewer)
+                        {
+                            ChallengeViewer challengeViewer = new ChallengeViewer(challenge, gameObject.transform.parent.gameObject, Vector3.zero, backgroundImageEntryButton, this);
+                            challengeViewers.Add(challengeViewer);
+                            Debug.Log("Created challenge viewer for challenge: " + challenge.name);
+                            createdChallengeViewer = true;
+                            backgroundImageEntryButton.button.onClick.Invoke();
+                        }
+                    });
+
+                    // Highlight the button if it is the currently selected challenge.
+                    if (ModSettings.currentChallenge != null && challenge.filePath == ModSettings.currentChallenge.filePath)
+                    {
+                        backgroundImageEntryButton.image.color = ModSettings.SELECTED_CHALLENGE_COLOUR;
+                        backgroundImageEntryButton.baseColor = ModSettings.SELECTED_CHALLENGE_COLOUR;
+                    }
+                    else
+                    {
+                        backgroundImageEntryButton.baseColor = DEFAULT_BASE_COLOUR;
+                    }
                 }
             }
 
             public override void ClearList()
             {
-                Destroy(challengeViewer.gameObject);
+                if (challengeViewers != null)
+                {
+                    foreach (ChallengeViewer challengeViewer in challengeViewers)
+                    {
+                        Destroy(challengeViewer.gameObject);
+                    }
+                    challengeViewers.Clear();
+                }
                 base.ClearList();
             }
 
-            public static void RefreshList()
+            public void RefreshList()
             {
-                instance.ClearList();
-                instance.PopulateList();
+                ClearList();
+                PopulateList();
             }
         }
 

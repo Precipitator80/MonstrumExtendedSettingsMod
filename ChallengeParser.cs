@@ -47,26 +47,26 @@ namespace MonstrumExtendedSettingsMod
                     stringBuilder.Append(SEPARATOR);
                     stringBuilder.Append(setting.value);
                 }
+                Directory.CreateDirectory(CHALLENGE_FOLDER); // Create the challenges folder if it does not exist to avoid errors.
                 File.WriteAllText(CHALLENGE_FOLDER + challenge.name + ".txt", stringBuilder.ToString());
+                Debug.Log("Saved new challenge: " + challenge.name);
             }
 
             public static void DeleteChallenge(Challenge challenge)
             {
-                File.Delete(CHALLENGE_FOLDER + challenge.name + ".txt");
-                ChallengesList.RefreshList();
+                File.Delete(challenge.filePath);
             }
 
-            public static List<Challenge> ReadAllChallenges()
+            public static void ReadAllChallenges()
             {
-                List<Challenge> challenges = new List<Challenge>();
+                ChallengesList.challenges = new List<Challenge>();
 
+                Directory.CreateDirectory(CHALLENGE_FOLDER); // Create the challenges folder if it does not exist to avoid errors.
                 string[] txtFiles = Directory.GetFiles(CHALLENGE_FOLDER, "*.txt");
                 foreach (string challengeFilePath in txtFiles)
                 {
-                    challenges.Add(ReadChallenge(challengeFilePath));
+                    ChallengesList.challenges.Add(ReadChallenge(challengeFilePath));
                 }
-
-                return challenges;
             }
 
 
@@ -74,6 +74,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 // Set up a challenge variable.
                 Challenge challenge = new Challenge();
+                challenge.filePath = challengeFilePath;
 
                 // Open the file and find the starting line specifying the custom settings.
                 string[] challengeInformation = File.ReadAllLines(challengeFilePath);
@@ -203,6 +204,7 @@ namespace MonstrumExtendedSettingsMod
             public string version = defaultString;
             public TimeSpan completionTime = TimeSpan.MaxValue;
             public List<MESMSettingCompact> settings = new List<MESMSettingCompact>();
+            public string filePath = defaultString;
 
             public void ApplyChallenge()
             {

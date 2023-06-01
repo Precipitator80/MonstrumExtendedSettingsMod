@@ -273,8 +273,15 @@ namespace MonstrumExtendedSettingsMod
 
                         globalWarningBox.Show();
                     }
-                    warningBoxTextStringBuilder.Append("\n\nOK");
-                    globalWarningBox.text.text = warningBoxTextStringBuilder.ToString();
+                    if (!String.IsNullOrEmpty(warningBoxTextStringBuilder.ToString()))
+                    {
+                        warningBoxTextStringBuilder.Append("\n\nOK");
+                        globalWarningBox.text.text = warningBoxTextStringBuilder.ToString();
+                    }
+                    else
+                    {
+                        globalWarningBox.text.text = string.Empty;
+                    }
                 }
                 else
                 {
@@ -1274,22 +1281,24 @@ namespace MonstrumExtendedSettingsMod
                         staminaTimer.Add(0f);
                     }
                     currentChallenge = null;
-                    Debug.Log("Checking Challenge 1");
-                    if (ChallengesList.challenges != null && ChallengesList.challenges.Count > 0 && !currentChallengeNameMESMS.userValue.Equals(currentChallengeNameMESMS.defaultValue))
+                    if (ChallengesList.challenges == null)
                     {
-                        Debug.Log("Checking Challenge 2");
+                        ChallengeParser.ReadAllChallenges();
+                    }
+                    if (ChallengesList.challenges.Count > 0 && !currentChallengeNameMESMS.userValue.Equals(currentChallengeNameMESMS.defaultValue))
+                    {
+                        Debug.Log("Challenges found! Checking stored name against found challenges.");
                         foreach (Challenge challenge in ChallengesList.challenges)
                         {
                             if (challenge.name.Equals(currentChallengeNameMESMS.userValue))
                             {
-                                Debug.Log("Checking Challenge 3");
+                                Debug.Log("Found challenge with matching name: " + challenge.name + ". Checking all current settings match stored challenge.");
                                 bool matchingAllSettings = true;
                                 for (int i = 0; i < allSettings.Count && matchingAllSettings; i++)
                                 {
                                     // Ensure any settings that are not equal to their default value are found in the challenge and match its defined value.
                                     if (!allSettings[i].userValueString.Equals(allSettings[i].defaultValueString) && allSettings[i] != currentChallengeNameMESMS)
                                     {
-                                        Debug.Log("Discrepancy found! " + allSettings[i].userValueString + " for setting " + allSettings[i].modSettingsText + " does not equal " + allSettings[i].defaultValueString);
                                         bool matchesSetting = false;
                                         foreach (MESMSettingCompact challengeSetting in challenge.settings)
                                         {
@@ -1301,6 +1310,11 @@ namespace MonstrumExtendedSettingsMod
                                             }
                                         }
 
+                                        if (!matchesSetting)
+                                        {
+                                            Debug.Log("Inconsistent discrepancy found! User value " + allSettings[i].userValueString + " for setting " + allSettings[i].modSettingsText + " does not equal default value " + allSettings[i].defaultValueString + ", but the challenge does not contain this user value.");
+                                        }
+
                                         // Update the matchesAllSettings variable. If this check failed, the all settings loop will terminate.
                                         matchingAllSettings = matchesSetting;
                                     }
@@ -1309,14 +1323,19 @@ namespace MonstrumExtendedSettingsMod
                                 {
                                     useSpeedrunTimer = true;
                                     currentChallenge = challenge;
-                                    Debug.Log("Current challenge is " + currentChallenge.name);
+                                    Debug.Log("All settings matched! The current challenge is: " + currentChallenge.name + ".");
+                                }
+                                else
+                                {
+                                    Debug.Log("Some settings did not match!");
                                 }
                                 break;
                             }
                         }
                     }
-                    if (currentChallenge == null)
+                    if (currentChallenge == null && currentChallengeNameMESMS.userValue != currentChallengeNameMESMS.defaultValue)
                     {
+                        Debug.Log("Resetting the current challenge value as the challenge could not be verified.");
                         currentChallengeNameMESMS.userValue = currentChallengeNameMESMS.defaultValue;
                     }
                     // This is already done when creating variables.
@@ -3613,6 +3632,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool showSpeedrunTimerOnScreen;
             public static bool logDebugText;
             public static MESMSettingString currentChallengeNameMESMS;
+            public static readonly Color SELECTED_CHALLENGE_COLOUR = Color.green;
 
             // Other Variables Used In Code
             // Early Declaration Needed
