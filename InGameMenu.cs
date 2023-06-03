@@ -55,13 +55,14 @@ namespace MonstrumExtendedSettingsMod
 
             public ChallengeCreator(GameObject parentPage, Vector3 parentPageOffset, Button entryButton, ChallengesMenu challengesMenu) : base("Challenge Creator", parentPage, parentPageOffset, entryButton)
             {
-                parentGridLayoutGroup.cellSize = new Vector2(gridParent.rectTransform.sizeDelta.x / 2, gridParent.rectTransform.sizeDelta.y / 3);
-                parentGridLayoutGroup.spacing = new Vector2(0f, 6.66f);
-
                 string[] categories = new string[] { "Challenge Name", "Author", DIFFICULTY_HEADER };
 
-                MenuText nameText = new MenuText(categories[0], gridParent.gameObject.transform, Vector3.zero);
-                MenuInputField nameInput = new MenuTextInputField(categories[0], gridParent.gameObject.transform, Vector3.zero, 23);
+                GameObjectFollowingRectTransform nameParent = new GameObjectFollowingRectTransform(categories[0], gridParent.gameObject.transform, Vector3.zero);
+                GridLayoutGroup nameGridLayoutGroup = nameParent.gameObject.AddComponent<GridLayoutGroup>();
+                nameGridLayoutGroup.cellSize = new Vector2(parentGridLayoutGroup.cellSize.x, parentGridLayoutGroup.cellSize.y / 2);
+
+                MenuText nameText = new MenuText(categories[0], nameParent.gameObject.transform, Vector3.zero);
+                MenuInputField nameInput = new MenuTextInputField(categories[0], nameParent.gameObject.transform, Vector3.zero, 23);
                 nameText.text.fontSize = mediumFontSize;
                 nameInput.text.fontSize = nameText.text.fontSize;
                 nameInput.text.rectTransform.sizeDelta = parentGridLayoutGroup.cellSize;
@@ -70,8 +71,12 @@ namespace MonstrumExtendedSettingsMod
                 nameInput.placeholderText.color = new Color(0.25f, 0.25f, 0.25f, 1f);
                 nameInput.placeholderText.text = "Your Challenge Name";
 
-                MenuText authorText = new MenuText(categories[1], gridParent.gameObject.transform, Vector3.zero);
-                MenuInputField authorInput = new MenuTextInputField(categories[1], gridParent.gameObject.transform, Vector3.zero, 23);
+
+                GameObjectFollowingRectTransform authorParent = new GameObjectFollowingRectTransform(categories[1], gridParent.gameObject.transform, Vector3.zero);
+                GridLayoutGroup authorGridLayoutGroup = authorParent.gameObject.AddComponent<GridLayoutGroup>();
+                authorGridLayoutGroup.cellSize = nameGridLayoutGroup.cellSize;
+                MenuText authorText = new MenuText(categories[1], authorParent.gameObject.transform, Vector3.zero);
+                MenuInputField authorInput = new MenuTextInputField(categories[1], authorParent.gameObject.transform, Vector3.zero, 23);
                 authorText.text.fontSize = nameText.text.fontSize;
                 authorInput.text.fontSize = authorText.text.fontSize;
                 authorInput.text.rectTransform.sizeDelta = nameInput.text.rectTransform.sizeDelta;
@@ -80,8 +85,11 @@ namespace MonstrumExtendedSettingsMod
                 authorInput.placeholderText.color = nameInput.placeholderText.color;
                 authorInput.placeholderText.text = "Your Author Name";
 
-                MenuText difficultyText = new MenuText(categories[2], gridParent.gameObject.transform, Vector3.zero);
-                MenuInputField difficultyInput = new MenuNumericInputField(categories[2], gridParent.gameObject.transform, Vector3.zero, true, MIN_DIFFICULTY, MAX_DIFFICULTY);
+                GameObjectFollowingRectTransform difficultyParent = new GameObjectFollowingRectTransform(categories[1], gridParent.gameObject.transform, Vector3.zero);
+                GridLayoutGroup difficultyGridLayoutGroup = difficultyParent.gameObject.AddComponent<GridLayoutGroup>();
+                difficultyGridLayoutGroup.cellSize = nameGridLayoutGroup.cellSize;
+                MenuText difficultyText = new MenuText(categories[2], difficultyParent.gameObject.transform, Vector3.zero);
+                MenuInputField difficultyInput = new MenuNumericInputField(categories[2], difficultyParent.gameObject.transform, Vector3.zero, true, MIN_DIFFICULTY, MAX_DIFFICULTY);
                 difficultyText.text.fontSize = nameText.text.fontSize;
                 difficultyInput.text.fontSize = difficultyText.text.fontSize;
                 difficultyInput.text.rectTransform.sizeDelta = nameInput.text.rectTransform.sizeDelta;
@@ -152,7 +160,7 @@ namespace MonstrumExtendedSettingsMod
             public static Button currentExitButton;
             public ChallengeViewer(Challenge challenge, GameObject parentPage, Vector3 parentPageOffset, MenuImageButton entryImageButton, ChallengesList challengesList) : base(challenge, parentPage, parentPageOffset, entryImageButton.button)
             {
-                string[] categories = new string[] { "Author", "Completed", ChallengeCreator.DIFFICULTY_HEADER, "Completion Time" };
+                string[] categories = new string[] { "Author", ChallengeCreator.DIFFICULTY_HEADER, "Completion Time" };
                 Text[] categoriesTextElements = new Text[categories.Length];
                 for (int i = 0; i < categories.Length; i++)
                 {
@@ -166,9 +174,8 @@ namespace MonstrumExtendedSettingsMod
                     categoriesTextElements[i] = textElement.text;
                 }
                 categoriesTextElements[0].text = challenge.author;
-                categoriesTextElements[1].text = challenge.completionTime != TimeSpan.MaxValue ? "✓" : "×";
-                categoriesTextElements[2].text = challenge.difficulty;
-                categoriesTextElements[3].text = challenge.CompletionTimeString();
+                categoriesTextElements[1].text = challenge.difficulty;
+                categoriesTextElements[2].text = challenge.CompletionTimeString();
 
                 // Create a load button.
                 MenuTextButton loadButton = new MenuTextButton("Load Challenge", gameObject.transform, new Vector3(250f, 60f, 0f));
@@ -213,7 +220,6 @@ namespace MonstrumExtendedSettingsMod
 
         public class ChallengeSubPage : SubMenu
         {
-            public Text completionTime;
             protected GameObjectFollowingRectTransform gridParent;
             protected GridLayoutGroup parentGridLayoutGroup;
             private ChallengeSettingsList challengeSettingsList;
@@ -225,18 +231,18 @@ namespace MonstrumExtendedSettingsMod
 
             public ChallengeSubPage(string name, GameObject parentPage, Vector3 parentPageOffset, Button entryButton) : base(name, parentPage, parentPageOffset, entryButton)
             {
-                gridParent = new GameObjectFollowingRectTransform(name, gameObject.transform, new Vector3(0f, -55f, 0));
-                gridParent.rectTransform.sizeDelta = new Vector2(5f * gridParent.rectTransform.sizeDelta.x, 7.5f * gridParent.rectTransform.sizeDelta.y);
+                gridParent = new GameObjectFollowingRectTransform(name, gameObject.transform, new Vector3(0f, -10f, 0));
+                gridParent.rectTransform.sizeDelta = new Vector2(5.5f * gridParent.rectTransform.sizeDelta.x, 5f * gridParent.rectTransform.sizeDelta.y);
                 parentGridLayoutGroup = gridParent.gameObject.AddComponent<GridLayoutGroup>();
-                parentGridLayoutGroup.cellSize = new Vector2(gridParent.rectTransform.sizeDelta.x / 2, gridParent.rectTransform.sizeDelta.y / 2);
-                parentGridLayoutGroup.spacing = new Vector2(0f, 10f);
+                parentGridLayoutGroup.spacing = new Vector2(5f, 0f);
+                parentGridLayoutGroup.cellSize = new Vector2(gridParent.rectTransform.sizeDelta.x / 3 - parentGridLayoutGroup.spacing.x, gridParent.rectTransform.sizeDelta.y);
             }
 
             protected void AddOrRefreshChallengeSettingsList(Challenge challenge)
             {
                 if (challengeSettingsList == null)
                 {
-                    challengeSettingsList = new ChallengeSettingsList(challenge.name, gameObject.transform, gridParent.gameObject.transform.localPosition - new Vector3(0f, 40f + gridParent.rectTransform.sizeDelta.y, 0f), challenge.settings);
+                    challengeSettingsList = new ChallengeSettingsList(challenge.name, gameObject.transform, gridParent.gameObject.transform.localPosition - new Vector3(0f, ChallengeSettingsList.gridHeight * referenceOptionImage.rectTransform.sizeDelta.y / 2f + 0.8f * gridParent.rectTransform.sizeDelta.y, 0f), challenge.settings);
                 }
                 else
                 {
@@ -257,7 +263,7 @@ namespace MonstrumExtendedSettingsMod
                     if (challengesList == null)
                     {
                         Debug.Log("Created challenges list");
-                        challengesList = new ChallengesList("ChallengesList", gameObject.transform, new Vector3(0f, -175f, -7.5f));
+                        challengesList = new ChallengesList("ChallengesList", gameObject.transform, new Vector3(0f, -175f, 0f));
                     }
                     challengesList.RefreshList();
                 });
@@ -1367,9 +1373,12 @@ namespace MonstrumExtendedSettingsMod
 
         public abstract class MenuList : MenuImage
         {
+            private static readonly Vector3 clipboardOffset = new Vector3(0f, 0f, -7.5f); // To stop Z-fighting with the clipboard.
             public GameObjectFollowingRectTransform contentGameObject; // GameObject to hold any items displayed in the list.
-            public MenuList(string name, Transform parentTransform, Vector3 referenceOffset, Vector2 rectSize, string[] headers) : base(name, parentTransform, referenceOffset)
+            public MenuList(string name, Transform parentTransform, Vector3 referenceOffset, Vector2 rectSize, string[] headers) : base(name, parentTransform, referenceOffset + clipboardOffset)
             {
+                referenceOffset += clipboardOffset;
+
                 Mask mask = gameObject.AddComponent<Mask>(); // Mask to hide entries outside of the image.
 
                 // Adjust the area and opacity of the image.
@@ -1566,8 +1575,10 @@ namespace MonstrumExtendedSettingsMod
 
         public class ChallengeSettingsList : MenuList
         {
+            public static readonly float gridWidth = 4f;
+            public static readonly float gridHeight = 11f;
             private static readonly string[] headers = new string[] { "Setting", "Value" };
-            public ChallengeSettingsList(string name, Transform parentTransform, Vector3 referenceOffset, List<MESMSettingCompact> settings) : base(name, parentTransform, referenceOffset, new Vector2(3.5f * referenceOptionImage.rectTransform.sizeDelta.x, 7.5f * referenceOptionImage.rectTransform.sizeDelta.y), headers)
+            public ChallengeSettingsList(string name, Transform parentTransform, Vector3 referenceOffset, List<MESMSettingCompact> settings) : base(name, parentTransform, referenceOffset, new Vector2(gridWidth * referenceOptionImage.rectTransform.sizeDelta.x, gridHeight * referenceOptionImage.rectTransform.sizeDelta.y), headers)
             {
                 PopulateList(settings);
             }
