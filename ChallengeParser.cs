@@ -17,7 +17,7 @@ namespace MonstrumExtendedSettingsMod
             private static readonly string DIFFICULTY_IDENTIFIER = "Difficulty";
             private static readonly string VERSION_IDENTIFIER = "Version";
             private static readonly string REFERENCE_LINE = "Setting" + SEPARATOR + "Custom Value";
-            private static readonly string COMPLETION_TIMES_FILE_NAME = "challengeCompletionTimes.txt";
+            private static readonly string COMPLETION_TIMES_FILE_PATH = "challengeCompletionTimes.txt"; // Check if file exists and create it.
             //public static readonly string TIME_FORMAT = "hh\\:mm\\:ss\\.ff";
 
             public static void SaveChallenge(Challenge challenge)
@@ -143,20 +143,23 @@ namespace MonstrumExtendedSettingsMod
             // How to Convert string "07:35" (HH:MM) to TimeSpan - Matt Johnson-Pint - https://stackoverflow.com/questions/24369059/how-to-convert-string-0735-hhmm-to-timespan - Accessed 26.05.2023
             public static TimeSpan GetChallengeTime(string name)
             {
-                string[] challengeTimes = File.ReadAllLines(COMPLETION_TIMES_FILE_NAME);
-                if (challengeTimes != null)
+                if (File.Exists(COMPLETION_TIMES_FILE_PATH))
                 {
-                    foreach (string line in challengeTimes)
+                    string[] challengeTimes = File.ReadAllLines(COMPLETION_TIMES_FILE_PATH);
+                    if (challengeTimes != null)
                     {
-                        string[] challengeNameAndTime = line.Split(new string[] { SEPARATOR }, System.StringSplitOptions.None);
-                        if (challengeNameAndTime.Length == 2 && challengeNameAndTime[0].Equals(name))
+                        foreach (string line in challengeTimes)
                         {
-                            TimeSpan timeSpan;
-                            if (TimeSpan.TryParse(challengeNameAndTime[1], out timeSpan))
+                            string[] challengeNameAndTime = line.Split(new string[] { SEPARATOR }, System.StringSplitOptions.None);
+                            if (challengeNameAndTime.Length == 2 && challengeNameAndTime[0].Equals(name))
                             {
-                                return timeSpan;
+                                TimeSpan timeSpan;
+                                if (TimeSpan.TryParse(challengeNameAndTime[1], out timeSpan))
+                                {
+                                    return timeSpan;
+                                }
+                                Debug.Log("Failed to parse challenge time!");
                             }
-                            Debug.Log("Failed to parse challenge time!");
                         }
                     }
                 }
@@ -170,7 +173,11 @@ namespace MonstrumExtendedSettingsMod
                 if (newTime < challenge.completionTime)
                 {
                     challenge.completionTime = newTime;
-                    string[] challengeTimes = File.ReadAllLines(COMPLETION_TIMES_FILE_NAME);
+                    if (!File.Exists(COMPLETION_TIMES_FILE_PATH))
+                    {
+                        File.Create(COMPLETION_TIMES_FILE_PATH);
+                    }
+                    string[] challengeTimes = File.ReadAllLines(COMPLETION_TIMES_FILE_PATH);
                     if (challengeTimes != null)
                     {
                         for (int lineNumber = 0; lineNumber < challengeTimes.Length; lineNumber++)
@@ -179,14 +186,14 @@ namespace MonstrumExtendedSettingsMod
                             if (challengeNameAndTime.Length == 2 && challengeNameAndTime[0].Equals(challenge.name))
                             {
                                 challengeTimes[lineNumber] = challengeNameAndTime[0] + SEPARATOR + challenge.completionTime;
-                                File.WriteAllLines(COMPLETION_TIMES_FILE_NAME, challengeTimes);
+                                File.WriteAllLines(COMPLETION_TIMES_FILE_PATH, challengeTimes);
                                 Debug.Log("Updated completion time in file: " + challenge.completionTime);
                                 return true;
                             }
                         }
                         List<string> challengeTimesList = challengeTimes.ConvertToList();
                         challengeTimesList.Add(challenge.name + SEPARATOR + challenge.completionTime);
-                        File.WriteAllLines(COMPLETION_TIMES_FILE_NAME, challengeTimesList.ToArray());
+                        File.WriteAllLines(COMPLETION_TIMES_FILE_PATH, challengeTimesList.ToArray());
                         Debug.Log("Added first completion time to file: " + challenge.completionTime);
                         return true;
                     }

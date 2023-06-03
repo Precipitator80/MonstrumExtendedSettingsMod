@@ -1281,62 +1281,65 @@ namespace MonstrumExtendedSettingsMod
                         staminaTimer.Add(0f);
                     }
                     currentChallenge = null;
-                    if (ChallengesList.challenges == null)
+                    if (!currentChallengeNameMESMS.userValue.Equals(currentChallengeNameMESMS.defaultValue))
                     {
-                        ChallengeParser.ReadAllChallenges();
-                    }
-                    if (ChallengesList.challenges.Count > 0 && !currentChallengeNameMESMS.userValue.Equals(currentChallengeNameMESMS.defaultValue))
-                    {
-                        Debug.Log("Challenges found! Checking stored name against found challenges.");
-                        foreach (Challenge challenge in ChallengesList.challenges)
+                        if (ChallengesList.challenges == null)
                         {
-                            if (challenge.name.Equals(currentChallengeNameMESMS.userValue))
+                            ChallengeParser.ReadAllChallenges();
+                        }
+                        if (ChallengesList.challenges.Count > 0)
+                        {
+                            Debug.Log("Challenges found! Checking stored name against found challenges.");
+                            foreach (Challenge challenge in ChallengesList.challenges)
                             {
-                                Debug.Log("Found challenge with matching name: " + challenge.name + ". Checking all current settings match stored challenge.");
-                                bool matchingAllSettings = true;
-                                for (int i = 0; i < allSettings.Count && matchingAllSettings; i++)
+                                if (challenge.name.Equals(currentChallengeNameMESMS.userValue))
                                 {
-                                    // Ensure any settings that are not equal to their default value are found in the challenge and match its defined value.
-                                    if (!allSettings[i].userValueString.Equals(allSettings[i].defaultValueString) && allSettings[i] != currentChallengeNameMESMS)
+                                    Debug.Log("Found challenge with matching name: " + challenge.name + ". Checking all current settings match stored challenge.");
+                                    bool matchingAllSettings = true;
+                                    for (int i = 0; i < allSettings.Count && matchingAllSettings; i++)
                                     {
-                                        bool matchesSetting = false;
-                                        foreach (MESMSettingCompact challengeSetting in challenge.settings)
+                                        // Ensure any settings that are not equal to their default value are found in the challenge and match its defined value.
+                                        if (!allSettings[i].userValueString.Equals(allSettings[i].defaultValueString) && allSettings[i] != currentChallengeNameMESMS)
                                         {
-                                            // Pass if the challenge contains the non-default default setting and matches its value.
-                                            if (challengeSetting.name.Equals(allSettings[i].modSettingsText) && challengeSetting.value == allSettings[i].userValueString)
+                                            bool matchesSetting = false;
+                                            foreach (MESMSettingCompact challengeSetting in challenge.settings)
                                             {
-                                                matchesSetting = true;
-                                                break;
+                                                // Pass if the challenge contains the non-default default setting and matches its value.
+                                                if (challengeSetting.name.Equals(allSettings[i].modSettingsText) && challengeSetting.value == allSettings[i].userValueString)
+                                                {
+                                                    matchesSetting = true;
+                                                    break;
+                                                }
                                             }
-                                        }
 
-                                        if (!matchesSetting)
-                                        {
-                                            Debug.Log("Inconsistent discrepancy found! User value " + allSettings[i].userValueString + " for setting " + allSettings[i].modSettingsText + " does not equal default value " + allSettings[i].defaultValueString + ", but the challenge does not contain this user value.");
-                                        }
+                                            if (!matchesSetting)
+                                            {
+                                                Debug.Log("Inconsistent discrepancy found! User value " + allSettings[i].userValueString + " for setting " + allSettings[i].modSettingsText + " does not equal default value " + allSettings[i].defaultValueString + ", but the challenge does not contain this user value.");
+                                            }
 
-                                        // Update the matchesAllSettings variable. If this check failed, the all settings loop will terminate.
-                                        matchingAllSettings = matchesSetting;
+                                            // Update the matchesAllSettings variable. If this check failed, the all settings loop will terminate.
+                                            matchingAllSettings = matchesSetting;
+                                        }
                                     }
+                                    if (matchingAllSettings)
+                                    {
+                                        useSpeedrunTimer = true;
+                                        currentChallenge = challenge;
+                                        Debug.Log("All settings matched! The current challenge is: " + currentChallenge.name + ".");
+                                    }
+                                    else
+                                    {
+                                        Debug.Log("Some settings did not match!");
+                                    }
+                                    break;
                                 }
-                                if (matchingAllSettings)
-                                {
-                                    useSpeedrunTimer = true;
-                                    currentChallenge = challenge;
-                                    Debug.Log("All settings matched! The current challenge is: " + currentChallenge.name + ".");
-                                }
-                                else
-                                {
-                                    Debug.Log("Some settings did not match!");
-                                }
-                                break;
                             }
                         }
-                    }
-                    if (currentChallenge == null && currentChallengeNameMESMS.userValue != currentChallengeNameMESMS.defaultValue)
-                    {
-                        Debug.Log("Resetting the current challenge value as the challenge could not be verified.");
-                        currentChallengeNameMESMS.userValue = currentChallengeNameMESMS.defaultValue;
+                        if (currentChallenge == null && currentChallengeNameMESMS.userValue != currentChallengeNameMESMS.defaultValue)
+                        {
+                            Debug.Log("Resetting the current challenge value as the challenge could not be verified.");
+                            currentChallengeNameMESMS.userValue = currentChallengeNameMESMS.defaultValue;
+                        }
                     }
                     // This is already done when creating variables.
                     StringBuilder settingsLogger = new StringBuilder("Listing all settings:\t ");

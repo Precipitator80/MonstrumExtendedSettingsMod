@@ -254,8 +254,11 @@ namespace MonstrumExtendedSettingsMod
             {
                 entryButton.onClick.AddListener(delegate ()
                 {
-                    Debug.Log("Created challenges list");
-                    challengesList = new ChallengesList("ChallengesList", gameObject.transform, new Vector3(0f, -175f, -7.5f));
+                    if (challengesList == null)
+                    {
+                        Debug.Log("Created challenges list");
+                        challengesList = new ChallengesList("ChallengesList", gameObject.transform, new Vector3(0f, -175f, -7.5f));
+                    }
                     challengesList.RefreshList();
                 });
 
