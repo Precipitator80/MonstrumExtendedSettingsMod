@@ -291,10 +291,14 @@ namespace MonstrumExtendedSettingsMod
                     On.FiendMindAttack.ChangeTimers += new On.FiendMindAttack.hook_ChangeTimers(HookFiendMindAttackChangeTimers);
                 }
 
+                // Disable Running
                 if (!ModSettings.enableMultiplayer)
                 {
                     On.NewPlayerClass.ButtonInput += new On.NewPlayerClass.hook_ButtonInput(HookNewPlayerClassButtonInput);
                 }
+
+                // Overpowered Hiding Spots
+                new Hook(typeof(Hiding).GetProperty("IsHiding", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetGetMethod(), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookHidingget_IsHiding"), null);
             }
 
             /*
@@ -2461,6 +2465,18 @@ namespace MonstrumExtendedSettingsMod
                     glowStick.onMat = Instantiate(glowStick.onMat);
                 }
                 glowStick.onMat.color = customColour;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @Hiding
+
+            public static bool HookHidingget_IsHiding(Hiding hiding)
+            {
+                if (ModSettings.overpoweredHidingSpots)
+                {
+                    return false;
+                }
+                return hiding.hideValue >= 3f;
             }
 
             /*----------------------------------------------------------------------------------------------------*/

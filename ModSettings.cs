@@ -1010,6 +1010,8 @@ namespace MonstrumExtendedSettingsMod
                     hideReticule = new MESMSetting<bool>("Hide Reticule", "Hides the reticule that is usually in the centre of the screen", false).userValue;
                     hideInventory = new MESMSetting<bool>("Hide Inventory", "Hides the inventory display that is usually on the top left of the screen", false).userValue;
                     hideTaskNotifications = new MESMSetting<bool>("Hide Task Notifications", "Hides the task notifications that are usually on the top left of the screen", false).userValue;
+                    overpoweredHidingSpots = new MESMSetting<bool>("Overpowered Hiding Spots", "The monsters will not be able to search any hiding spots", false).userValue;
+                    //noHiding = new MESMSetting<bool>("No Hiding", "You will not be invisible to the monster in a hiding spot", false).userValue;
 
                     // Read Player and Item Settings Variables
                     // Read Player Settings Variables
@@ -3546,6 +3548,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool hideReticule;
             public static bool hideInventory;
             public static bool hideTaskNotifications;
+            public static bool overpoweredHidingSpots;
 
 
             // Player and Item Settings Variables
