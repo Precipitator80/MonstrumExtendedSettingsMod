@@ -9417,7 +9417,7 @@ namespace MonstrumExtendedSettingsMod
                 int playerNumber = PlayerNumber(newPlayerClass.GetInstanceID());
                 if (crewPlayers.Contains(newPlayerClass))
                 {
-                    if (GetPlayerKey("Sprint", playerNumber).IsDown() || GetPlayerTriggerStateIfUsingController("Left", playerNumber))
+                    if ((GetPlayerKey("Sprint", playerNumber).IsDown() || GetPlayerTriggerStateIfUsingController("Left", playerNumber)) && !ModSettings.disableRunning)
                     {
                         switch (newPlayerClass.playerState)
                         {

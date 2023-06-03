@@ -581,6 +581,10 @@ namespace MonstrumExtendedSettingsMod
                     bruteChaseSpeedBuff = new MESMSetting<bool>("Brute Chase Speed Buff", "Lets the Brute gradually go beyond its normal maximum speed when running at its highest speed during a chase, which lets the Brute be faster when running along straight paths", false).userValue;
                     bruteChaseSpeedBuffMultiplier = new MESMSetting<float>("Brute Chase Speed Buff Multiplier", "Defines how much faster than the normal chasing speed the Brute can get", 1.35f, false, true).userValue;
                     applyChaseSpeedBuffToAllMonsters = new MESMSetting<bool>("Apply Chase Speed Buff To All Monsters", "Applies the chase speed buff to all monsters, not just the Brute", false, false, true).userValue;
+                    bruteFireShroud = new MESMSetting<bool>("Brute Fire Shroud", "Gives Brute a fire shroud that keeps fire around it and lets it perform a fire blast", false).userValue;
+                    giveAllMonstersAFireShroud = new MESMSetting<bool>("Give All Monsters A Fire Shroud", "Gives all monsters a fire shroud, not just the Brute", false).userValue;
+                    fireShroudRadius = new MESMSetting<float>("Fire Shroud Radius", "Sets the radius of fire shrouds", 2f, false, true).userValue;
+                    fireBlastRadius = new MESMSetting<float>("Fire Blast Radius", "Sets the radius of fire blasts", 16f, false, true).userValue;
                     overpoweredHunter = new MESMSetting<bool>("Overpowered Hunter", "Hunter always sets up traps when they have a chance to", false).userValue;
                     aggressiveHunter = new MESMSetting<bool>("Aggressive Hunter", "Hunter always comes out immediately after setting up traps", false, false, true).userValue;
                     fiendFlickerMin = new MESMSetting<float>("Fiend Flicker Minimum Range", "Changes the radius of Fiend's aura in which lights are affected the most. The game uses 3 by default", 0).userValue;
@@ -600,9 +604,6 @@ namespace MonstrumExtendedSettingsMod
                     giveAllMonstersASmokeShroud = new MESMSetting<bool>("Give All Monsters A Smoke Shroud", "Gives all monsters a smoke shroud that can kill the player when they stay too close to the monster", false).userValue;
                     smokeShroudRadius = new MESMSetting<float>("Smoke Shroud Radius", "Sets the radius of smoke shrouds", 8f, false, true).userValue;
                     smokeShroudDangerRadiusFactor = new MESMSetting<float>("Smoke Shroud Radius Danger Factor", "Sets what factor of the smoke shroud radius will be dangerous to the player. For example, 0.75 means three quarters of the radius is dangerous to the player", 0.75f, false, true).userValue;
-                    giveAllMonstersAFireShroud = new MESMSetting<bool>("Give All Monsters A Fire Shroud", "Gives all monsters a fire shroud that keeps fire around the monster and lets it perform a fire blast", false).userValue;
-                    fireShroudRadius = new MESMSetting<float>("Fire Shroud Radius", "Sets the radius of fire shrouds", 2f, false, true).userValue;
-                    fireBlastRadius = new MESMSetting<float>("Fire Blast Radius", "Sets the radius of fire blasts", 16f, false, true).userValue;
 
                     sparkyDifficultyPreset = new MESMSettingMultipleChoice("Sparky Difficulty Preset", "Allows for various statistics presets to be used for Sparky. Can be User, Easy, Medium or Hard. Medium uses the default statistics", "User", new string[] { "User", "Easy", "Medium", "Hard" }).userValue;
                     MESMSetting<float> sparkyChaseFactorMESM = new MESMSetting<float>("Sparky Chase Speed Factor", "Sets the increase to the speed multiplier Sparky gets in chases. For example, 0.5 means Sparky will be 50% faster in chases than compared to the Brute", 0.5f, false, false);
@@ -1033,6 +1034,8 @@ namespace MonstrumExtendedSettingsMod
                     }
                     customPlayerScale = new MESMSetting<float>("Custom Player Scale", "Change the scale of the player. Hitbox scales alongside this, but not speed. Can make monsters not see the player when they should be able to", 1).userValue;
                     unlockPlayerHead = new MESMSetting<bool>("Unlock Player Head", "Lets the player look up and down by the full 90 degrees instead of being locked to the default 60 degrees", false).userValue;
+                    extendedJumpCooldown = new MESMSetting<bool>("Extended Jump Cooldown", "Increases the jump cooldown to stop the player from being able to jump in midair", false).userValue;
+                    disableRunning = new MESMSetting<bool>("Disable Running", "Stops the player from being able to run", false).userValue;
                     // Read Item Settings Variables
                     infiniteFireExtinguisherFuel = new MESMSetting<bool>("Infinite Fire Extinguisher Fuel", "Fire extinguishers will have infinite fuel", false).userValue;
                     flareLifetime = new MESMSetting<float>("Flare Lifetime", "Sets the time that flares burn after being shot out of a flare gun", 10).userValue;
@@ -1403,6 +1406,10 @@ namespace MonstrumExtendedSettingsMod
                     bruteChaseSpeedBuff = UsageRandomiser(20f);
                     bruteChaseSpeedBuffMultiplier = NumberRandomiser(1.35f);
                     applyChaseSpeedBuffToAllMonsters = UsageRandomiser(10f);
+                    bruteFireShroud = UsageRandomiser(15f);
+                    giveAllMonstersAFireShroud = UsageRandomiser(3f);
+                    fireShroudRadius = NumberRandomiser(2f);
+                    fireBlastRadius = NumberRandomiser(16f);
                     overpoweredHunter = UsageRandomiser(15f);
                     aggressiveHunter = UsageRandomiser(5f);
                     fiendFlickerMin = NumberRandomiser(3f);
@@ -1415,9 +1422,6 @@ namespace MonstrumExtendedSettingsMod
                     giveAllMonstersASmokeShroud = UsageRandomiser(3f);
                     smokeShroudRadius = NumberRandomiser(8f);
                     smokeShroudDangerRadiusFactor = NumberRandomiser(0.75f);
-                    giveAllMonstersAFireShroud = UsageRandomiser(3f);
-                    fireShroudRadius = NumberRandomiser(2f);
-                    fireBlastRadius = NumberRandomiser(16f);
 
                     // Randomise Gamemode Settings
                     darkShip = UsageRandomiser(15f);
@@ -2058,6 +2062,20 @@ namespace MonstrumExtendedSettingsMod
                         References.Monster.AddComponent<FireShroud>();
                     }
                 }
+                else if (bruteFireShroud)
+                {
+                    if (ModSettings.startedWithMMM)
+                    {
+                        foreach (GameObject bruteGameObject in ManyMonstersMode.brutes)
+                        {
+                            bruteGameObject.AddComponent<FireShroud>();
+                        }
+                    }
+                    else if (References.Monster.GetComponent<Monster>().MonsterType == Monster.MonsterTypeEnum.Brute)
+                    {
+                        References.Monster.AddComponent<FireShroud>();
+                    }
+                }
 
                 if (monstersSearchRandomly)
                 {
@@ -2139,6 +2157,21 @@ namespace MonstrumExtendedSettingsMod
                                 References.Player.transform.rotation = monsterSpawnerTransform.rotation;
                             }
                         }
+                    }
+                }
+
+                if (ModSettings.extendedJumpCooldown)
+                {
+                    if (ModSettings.enableMultiplayer)
+                    {
+                        foreach (NewPlayerClass newPlayerClass in MultiplayerMode.newPlayerClasses)
+                        {
+                            newPlayerClass.Motor.jumpTime *= 2f;
+                        }
+                    }
+                    else
+                    {
+                        References.PlayerClass.Motor.jumpTime *= 2f;
                     }
                 }
 
@@ -3401,6 +3434,10 @@ namespace MonstrumExtendedSettingsMod
             public static bool bruteChaseSpeedBuff;
             public static float bruteChaseSpeedBuffMultiplier;
             public static bool applyChaseSpeedBuffToAllMonsters;
+            public static bool bruteFireShroud;
+            public static bool giveAllMonstersAFireShroud;
+            public static float fireShroudRadius;
+            public static float fireBlastRadius;
             public static bool overpoweredHunter;
             public static bool aggressiveHunter;
             public static float fiendFlickerMin;
@@ -3420,9 +3457,6 @@ namespace MonstrumExtendedSettingsMod
             public static bool giveAllMonstersASmokeShroud;
             public static float smokeShroudRadius;
             public static float smokeShroudDangerRadiusFactor;
-            public static bool giveAllMonstersAFireShroud;
-            public static float fireShroudRadius;
-            public static float fireBlastRadius;
             public static string sparkyDifficultyPreset;
             public static float sparkyChaseFactor;
             public static float sparkyMaxChaseFactorIncreaseFromBuff;
@@ -3526,6 +3560,8 @@ namespace MonstrumExtendedSettingsMod
             public static List<float> playerMovementSpeedMultiplier;
             private static float customPlayerScale;
             public static bool unlockPlayerHead;
+            public static bool extendedJumpCooldown;
+            public static bool disableRunning;
 
             // Item Settings Variables
             public static bool infiniteFireExtinguisherFuel;

@@ -290,6 +290,11 @@ namespace MonstrumExtendedSettingsMod
                     On.FiendMindAttack.AttackCheck += new On.FiendMindAttack.hook_AttackCheck(HookFiendMindAttackAttackCheck);
                     On.FiendMindAttack.ChangeTimers += new On.FiendMindAttack.hook_ChangeTimers(HookFiendMindAttackChangeTimers);
                 }
+
+                if (!ModSettings.enableMultiplayer)
+                {
+                    On.NewPlayerClass.ButtonInput += new On.NewPlayerClass.hook_ButtonInput(HookNewPlayerClassButtonInput);
+                }
             }
 
             /*
@@ -5521,7 +5526,7 @@ namespace MonstrumExtendedSettingsMod
             // Fire Shroud Fire Blast Version
             private static void HookMChasingStateDoDoorCheck(On.MChasingState.orig_DoDoorCheck orig, MChasingState mChasingState, bool _overwrite)
             {
-                if (ModSettings.giveAllMonstersAFireShroud)
+                if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute))
                 {
                     if (!mChasingState.sinceDoorCheck.timerStarted || _overwrite)
                     {
@@ -6749,6 +6754,18 @@ namespace MonstrumExtendedSettingsMod
                 while (Vector3.Distance(monsterPosition, randomPosition) > 25f);
                 return randomPosition;
                 */
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @NewPlayerClass
+
+            private static void HookNewPlayerClassButtonInput(On.NewPlayerClass.orig_ButtonInput orig, NewPlayerClass newPlayerClass)
+            {
+                orig.Invoke(newPlayerClass);
+                if (ModSettings.disableRunning)
+                {
+                    newPlayerClass.playerRunning = false;
+                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
