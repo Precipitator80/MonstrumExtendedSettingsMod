@@ -16,6 +16,7 @@ namespace MonstrumExtendedSettingsMod
             private static readonly string AUTHOR_IDENTIFIER = "Author";
             private static readonly string DIFFICULTY_IDENTIFIER = "Difficulty";
             private static readonly string VERSION_IDENTIFIER = "Version";
+            private static readonly string DESCRIPTION_IDENTIFIER = "Description";
             private static readonly string REFERENCE_LINE = "Setting" + SEPARATOR + "Custom Value";
             private static readonly string COMPLETION_TIMES_FILE_PATH = "challengeCompletionTimes.txt"; // Check if file exists and create it.
             //public static readonly string TIME_FORMAT = "hh\\:mm\\:ss\\.ff";
@@ -35,6 +36,13 @@ namespace MonstrumExtendedSettingsMod
                 stringBuilder.Append(SEPARATOR);
                 stringBuilder.Append(challenge.difficulty);
                 stringBuilder.Append("\n");
+                if (!challenge.description.Equals(Challenge.defaultString))
+                {
+                    stringBuilder.Append(DESCRIPTION_IDENTIFIER);
+                    stringBuilder.Append(SEPARATOR);
+                    stringBuilder.Append(challenge.description);
+                    stringBuilder.Append("\n");
+                }
                 stringBuilder.Append(VERSION_IDENTIFIER);
                 stringBuilder.Append(SEPARATOR);
                 stringBuilder.Append(ExtendedSettingsModScript.VERSION_WITH_TEXT);
@@ -97,6 +105,10 @@ namespace MonstrumExtendedSettingsMod
                         {
                             challenge.difficulty = settingNameAndValue[1];
                         }
+                        else if (settingNameAndValue[0].Equals(DESCRIPTION_IDENTIFIER))
+                        {
+                            challenge.description = settingNameAndValue[1].Replace("\\n", "\n");
+                        }
                         else if (settingNameAndValue[0].Equals(VERSION_IDENTIFIER))
                         {
                             challenge.version = settingNameAndValue[1];
@@ -123,11 +135,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         string settingName = settingNameAndValue[0];
                         string settingValue = settingNameAndValue[1];
-                        MESMSettingCompact mESMSettingCompact = new MESMSettingCompact(settingName, settingValue);
-                        if (mESMSettingCompact.fullSetting != null)
-                        {
-                            challenge.settings.Add(mESMSettingCompact);
-                        }
+                        challenge.settings.Add(new MESMSettingCompact(settingName, settingValue));
                     }
                     else
                     {
@@ -210,6 +218,7 @@ namespace MonstrumExtendedSettingsMod
             public string difficulty = defaultString;
             public string version = defaultString;
             public TimeSpan completionTime = TimeSpan.MaxValue;
+            public string description = defaultString;
             public List<MESMSettingCompact> settings = new List<MESMSettingCompact>();
             public string filePath = defaultString;
 
@@ -252,7 +261,7 @@ namespace MonstrumExtendedSettingsMod
         {
             public string name;
             public string value;
-            public MESMSetting fullSetting;
+            private MESMSetting fullSetting;
 
             public MESMSettingCompact(string name, string value)
             {
@@ -281,12 +290,17 @@ namespace MonstrumExtendedSettingsMod
 
             public bool ApplySetting()
             {
-                if (fullSetting != null && fullSetting.settingsButton != null)
+                if (Valid())
                 {
                     fullSetting.settingsButton.SetText(value);
                     return true;
                 }
                 return false;
+            }
+
+            public bool Valid()
+            {
+                return fullSetting != null && fullSetting.settingsButton != null;
             }
         }
     }
