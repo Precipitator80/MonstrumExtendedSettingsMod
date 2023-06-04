@@ -1659,26 +1659,114 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookEscapeRoute(On.EscapeRoute.orig_OnInteract orig, EscapeRoute escapeRoute)
             {
+                // Record the final time when an escape attempt is made to stop lag from the checks affecting the time.
+                float finalTime = float.MaxValue;
                 if (ModSettings.useSpeedrunTimer)
                 {
-                    float finalTime = ModSettings.speedrunTimer.TimeElapsed;
-                    ModSettings.speedrunTimer.StopTimer();
-                    ModSettings.finalTime = Mathf.FloorToInt(finalTime / 60f).ToString() + ":" + (finalTime % 60f).ToString("00.000000");
-                    Debug.Log("Speedrun timer when exiting ship: " + ModSettings.finalTime + ". This occurred at " + DateTime.Now + " local / " + DateTime.UtcNow + " UTC");
-                    if (ModSettings.currentChallenge != null)
+                    finalTime = ModSettings.speedrunTimer.TimeElapsed;
+                }
+
+                // Check whether the escape route type is allowed by the mod settings.
+                if (EscapeRouteTypeAllowed(escapeRoute.escapeRouteType))
+                {
+                    // Check whether the number of routes completed matches the required count by the mod settings if this is set to a non-standard number.
+                    if (ModSettings.escapeRoutesToWin > 1)
                     {
-                        ChallengeParser.UpdateChallengeTime(ModSettings.currentChallenge, TimeSpan.FromSeconds((double)finalTime));
+                        int routesCompleted = 0;
+
+                        EscapeLifeRaft[] escapeLifeRafts = FindObjectsOfType<EscapeLifeRaft>();
+                        if (escapeLifeRafts != null)
+                        {
+                            bool canEscape = false;
+                            if (ModSettings.escapeRoutesToWin == 3)
+                            {
+                                // If doing 100%, ensure all life rafts have been readied.
+                                canEscape = true;
+                                foreach (EscapeLifeRaft escapeLifeRaft in escapeLifeRafts)
+                                {
+                                    if (!escapeLifeRaft.canEscape)
+                                    {
+                                        canEscape = false;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // If not doing 100%, just check whether one life raft has been readied.
+                                foreach (EscapeLifeRaft escapeLifeRaft in escapeLifeRafts)
+                                {
+                                    if (escapeLifeRaft.canEscape)
+                                    {
+                                        canEscape = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (canEscape)
+                            {
+                                routesCompleted++;
+                            }
+                        }
+
+                        HelicopterVictory helicopterVictory = FindObjectOfType<HelicopterVictory>();
+                        if (helicopterVictory != null && helicopterVictory.defendTask.Completed && helicopterVictory.lockTask.Completed && helicopterVictory.cableTask.Completed)
+                        {
+                            routesCompleted++;
+                        }
+
+                        Submarine submarine = FindObjectOfType<Submarine>();
+                        if (submarine != null && submarine.subReleased)
+                        {
+                            routesCompleted++;
+                        }
+
+                        if (routesCompleted < ModSettings.escapeRoutesToWin)
+                        {
+                            return;
+                        }
                     }
+
+                    // Let the player escape. This only occurs when the route checks have passed.
+                    if (ModSettings.useSpeedrunTimer)
+                    {
+                        ModSettings.speedrunTimer.StopTimer();
+                        ModSettings.finalTime = Mathf.FloorToInt(finalTime / 60f).ToString() + ":" + (finalTime % 60f).ToString("00.000000");
+                        Debug.Log("Speedrun timer when exiting ship: " + ModSettings.finalTime + ". This occurred at " + DateTime.Now + " local / " + DateTime.UtcNow + " UTC");
+                        if (ModSettings.currentChallenge != null)
+                        {
+                            ChallengeParser.UpdateChallengeTime(ModSettings.currentChallenge, TimeSpan.FromSeconds((double)finalTime));
+                        }
+                    }
+                    if (ModSettings.debugMode)
+                    {
+                        ModSettings.ShowDebugModeText();
+                    }
+                    if (ModSettings.numberOfMonsters > 1)
+                    {
+                        LevelGeneration.Instance.chosenMonstType = ManyMonstersMode.monsterListMonsterComponents[ManyMonstersMode.ClosestMonsterToPlayer()].MonsterType;
+                    }
+                    orig.Invoke(escapeRoute);
                 }
-                if (ModSettings.debugMode)
+            }
+
+            private static bool EscapeRouteTypeAllowed(EscapeRoute.EscapeRouteType escapeRouteType)
+            {
+                switch (escapeRouteType)
                 {
-                    ModSettings.ShowDebugModeText();
+                    case EscapeRoute.EscapeRouteType.LifeRaft:
+                        {
+                            return !ModSettings.disableLiferaft;
+                        }
+                    case EscapeRoute.EscapeRouteType.Heli:
+                        {
+                            return !ModSettings.disableHelicopter;
+                        }
+                    case EscapeRoute.EscapeRouteType.Submersible:
+                        {
+                            return !ModSettings.disableSubmersible;
+                        }
                 }
-                if (ModSettings.numberOfMonsters > 1)
-                {
-                    LevelGeneration.Instance.chosenMonstType = ManyMonstersMode.monsterListMonsterComponents[ManyMonstersMode.ClosestMonsterToPlayer()].MonsterType;
-                }
-                orig.Invoke(escapeRoute);
+                return false;
             }
 
             /*----------------------------------------------------------------------------------------------------*/
