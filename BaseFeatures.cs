@@ -1755,7 +1755,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     case EscapeRoute.EscapeRouteType.LifeRaft:
                         {
-                            return !ModSettings.disableLiferaft;
+                            return !ModSettings.disableLiferaft || (ModSettings.glowstickHunt && ModSettings.glowstickHuntCounter >= ModSettings.specialGlowsticksRequired);
                         }
                     case EscapeRoute.EscapeRouteType.Heli:
                         {
