@@ -255,13 +255,49 @@ namespace MonstrumExtendedSettingsMod
                 string fullString = string.Format("{0:D2}:{1:D2}:{2:D2}", completionTime.Hours, completionTime.Minutes, completionTime.Seconds);
                 return fullString.Substring(0, fullString.Length - 3);
             }
+
+            public bool MatchesAllSettings()
+            {
+                foreach (MESMSettingCompact challengeSetting in settings)
+                {
+                    if (!(challengeSetting.Valid() && challengeSetting.value == challengeSetting.fullSetting.userValueString))
+                    {
+                        Debug.Log("Challenge discrepancy found! Challenge value " + challengeSetting.value + " for setting " + name + " does not equal set value " + challengeSetting.fullSetting.userValueString + ".");
+                        return false;
+                    }
+                }
+
+                foreach (MESMSetting setting in ModSettings.allSettings)
+                {
+                    if (!ContainsSetting(setting) && !setting.userValueString.Equals(setting.defaultValueString) && setting != ModSettings.currentChallengeNameMESMS)
+                    {
+                        Debug.Log("Challenge discrepancy found! The challenge does not contain the setting " + setting.modSettingsText + ", but the setting's user value " + setting.userValueString + " does not equal default value " + setting.defaultValueString + ".");
+
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public bool ContainsSetting(MESMSetting setting)
+            {
+                foreach (MESMSettingCompact challengeSetting in settings)
+                {
+                    if (challengeSetting.Valid() && challengeSetting.fullSetting == setting)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
 
         public class MESMSettingCompact
         {
             public string name;
             public string value;
-            private MESMSetting fullSetting;
+            public MESMSetting fullSetting;
 
             public MESMSettingCompact(string name, string value)
             {

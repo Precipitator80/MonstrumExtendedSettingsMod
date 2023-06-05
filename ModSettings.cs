@@ -288,6 +288,7 @@ namespace MonstrumExtendedSettingsMod
                     modSettingsStringBuilder.Append("\n----------------------------------------------------------------------------------------------------");
                     File.WriteAllLines("modSettings.txt", modSettingsStringBuilder.ToString().Split(new string[] { "\n" }, System.StringSplitOptions.None));
                 }
+                ModSettings.ChallengeCheck();
                 Debug.Log("Saved settings successfully");
             }
 
@@ -1289,67 +1290,7 @@ namespace MonstrumExtendedSettingsMod
                         playerMovementSpeedDynamicMultiplier.Add(playerMovementSpeedStartMultiplier);
                         staminaTimer.Add(0f);
                     }
-                    currentChallenge = null;
-                    if (!currentChallengeNameMESMS.userValue.Equals(currentChallengeNameMESMS.defaultValue))
-                    {
-                        if (ChallengesList.challenges == null)
-                        {
-                            ChallengeParser.ReadAllChallenges();
-                        }
-                        if (ChallengesList.challenges.Count > 0)
-                        {
-                            Debug.Log("Challenges found! Checking stored name against found challenges.");
-                            foreach (Challenge challenge in ChallengesList.challenges)
-                            {
-                                if (challenge.name.Equals(currentChallengeNameMESMS.userValue))
-                                {
-                                    Debug.Log("Found challenge with matching name: " + challenge.name + ". Checking all current settings match stored challenge.");
-                                    bool matchingAllSettings = true;
-                                    for (int i = 0; i < allSettings.Count && matchingAllSettings; i++)
-                                    {
-                                        // Ensure any settings that are not equal to their default value are found in the challenge and match its defined value.
-                                        if (!allSettings[i].userValueString.Equals(allSettings[i].defaultValueString) && allSettings[i] != currentChallengeNameMESMS)
-                                        {
-                                            bool matchesSetting = false;
-                                            foreach (MESMSettingCompact challengeSetting in challenge.settings)
-                                            {
-                                                // Pass if the challenge contains the non-default default setting and matches its value.
-                                                if (challengeSetting.name.Equals(allSettings[i].modSettingsText) && challengeSetting.value == allSettings[i].userValueString)
-                                                {
-                                                    matchesSetting = true;
-                                                    break;
-                                                }
-                                            }
-
-                                            if (!matchesSetting)
-                                            {
-                                                Debug.Log("Inconsistent discrepancy found! User value " + allSettings[i].userValueString + " for setting " + allSettings[i].modSettingsText + " does not equal default value " + allSettings[i].defaultValueString + ", but the challenge does not contain this user value.");
-                                            }
-
-                                            // Update the matchesAllSettings variable. If this check failed, the all settings loop will terminate.
-                                            matchingAllSettings = matchesSetting;
-                                        }
-                                    }
-                                    if (matchingAllSettings)
-                                    {
-                                        useSpeedrunTimer = true;
-                                        currentChallenge = challenge;
-                                        Debug.Log("All settings matched! The current challenge is: " + currentChallenge.name + ".");
-                                    }
-                                    else
-                                    {
-                                        Debug.Log("Some settings did not match!");
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                        if (currentChallenge == null && currentChallengeNameMESMS.userValue != currentChallengeNameMESMS.defaultValue)
-                        {
-                            Debug.Log("Resetting the current challenge value as the challenge could not be verified.");
-                            currentChallengeNameMESMS.userValue = currentChallengeNameMESMS.defaultValue;
-                        }
-                    }
+                    ChallengeCheck();
                     // This is already done when creating variables.
                     StringBuilder settingsLogger = new StringBuilder("Listing all settings:\t ");
                     foreach (MESMSetting mESMSetting in allSettings)
@@ -1376,6 +1317,45 @@ namespace MonstrumExtendedSettingsMod
                 {
                     errorWhileReadingModSettings = true;
                     Debug.Log("ERROR WHILE READING MOD SETTINGS:\n" + e.ToString());
+                }
+            }
+
+            public static void ChallengeCheck()
+            {
+                currentChallenge = null;
+                if (!currentChallengeNameMESMS.userValue.Equals(currentChallengeNameMESMS.defaultValue))
+                {
+                    if (ChallengesList.challenges == null)
+                    {
+                        ChallengeParser.ReadAllChallenges();
+                    }
+                    if (ChallengesList.challenges.Count > 0)
+                    {
+                        Debug.Log("Challenges found! Checking stored name against found challenges.");
+                        foreach (Challenge challenge in ChallengesList.challenges)
+                        {
+                            if (challenge.name.Equals(currentChallengeNameMESMS.userValue))
+                            {
+                                Debug.Log("Found challenge with matching name: " + challenge.name + ". Checking all current settings match stored challenge.");
+                                if (challenge.MatchesAllSettings())
+                                {
+                                    useSpeedrunTimer = true;
+                                    currentChallenge = challenge;
+                                    Debug.Log("All settings matched! The current challenge is: " + currentChallenge.name + ".");
+                                }
+                                else
+                                {
+                                    Debug.Log("Some settings did not match!");
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    if (currentChallenge == null && currentChallengeNameMESMS.userValue != currentChallengeNameMESMS.defaultValue)
+                    {
+                        Debug.Log("Resetting the current challenge value as the challenge could not be verified.");
+                        currentChallengeNameMESMS.userValue = currentChallengeNameMESMS.defaultValue;
+                    }
                 }
             }
 
