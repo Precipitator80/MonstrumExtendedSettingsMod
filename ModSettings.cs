@@ -3719,7 +3719,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool showingPriorityText = false;
 
             // Readonly Reference Variables
-            public static readonly string[] monsterNames = new string[] { "Brute", "Hunter", "Fiend", "Sparky" };
+            public static readonly string[] monsterNames = new string[] { "Brute", "Hunter", "Fiend", "Sparky", "SparkyBrute" }; // SparkyBrute is only there for the death screens.
         }
 
     }

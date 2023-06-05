@@ -1435,17 +1435,15 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (deathScreenObject.GetType() == typeof(Texture2D))
                     {
-                        Texture2D loadingScreenTexture = (Texture2D)deathScreenObject;
-
-
-                        Sprite loadingScreenSprite = Sprite.Create(loadingScreenTexture, referenceSprite.rect, referenceSprite.pivot, referenceSprite.pixelsPerUnit);
+                        Texture2D deathScreenTexture = (Texture2D)deathScreenObject;
+                        Sprite loadingScreenSprite = Sprite.Create(deathScreenTexture, referenceSprite.rect, referenceSprite.pivot, referenceSprite.pixelsPerUnit);
 
                         bool added = false;
                         // Check whether the image is a region background.
                         foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
                         {
                             // Check the name of the image against the region enum.
-                            if (loadingScreenTexture.name.Contains(primaryRegionType.ToString()))
+                            if (deathScreenTexture.name.Contains(primaryRegionType.ToString()))
                             {
                                 // Create a list of sprites if there is none for the key.
                                 if (!regionBackgrounds.ContainsKey(primaryRegionType))
@@ -1464,7 +1462,7 @@ namespace MonstrumExtendedSettingsMod
                             foreach (string monsterName in ModSettings.monsterNames)
                             {
                                 // Check the name of the image against the monster names.
-                                if (loadingScreenTexture.name.Contains(monsterName))
+                                if (deathScreenTexture.name.Substring(0, deathScreenTexture.name.Length - 1).Equals(monsterName)) // Assumes there is a one-digit number at the end!
                                 {
                                     // Create a list of sprites if there is none for the key.
                                     if (!monsterFrames.ContainsKey(monsterName))
@@ -1483,7 +1481,7 @@ namespace MonstrumExtendedSettingsMod
                                 foreach (ChooseAttack.PlayerDeath playerDeath in Enum.GetValues(typeof(ChooseAttack.PlayerDeath)))
                                 {
                                     // Check the name of the image against the playerDeath enum.
-                                    if (loadingScreenTexture.name.Contains(playerDeath.ToString()))
+                                    if (deathScreenTexture.name.Contains(playerDeath.ToString()))
                                     {
                                         // Create a list of sprites if there is none for the key.
                                         if (!deathTypeFrames.ContainsKey(playerDeath))
@@ -1519,6 +1517,11 @@ namespace MonstrumExtendedSettingsMod
                 // Duplicate elements inside the canvas - Hosnkobf - https://forum.unity.com/threads/duplicate-elements-inside-the-canvas.612415/ - Accessed 29.04.2023
                 Image frame = Instantiate(deathMenu.backgroundImage, deathMenu.backgroundImage.rectTransform);
                 frame.preserveAspect = true;
+
+                if (deathMonster.Equals("Sparky") && !ModSettings.customSparkyModel)
+                {
+                    deathMonster = "SparkyBrute";
+                }
 
                 if (ModSettings.monsterNames.Contains(deathMonster) && monsterFrames.ContainsKey(deathMonster) && monsterFrames[deathMonster].Count > 0)
                 {
@@ -1575,7 +1578,6 @@ namespace MonstrumExtendedSettingsMod
                 for (int i = 0; i < button.onClick.GetPersistentEventCount(); i++)
                 {
                     UnityEngine.Object ueObject = button.onClick.GetPersistentTarget(i);
-                    Debug.Log(ueObject);
                     if (ueObject.GetType() == typeof(GameObject))
                     {
                         foreach (Text text in ((GameObject)ueObject).GetComponentsInChildren<Text>())
@@ -5429,7 +5431,6 @@ namespace MonstrumExtendedSettingsMod
                 { "FiendPresence",          new String[]{"Having a keen ear will let you hear a monster before seeing it."}},
                 { "Helicopter1",            new String[]{"Refueling the helicopter is an elaborate process that is sure to attract the attention of any monsters nearby."}},
                 { "Helicopter2",            new String[]{"The helicopter can be used for fast transportation to land in case of emergencies."}},
-                { "HisaMaru",               new String[]{"The contents of some of the cargo carried aboard the Hisa Maru remained classified."}},
                 { "Hunter",                 new String[]{"The Hunter is a gelatinous monster that inspects the ship using its ventilation system."}},
                 { "HunterPresence",         new String[]{"Some things on the ship are best not investigated too closely..."}},
                 { "LevelGenerationSettings",new String[]{"The Level Generation Settings allow you to customise the ship's layout in unusual ways."}},
@@ -5438,9 +5439,8 @@ namespace MonstrumExtendedSettingsMod
                 { "Map",                    new String[]{"Maps placed on the walls throughout the ship may help you relocate yourself if lost."}},
                 { "MESMSettings",           new String[]{"The Extended Settings Mod offers hundreds of settings to customise your experience."}},
                 { "Monstrum2Documents",     new String[]{"The future answers many questions left unanswered by the past, but opens many others..."}},
-                { "Monstrum2HisaMaru",      new String[]{"The Hisa Maru survived into the 21st century, severely damaged by time."}},
+                { "Monstrum2HisaMaru",      new String[]{"The Hisa Maru survived into the 21st century, severely damaged by time.", "The contents of some of the cargo carried aboard the Hisa Maru remained classified.", "While other parts of the ship decayed severely over time, the Hisa Maru's upper decks remained in a relatively good condition."}},
                 { "Monstrum2SeaFort",       new String[]{"Genetic research on the monsters continued into the 21st century aboard a seemingly derelict array of sea forts."}},
-                { "Monstrum2UpperDecks",    new String[]{"While other parts of the ship decayed severely over time, the Hisa Maru's upper decks remained in a relatively good condition."}},
                 { "Multiplayer",            new String[]{"The local Multiplayer mode lets you play with friends on your computer. Third party software enables online play."}},
                 { "OverpoweredSteam",       new String[]{"Steam onboard the Hisa Maru can be quite dangerous, especially with additional modifications..."}},
                 { "Sparky",                 new String[]{"Sparky is a monster adept at lurking the player and interfering with the ship's power.", "Sparky was Monstrum's pre-alpha monster, reimagined in the mod with additional abilities."}},
