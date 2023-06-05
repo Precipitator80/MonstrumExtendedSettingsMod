@@ -173,7 +173,7 @@ namespace MonstrumExtendedSettingsMod
                 }
                 else
                 {
-                    File.Create(COMPLETION_TIMES_FILE_PATH);
+                    File.Create(COMPLETION_TIMES_FILE_PATH).Close();
                 }
                 return TimeSpan.MaxValue;
             }
@@ -187,7 +187,7 @@ namespace MonstrumExtendedSettingsMod
                     challenge.completionTime = newTime;
                     if (!File.Exists(COMPLETION_TIMES_FILE_PATH))
                     {
-                        File.Create(COMPLETION_TIMES_FILE_PATH);
+                        File.Create(COMPLETION_TIMES_FILE_PATH).Close();
                     }
                     string[] challengeTimes = File.ReadAllLines(COMPLETION_TIMES_FILE_PATH);
                     if (challengeTimes != null)

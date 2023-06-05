@@ -346,6 +346,15 @@ namespace MonstrumExtendedSettingsMod
                     ContentSizeFitter contentSizeFitter = accreditationText.gameObject.AddComponent<ContentSizeFitter>(); // Fits the text vertically.
                     contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
                 }
+                if (credits.Length == 0)
+                {
+                    GenerateEmptyReference();
+                }
+            }
+
+            public override void GenerateEmptyReference(string text = "No Credits Found")
+            {
+                base.GenerateEmptyReference(text);
             }
         }
 
@@ -627,12 +636,12 @@ namespace MonstrumExtendedSettingsMod
                 });
 
                 // Event to reset text colour when clicking on a button to fix highlights persisting when going in and out of a sub menu.
-                Text text = entryButton.gameObject.GetComponentInChildren<Text>();
-                if (text != null)
+                Text[] text = entryButton.gameObject.GetComponentsInChildren<Text>(); // Checking for multiple ensures this is solely a button and not a larger construct like the challenges list.
+                if (text != null && text.Length == 1)
                 {
                     entryButton.onClick.AddListener(delegate ()
                     {
-                        text.color = referenceCategoryText.color;
+                        text[0].color = referenceCategoryText.color;
                     });
                 }
             }
@@ -1517,6 +1526,13 @@ namespace MonstrumExtendedSettingsMod
                     Destroy(child.gameObject);
                 }
             }
+
+            public virtual void GenerateEmptyReference(string text)
+            {
+                MenuText emptyReferenceMenuText = new MenuText(text, contentGameObject.gameObject.transform, Vector3.zero, false);
+                emptyReferenceMenuText.text.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x, image.rectTransform.sizeDelta.y);
+                emptyReferenceMenuText.text.fontSize = mediumSmallFontSize;
+            }
         }
 
         public class MenuImage : CanvasRenderable
@@ -1684,6 +1700,15 @@ namespace MonstrumExtendedSettingsMod
                     settingName.text.rectTransform.sizeDelta = new Vector2(background.image.rectTransform.sizeDelta.x / 2, settingName.text.rectTransform.sizeDelta.y);
                     settingValue.text.rectTransform.sizeDelta = settingName.text.rectTransform.sizeDelta;
                 }
+                if (settings.Count == 0)
+                {
+                    GenerateEmptyReference();
+                }
+            }
+
+            public override void GenerateEmptyReference(string text = "Challenge Uses Default Settings")
+            {
+                base.GenerateEmptyReference(text);
             }
         }
 
@@ -1741,6 +1766,10 @@ namespace MonstrumExtendedSettingsMod
                         backgroundImageEntryButton.baseColor = DEFAULT_BASE_COLOUR;
                     }
                 }
+                if (challenges.Count == 0)
+                {
+                    GenerateEmptyReference();
+                }
             }
 
             public override void ClearList()
@@ -1760,6 +1789,11 @@ namespace MonstrumExtendedSettingsMod
             {
                 ClearList();
                 PopulateList();
+            }
+
+            public override void GenerateEmptyReference(string text = "No Saved Challenges Found")
+            {
+                base.GenerateEmptyReference(text);
             }
         }
 
