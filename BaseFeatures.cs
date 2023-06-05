@@ -3171,7 +3171,7 @@ namespace MonstrumExtendedSettingsMod
 
             private static bool HookLevelGenerationDoBreak(On.LevelGeneration.orig_DoBreak orig, LevelGeneration levelGeneration)
             {
-                if (ModSettings.useCustomSeed)
+                if (ModSettings.useCustomSeed || ModSettings.consistentLevelGeneration)
                 {
                     return false;
                 }

@@ -171,6 +171,10 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
                 }
+                else
+                {
+                    File.Create(COMPLETION_TIMES_FILE_PATH);
+                }
                 return TimeSpan.MaxValue;
             }
 
