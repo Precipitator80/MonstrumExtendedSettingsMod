@@ -6428,6 +6428,11 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookMRoomSearchOnEnter(On.MRoomSearch.orig_OnEnter orig, MRoomSearch mRoomSearch)
             {
+                if (ModSettings.noHiding)
+                {
+                    ModSettings.ForceChase(mRoomSearch.monster);
+                }
+
                 mRoomSearch.OnMonsterFinishLerp();
 
                 mRoomSearch.playerclass = ((MState)mRoomSearch).monster.player.GetComponent<NewPlayerClass>();

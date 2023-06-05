@@ -1011,7 +1011,7 @@ namespace MonstrumExtendedSettingsMod
                     hideInventory = new MESMSetting<bool>("Hide Inventory", "Hides the inventory display that is usually on the top left of the screen", false).userValue;
                     hideTaskNotifications = new MESMSetting<bool>("Hide Task Notifications", "Hides the task notifications that are usually on the top left of the screen", false).userValue;
                     overpoweredHidingSpots = new MESMSetting<bool>("Overpowered Hiding Spots", "The monsters will not be able to search any hiding spots", false).userValue;
-                    //noHiding = new MESMSetting<bool>("No Hiding", "You will not be invisible to the monster in a hiding spot", false).userValue;
+                    noHiding = new MESMSetting<bool>("No Hiding", "You will not be invisible to the monster in a hiding spot", false).userValue;
                     disableLiferaft = new MESMSetting<bool>("Disable Liferaft", "You will not be able to use the liferaft to escape", false).userValue;
                     disableHelicopter = new MESMSetting<bool>("Disable Helicopter", "You will not be able to use the helicopter to escape", false).userValue;
                     disableSubmersible = new MESMSetting<bool>("Disable Submersible", "You will not be able to use the submersible to escape", false).userValue;
@@ -3553,6 +3553,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool hideInventory;
             public static bool hideTaskNotifications;
             public static bool overpoweredHidingSpots;
+            public static bool noHiding;
             public static bool disableLiferaft;
             public static bool disableHelicopter;
             public static bool disableSubmersible;

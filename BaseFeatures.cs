@@ -60,7 +60,7 @@ namespace MonstrumExtendedSettingsMod
                 HookMonsterStarter();
 
                 // Monster Always Finds You
-                On.MRoomSearch.ChanceOfFindingPlayer += new On.MRoomSearch.hook_ChanceOfFindingPlayer(HookMRoomSearch);
+                On.MRoomSearch.ChanceOfFindingPlayer += new On.MRoomSearch.hook_ChanceOfFindingPlayer(HookMRoomSearchChanceOfFindingPlayer);
 
                 // No Monster Stun Immunity
                 On.AnimationControl.CheckIfStunned += new On.AnimationControl.hook_CheckIfStunned(HookAnimationControlCheckIfStunned);
@@ -299,6 +299,12 @@ namespace MonstrumExtendedSettingsMod
 
                 // Overpowered Hiding Spots
                 new Hook(typeof(Hiding).GetProperty("IsHiding", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetGetMethod(), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookHidingget_IsHiding"), null);
+
+                // No Hiding
+                if (!ModSettings.startedWithMMM)
+                {
+                    On.MRoomSearch.OnEnter += new On.MRoomSearch.hook_OnEnter(HookMRoomSearchOnEnter);
+                }
             }
 
             /*
@@ -6796,13 +6802,22 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @MRoomSearch
 
-            private static float HookMRoomSearch(On.MRoomSearch.orig_ChanceOfFindingPlayer orig, MRoomSearch mRoomSearch)
+            private static float HookMRoomSearchChanceOfFindingPlayer(On.MRoomSearch.orig_ChanceOfFindingPlayer orig, MRoomSearch mRoomSearch)
             {
                 if (ModSettings.monsterAlwaysFindsYou)
                 {
                     return 1f;
                 }
                 return orig.Invoke(mRoomSearch);
+            }
+
+            private static void HookMRoomSearchOnEnter(On.MRoomSearch.orig_OnEnter orig, MRoomSearch mRoomSearch)
+            {
+                if (ModSettings.noHiding)
+                {
+                    ModSettings.ForceChase(mRoomSearch.monster);
+                }
+                orig.Invoke(mRoomSearch);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
