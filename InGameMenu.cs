@@ -293,7 +293,7 @@ namespace MonstrumExtendedSettingsMod
                     if (challengesList == null)
                     {
                         Debug.Log("Created challenges list");
-                        challengesList = new ChallengesList("ChallengesList", gameObject.transform, new Vector3(0f, -175f, 0f));
+                        challengesList = new ChallengesList("ChallengesList", gameObject.transform);
                     }
                     challengesList.RefreshList();
                 });
@@ -311,6 +311,41 @@ namespace MonstrumExtendedSettingsMod
                 newChallengeButton.text.fontSize = smallButtonFontSize;
 
                 ChallengeCreator challengeCreator = new ChallengeCreator(gameObject, Vector3.zero, newChallengeButton.button, this);
+            }
+        }
+
+        private class CreditsSubMenu : SubMenu
+        {
+            public CreditsSubMenu(GameObject parentPage, Button entryButton) : base("Credits", parentPage, Vector3.zero, entryButton)
+            {
+                CreditsList creditsList = new CreditsList(gameObject.transform);
+            }
+        }
+
+        public class CreditsList : MenuList
+        {
+            private static readonly string[] credits = new string[] {
+            "Precipitator#5613\nCreator / Developer of the mod.",
+            "DevilNaiden#3379\nEarly help through discussion about modding the game as well as motivation to develop the mod.",
+            "Nils#3253\nEarly remodelling of Many Monsters Mode to allow for the spawning of infinite monsters instead of just three. Coding the Spawn Monsters In Starter Room feature and Varying Monster Sizes Mode.",
+            "bee#2660\nCreating advanced code to help with specific problems related to Partiality modding.",
+            "ArieX (https://steamcommunity.com/id/ariesalex/)\nThe creation of the Monstrum Multihack, which offered some late inspiration and code examples of additional features used in the M.E.S. mod.",
+            "An anonymous person for creating the foundation for noclip mode and the cloning of items.",
+            "Additional thanks to Team Junkfish for developing Monstrum and allowing mods to be created for it as well as the many members of the Team Junkfish Discord server who provided motivation and aid in testing of the mod."
+            };
+
+            public CreditsList(Transform parentTransform) : base("CreditsList", parentTransform, new Vector3(0f, -165f, 0f), fullRectNoHeaders)
+            {
+                verticalLayoutGroup.padding = new RectOffset(0, 0, 10, 10);
+                verticalLayoutGroup.spacing = 20f;
+                foreach (string accreditation in credits)
+                {
+                    MenuText accreditationText = new MenuText(accreditation, contentGameObject.gameObject.transform, Vector3.zero);
+                    accreditationText.text.rectTransform.sizeDelta = new Vector2(fullRectNoHeaders.x, accreditationText.text.rectTransform.sizeDelta.y);
+
+                    ContentSizeFitter contentSizeFitter = accreditationText.gameObject.AddComponent<ContentSizeFitter>(); // Fits the text vertically.
+                    contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                }
             }
         }
 
@@ -341,6 +376,11 @@ namespace MonstrumExtendedSettingsMod
                 MenuText versionText = new MenuText("V" + VERSION_WITH_TEXT + "\nPrecipitator", exitButtonGO.transform, new Vector3(-250f, 0f, 0f), false);
                 versionText.text.rectTransform.sizeDelta = smallButtonSizeDelta;
                 versionText.text.fontSize /= 2;
+
+                MenuTextButton creditsButton = new MenuTextButton("Credits", gameObject.transform, exitButtonGO.transform, new Vector3(250f, 0f, 0f) + MenuList.clipboardOffset, false);
+                creditsButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
+                creditsButton.text.fontSize /= 2;
+                CreditsSubMenu creditsMenu = new CreditsSubMenu(gameObject, creditsButton.button);
             }
         }
 
@@ -1413,12 +1453,18 @@ namespace MonstrumExtendedSettingsMod
         {
             public static readonly Vector3 clipboardOffset = new Vector3(0f, 0f, -7.5f); // To stop Z-fighting with the clipboard.
             public GameObjectFollowingRectTransform contentGameObject; // GameObject to hold any items displayed in the list.
-            protected GameObjectFollowingRectTransform listGridParent;
-            protected GridLayoutGroup gridLayoutGroup;
+            protected VerticalLayoutGroup verticalLayoutGroup;
+            protected static readonly Vector2 fullRect = new Vector2(5f * referenceOptionImage.rectTransform.sizeDelta.x, 15f * referenceOptionImage.rectTransform.sizeDelta.y);
+            protected static readonly Vector2 fullRectNoHeaders = new Vector2(fullRect.x, 1.1f * fullRect.y);
 
             public MenuList(string name, Transform parentTransform, Vector3 referenceOffset, Vector2 rectSize, string[] headers) : this(name, parentTransform, referenceOffset, rectSize)
             {
+                GameObjectFollowingRectTransform listGridParent = new GameObjectFollowingRectTransform("GridParent", parentTransform, referenceOffset + new Vector3(0f, image.rectTransform.sizeDelta.y / 2f + 15f, 0f));
+                listGridParent.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x, 1.5f * listGridParent.rectTransform.sizeDelta.y);
+
+                GridLayoutGroup gridLayoutGroup = listGridParent.gameObject.AddComponent<GridLayoutGroup>();
                 gridLayoutGroup.cellSize = new Vector2(listGridParent.rectTransform.sizeDelta.x / headers.Length, listGridParent.rectTransform.sizeDelta.y);
+
                 foreach (string header in headers)
                 {
                     MenuText headerMenuText = new MenuText(header, listGridParent.gameObject.transform, Vector3.zero);
@@ -1440,7 +1486,7 @@ namespace MonstrumExtendedSettingsMod
                 contentGameObject = new GameObjectFollowingRectTransform(name, gameObject.transform, Vector3.zero);
                 //contentRect.sizeDelta = new Vector2(0.975f * image.rectTransform.sizeDelta.x, 0.975f * image.rectTransform.sizeDelta.y); // Might not be necessary. y is controlled automatically.
                 contentGameObject.rectTransform.pivot = new Vector2(0.5f, 1f); // Make rect centre at the top centre of the list.
-                VerticalLayoutGroup verticalLayoutGroup = contentGameObject.gameObject.AddComponent<VerticalLayoutGroup>();
+                verticalLayoutGroup = contentGameObject.gameObject.AddComponent<VerticalLayoutGroup>();
                 //verticalLayoutGroup.padding = new RectOffset(10, 10, 10, 10);
                 verticalLayoutGroup.spacing = 5;
                 verticalLayoutGroup.childAlignment = TextAnchor.UpperCenter; // Might not be necessary due to contentSizeFitter.
@@ -1461,10 +1507,6 @@ namespace MonstrumExtendedSettingsMod
                 scrollRect.verticalScrollbar = menuScrollbar.scrollbar;
                 scrollRect.content = contentGameObject.rectTransform;
                 scrollRect.scrollSensitivity = 15;
-
-                listGridParent = new GameObjectFollowingRectTransform("GridParent", parentTransform, referenceOffset + new Vector3(0f, image.rectTransform.sizeDelta.y / 2f + 15f, 0f));
-                listGridParent.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x, 1.5f * listGridParent.rectTransform.sizeDelta.y);
-                gridLayoutGroup = listGridParent.gameObject.AddComponent<GridLayoutGroup>();
             }
 
             public virtual void ClearList()
@@ -1650,7 +1692,7 @@ namespace MonstrumExtendedSettingsMod
             private static readonly string[] headers = new string[] { "Name", "Author", ChallengeCreator.DIFFICULTY_HEADER, "Completed" };
             public static List<Challenge> challenges;
             private List<ChallengeViewer> challengeViewers;
-            public ChallengesList(string name, Transform parentTransform, Vector3 referenceOffset) : base(name, parentTransform, referenceOffset, new Vector2(5f * referenceOptionImage.rectTransform.sizeDelta.x, 15f * referenceOptionImage.rectTransform.sizeDelta.y), headers)
+            public ChallengesList(string name, Transform parentTransform) : base(name, parentTransform, new Vector3(0f, -175f, 0f), fullRect, headers)
             {
                 challengeViewers = new List<ChallengeViewer>();
             }
