@@ -1017,6 +1017,9 @@ namespace MonstrumExtendedSettingsMod
                     disableHelicopter = new MESMSetting<bool>("Disable Helicopter", "You will not be able to use the helicopter to escape", false).userValue;
                     disableSubmersible = new MESMSetting<bool>("Disable Submersible", "You will not be able to use the submersible to escape", false).userValue;
                     escapeRoutesToWin = new MESMSetting<int>("Escape Routes To Win", "The number / percentage of all escape routes you need to fully prepare to win", 1, true, false, 1, 3).userValue;
+                    gravityXComponent = new MESMSetting<float>("Gravity X Acceleration", "Changes the acceleration due to gravity in the x axis", 0f, false).userValue;
+                    gravityYComponent = new MESMSetting<float>("Gravity Y Acceleration", "Changes the acceleration due to gravity in the y axis", -9.81f, false, true).userValue;
+                    gravityZComponent = new MESMSetting<float>("Gravity Z Acceleration", "Changes the acceleration due to gravity in the z axis", 0f, false, true).userValue;
 
                     // Read Player and Item Settings Variables
                     // Read Player Settings Variables
@@ -2162,6 +2165,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
+                Physics.gravity = new Vector3(gravityXComponent, gravityYComponent, gravityZComponent);
                 Debug.Log("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
             }
@@ -3539,6 +3543,10 @@ namespace MonstrumExtendedSettingsMod
             public static bool disableHelicopter;
             public static bool disableSubmersible;
             public static int escapeRoutesToWin;
+            public static float gravityXComponent;
+            public static float gravityYComponent;
+            public static float gravityZComponent;
+
 
 
             // Player and Item Settings Variables
