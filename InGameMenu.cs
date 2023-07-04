@@ -197,18 +197,35 @@ namespace MonstrumExtendedSettingsMod
                 loadButton.button.onClick.AddListener(delegate ()
                 {
                     menuSounds.ButtonClickGoForward();
-                    challenge.ApplyChallenge();
-                    Debug.Log("Loaded challenge: " + challenge.name);
-
-                    string newString = string.Concat("Challenge loaded successfully!\n\n", challenge.name);
-                    if (!string.IsNullOrEmpty(globalWarningBox.text.text))
+                    try
                     {
-                        newString = string.Concat(newString, "\n\n", globalWarningBox.text.text);
-                    }
-                    globalWarningBox.Show(newString);
-                    exitButton.onClick.Invoke();
+                        bool appliedChallenge = challenge.ApplyChallenge();
+                        if (appliedChallenge)
+                        {
+                            Debug.Log("Loaded challenge: " + challenge.name);
 
-                    challengesList.RefreshList();
+                            // Show the warning box with any advice on restarts.
+                            string newString = string.Concat("Challenge loaded successfully!\n\n", challenge.name);
+                            if (!string.IsNullOrEmpty(globalWarningBox.text.text))
+                            {
+                                newString = string.Concat(newString, "\n\n", globalWarningBox.text.text);
+                            }
+                            globalWarningBox.Show(newString);
+
+                            exitButton.onClick.Invoke();
+                            challengesList.RefreshList();
+                        }
+                        else
+                        {
+                            Debug.Log("Failed to apply challenge " + challenge.name + " due to missing setting.");
+                            globalWarningBox.Show(string.Concat("Failed to apply challenge! It contains a setting not in this version of the mod.\nYou can edit the marked settings to play the challenge in this version.\n\n", challenge.name));
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Log("Failed to apply challenge " + challenge.name + " due to other error.\n" + e.ToString());
+                        globalWarningBox.Show(string.Concat("Failed to apply challenge due to an unknown error! Please contact the developer.\n\n", challenge.name));
+                    }
                 });
 
                 // Create a delete button.
@@ -1452,7 +1469,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     button.onClick.AddListener(delegate ()
                     {
-                        image.color = baseColor;
+                        image.color = BaseColour;
                     });
                 }
             }
@@ -1538,9 +1555,11 @@ namespace MonstrumExtendedSettingsMod
         public class MenuImage : CanvasRenderable
         {
             public Image image;
+            private Color baseColour;
+            private Color highlightColour;
             public static Color DEFAULT_BASE_COLOUR;
-            public Color baseColor;
-            private static readonly Color DEFAULT_HIGHLIGHT_COLOUR = new Color(245f / 255f, 210f / 255f, 140f / 255f, 1f);
+            public static readonly Color DEFAULT_HIGHLIGHT_COLOUR = new Color(245f / 255f, 210f / 255f, 140f / 255f, 1f);
+            private MenuImageEventHandler menuImageEventHandler;
             public MenuImage(string name, Transform parentTransform, Vector3 referenceOffset, bool addColourEvent = false) : base(name, parentTransform, referenceOffset)
             {
                 image = this.gameObject.AddComponent<Image>();
@@ -1550,11 +1569,18 @@ namespace MonstrumExtendedSettingsMod
                 image.material = referenceOptionImage.material;
                 image.color = referenceOptionImage.color;
                 DEFAULT_BASE_COLOUR = referenceOptionImage.color;
-                baseColor = DEFAULT_BASE_COLOUR;
+                baseColour = DEFAULT_BASE_COLOUR;
+                highlightColour = DEFAULT_HIGHLIGHT_COLOUR;
+
 
                 if (addColourEvent)
                 {
-                    EventTrigger trigger = this.gameObject.AddComponent<EventTrigger>();
+                    menuImageEventHandler = this.gameObject.AddComponent<MenuImageEventHandler>();
+                    menuImageEventHandler.Init(image, highlightColour, baseColour);
+                }
+                /*
+                if (addColourEvent)
+                {
                     EventTrigger.Entry pointerEnter = new EventTrigger.Entry();
                     pointerEnter.eventID = EventTriggerType.PointerEnter;
                     pointerEnter.callback.AddListener((eventData) => { image.color = DEFAULT_HIGHLIGHT_COLOUR; });
@@ -1565,6 +1591,59 @@ namespace MonstrumExtendedSettingsMod
                     pointerExit.callback.AddListener((eventData) => { image.color = baseColor; });
                     trigger.triggers.Add(pointerExit);
                 }
+                */
+            }
+
+            // cSharp: getter/setter - Justin Niessner - https://stackoverflow.com/questions/6709072/c-getter-setter - Accessed 04.07.2023
+            public Color BaseColour
+            {
+                get { return baseColour; }
+                set
+                {
+                    baseColour = value;
+                    if (menuImageEventHandler != null)
+                    {
+                        menuImageEventHandler.baseColour = baseColour;
+                    }
+                }
+            }
+
+            public Color HighlightColour
+            {
+                get { return highlightColour; }
+                set
+                {
+                    highlightColour = value;
+                    if (menuImageEventHandler != null)
+                    {
+                        menuImageEventHandler.highlightColour = highlightColour;
+                    }
+                }
+            }
+        }
+
+        // Scroll not working when elements inside have click events - marucu - https://discussions.unity.com/t/solved-scroll-not-working-when-elements-inside-have-click-events/130859 - Accessed 04.07.2023
+        private class MenuImageEventHandler : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+        {
+            private Image image;
+            public Color highlightColour;
+            public Color baseColour;
+
+            public void OnPointerEnter(PointerEventData eventData)
+            {
+                image.color = highlightColour;
+            }
+
+            public void OnPointerExit(PointerEventData eventData)
+            {
+                image.color = baseColour;
+            }
+
+            public void Init(Image image, Color hightlightColour, Color baseColour)
+            {
+                this.image = image;
+                this.highlightColour = hightlightColour;
+                this.baseColour = baseColour;
             }
         }
 
@@ -1759,11 +1838,13 @@ namespace MonstrumExtendedSettingsMod
                     if (ModSettings.currentChallenge != null && challenge.filePath == ModSettings.currentChallenge.filePath)
                     {
                         backgroundImageEntryButton.image.color = ModSettings.SELECTED_CHALLENGE_COLOUR;
-                        backgroundImageEntryButton.baseColor = ModSettings.SELECTED_CHALLENGE_COLOUR;
+                        backgroundImageEntryButton.BaseColour = ModSettings.SELECTED_CHALLENGE_COLOUR;
+                        backgroundImageEntryButton.HighlightColour = ModSettings.SELECTED_CHALLENGE_HIGHLIGHT_COLOUR;
                     }
                     else
                     {
-                        backgroundImageEntryButton.baseColor = DEFAULT_BASE_COLOUR;
+                        backgroundImageEntryButton.BaseColour = DEFAULT_BASE_COLOUR;
+                        backgroundImageEntryButton.HighlightColour = DEFAULT_HIGHLIGHT_COLOUR;
                     }
                 }
                 if (challenges.Count == 0)

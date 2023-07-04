@@ -5420,7 +5420,7 @@ namespace MonstrumExtendedSettingsMod
             private static readonly Dictionary<string, string[]> customLoadingScreenMessages = new Dictionary<string, string[]>()
             {
                 { "AlphaBunks",             new String[]{"The structure of the Hisa Maru was changed a lot throughout construction."}},
-                { "Brute",                  new String[]{"The Brute is hulk of a monser that will excel in a direct chase."}},
+                { "Brute",                  new String[]{"The Brute is a hulk of a monster that will excel in a direct chase."}},
                 { "BrutePresence",          new String[]{"Paying attention to your surroundings can mean the difference between life and death."}},
                 { "Clock",                  new String[]{"A good sense of time can help you to predict a monster's next action."}},
                 { "ColourSettings",         new String[]{"The Colour Settings allow you to customise the appearance of the Hisa Maru."}},

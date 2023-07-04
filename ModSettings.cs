@@ -3673,7 +3673,8 @@ namespace MonstrumExtendedSettingsMod
             public static bool showSpeedrunTimerOnScreen;
             public static bool logDebugText;
             public static MESMSettingString currentChallengeNameMESMS;
-            public static readonly Color SELECTED_CHALLENGE_COLOUR = Color.green;
+            public static readonly Color SELECTED_CHALLENGE_COLOUR = new Color(0.13f, 0.64f, 0.4f); // Excel Darker Green
+            public static readonly Color SELECTED_CHALLENGE_HIGHLIGHT_COLOUR = new Color(0.2f, 0.77f, 0.51f); // Excel Lighter Green
 
             // Other Variables Used In Code
             // Early Declaration Needed
