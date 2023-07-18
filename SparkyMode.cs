@@ -198,6 +198,8 @@ namespace MonstrumExtendedSettingsMod
                     /*
                     Debug.Log("Eye Light Position: " + lights[4].transform.position + " | EyeVision Position: " + monster.EyeVision.transform.position + " | LocalPosition: " + monster.EyeVision.transform.localPosition + " | EV GO P: " + monster.EyeVision.gameObject.transform.position + " | EV GO LP: " + monster.EyeVision.gameObject.transform.localPosition);
                     */
+
+                    /*
                     if (ModSettings.sparkyDebugLight)
                     {
                         Light spotlight = monster.EyeVision.gameObject.AddComponent<Light>();
@@ -212,6 +214,7 @@ namespace MonstrumExtendedSettingsMod
                             spotlight.spotAngle = monster.EyeVision.coneAngle;
                         }
                     }
+                    */
 
                     // Set their starting colour.
                     foreach (Light light in lights)
@@ -529,7 +532,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         mChasingState.sinceDoorCheck.StartTimer();
                     }
-                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud &&mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute ))
+                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute))
                     {
                         ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
                     }
@@ -544,7 +547,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         mChasingState.sinceDoorCheck.ResetTimer();
                     }
-                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud &&mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute ))
+                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute))
                     {
                         ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
                     }

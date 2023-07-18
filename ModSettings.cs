@@ -533,8 +533,8 @@ namespace MonstrumExtendedSettingsMod
                     numberOfSparkies = numberOfSparkiesMESM.userValue;
                     customSparkyMusic = new MESMSetting<bool>("Use Custom Sparky Music", "Uses custom music for Sparky by Birdbonanza. If disabled, Brute music is used instead", true, false, true).userValue;
                     customSparkyModel = new MESMSetting<bool>("Use Indev Sparky Model", "Uses a custom model for Sparky made by Naiden with placeholder animations. The monster will not function normally", false, false, true).userValue;
-                    sparkyDebugLight = new MESMSetting<bool>("Use Sparky Debug Light", "Gives Sparky a special secondary light when using the indev model that shows the location and direction of their vision component", false, false, true).userValue;
-                    sparkyDebugLightSmallerAngle = new MESMSetting<bool>("Smaller Debug Light Angle", "Makes the spot angle of the light smaller to make it easier to see exactly where the vision is positioned", false, false, true).userValue;
+                    //sparkyDebugLight = new MESMSetting<bool>("Use Sparky Debug Light", "Gives Sparky a special secondary light when using the indev model that shows the location and direction of their vision component", false, false, true).userValue;
+                    //sparkyDebugLightSmallerAngle = new MESMSetting<bool>("Smaller Debug Light Angle", "Makes the spot angle of the light smaller to make it easier to see exactly where the vision is positioned", false, false, true).userValue;
 
                     useSmokeMonster = false; //new MESMSetting<bool>("Add Smoke Monster To The Game", "Adds a Fiend-like monster to the game that prefers using mysterious smoke to take out the player to direct confrontation. Requires a restart to change", false).userValue;
                     /*
@@ -3402,8 +3402,8 @@ namespace MonstrumExtendedSettingsMod
             public static bool useSparky;
             public static bool customSparkyMusic; // Custom Sparky music.
             public static bool customSparkyModel; // New Sparky with working model but gameplay bugs from animations.
-            public static bool sparkyDebugLight; // Debug Light for Sparky with custom model.
-            public static bool sparkyDebugLightSmallerAngle;
+            // public static bool sparkyDebugLight; // Debug Light for Sparky with custom model.
+            // public static bool sparkyDebugLightSmallerAngle;
             public static bool useSmokeMonster; // Variable that enables the smoke monster code.
             public static bool disableRandomBrute;
             public static bool disableRandomHunter;
