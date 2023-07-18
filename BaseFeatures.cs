@@ -1419,7 +1419,7 @@ namespace MonstrumExtendedSettingsMod
             private static Dictionary<ChooseAttack.PlayerDeath, List<Sprite>> deathTypeFrames; // Death Menu Death Type Frames.
 
             private static PrimaryRegionType deathRegion; // The region the player died in.
-            private static string deathMonster; // The monster the player died to.
+            private static string deathMonster = string.Empty; // The monster the player died to.
             private static ChooseAttack.PlayerDeath deathType; // The death type the player had (non-direct to monster).
 
             private static void LoadDeathScreens()
