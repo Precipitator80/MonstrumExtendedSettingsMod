@@ -1292,16 +1292,16 @@ namespace MonstrumExtendedSettingsMod
             public MenuTextInputField(string name, Transform parentTransform, Vector3 referenceOffset, int maxLength = 0, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText)
             {
                 inputField.contentType = InputField.ContentType.Alphanumeric;
-                inputField.onValidateInput += delegate (string input, int charIndex, char addedChar) { return AvoidComma(addedChar); };
+                inputField.onValidateInput += delegate (string input, int charIndex, char addedChar) { return AvoidSeparator(addedChar); };
                 if (maxLength > 0)
                 {
                     inputField.characterLimit = maxLength;
                 }
             }
 
-            private char AvoidComma(char addedChar)
+            private char AvoidSeparator(char addedChar)
             {
-                return addedChar == ',' ? '\0' : addedChar;
+                return addedChar == ChallengeParser.SEPARATOR ? '\0' : addedChar;
             }
         }
 

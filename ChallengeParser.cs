@@ -10,7 +10,7 @@ namespace MonstrumExtendedSettingsMod
     {
         public static class ChallengeParser
         {
-            private static readonly string SEPARATOR = ",";
+            public static readonly char SEPARATOR = '|';
             private static readonly string CHALLENGE_FOLDER = "Challenges/";
             private static readonly string NAME_IDENTIFIER = "Name";
             private static readonly string AUTHOR_IDENTIFIER = "Author";
@@ -56,7 +56,7 @@ namespace MonstrumExtendedSettingsMod
                     stringBuilder.Append(setting.value);
                 }
                 Directory.CreateDirectory(CHALLENGE_FOLDER); // Create the challenges folder if it does not exist to avoid errors.
-                File.WriteAllText(CHALLENGE_FOLDER + challenge.name + ".txt", stringBuilder.ToString());
+                File.WriteAllText(CHALLENGE_FOLDER + challenge.name.Replace(" ", "_") + ".txt", stringBuilder.ToString());
                 Debug.Log("Saved new challenge: " + challenge.name);
             }
 
@@ -90,7 +90,7 @@ namespace MonstrumExtendedSettingsMod
                 for (int lineNumber = 0; lineNumber < challengeInformation.Length; lineNumber++)
                 {
                     string lineContents = challengeInformation[lineNumber];
-                    string[] settingNameAndValue = lineContents.Split(new string[] { SEPARATOR }, System.StringSplitOptions.None);
+                    string[] settingNameAndValue = lineContents.Split(SEPARATOR);
                     if (settingNameAndValue.Length == 2)
                     {
                         if (settingNameAndValue[0].Equals(NAME_IDENTIFIER))
@@ -130,7 +130,7 @@ namespace MonstrumExtendedSettingsMod
 
                 for (int lineNumber = startLineNumber; lineNumber < challengeInformation.Length; lineNumber++)
                 {
-                    string[] settingNameAndValue = challengeInformation[lineNumber].Split(new string[] { SEPARATOR }, System.StringSplitOptions.None);
+                    string[] settingNameAndValue = challengeInformation[lineNumber].Split(SEPARATOR);
                     if (settingNameAndValue.Length == 2)
                     {
                         string settingName = settingNameAndValue[0];
@@ -158,7 +158,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         foreach (string line in challengeTimes)
                         {
-                            string[] challengeNameAndTime = line.Split(new string[] { SEPARATOR }, System.StringSplitOptions.None);
+                            string[] challengeNameAndTime = line.Split(SEPARATOR);
                             if (challengeNameAndTime.Length == 2 && challengeNameAndTime[0].Equals(name))
                             {
                                 TimeSpan timeSpan;
@@ -194,7 +194,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         for (int lineNumber = 0; lineNumber < challengeTimes.Length; lineNumber++)
                         {
-                            string[] challengeNameAndTime = challengeTimes[lineNumber].Split(new string[] { SEPARATOR }, System.StringSplitOptions.None);
+                            string[] challengeNameAndTime = challengeTimes[lineNumber].Split(SEPARATOR);
                             if (challengeNameAndTime.Length == 2 && challengeNameAndTime[0].Equals(challenge.name))
                             {
                                 challengeTimes[lineNumber] = challengeNameAndTime[0] + SEPARATOR + challenge.completionTime;
