@@ -1035,6 +1035,8 @@ namespace MonstrumExtendedSettingsMod
                     //playerStaminaModeHalfStaminaDuration = (MESMSetting.modSettingsExist ? MESMSetting<float>.FindSetting("Player Stamina Mode Stamina Duration") / 2f : 30f); // Default = 30
                     float playerStaminaModeSpeedPenaltyPercentage = new MESMSetting<float>("Player Stamina Mode Stamina Penalty", "Defines as a percentage how much of a penalty is applied to the running speed of the player when they lose their stamina. The scale is from 0 (running speed) to 100 (walking speed)", 60, true, true, 0, 100).userValue;
                     playerStaminaModeSpeedPenaltyMultiplier = (100f - playerStaminaModeSpeedPenaltyPercentage) / 100f;
+                    playerStaminaModeWalkingRecoveryFactor = new MESMSetting<float>("Player Stamina Mode Walking Recovery Factor", "Defines the rate at which the player's stamina will be recovered when walking", 1, false, true).userValue;
+                    playerStaminaModeStandingRecoveryFactor = new MESMSetting<float>("Player Stamina Mode Standing Recovery Factor", "Defines the rate at which the player's stamina will be recovered when standing still", 3, false, true).userValue;
                     playerMovementSpeedMultiplier = new List<float>();
                     float globalPlayerMovementSpeedMultiplier = new MESMSetting<float>("Player Movement Speed Multiplier", "Only affects horizontal movement", 1).userValue;
                     for (int i = 0; i < NumberOfPlayers - numbersOfMonsterPlayers.Count; i++)
@@ -3558,6 +3560,8 @@ namespace MonstrumExtendedSettingsMod
             public static bool playerStaminaMode;
             public static float playerStaminaModeHalfStaminaDuration;
             public static float playerStaminaModeSpeedPenaltyMultiplier;
+            public static float playerStaminaModeWalkingRecoveryFactor;
+            public static float playerStaminaModeStandingRecoveryFactor;
             public static List<float> playerMovementSpeedMultiplier;
             private static float customPlayerScale;
             public static bool unlockPlayerHead;

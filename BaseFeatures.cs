@@ -905,11 +905,11 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 if (!References.PlayerClass.Motor.Moving)
                                 {
-                                    ModSettings.staminaTimer[i] -= 3 * Time.deltaTime;
+                                    ModSettings.staminaTimer[i] -= ModSettings.playerStaminaModeStandingRecoveryFactor * Time.deltaTime;
                                 }
                                 else
                                 {
-                                    ModSettings.staminaTimer[i] -= Time.deltaTime;
+                                    ModSettings.staminaTimer[i] -= ModSettings.playerStaminaModeWalkingRecoveryFactor * Time.deltaTime;
                                 }
                                 //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.SmoothDamp(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedStartMultiplier, ref staminaSpeed, 3f);
                                 //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.Lerp(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedStartMultiplier, (ModSettings.playerMovementSpeedStartMultiplier - ModSettings.playerMovementSpeedDynamicMultiplier) / 2);
