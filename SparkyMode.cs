@@ -99,9 +99,15 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 // Sparky with Model
-                if (ModSettings.customSparkyModel || ModSettings.customSparkyMusic)
+                if (ModSettings.customSparkyModel)
                 {
-                    SparkyMode.LoadSparkyAssetBundle();
+                    SparkyMode.LoadSparkyModel();
+                }
+
+                // Sparky Music
+                if (ModSettings.customSparkyMusic)
+                {
+                    SparkyMode.LoadSparkyMusic();
                 }
 
                 if (ModSettings.customSparkyModel)
@@ -416,13 +422,13 @@ namespace MonstrumExtendedSettingsMod
             public static GameObject sparkyPrefab;
             public static List<AudioClip> sparkyAudioClips;
 
-            public static void LoadSparkyAssetBundle()
+            public static void LoadSparkyModel()
             {
                 try
                 {
                     if (sparkyPrefab == null)
                     {
-                        UnityEngine.Object[] sparkyAssetBundleObjects = Utilities.LoadAssetBundle("sparky");
+                        UnityEngine.Object[] sparkyAssetBundleObjects = Utilities.LoadAssetBundle("sparkymodel");
 
                         try
                         {
@@ -440,14 +446,45 @@ namespace MonstrumExtendedSettingsMod
                                     {
                                         sparkyAnimatorOCPrefab = (AnimatorOverrideController)sparkyObject;
                                     }
-                                    else if (sparkyObject.GetType() == typeof(AudioClip))
+                                }
+                                catch (Exception e)
+                                {
+                                    Debug.Log("Error while loading Sparky object:\n" + e.ToString());
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            Debug.Log("Error when trying to analyse objects from Sparky Asset Bundle");
+                        }
+                    }
+                }
+                catch
+                {
+                    Debug.Log("Error assigning Sparky Asset Bundle");
+                }
+            }
+
+            public static void LoadSparkyMusic()
+            {
+                try
+                {
+                    if (sparkyAudioClips == null)
+                    {
+                        UnityEngine.Object[] sparkyAssetBundleObjects = Utilities.LoadAssetBundle("sparkymusicbb");
+                        try
+                        {
+                            foreach (UnityEngine.Object sparkyObject in sparkyAssetBundleObjects)
+                            {
+                                Debug.Log("Sparky object from asset bundle is called " + sparkyObject.name + " and has type " + sparkyObject.GetType());
+
+                                try
+                                {
+                                    if (sparkyAudioClips == null)
                                     {
-                                        if (sparkyAudioClips == null)
-                                        {
-                                            sparkyAudioClips = new List<AudioClip>();
-                                        }
-                                        sparkyAudioClips.Add((AudioClip)sparkyObject);
+                                        sparkyAudioClips = new List<AudioClip>();
                                     }
+                                    sparkyAudioClips.Add((AudioClip)sparkyObject);
                                 }
                                 catch (Exception e)
                                 {
