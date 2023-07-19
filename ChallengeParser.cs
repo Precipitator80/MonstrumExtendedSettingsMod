@@ -73,7 +73,11 @@ namespace MonstrumExtendedSettingsMod
                 string[] txtFiles = Directory.GetFiles(CHALLENGE_FOLDER, "*.txt");
                 foreach (string challengeFilePath in txtFiles)
                 {
-                    ChallengesList.challenges.Add(ReadChallenge(challengeFilePath));
+                    Challenge challenge = ReadChallenge(challengeFilePath);
+                    if (challenge != null)
+                    {
+                        ChallengesList.challenges.Add(challenge);
+                    }
                 }
             }
 
@@ -124,7 +128,7 @@ namespace MonstrumExtendedSettingsMod
                 // Ensure the reference line was found.
                 if (startLineNumber == -1)
                 {
-                    Debug.Log("Could not read challenge! Reference line was not found!");
+                    Debug.Log("Could not read challenge with file path '" + challengeFilePath + "'! Reference line was not found!");
                     return null;
                 }
 
@@ -139,7 +143,8 @@ namespace MonstrumExtendedSettingsMod
                     }
                     else
                     {
-                        Debug.Log("Could not read challenge! Challenge was not in correct format!");
+                        Debug.Log("Could not read challenge with file path '" + challengeFilePath + "'! Challenge was not in correct format!");
+                        return null;
                     }
                 }
 
@@ -232,6 +237,7 @@ namespace MonstrumExtendedSettingsMod
                 if (settings == null)
                 {
                     Debug.Log("Settings is null");
+                    throw new NullReferenceException("Current Challenge Settings is null!");
                 }
                 bool appliedAllSettings = true;
                 foreach (MESMSettingCompact setting in settings)
