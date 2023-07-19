@@ -1592,6 +1592,58 @@ namespace MonstrumExtendedSettingsMod
                     ModSettings.skippedMenuScreen = true;
                 }
 
+                if (randomStartRoom)
+                {
+                    // Find all standard rooms.
+                    Room[] allRooms = FindObjectsOfType<Room>();
+                    List<Room> spawnRooms = new List<Room>();
+                    foreach (Room room in allRooms)
+                    {
+                        if (StandardRoom(room))
+                        {
+                            spawnRooms.Add(room);
+                        }
+                    }
+
+                    // Choose a random standard room to spawn in.
+                    if (spawnRooms.Count > 0)
+                    {
+                        Room startRoom = spawnRooms[UnityEngine.Random.Range(0, spawnRooms.Count)];
+
+                        MonsterStarter monsterStarter = References.Monster.GetComponent<Monster>().Starter;
+
+                        // Add Monster Spawn triggers to each of the doors.
+                        foreach (Door door in startRoom.roomDoors)
+                        {
+                            door.gameObject.AddComponent<MonsterStarterDoorCollider>();
+                            door.gameObject.AddComponent<TutorialDoor>();
+                        }
+
+                        Transform monsterSpawnerTransform = startRoom.gameObject.transform.FindChild("MonsterSpawner");
+                        Vector3 spawnPosition = (monsterSpawnerTransform != null) ? monsterSpawnerTransform.transform.position : startRoom.RoomBounds.center;
+
+                        if (ModSettings.enableMultiplayer)
+                        {
+                            foreach (NewPlayerClass newPlayerClass in MultiplayerMode.newPlayerClasses)
+                            {
+                                newPlayerClass.transform.position = spawnPosition;
+                                if (monsterSpawnerTransform != null)
+                                {
+                                    newPlayerClass.transform.rotation = monsterSpawnerTransform.rotation;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            References.Player.transform.position = spawnPosition;
+                            if (monsterSpawnerTransform != null)
+                            {
+                                References.Player.transform.rotation = monsterSpawnerTransform.rotation;
+                            }
+                        }
+                    }
+                }
+
                 if (foggyShip)
                 {
                     // Default Variables: GlobalFog variables: CAMERA_NEAR = 0.03 | CAMERA_FAR = 50 | startDistance = 9 | height = 0 | heightScale = 100 | globalFogColor = RGBA(0.048, 0.059, 0.057, 1.000)
@@ -1722,9 +1774,53 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                if (useCustomDoors && lightlyLockedDoors)
+                if (useCustomDoors)
                 {
-                    UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<Welder>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
+                    if (lightlyLockedDoors)
+                    {
+                        UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<Welder>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
+                    }
+                    else if (ModSettings.customDoorTypeNumber == 3)
+                    {
+                        // Give fuses to power doors and unlock any starting room doors.
+                        foreach (Door door in Door.playerDetRoom.GetRoom.roomDoors.ToArray())
+                        {
+                            FuseBoxManager.instance.SetupFuse(door.GetComponent<SpawnFuseBoxNearby>().newFuseBox.GetComponentInChildren<FuseBox>());
+                        }
+
+                        Transform referenceTransform = References.Player.transform;
+                        if (!randomStartRoom)
+                        {
+                            referenceTransform = FindObjectOfType<TutorialFlashlight>().transform;
+                        }
+
+                        for (int i = 0; i < 30; i++)
+                        {
+                            UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<Fuse>().gameObject, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
+                        }
+                    }
+                    else if (ModSettings.customDoorTypeNumber == 5)
+                    {
+                        // Destroy starter room door to prevent softlock and give egg timers to open other barricaded doors.
+                        foreach (Door door in Door.playerDetRoom.GetRoom.roomDoors.ToArray())
+                        {
+                            if (door.DoorType == Door.doorType.Barricaded && door.attached)
+                            {
+                                door.RipOffDoor2();
+                            }
+                        }
+
+                        Transform referenceTransform = References.Player.transform;
+                        if (!randomStartRoom)
+                        {
+                            referenceTransform = FindObjectOfType<TutorialFlashlight>().transform;
+                        }
+
+                        for (int i = 0; i < 30; i++)
+                        {
+                            UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<EggTimer>().gameObject, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
+                        }
+                    }
                 }
 
                 if (spawnWithLiferaftItems || spawnWithHelicopterItems || spawnWithSubmersibleItems)
@@ -2100,58 +2196,6 @@ namespace MonstrumExtendedSettingsMod
                     Reticule.Instance.ReticuleScale = Vector3.zero;
                 }
 
-                if (randomStartRoom)
-                {
-                    // Find all standard rooms.
-                    Room[] allRooms = FindObjectsOfType<Room>();
-                    List<Room> spawnRooms = new List<Room>();
-                    foreach (Room room in allRooms)
-                    {
-                        if (StandardRoom(room))
-                        {
-                            spawnRooms.Add(room);
-                        }
-                    }
-
-                    // Choose a random standard room to spawn in.
-                    if (spawnRooms.Count > 0)
-                    {
-                        Room startRoom = spawnRooms[UnityEngine.Random.Range(0, spawnRooms.Count)];
-
-                        MonsterStarter monsterStarter = References.Monster.GetComponent<Monster>().Starter;
-
-                        // Add Monster Spawn triggers to each of the doors.
-                        foreach (Door door in startRoom.roomDoors)
-                        {
-                            door.gameObject.AddComponent<MonsterStarterDoorCollider>();
-                            door.gameObject.AddComponent<TutorialDoor>();
-                        }
-
-                        Transform monsterSpawnerTransform = startRoom.gameObject.transform.FindChild("MonsterSpawner");
-                        Vector3 spawnPosition = (monsterSpawnerTransform != null) ? monsterSpawnerTransform.transform.position : startRoom.RoomBounds.center;
-
-                        if (ModSettings.enableMultiplayer)
-                        {
-                            foreach (NewPlayerClass newPlayerClass in MultiplayerMode.newPlayerClasses)
-                            {
-                                newPlayerClass.transform.position = spawnPosition;
-                                if (monsterSpawnerTransform != null)
-                                {
-                                    newPlayerClass.transform.rotation = monsterSpawnerTransform.rotation;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            References.Player.transform.position = spawnPosition;
-                            if (monsterSpawnerTransform != null)
-                            {
-                                References.Player.transform.rotation = monsterSpawnerTransform.rotation;
-                            }
-                        }
-                    }
-                }
-
                 if (ModSettings.extendedJumpCooldown)
                 {
                     if (ModSettings.enableMultiplayer)
@@ -2175,7 +2219,7 @@ namespace MonstrumExtendedSettingsMod
             static bool StandardRoom(Room room)
             {
                 // Ensure the room has doors, is not in the cargo hold and is not the bridge (has two doors that are not part of the bridge).
-                if (room.roomDoors.Count > 0 && room.PrimaryRegion != PrimaryRegionType.CargoHold && !room.name.Contains("Bridge"))
+                if (room.roomDoors.Count > 0 && room.PrimaryRegion != PrimaryRegionType.CargoHold && !room.name.Contains("Bridge") && !room.name.Contains("Lwd_Engine_Catwalk_TJDoor"))
                 {
                     foreach (DoorData doorData in room.roomDoorData)
                     {
