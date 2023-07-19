@@ -280,8 +280,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     return "Uncompleted";
                 }
-                string fullString = string.Format("{0:D2}:{1:D2}:{2:D2}", completionTime.Hours, completionTime.Minutes, completionTime.Seconds);
-                return fullString.Substring(0, fullString.Length - 3);
+                return string.Format("{0:D2}:{1:D2}:{2:D2}", completionTime.Hours, completionTime.Minutes, completionTime.Seconds);
             }
 
             public bool MatchesAllSettings()
