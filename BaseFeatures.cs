@@ -2121,6 +2121,27 @@ namespace MonstrumExtendedSettingsMod
                     {
                         flareObject.monster.gameObject.SetActive(false);
                     }
+                    if (ModSettings.flaresTeleportMonsters)
+                    {
+                        for (int i = 0, maxAttempts = 5; i < maxAttempts; i++)
+                        {
+                            Vector3 spawnPosition = LevelGeneration.Instance.MonsterSpawnPoints[UnityEngine.Random.Range(0, LevelGeneration.Instance.MonsterSpawnPoints.Count)].transform.position;
+                            Vector3 closestPlayerPosition;
+                            if (ModSettings.enableMultiplayer)
+                            {
+                                closestPlayerPosition = MultiplayerMode.newPlayerClasses[MultiplayerMode.ClosestPlayerToThis(spawnPosition)].transform.position;
+                            }
+                            else
+                            {
+                                closestPlayerPosition = References.Player.transform.position;
+                            }
+                            if (Vector3.Distance(closestPlayerPosition, spawnPosition) < 16f || i == maxAttempts - 1)
+                            {
+                                flareObject.monster.gameObject.transform.position = spawnPosition;
+                                break;
+                            }
+                        }
+                    }
                 }
                 else
                 {

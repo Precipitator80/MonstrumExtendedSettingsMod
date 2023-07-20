@@ -1054,6 +1054,7 @@ namespace MonstrumExtendedSettingsMod
                     spawnWithFlareGun = new MESMSetting<bool>("Spawn With Flare Gun", "Gives the player a flare gun at the start of the game", false, false, true).userValue;
                     overpoweredFlareGun = new MESMSetting<bool>("Overpowered Flare Gun", "Removes the cooldown from the flare gun, lets it fire infinite flares and stun any monster", false, false, true).userValue;
                     flaresDisableMonsters = new MESMSetting<bool>("Flares Disable Monsters", "Disables any monster hit by a flare", false, false, true).userValue;
+                    flaresTeleportMonsters = new MESMSetting<bool>("Flares Teleport Monsters", "Teleports any monster hit by a flare away from the player", false, false, true).userValue;
                     infiniteFlashlightPower = new MESMSetting<bool>("Infinite Flashlight Power", "Flashlights will have infinite power", false).userValue;
                     infiniteFuelCanFuel = new MESMSetting<bool>("Infinite Fuel Can Fuel", "Fuel cans will have infinite fuel", false).userValue;
                     fireDurationMultiplier = new MESMSetting<float>("Fire Duration Multiplier", "Changes the duration of how long fires burn", 1, true, true).userValue;
@@ -3638,6 +3639,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool spawnWithFlareGun;
             public static bool overpoweredFlareGun;
             public static bool flaresDisableMonsters;
+            public static bool flaresTeleportMonsters;
             public static bool infiniteFlashlightPower;
             public static bool infiniteFuelCanFuel;
             public static float fireDurationMultiplier;
