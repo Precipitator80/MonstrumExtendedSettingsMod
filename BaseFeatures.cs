@@ -2135,9 +2135,10 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 closestPlayerPosition = References.Player.transform.position;
                             }
-                            if (Vector3.Distance(closestPlayerPosition, spawnPosition) < 16f || i == maxAttempts - 1)
+                            if (Vector3.Distance(closestPlayerPosition, spawnPosition) > 16f || i == maxAttempts - 1)
                             {
                                 flareObject.monster.gameObject.transform.position = spawnPosition;
+                                ModSettings.ForceStopChase(flareObject.monster);
                                 break;
                             }
                         }
@@ -2153,6 +2154,24 @@ namespace MonstrumExtendedSettingsMod
             {
                 orig.Invoke(flareObject);
                 flareObject.MaxLifeTime = ModSettings.flareLifetime;
+                if (ModSettings.overpoweredFlareGun)
+                {
+                    flareObject.gameObject.AddComponent<DestroyAfterTime>().Trigger(flareObject.MaxLifeTime);
+                }
+            }
+
+            private class DestroyAfterTime : MonoBehaviour
+            {
+                public void Trigger(float time)
+                {
+                    this.StartCoroutine(DestructionTimer(time));
+                }
+
+                private IEnumerator DestructionTimer(float time)
+                {
+                    yield return new WaitForSeconds(time);
+                    Destroy(this.gameObject);
+                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
