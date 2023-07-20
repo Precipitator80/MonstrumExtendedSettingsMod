@@ -1113,7 +1113,8 @@ namespace MonstrumExtendedSettingsMod
                     diverseItemSpawns = new MESMSetting<bool>("Diverse Item Spawns", "Allows items to be spawned in regions they may not previously have been found", false, false, true).userValue;
                     spawnItemsAnywhere = new MESMSetting<bool>("Spawn Items Anywhere", "Allows items to be spawned in any valid spot", false, false, true).userValue;
                     randomStartRoom = new MESMSetting<bool>("Random Start Room", "Lets the player spawn in a random room in the ship rather than the standard start room", false).userValue;
-
+                    noPitTraps = new MESMSetting<bool>("No Pit Traps", "Destroys all pit traps when starting the game", false).userValue;
+                    noDoors = new MESMSetting<bool>("No Doors", "Destroys all doors except the submersible room doors when starting the game", false).userValue;
 
                     // Read Colour Settings Variables
                     modSettingsErrorString = "Colour";
@@ -2208,6 +2209,25 @@ namespace MonstrumExtendedSettingsMod
                     else
                     {
                         References.PlayerClass.Motor.jumpTime *= 2f;
+                    }
+                }
+
+                if (noPitTraps)
+                {
+                    foreach (PitTrap pitTrap in FindObjectsOfType<PitTrap>())
+                    {
+                        pitTrap.DestroyFloor(string.Empty);
+                    }
+                }
+
+                if (noDoors)
+                {
+                    foreach (Door door in FindObjectsOfType<Door>())
+                    {
+                        if (door.attached && door.DoorType != Door.doorType.Sealed)
+                        {
+                            door.RipOffDoor2();
+                        }
                     }
                 }
 
@@ -3672,6 +3692,8 @@ namespace MonstrumExtendedSettingsMod
             public static bool diverseItemSpawns;
             public static bool spawnItemsAnywhere;
             public static bool randomStartRoom;
+            public static bool noPitTraps;
+            public static bool noDoors;
             public static bool experimentalShipExtension = false;
 
 
