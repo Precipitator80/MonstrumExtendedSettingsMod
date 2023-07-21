@@ -187,7 +187,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 Debug.Log("New time is " + newTime);
                 Debug.Log("Current completion time is " + challenge.completionTime);
-                if (newTime < challenge.completionTime)
+                if (newTime != TimeSpan.Zero && newTime < challenge.completionTime)
                 {
                     challenge.completionTime = newTime;
                     if (!File.Exists(COMPLETION_TIMES_FILE_PATH))
