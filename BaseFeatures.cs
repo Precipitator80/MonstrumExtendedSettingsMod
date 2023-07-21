@@ -7906,6 +7906,40 @@ namespace MonstrumExtendedSettingsMod
                         inventoryItem.itemName = "Smoke Grenade";
                         // Updating the material colour only changes the colour when not glowing, i.e. no glowstick / flashlight nearby, not looking at item directly or when holding in hand.
                         // Updating the Inventory Item's glow shader does not work because colour values are hardcoded into the glow code.
+
+                        if (smokeGrenadeModelPrefab == null)
+                        {
+                            try
+                            {
+                                UnityEngine.Object[] smokeGrenadeUnpacked = Utilities.LoadAssetBundle("smokegrenade");
+                                if (smokeGrenadeUnpacked.Length > 0 && smokeGrenadeUnpacked[0] != null && smokeGrenadeUnpacked[0].GetType() == typeof(GameObject))
+                                {
+                                    smokeGrenadeModelPrefab = (GameObject)smokeGrenadeUnpacked[0];
+                                }
+                            }
+                            catch
+                            {
+                                Debug.Log("Failed to load Smoke Grenade model");
+                            }
+                        }
+                        if (smokeGrenadeModelPrefab != null)
+                        {
+                            GameObject smokeGrenadeModelGO = Instantiate(smokeGrenadeModelPrefab);
+                            smokeGrenadeModelGO.SetActive(true);
+                            smokeGrenadeModelGO.transform.SetParent(smashable.normalGO.transform, false);
+                            MeshRenderer molotovMeshRenderer = smokeGrenadeModelGO.GetComponentInChildren<MeshRenderer>();
+                            inventoryItem.Render.Remove(meshRenderer);
+                            inventoryItem.glowShader.render.Remove(meshRenderer);
+                            meshRenderer.transform.localScale = Vector3.zero;
+
+                            ItemShadow itemShadow = inventoryItem.GetComponentInChildren<ItemShadow>();
+                            inventoryItem.render = new List<MeshRenderer>();
+                            inventoryItem.glowShader.render = new List<MeshRenderer>();
+                            inventoryItem.GetMeshRender();
+                            inventoryItem.glowShader.Start();
+                            itemShadow.render = inventoryItem.GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>();//((MonoBehaviour)itemShadow).GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>(); // Does this do anything?
+
+                        }
                     }
                     else if (ModSettings.addMolotov && randomValue >= 0.67f)
                     {
@@ -7953,6 +7987,7 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            private static GameObject smokeGrenadeModelPrefab;
             private static GameObject molotovModelPrefab;
 
             private static GameObject smokeGrenadePrefab;
@@ -8042,7 +8077,7 @@ namespace MonstrumExtendedSettingsMod
             */
 
             private static GameObject molotovPrefab;
-            private static float molotovDuration = 24f;
+            private static float molotovDuration = 26f;
             private static float molotovParticleStartLifeTime = 3f;
             private static void CreateMolotovPrefab()
             {
@@ -8069,9 +8104,10 @@ namespace MonstrumExtendedSettingsMod
                     // Change the duration of the fire's burning.
                     float duration = molotovDuration;
                     float startLifetime = molotovParticleStartLifeTime;
-                    fuelDecal.flammable.fireFuel = duration;
-                    fuelDecal.flammable.lowFuel = duration;
-                    fuelDecal.maxFuel = duration;
+                    float fireIntensityBuffer = 6f;
+                    fuelDecal.flammable.fireFuel = duration - fireIntensityBuffer;
+                    fuelDecal.flammable.lowFuel = duration - fireIntensityBuffer;
+                    fuelDecal.maxFuel = duration - fireIntensityBuffer;
 
                     // Change the size of the PlayerDamage BoxCollider and rotate it to face correctly.
                     BoxCollider boxCollider = fuelDecal.flammable.fire.GetComponentInChildren<BoxCollider>();
