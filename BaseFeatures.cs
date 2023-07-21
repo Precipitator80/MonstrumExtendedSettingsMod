@@ -6806,35 +6806,34 @@ namespace MonstrumExtendedSettingsMod
             {
                 if (LevelGeneration.Instance.finishedGenerating)
                 {
-                    if (ModSettings.applyChaseSpeedBuffToAllMonsters || (ModSettings.bruteChaseSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute) || (ModSettings.useSparky && movementControl.monster.monsterType.Equals("Sparky")))
+                    FSMState.StateTypes stateType = movementControl.monster.GetComponent<FSM>().Current.typeofState;
+                    float modifiedSpeed = ModSettings.monsterAnimationSpeedMultiplier;
+                    bool applyChaseBuff = stateType == FSMState.StateTypes.Chase && movementControl.AnimationSpeed > 95f && (ModSettings.applyChaseSpeedBuffToAllMonsters || (ModSettings.bruteChaseSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute));
+                    if (applyChaseBuff)
                     {
-                        FSMState.StateTypes stateType = movementControl.monster.GetComponent<FSM>().Current.typeofState;
-                        float sparkySpeedFactor = 1f;
-                        if (movementControl.monster.monsterType.Equals("Sparky"))
+                        modifiedSpeed *= ModSettings.bruteChaseSpeedBuffMultiplier;
+                    }
+
+                    if (ModSettings.useSparky && movementControl.monster.monsterType.Equals("Sparky"))
+                    {
+                        if (stateType == FSMState.StateTypes.Chase)
                         {
-                            if (stateType == FSMState.StateTypes.Chase)
-                            {
-                                sparkySpeedFactor += ModSettings.sparkyChaseFactor;
-                                if (ModSettings.applyChaseSpeedBuffToAllMonsters)
-                                {
-                                    sparkySpeedFactor += ModSettings.bruteChaseSpeedBuffMultiplier - 1f;
-                                }
-                                sparkySpeedFactor += ModSettings.sparkyMaxChaseFactorIncreaseFromBuff * movementControl.monster.GetComponent<SparkyAura>().buffPercentage;
-                                sparkySpeedFactor /= ModSettings.bruteChaseSpeedBuffMultiplier;
-                            }
-                            else
-                            {
-                                sparkySpeedFactor += ModSettings.sparkyMaxSpeedFactorIncreaseFromBuff * movementControl.monster.GetComponent<SparkyAura>().buffPercentage;
-                            }
-                        }
-                        if (movementControl.AnimationSpeed > 95f && stateType == FSMState.StateTypes.Chase)
-                        {
-                            movementControl.animController.monsterAnimation.speed = Mathf.MoveTowards(movementControl.animController.monsterAnimation.speed, ModSettings.bruteChaseSpeedBuffMultiplier * ModSettings.monsterAnimationSpeedMultiplier * sparkySpeedFactor, Time.deltaTime / 15f);
+                            modifiedSpeed += ModSettings.sparkyChaseFactor;
+                            modifiedSpeed += ModSettings.sparkyMaxChaseFactorIncreaseFromBuff * movementControl.monster.GetComponent<SparkyAura>().buffPercentage;
                         }
                         else
                         {
-                            movementControl.animController.monsterAnimation.speed = Mathf.MoveTowards(movementControl.animController.monsterAnimation.speed, ModSettings.monsterAnimationSpeedMultiplier * sparkySpeedFactor, Time.deltaTime / 5f);
+                            modifiedSpeed += ModSettings.sparkyMaxSpeedFactorIncreaseFromBuff * movementControl.monster.GetComponent<SparkyAura>().buffPercentage;
                         }
+                    }
+
+                    if (applyChaseBuff)
+                    {
+                        movementControl.animController.monsterAnimation.speed = Mathf.MoveTowards(movementControl.animController.monsterAnimation.speed, modifiedSpeed, (Time.deltaTime * ModSettings.bruteChaseSpeedBuffRate) / 5f);
+                    }
+                    else
+                    {
+                        movementControl.animController.monsterAnimation.speed = Mathf.MoveTowards(movementControl.animController.monsterAnimation.speed, modifiedSpeed, Time.deltaTime / 5f);
                     }
                 }
             }

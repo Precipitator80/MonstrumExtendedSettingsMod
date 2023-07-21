@@ -581,6 +581,7 @@ namespace MonstrumExtendedSettingsMod
                     customMonsterScale = new MESMSetting<float>("Custom Monster Scale", "Change the scale of a monster. Hitbox and speed scale alongside this. Making a monster too small or too big can impede its movement", 1).userValue;
                     bruteChaseSpeedBuff = new MESMSetting<bool>("Brute Chase Speed Buff", "Lets the Brute gradually go beyond its normal maximum speed when running at its highest speed during a chase, which lets the Brute be faster when running along straight paths", false).userValue;
                     bruteChaseSpeedBuffMultiplier = new MESMSetting<float>("Brute Chase Speed Buff Multiplier", "Defines how much faster than the normal chasing speed the Brute can get", 1.35f, false, true).userValue;
+                    bruteChaseSpeedBuffRate = new MESMSetting<float>("Brute Chase Speed Buff Rate", "Defines how quickly the chase speed buff is applied", 0.33f, false, true).userValue;
                     applyChaseSpeedBuffToAllMonsters = new MESMSetting<bool>("Apply Chase Speed Buff To All Monsters", "Applies the chase speed buff to all monsters, not just the Brute", false, false, true).userValue;
                     bruteFireShroud = new MESMSetting<bool>("Brute Fire Shroud", "Gives Brute a fire shroud that keeps fire around it and lets it perform a fire blast", false).userValue;
                     giveAllMonstersAFireShroud = new MESMSetting<bool>("Give All Monsters A Fire Shroud", "Gives all monsters a fire shroud, not just the Brute", false).userValue;
@@ -3491,6 +3492,7 @@ namespace MonstrumExtendedSettingsMod
             public static float customMonsterScale;
             public static bool bruteChaseSpeedBuff;
             public static float bruteChaseSpeedBuffMultiplier;
+            public static float bruteChaseSpeedBuffRate;
             public static bool applyChaseSpeedBuffToAllMonsters;
             public static bool bruteFireShroud;
             public static bool giveAllMonstersAFireShroud;
