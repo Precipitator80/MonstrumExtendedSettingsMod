@@ -56,7 +56,7 @@ namespace MonstrumExtendedSettingsMod
                     stringBuilder.Append(setting.value);
                 }
                 Directory.CreateDirectory(CHALLENGE_FOLDER); // Create the challenges folder if it does not exist to avoid errors.
-                File.WriteAllText(CHALLENGE_FOLDER + challenge.name.Replace(" ", "_") + ".txt", stringBuilder.ToString());
+                File.WriteAllText(CHALLENGE_FOLDER + challenge.name.Replace(" ", "_").Replace("+", "_Plus") + ".txt", stringBuilder.ToString());
                 Debug.Log("Saved new challenge: " + challenge.name);
             }
 
