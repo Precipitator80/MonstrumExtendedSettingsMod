@@ -62,27 +62,35 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
+      <Private>False</Private>
       <HintPath>References\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="HOOKS-Assembly-CSharp">
+      <Private>False</Private>
       <HintPath>References\HOOKS-Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="MonoMod">
+      <Private>False</Private>
       <HintPath>References\MonoMod.exe</HintPath>
     </Reference>
     <Reference Include="MonoMod.RuntimeDetour">
+      <Private>False</Private>
       <HintPath>References\MonoMod.RuntimeDetour.dll</HintPath>
     </Reference>
     <Reference Include="Partiality">
+      <Private>False</Private>
       <HintPath>References\Partiality.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
+      <Private>False</Private>
       <HintPath>References\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
+      <Private>False</Private>
       <HintPath>References\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-UnityScript-firstpass">
+      <Private>False</Private>
       <HintPath>References\Assembly-UnityScript-firstpass.dll</HintPath>
     </Reference>
   </ItemGroup>

@@ -19,7 +19,8 @@
                 //"/p:OutputPath='C:/Program Files (x86)/Steam/steamapps/common/Monstrum/Mods'", // Remote / Strathclyde computer
                 //"/p:OutputPath=\"F:/SteamLibrary/steamapps/common/Monstrum/Mods\"", // Bueckeburg computer
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "/consoleloggerparameters:NoSummary",
+                "/p:DebugType=None" // Don't build pdb.
             ],
             "problemMatcher": []
         }
