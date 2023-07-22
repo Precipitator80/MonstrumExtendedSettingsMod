@@ -1346,7 +1346,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 GameObject electricTrap = Instantiate<GameObject>(electricTrapPrefab, TrapPositionWithOffset(room), Quaternion.identity, room.transform);
 
-                PlayerSlower playerSlower = electricTrap.AddComponent<PlayerSlower>();
+                ElectricTrapSlower playerSlower = electricTrap.AddComponent<ElectricTrapSlower>();
                 playerSlower.slowFactor = customSlowFactor == 0f ? sparkyElectricTrapBaseSlowFactor - maxTrapSlowFactorDecreaseFromSparkyBuff * buffPercentage : customSlowFactor; // This does not act like a percentage due to how the slowing is applied.
                 electricTrap.transform.localScale *= customLocalScale == 0f ? sparkyElectricTrapBaseScaleMultiplier + maxTrapScaleMultiplierIncreaseFromSparkyBuff * buffPercentage : customLocalScale;
                 electricTrap.SetActive(true);
@@ -1434,21 +1434,82 @@ namespace MonstrumExtendedSettingsMod
             }
         }
 
-        class PlayerSlower : MonoBehaviour
+        abstract class PlayerSlower : MonoBehaviour
         {
-            BoxCollider boxCollider;
-            public float slowFactor;
+            protected BoxCollider boxCollider;
+            public float slowFactor = 0.8f;
             List<IEnumerator> slowingProcesses;
             List<int> motorIDs;
-            AudioSource audioSource;
 
-            void Start()
+            protected virtual void Start()
             {
                 boxCollider = gameObject.AddComponent<BoxCollider>();
-                boxCollider.size = new Vector3(1.25f, 0.25f, 1.25f);
                 boxCollider.isTrigger = true;
+                boxCollider.size = new Vector3(1.25f, 0.25f, 1.25f);
+
                 slowingProcesses = new List<IEnumerator>();
                 motorIDs = new List<int>();
+            }
+
+            void OnTriggerEnter(Collider _collider)
+            {
+                if (_collider.name.Contains("humanBody"))
+                {
+                    //Debug.Log("Slowing down player through OnTriggerEnter!");
+                    PlayerMotor playerMotor = _collider.gameObject.GetComponentInParent<NewPlayerClass>().Motor;
+                    IEnumerator slowingProcess = SlowPlayer(playerMotor);
+                    slowingProcesses.Add(slowingProcess);
+                    motorIDs.Add(playerMotor.GetInstanceID());
+                    base.StartCoroutine(slowingProcess);
+                }
+            }
+
+            protected virtual void OnTriggerExit(Collider _collider)
+            {
+                if (_collider.name.Contains("humanBody"))
+                {
+                    //Debug.Log("Stopping player slow down through OnTriggerExit!");
+                    PlayerMotor playerMotor = _collider.gameObject.GetComponentInParent<NewPlayerClass>().Motor;
+                    int motorID = playerMotor.GetInstanceID();
+                    for (int i = 0; i < slowingProcesses.Count; i++)
+                    {
+                        if (motorID == motorIDs[i])
+                        {
+                            base.StopCoroutine(slowingProcesses[i]); // How to stop coroutine with parameters? - Bunny83 - https://answers.unity.com/questions/891122/how-to-stop-coroutine-with-parameters.html - Accessed 20.08.2022
+                            slowingProcesses.RemoveAt(i);
+                            motorIDs.RemoveAt(i);
+                        }
+                    }
+                }
+            }
+
+            protected virtual IEnumerator SlowPlayer(PlayerMotor playerMotor)
+            {
+                for (; ; )
+                {
+                    // This reduces much more over time than intended:
+                    /*
+                    Player movement stats are: x = 0, z = 4.4. With a slow factor of 0.75 this should give 0 and 3.3
+                    Player movement stats are: x = 0, z = 3.749148. With a slow factor of 0.75 this should give 0 and 2.811861
+                    Player movement stats are: x = 0, z = 3.190663. With a slow factor of 0.75 this should give 0 and 2.392997
+                    Player movement stats are: x = 0, z = 2.817843. With a slow factor of 0.75 this should give 0 and 2.113382
+                    Player movement stats are: x = 0, z = 2.564431. With a slow factor of 0.75 this should give 0 and 1.923323
+                    */
+                    //Debug.Log("Player movement stats are: x = " + playerMotor.xMovement + ", z = " + playerMotor.zMovement + ". With a slow factor of " + slowFactor + " this should give " + playerMotor.xMovement * slowFactor + " and " + playerMotor.zMovement * slowFactor);
+                    playerMotor.xMovement *= slowFactor;
+                    playerMotor.zMovement *= slowFactor;
+                    yield return null;
+                }
+            }
+        }
+
+        class ElectricTrapSlower : PlayerSlower
+        {
+            AudioSource audioSource;
+
+            protected override void Start()
+            {
+                base.Start();
                 audioSource = gameObject.AddComponent<AudioSource>();
                 AudioSource monsterSource = References.Monster.GetComponent<Monster>().AudSource;
                 monsterSource.CopyTo(audioSource);
@@ -1473,54 +1534,63 @@ namespace MonstrumExtendedSettingsMod
                     //AudioSystem.PlaySound("Noises/Atmosphere/Buzzes", audioSource);
                 }
             }
+        }
 
-            void OnTriggerEnter(Collider _collider)
+        class SlowAura : PlayerSlower
+        {
+            protected override void Start()
+            {
+                base.Start();
+                float radius = ModSettings.slowAuraRange;
+                boxCollider.size = new Vector3(radius, 0.75f, radius);
+            }
+
+            protected override void OnTriggerExit(Collider _collider)
             {
                 if (_collider.name.Contains("humanBody"))
                 {
-                    //Debug.Log("Slowing down player through OnTriggerEnter!");
+                    base.OnTriggerExit(_collider);
+
                     PlayerMotor playerMotor = _collider.gameObject.GetComponentInParent<NewPlayerClass>().Motor;
-                    IEnumerator slowingProcess = SlowPlayer(playerMotor);
-                    slowingProcesses.Add(slowingProcess);
-                    motorIDs.Add(playerMotor.GetInstanceID());
-                    base.StartCoroutine(slowingProcess);
+                    base.StartCoroutine(RemoveMindAttackEffect(playerMotor.gameObject.GetComponentInChildren<MindAttackEffect>()));
                 }
             }
 
-            void OnTriggerExit(Collider _collider)
+            IEnumerator RemoveMindAttackEffect(MindAttackEffect playerMindAttackEffect)
             {
-                if (_collider.name.Contains("humanBody"))
+                float lastStrength = playerMindAttackEffect.strength;
+                while (playerMindAttackEffect.strength > 0f && playerMindAttackEffect.strength == lastStrength)
                 {
-                    //Debug.Log("Stopping player slow down through OnTriggerExit!");
-                    PlayerMotor playerMotor = _collider.gameObject.GetComponentInParent<NewPlayerClass>().Motor;
-                    int motorID = playerMotor.GetInstanceID();
-                    for (int i = 0; i < slowingProcesses.Count; i++)
-                    {
-                        if (motorID == motorIDs[i])
-                        {
-                            base.StopCoroutine(slowingProcesses[i]); // How to stop coroutine with parameters? - Bunny83 - https://answers.unity.com/questions/891122/how-to-stop-coroutine-with-parameters.html - Accessed 20.08.2022
-                            slowingProcesses.RemoveAt(i);
-                            motorIDs.RemoveAt(i);
-                        }
-                    }
+                    playerMindAttackEffect.strength = Mathf.Clamp(playerMindAttackEffect.strength - Time.deltaTime, 0f, 1f);
+                    lastStrength = playerMindAttackEffect.strength;
+                    yield return null;
+                }
+                if (playerMindAttackEffect.strength == 0f)
+                {
+                    playerMindAttackEffect.enabled = false;
                 }
             }
 
-            IEnumerator SlowPlayer(PlayerMotor playerMotor)
+            protected override IEnumerator SlowPlayer(PlayerMotor playerMotor)
             {
+                MindAttackEffect playerMindAttackEffect = playerMotor.gameObject.GetComponentInChildren<MindAttackEffect>();
+                float lastStrength = 0f;
                 for (; ; )
                 {
-                    // This reduces much more over time than intended:
-                    /*
-                    Player movement stats are: x = 0, z = 4.4. With a slow factor of 0.75 this should give 0 and 3.3
-                    Player movement stats are: x = 0, z = 3.749148. With a slow factor of 0.75 this should give 0 and 2.811861
-                    Player movement stats are: x = 0, z = 3.190663. With a slow factor of 0.75 this should give 0 and 2.392997
-                    Player movement stats are: x = 0, z = 2.817843. With a slow factor of 0.75 this should give 0 and 2.113382
-                    Player movement stats are: x = 0, z = 2.564431. With a slow factor of 0.75 this should give 0 and 1.923323
-                    */
-                    //Debug.Log("Player movement stats are: x = " + playerMotor.xMovement + ", z = " + playerMotor.zMovement + ". With a slow factor of " + slowFactor + " this should give " + playerMotor.xMovement * slowFactor + " and " + playerMotor.zMovement * slowFactor);
-                    playerMotor.xMovement *= slowFactor;
-                    playerMotor.zMovement *= slowFactor;
+                    // y = mx + c = (1 - slowfactor) * distance from centre + slowfactor = 0.2x + 0.8 // The line goes from 1 down to the slow factor (default 0.8).
+                    float distanceFactor = Mathf.Clamp((Vector3.Distance(playerMotor.transform.position, this.transform.position) / boxCollider.size.x), 0f, 1f);
+                    float rangedSlowFactor = (1f - slowFactor) * distanceFactor + slowFactor;
+                    playerMotor.xMovement *= rangedSlowFactor;
+                    playerMotor.zMovement *= rangedSlowFactor;
+
+                    float distanceInverse = 1f - distanceFactor;
+                    if (playerMindAttackEffect.strength < distanceInverse || playerMindAttackEffect.strength == lastStrength) // Only update if the distanceInverse is greater or other factors are not influencing the strength.
+                    {
+                        playerMindAttackEffect.enabled = true;
+                        playerMindAttackEffect.strength = distanceInverse;
+                    }
+                    lastStrength = playerMindAttackEffect.strength;
+
                     yield return null;
                 }
             }

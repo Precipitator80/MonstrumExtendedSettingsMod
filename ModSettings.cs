@@ -599,7 +599,11 @@ namespace MonstrumExtendedSettingsMod
                     fiendDoorTeleportation = new MESMSetting<bool>("Fiend Door Teleportation", "Lets the Fiend teleport through doors", false).userValue;
                     applyDoorTeleportationToAllMonsters = new MESMSetting<bool>("Apply Door Teleportation To All Monsters", "Lets all monsters teleport through doors, not just the Fiend", false, false, true).userValue;
                     //letAllMonstersLockDoors = new MESMSetting<bool>("Let All Monsters Lock Doors", "Lets all monsters lock doors when chasing the player like the Fiend does", false).userValue; // Didn't work because door smoke requires a Fiend to be loaded.
-                    giveAllMonstersAFiendAura = new MESMSetting<bool>("Give All Monsters A Fiend Aura", "Gives all monsters a Fiend Aura to disrupt lights like the Fiend does", false).userValue;
+                    giveAllMonstersAFiendAura = new MESMSetting<bool>("Give All Monsters A Fiend Aura", "Gives all monsters a Fiend aura to disrupt lights like the Fiend does", false).userValue;
+                    giveFiendASlowAura = new MESMSetting<bool>("Give Fiend A Slow Aura", "Gives Fiend an aura that slows any players nearby", false).userValue;
+                    slowAuraRange = new MESMSetting<float>("Slow Aura Range", "The overall range of the slow aura", 16f, false, true).userValue;
+                    slowAuraMaxSlowFactor = new MESMSetting<float>("Slow Aura Maximum Slow Factor", "The maximum slowing that the slow aura exerts when close to the Fiend (1 is normal speed)", 0.1f, false, true).userValue;
+                    giveAllMonstersASlowAura = new MESMSetting<bool>("Give All Monsters A Slow Aura", "Gives all monsters a slow aura, not just the Fiend", false, false, true).userValue;
                     monstersSearchRandomly = new MESMSetting<bool>("Monsters Search Randomly", "Monsters search the ship randomly instead of always going near the player. Alerting the monster will still cause it to go to your position", false).userValue;
                     alternatingMonstersMode = new MESMSetting<bool>("Alternating Monsters Mode", "A variation of Many Monsters Mode. Instead of having all monsters active on the map at once, this setting will switch the monsters in and out throughout the round up to a limit. Requires Many Monsters Mode to be active", false).userValue;
                     numberOfAlternatingMonsters = new MESMSetting<int>("Number Of Alternating Monsters", "The number of monsters to have active in Alternating Monsters Mode at one time", 1, true, true).userValue;
@@ -2090,6 +2094,35 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
+                if (giveAllMonstersASlowAura)
+                {
+                    if (ModSettings.startedWithMMM)
+                    {
+                        foreach (GameObject monsterGameObject in ManyMonstersMode.monsterList)
+                        {
+                            monsterGameObject.AddComponent<SlowAura>();
+                        }
+                    }
+                    else
+                    {
+                        References.Monster.AddComponent<SlowAura>();
+                    }
+                }
+                else if (giveFiendASlowAura)
+                {
+                    if (ModSettings.startedWithMMM)
+                    {
+                        foreach (GameObject fiendGameObject in ManyMonstersMode.fiends)
+                        {
+                            fiendGameObject.AddComponent<SlowAura>();
+                        }
+                    }
+                    else if (References.Monster.GetComponent<Monster>().MonsterType == Monster.MonsterTypeEnum.Fiend)
+                    {
+                        References.Monster.AddComponent<SlowAura>();
+                    }
+                }
+
                 if (giveAllMonstersASmokeShroud || smokyShip)
                 {
                     SmokeShroud.allSmokeShrouds = new List<SmokeShroud>();
@@ -3511,6 +3544,10 @@ namespace MonstrumExtendedSettingsMod
             public static bool applyDoorTeleportationToAllMonsters;
             // public static bool letAllMonstersLockDoors;
             public static bool giveAllMonstersAFiendAura;
+            public static bool giveFiendASlowAura;
+            public static float slowAuraRange;
+            public static float slowAuraMaxSlowFactor;
+            public static bool giveAllMonstersASlowAura;
             public static bool monstersSearchRandomly;
             public static bool alternatingMonstersMode;
             public static int numberOfAlternatingMonsters;
