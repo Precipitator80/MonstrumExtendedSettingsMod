@@ -265,7 +265,7 @@ namespace MonstrumExtendedSettingsMod
             private static Material dustMaterial;
             private void Start()
             {
-                float sphereSurfaceArea = 4f * Mathf.PI * (Mathf.Pow(ModSettings.fogDistance, 2f));
+                float sphereSurfaceArea = 4f * Mathf.PI * (Mathf.Pow(ModSettings.fogFarDistance, 2f));
                 GameObject smokeGameObject = SmokeMonster.CreateSmokeEmitter(base.transform, base.transform.position + Vector3.up, Vector3.zero, new Vector3(10f, 10f, 10f), sphereSurfaceArea / 10f);
 
                 ParticleSystemRenderer particleSystemRenderer = smokeGameObject.GetComponent<ParticleSystemRenderer>();
@@ -290,7 +290,7 @@ namespace MonstrumExtendedSettingsMod
 
                 ParticleSystem.ShapeModule shape = particleSystem.shape;
                 shape.shapeType = ParticleSystemShapeType.SphereShell;
-                shape.radius = ModSettings.fogDistance;
+                shape.radius = ModSettings.fogFarDistance;
 
                 ParticleSystem.ColorOverLifetimeModule colorOverLifetime = particleSystem.colorOverLifetime;
                 Gradient gradient = new Gradient();

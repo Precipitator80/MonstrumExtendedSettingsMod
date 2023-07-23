@@ -8044,7 +8044,7 @@ namespace MonstrumExtendedSettingsMod
                     vision.monsterCam = monsterList[MonsterNumber(vision.monster.GetInstanceID())].GetComponentInChildren<Camera>();
                 }
 
-                if (Physics.CheckSphere(((MonoBehaviour)vision).transform.position, 0.01f, vision.raycastMask) || ModSettings.InvisibleMode || (ModSettings.foggyShip && ModSettings.monsterVisionAffectedByFog && ManyMonstersMode.PlayerToMonsterDistance(vision.monster) > ModSettings.fogDistance))
+                if (Physics.CheckSphere(((MonoBehaviour)vision).transform.position, 0.01f, vision.raycastMask) || ModSettings.InvisibleMode || (ModSettings.foggyShip && ModSettings.monsterVisionAffectedByFog && ManyMonstersMode.PlayerToMonsterDistance(vision.monster) > ModSettings.fogFarDistance))
                 {
                     vision.playerTotal = 0f;
                     vision.lightTotal = 0f;

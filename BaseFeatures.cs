@@ -8892,7 +8892,7 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookVisionPlayerVision(On.Vision.orig_PlayerVision orig, Vision vision)
             {
-                if (ModSettings.InvisibleMode || (ModSettings.foggyShip && ModSettings.monsterVisionAffectedByFog && ManyMonstersMode.PlayerToMonsterDistance(vision.monster) > ModSettings.fogDistance))
+                if (ModSettings.InvisibleMode || (ModSettings.foggyShip && ModSettings.monsterVisionAffectedByFog && ManyMonstersMode.PlayerToMonsterDistance(vision.monster) > ModSettings.fogFarDistance))
                 {
                     vision.playerTotal = 0f;
                     vision.lightTotal = 0f;

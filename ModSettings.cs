@@ -1003,7 +1003,9 @@ namespace MonstrumExtendedSettingsMod
                     monsterSpawnSpeedrunSpawnTime = new MESMSetting<float>("Monster Spawn Speedrun", "Spawns a new monster after each time a specified number of seconds has passed. Only starts after all original monsters have spawned. Must start the game with at least 2 monsters or force MMM to be enabled", 0, true).userValue;
                     monsterSpawningLimit = new MESMSetting<float>("Monster Spawning Limit", "Limit the maximum number of monsters that can spawn via settings that spawn additional monsters during the round. 0 means no limit", 10, true).userValue;
                     foggyShip = new MESMSetting<bool>("Foggy Ship", "Creates fog in front of the player, stopping them from seeing what is ahead of them", false).userValue;
-                    fogDistance = new MESMSetting<float>("Fog Distance", "Defines how far away from the player the camera fog will be", 16f, true, true).userValue;
+                    fogNearDistance = new MESMSetting<float>("Fog Near Distance", "How far away from the player the start point of the camera fog is", 8f, true, true).userValue;
+                    fogFarDistance = new MESMSetting<float>("Fog Far Distance", "How far away from the player the end point of the camera fog is", 16f, true, true).userValue;
+                    fogDensity = new MESMSetting<float>("Fog Density", "How quickly the camera fog thickens over distance", 50f, true, true, 0f, 100f).userValue;
                     monsterVisionAffectedByFog = new MESMSetting<bool>("Monster Vision Affected By Fog", "Makes monster vision be affected by the fog, meaning that monsters will not see you from beyond it", false, false, true).userValue;
                     foggyShipAlternativeMode = new MESMSetting<bool>("Foggy Ship Alternative Mode", "Creates particle fog instead of simply not rendering past the fog distance", false, false, true).userValue;
                     smokyShip = new MESMSetting<bool>("Smoky Ship", "Fills the ship's corridors with dangerous smoke when they are unpowered", false).userValue;
@@ -1440,7 +1442,7 @@ namespace MonstrumExtendedSettingsMod
                         monsterSpawnSpeedrunSpawnTime = NumberRandomiser(180f, 0.5f);
                     }
                     foggyShip = UsageRandomiser(1f);
-                    fogDistance = NumberRandomiser(8f);
+                    fogFarDistance = NumberRandomiser(8f);
                     monsterVisionAffectedByFog = UsageRandomiser(10f);
                     foggyShipAlternativeMode = UsageRandomiser(1f);
                     smokyShip = UsageRandomiser(3f);
@@ -1658,17 +1660,18 @@ namespace MonstrumExtendedSettingsMod
                     //string fogStringStart = "Enabled: " + RenderSettings.fog + " - FogColor: " + RenderSettings.fogColor + " - FogDensity: " + RenderSettings.fogDensity + " - FogMode: " + RenderSettings.fogMode.ToString() + " - Start Distance: " + RenderSettings.fogStartDistance + " - End Distance: " + RenderSettings.fogEndDistance;
                     Camera mainCamera = GameObject.Find("CameraMain").GetComponent<Camera>();
                     GlobalFog globalFog = (GlobalFog)FindObjectOfType<QualitySettingsScript>().gameObject.GetComponent("GlobalFog");
-                    globalFog.startDistance = fogDistance / 2f;//(9f / 50f) * fogDistance;
+                    globalFog.startDistance = Mathf.Clamp(fogNearDistance, 0f, fogFarDistance);//fogFarDistance / 2f;//(9f / 50f) * fogDistance;
                     if (UseCustomColour(ModSettings.fogColour))
                     {
                         globalFog.globalFogColor = ConvertColourStringToColour(ModSettings.fogColour);
                     }
                     else
                     {
-                        globalFog.globalFogColor = new Color(0.137f, 0.137f, 0.137f); // PS4//new Color(0.035f, 0.055f, 0.043f); //Switch // It is not grey by default.
+                        //globalFog.globalFogColor = new Color(0.137f, 0.137f, 0.137f); // PS4//new Color(0.035f, 0.055f, 0.043f); //Switch // It is not grey by default.
+                        globalFog.globalFogColor = Color.black;
                     }
-                    globalFog.globalDensity = 50f;
-                    mainCamera.farClipPlane = fogDistance;
+                    globalFog.globalDensity = fogDensity;
+                    mainCamera.farClipPlane = fogFarDistance;
                     mainCamera.clearFlags = CameraClearFlags.Color;
                     mainCamera.backgroundColor = globalFog.globalFogColor;
                     globalFog.fogMode = GlobalFog.FogMode.RelativeYAndDistance;
@@ -1789,10 +1792,13 @@ namespace MonstrumExtendedSettingsMod
                     }
                     else if (ModSettings.customDoorTypeNumber == 3)
                     {
-                        // Give fuses to power doors and unlock any starting room doors.
+                        // Give fuses to power doors and unlock any starting room doors. Run the code manually in case dark ship mode or no pre filled fuse boxes is on.
                         foreach (Door door in Door.playerDetRoom.GetRoom.roomDoors.ToArray())
                         {
-                            FuseBoxManager.instance.SetupFuse(door.GetComponent<SpawnFuseBoxNearby>().newFuseBox.GetComponentInChildren<FuseBox>());
+                            FuseBox fusebox = door.GetComponent<SpawnFuseBoxNearby>().newFuseBox.GetComponentInChildren<FuseBox>();
+                            fusebox.AddFuse();
+                            fusebox.AddPreExistingFuse();
+                            fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
                         }
 
                         Transform referenceTransform = References.Player.transform;
@@ -1801,7 +1807,7 @@ namespace MonstrumExtendedSettingsMod
                             referenceTransform = FindObjectOfType<TutorialFlashlight>().transform;
                         }
 
-                        for (int i = 0; i < 30; i++)
+                        for (int i = 0; i < 40; i++)
                         {
                             UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<Fuse>().gameObject, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
                         }
@@ -1823,7 +1829,7 @@ namespace MonstrumExtendedSettingsMod
                             referenceTransform = FindObjectOfType<TutorialFlashlight>().transform;
                         }
 
-                        for (int i = 0; i < 30; i++)
+                        for (int i = 0; i < 40; i++)
                         {
                             UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<EggTimer>().gameObject, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
                         }
@@ -3629,7 +3635,9 @@ namespace MonstrumExtendedSettingsMod
             public static float monsterSpawnSpeedrunSpawnTime;
             public static float monsterSpawningLimit;
             public static bool foggyShip;
-            public static float fogDistance;
+            public static float fogNearDistance;
+            public static float fogFarDistance;
+            public static float fogDensity;
             public static string fogColour;
             public static bool monsterVisionAffectedByFog;
             public static bool foggyShipAlternativeMode;
