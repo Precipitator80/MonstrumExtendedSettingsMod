@@ -1,0 +1,20 @@
+Name|Insane Hunter
+Author|Ink
+Difficulty|8
+Description|A significantly enhanced version of the Hunter. This slimy creature has become bigger and much more deadly. The number of traps he leaves behind can drive you crazy.
+Version|5.1 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Hunters|1
+Minimum Monster Spawntime (seconds)|30
+Maximum Monster Spawntime (seconds)|60
+Monster Animation Speed Multiplier|1.4
+Monster Movement Speed Multiplier|1.4
+Monster Rotation Speed Multiplier|2
+Custom Monster Scale|1.15
+Overpowered Hunter|True
+Extended Jump Cooldown|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

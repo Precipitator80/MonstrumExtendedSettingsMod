@@ -1,0 +1,7 @@
+Name|No Hiding
+Author|Coolkiller LP
+Difficulty|3
+Description|You are not allowed to hide from the monster. As seen in Naiden Monstrum episode 38.
+Version|6.0 Indev
+Setting|Custom Value
+No Hiding|True

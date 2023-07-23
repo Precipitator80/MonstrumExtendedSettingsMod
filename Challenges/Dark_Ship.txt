@@ -1,0 +1,14 @@
+Name|Dark Ship
+Author|Precipitator
+Difficulty|3
+Description|Fiend has hijacked the ship's power, veiling the entire ship in darkness. Can you restore power to any vital systems and escape Fiend's grasp?
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Fiends|1
+Dark Ship|True
+Powerable Lights|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

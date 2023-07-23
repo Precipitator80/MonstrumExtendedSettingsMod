@@ -1,0 +1,9 @@
+Name|Buffed Brute Trio
+Author|Naiden
+Difficulty|4
+Description|Uses three Brutes with a chase speed buff. As seen in Naiden Monstrum episode 76.
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|3
+Brute Chase Speed Buff|True

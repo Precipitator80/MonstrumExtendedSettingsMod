@@ -1,0 +1,41 @@
+Name|Under Water
+Author|Ink
+Difficulty|6
+Description|The ship sank and your chances of survival sank with you to the bottom. The helicopter won't help you anymore. And although your enemies have lost some of their abilities underwater... They feel great here
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Fiends|3
+Maximum Monster Spawntime (seconds)|30
+Monster Animation Speed Multiplier|2
+Monster Movement Speed Multiplier|2
+Fiend Flicker Minimum Range|-1
+Fiend Flicker Medium Range|-1
+Fiend Flicker Maximum Range|-1
+Fiend Mind Attack Damage Multiplier|0
+Fiend Mind Attack Attack Timer Charge Rate|-1
+Fiend Mind Attack Delay Timer Rate|10000
+Foggy Ship|True
+Foggy Ship Alternative Mode|True
+Disable Helicopter|True
+Gravity Y Acceleration|-5
+Player Movement Speed Multiplier|1.25
+Extended Jump Cooldown|True
+Fire Duration Multiplier|0
+Unsmashables|True
+Flashlight Colour Red Component|130
+Flashlight Colour Green Component|230
+Flashlight Colour Blue Component|230
+Flashlight Intensity Multiplier|1.5
+Flashlight Range Multiplier|2
+Glowstick Colour Red Component|1
+Glowstick Colour Green Component|116
+Glowstick Colour Blue Component|71
+Glowstick Range Multiplier|2
+Ship Generic Lights Colour Red Component|1
+Ship Generic Lights Colour Green Component|190
+Ship Generic Lights Colour Blue Component|180
+Fog Colour Red Component|1
+Fog Colour Green Component|15
+Fog Colour Blue Component|15
+Timescale|0.5

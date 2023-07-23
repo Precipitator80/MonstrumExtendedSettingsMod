@@ -1,0 +1,17 @@
+Name|Midnight Lockdown
+Author|Precipitator
+Difficulty|3
+Description|The ship is in lockdown mode, with almost all doors having been replaced by power locked doors. On top of that, the entire ship has been plunged into darkness... What can go wrong?
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Fiends|1
+Spawn Monster In Starter Room|True
+Dark Ship|True
+Powerable Lights|True
+Use Custom Doors Mode|True
+Custom Door Type|3
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

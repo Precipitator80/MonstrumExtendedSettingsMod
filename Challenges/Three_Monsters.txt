@@ -1,0 +1,10 @@
+Name|Three Monsters
+Author|Precipitator
+Difficulty|4
+Description|Uses all three monsters at once as introduced in mod version 2.0. As seen in Naiden Monstrum episode 62.
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Number of Hunters|1
+Number of Fiends|1

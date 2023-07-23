@@ -1,0 +1,9 @@
+Name|20 Hunters 100%
+Author|Naiden
+Difficulty|10
+Description|Uses twenty Hunters and requires all three escape routes to escape. As seen on Naiden's channel.
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Hunters|20
+Escape Routes To Win|3

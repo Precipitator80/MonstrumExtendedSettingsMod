@@ -1,0 +1,8 @@
+Name|Persistent Seer Monster
+Author|Max und das knosbrige käzien
+Difficulty|5
+Description|The monster will always chase you. As seen in Naiden Monstrum episode 56.
+Version|6.0 Indev
+Setting|Custom Value
+Persistent Monster|True
+Seer Monster|True

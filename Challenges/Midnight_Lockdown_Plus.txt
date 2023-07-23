@@ -1,0 +1,20 @@
+Name|Midnight Lockdown+
+Author|Precipitator
+Difficulty|4
+Description|The inspector has arrived to help Fiend in enforcing the ship's lockdown. As if things couldn't get any worse, a thick fog has surrounded the ship, making it even harder to navigate.
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Hunters|1
+Number of Fiends|1
+Spawn Monster In Starter Room|True
+Dark Ship|True
+Powerable Lights|True
+Use Custom Doors Mode|True
+Custom Door Type|3
+Foggy Ship|True
+Monster Vision Affected By Fog|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

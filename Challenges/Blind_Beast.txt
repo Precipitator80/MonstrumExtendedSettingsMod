@@ -1,0 +1,35 @@
+Name|Blind Beast
+Author|Ink
+Difficulty|6
+Description|Welcome to the darkness in which a blind beast is hunting you. Be careful. Collect all the glowsticks to win and don't get lost in the darkness. Focus on the sounds.\n30% of the gamma is recommended
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Maximum Monster Spawntime (seconds)|30
+Monster Animation Speed Multiplier|2.5
+Monster Rotation Speed Multiplier|2.5
+Glowstick Hunt|True
+Special Glowsticks Required|8
+Special Glowsticks To Create|14
+Foggy Ship|True
+Fog Far Distance|6
+Monster Vision Affected By Fog|True
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
+Player Stamina Mode|True
+Player Stamina Mode Stamina Duration|5
+Player Stamina Mode Stamina Penalty|100
+Player Stamina Mode Walking Recovery Factor|0.75
+Player Stamina Mode Standing Recovery Factor|1.5
+Player Movement Speed Multiplier|1.25
+Extended Jump Cooldown|True
+Infinite Flashlight Power|True
+Starter Room Region|Upper Deck
+Flashlight Intensity Multiplier|2
+Glowstick Intensity Multiplier|0.15
+Fog Colour Red Component|1
+Fog Colour Green Component|1
+Fog Colour Blue Component|1
+Do Not Render Brute's Light|True

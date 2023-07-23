@@ -1,0 +1,12 @@
+Name|Four Monsters
+Author|Precipitator
+Difficulty|5
+Description|In this challenge the vanilla monsters have brought in a reinforcement, with Sparky joining the hunt.
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Number of Hunters|1
+Number of Fiends|1
+Number of Sparkies|1
+Add Sparky To The Game|True

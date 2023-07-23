@@ -1,0 +1,8 @@
+Name|No Running Nor Hiding
+Author|Nauti & FM Frederic & Be App
+Difficulty|5
+Description|You cannot run nor hide. As seen in Naiden Monstrum episode 61.
+Version|6.0 Indev
+Setting|Custom Value
+No Hiding|True
+Disable Running|True

@@ -1,0 +1,20 @@
+Name|Call of Bruty
+Author|Precipitator
+Difficulty|4
+Description|It's the Call of Bruty! Face off against five double speed Brutes using your overpowered flare gun to teleport away any Brutes shot.
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|5
+Minimum Monster Spawntime (seconds)|10
+Maximum Monster Spawntime (seconds)|120
+Monster Animation Speed Multiplier|2
+Unlock Player Head|True
+Flare Lifetime|1
+Spawn With Flare Gun|True
+Overpowered Flare Gun|True
+Flares Teleport Monsters|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

@@ -1,0 +1,10 @@
+Name|Ghosthouse
+Author|EliseyPays
+Difficulty|4
+Description|Uses Dark Ship with three Fiends and one Hunter. As seen in Naiden Monstrum episode 77.
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Hunters|1
+Number of Fiends|3
+Dark Ship|True
