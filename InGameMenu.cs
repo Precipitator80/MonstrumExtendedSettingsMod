@@ -342,13 +342,20 @@ namespace MonstrumExtendedSettingsMod
         public class CreditsList : MenuList
         {
             private static readonly string[] credits = new string[] {
-            "Precipitator#5613\nCreator / Developer of the mod.",
-            "DevilNaiden#3379\nEarly help through discussion about modding the game as well as motivation to develop the mod.",
+            "Precipitator#5613 / precipitator (https://www.youtube.com/@precipitator112)\nCreator / Developer of the mod.",
+            "DevilNaiden#3379 / devilnaiden (https://www.youtube.com/@Naiden)\nCreating the custom Sparky model and its animations. Also early help through discussion about modding the game as well as motivation to develop the mod.",
+            "Ink#4186 / mister_ink (https://www.youtube.com/@justink2868)\nCreating loading backgrounds and death frames as well as pioneering challenge creation.",
             "Nils#3253\nEarly remodelling of Many Monsters Mode to allow for the spawning of infinite monsters instead of just three. Coding the Spawn Monsters In Starter Room feature and Varying Monster Sizes Mode.",
-            "bee#2660\nCreating advanced code to help with specific problems related to Partiality modding.",
+            "Birdbonanza#5821 / birdbonanza\nCreating custom music for Sparky.",
+            "Noba#1916 / _noba\nCreating the molotov and smoke grenade models.",
+            "bee#2660 / bee2660\nCreating advanced code to help with specific problems related to Partiality modding.",
             "ArieX (https://steamcommunity.com/id/ariesalex/)\nThe creation of the Monstrum Multihack, which offered some late inspiration and code examples of additional features used in the M.E.S. mod.",
             "An anonymous person for creating the foundation for noclip mode and the cloning of items.",
-            "Additional thanks to Team Junkfish for developing Monstrum and allowing mods to be created for it as well as the many members of the Team Junkfish Discord server who provided motivation and aid in testing of the mod."
+            "Additional thanks to Team Junkfish for developing Monstrum and allowing mods to be created for it as well as the many members of the Team Junkfish Discord server who provided motivation and aid in testing of the mod.",
+            "Public assets used:",
+            "Split Screen Audio by LunaArgenteus (Paid) (Used for multiplayer)\nhttps://assetstore.unity.com/packages/tools/audio/split-screen-audio-23584",
+            "Green Metal Rust texture by Rob Tuytel (Used for smoke grenade)\nhttps://polyhaven.com/a/green_metal_rust",
+            "Metal material by Rob Tuytel (Used for smoke grenade)\nhttps://ambientcg.com/view?id=Metal021",
             };
 
             public CreditsList(Transform parentTransform) : base("CreditsList", parentTransform, new Vector3(0f, -165f, 0f), fullRectNoHeaders)
@@ -357,7 +364,7 @@ namespace MonstrumExtendedSettingsMod
                 verticalLayoutGroup.spacing = 20f;
                 foreach (string accreditation in credits)
                 {
-                    MenuText accreditationText = new MenuText(accreditation, contentGameObject.gameObject.transform, Vector3.zero);
+                    MenuText accreditationText = new MenuText(accreditation, contentGameObject.gameObject.transform, Vector3.zero, true, false);
                     accreditationText.text.rectTransform.sizeDelta = new Vector2(fullRectNoHeaders.x, accreditationText.text.rectTransform.sizeDelta.y);
 
                     ContentSizeFitter contentSizeFitter = accreditationText.gameObject.AddComponent<ContentSizeFitter>(); // Fits the text vertically.
@@ -1679,10 +1686,17 @@ namespace MonstrumExtendedSettingsMod
         public class MenuText : CanvasRenderable
         {
             public Text text;
-            public MenuText(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name, parentTransform, referenceOffset)
+            public MenuText(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true, bool split = true) : base(name, parentTransform, referenceOffset)
             {
                 text = this.gameObject.AddComponent<Text>();
-                text.text = name.Split(new string[] { "_" }, System.StringSplitOptions.None)[0];
+                if (split)
+                {
+                    text.text = name.Split(new string[] { "_" }, System.StringSplitOptions.None)[0];
+                }
+                else
+                {
+                    text.text = name;
+                }
                 text.font = referenceCategoryText.font;
                 text.color = referenceCategoryText.color;
                 text.fontSize = referenceCategoryText.fontSize;
