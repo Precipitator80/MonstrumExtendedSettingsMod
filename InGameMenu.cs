@@ -344,7 +344,7 @@ namespace MonstrumExtendedSettingsMod
             private static readonly string[] credits = new string[] {
             "Precipitator#5613 / precipitator (https://www.youtube.com/@precipitator112)\nCreator / Developer of the mod.",
             "DevilNaiden#3379 / devilnaiden (https://www.youtube.com/@Naiden)\nCreating the custom Sparky model and its animations. Also early help through discussion about modding the game as well as motivation to develop the mod.",
-            "Ink#4186 / mister_ink (https://www.youtube.com/@justink2868)\nCreating loading backgrounds and death frames as well as pioneering challenge creation.",
+            "Ink#4186 / im_just_ink (https://www.youtube.com/@justink2868)\nCreating loading backgrounds and death frames as well as pioneering challenge creation.",
             "Nils#3253\nEarly remodelling of Many Monsters Mode to allow for the spawning of infinite monsters instead of just three. Coding the Spawn Monsters In Starter Room feature and Varying Monster Sizes Mode.",
             "Birdbonanza#5821 / birdbonanza\nCreating custom music for Sparky.",
             "Noba#1916 / _noba\nCreating the molotov and smoke grenade models.",
