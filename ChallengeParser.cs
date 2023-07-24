@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -79,7 +80,11 @@ namespace MonstrumExtendedSettingsMod
                         ChallengesList.challenges.Add(challenge);
                     }
                 }
+
+                // Order 1,2,10,11 instead 1,10,11,2 - Guffa - https://stackoverflow.com/questions/10228117/order-1-2-10-11-instead-1-10-11-2 - Accessed 24.07.2023
+                ChallengesList.challenges = ChallengesList.challenges.OrderBy(challenge => Int32.Parse(challenge.difficulty)).ToList();
             }
+
 
 
             public static Challenge ReadChallenge(string challengeFilePath)
