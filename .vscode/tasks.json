@@ -22,33 +22,22 @@
             ],
         },
         {
-            "label": "copyAppID",
-            "command": "copy appid.txt 'H:/SteamLibrary/steamapps/common/Monstrum\"'",
+            "label": "moveOutput",
+            "command": "move 'obj/Debug/MonstrumExtendedSettingsMod.dll' 'Monstrum/Mods' -Force",
             "type": "shell"
         },
         {
-            "label": "copyMESMReadme",
-            "command": "copy 'MESM Readme.txt' 'H:/SteamLibrary/steamapps/common/Monstrum\"'",
-            "type": "shell"
-        },
-        {
-            "label": "copyChallenges",
-            "command": "copy -r Challenges/. 'H:/SteamLibrary/steamapps/common/Monstrum\"' -Force",
-            "type": "shell"
-        },
-        {
-            "label": "copyAssetBundles",
-            "command": "copy -r MESMAssetBundles/. 'H:/SteamLibrary/steamapps/common/Monstrum/Mods\"' -Force",
+            "label": "copyMod",
+            "command": "copy -r 'Monstrum' 'H:/SteamLibrary/steamapps/common/' -Force",
             "type": "shell"
         },
         {
             "label": "build",
+            "dependsOrder": "sequence",
             "dependsOn": [
-                "copyAppID",
-                "copyMESMReadme",
-                "copyChallenges",
-                "copyAssetBundles",
-                "generate"
+                "generate",
+                "moveOutput",
+                "copyMod"
             ]
         }
     ]
