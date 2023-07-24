@@ -69,7 +69,7 @@ namespace MonstrumExtendedSettingsMod
                 HookFiendAura();
 
                 // Overpowered Hunter & Aggressive Hunter
-                On.MHuntingState.StateChanges += new On.MHuntingState.hook_StateChanges(HookMHuntingState);
+                On.MHuntingState.StateChanges += new On.MHuntingState.hook_StateChanges(HookMHuntingStateStateChanges);
 
                 // Dark Ship Mode, Powerable Lights & Ship Generic Lights Colour, Intensity Multiplier & Range Multiplier
                 HookGenericLight();
@@ -305,6 +305,13 @@ namespace MonstrumExtendedSettingsMod
                 {
                     On.MRoomSearch.OnEnter += new On.MRoomSearch.hook_OnEnter(HookMRoomSearchOnEnter);
                 }
+
+                // Hunter Maximum Cooldown Time Multiplier
+                On.MHuntingState.SetUpTimes += new On.MHuntingState.hook_SetUpTimes(HookMHuntingStateSetUpTimes);
+
+                // Quiet Hunter
+                On.HunterAnimationsScript.SpawnHunter += new On.HunterAnimationsScript.hook_SpawnHunter(HookHunterAnimationsScriptSpawnHunter);
+                On.MSearchingState.MakeSound += new On.MSearchingState.hook_MakeSound(HookMSearchingStateMakeSound);
             }
 
             /*
@@ -2613,6 +2620,19 @@ namespace MonstrumExtendedSettingsMod
                     return false;
                 }
                 return hiding.hideValue >= 3f;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @HunterAnimationsScript
+
+            private static bool HookHunterAnimationsScriptSpawnHunter(On.HunterAnimationsScript.orig_SpawnHunter orig, HunterAnimationsScript hunterAnimationsScript)
+            {
+                bool spawnedHunter = orig.Invoke(hunterAnimationsScript);
+                if (spawnedHunter && !hunterAnimationsScript.monster.TheSubAlarm.RoomBreached && ModSettings.quietHunter)
+                {
+                    hunterAnimationsScript.StartCoroutine(Utilities.TemporarilyMuteAudioSource(hunterAnimationsScript.monster.AudSource, 7.5f));
+                }
+                return spawnedHunter;
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -6057,7 +6077,17 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @MHuntingState
 
-            private static void HookMHuntingState(On.MHuntingState.orig_StateChanges orig, MHuntingState mHuntingState)
+            private static void HookMHuntingStateSetUpTimes(On.MHuntingState.orig_SetUpTimes orig, MHuntingState mHuntingState)
+            {
+                orig.Invoke(mHuntingState);
+                if (((MState)mHuntingState).monster.GetMonEffectiveness != null && ((MState)mHuntingState).monster.GetMonEffectiveness.HowEffective >= ((MState)mHuntingState).monster.GetMonEffectiveness.EffectBase)
+                {
+                    mHuntingState.maxSinceLastEncounterTime = Mathf.RoundToInt(mHuntingState.maxSinceLastEncounterTime * ModSettings.hunterMaxCooldownTimeMultiplier);
+                    mHuntingState.currentMaxEncounterTime = mHuntingState.maxSinceLastEncounterTime;
+                }
+            }
+
+            private static void HookMHuntingStateStateChanges(On.MHuntingState.orig_StateChanges orig, MHuntingState mHuntingState)
             {
                 if (((MState)mHuntingState).monster.SubEventBeenStarted())
                 {
@@ -6651,6 +6681,17 @@ namespace MonstrumExtendedSettingsMod
                     ModSettings.ForceChase(mRoomSearch.monster);
                 }
                 orig.Invoke(mRoomSearch);
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @MSearchingState
+
+            private static void HookMSearchingStateMakeSound(On.MSearchingState.orig_MakeSound orig, MSearchingState mSearchingState)
+            {
+                if (!ModSettings.quietHunter || mSearchingState.monster.MonsterType != Monster.MonsterTypeEnum.Hunter)
+                {
+                    orig.Invoke(mSearchingState);
+                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/

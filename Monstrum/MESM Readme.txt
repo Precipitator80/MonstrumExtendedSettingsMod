@@ -102,6 +102,8 @@ Added Settings:
 - Use Indev Sparky Model
 - Brute Chase Speed Buff Rate
 - Brute Fire Shroud
+- Hunter Maximum Cooldown Time Multiplier
+- Quiet Hunter
 - Fiend Mind Attack Damage Multiplier
 - Fiend Mind Attack Attack Timer Charge Rate
 - Fiend Mind Attack Attack Timer Decay Rate

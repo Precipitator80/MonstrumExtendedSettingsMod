@@ -1,6 +1,7 @@
 // ~Beginning Of File
 using UnityEngine;
 using System.IO;
+using System.Collections;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -337,6 +338,16 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
                 return null;
+            }
+
+            public static IEnumerator TemporarilyMuteAudioSource(AudioSource audioSource, float time)
+            {
+                if (!audioSource.mute)
+                {
+                    audioSource.mute = true;
+                    yield return new WaitForSeconds(time);
+                    audioSource.mute = false;
+                }
             }
 
             /* Not currently used utilities.

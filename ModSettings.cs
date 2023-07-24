@@ -587,6 +587,8 @@ namespace MonstrumExtendedSettingsMod
                     giveAllMonstersAFireShroud = new MESMSetting<bool>("Give All Monsters A Fire Shroud", "Gives all monsters a fire shroud, not just the Brute", false).userValue;
                     fireShroudRadius = new MESMSetting<float>("Fire Shroud Radius", "Sets the radius of fire shrouds", 2f, false, true).userValue;
                     fireBlastRadius = new MESMSetting<float>("Fire Blast Radius", "Sets the radius of fire blasts", 16f, false, true).userValue;
+                    hunterMaxCooldownTimeMultiplier = new MESMSetting<float>("Hunter Maximum Cooldown Time Multiplier", "Changes how long Hunter may stay in their hunting state before trying to ambush the player", 1f, true).userValue;
+                    quietHunter = new MESMSetting<bool>("Quiet Hunter", "Hunter will make much fewer noises when searching for the player after exiting a vent", false).userValue;
                     overpoweredHunter = new MESMSetting<bool>("Overpowered Hunter", "Hunter always sets up traps when they have a chance to", false).userValue;
                     aggressiveHunter = new MESMSetting<bool>("Aggressive Hunter", "Hunter always comes out immediately after setting up traps", false, false, true).userValue;
                     fiendFlickerMin = new MESMSetting<float>("Fiend Flicker Minimum Range", "Changes the radius of Fiend's aura in which lights are affected the most. The game uses 3 by default", 0).userValue;
@@ -3539,6 +3541,8 @@ namespace MonstrumExtendedSettingsMod
             public static bool giveAllMonstersAFireShroud;
             public static float fireShroudRadius;
             public static float fireBlastRadius;
+            public static float hunterMaxCooldownTimeMultiplier;
+            public static bool quietHunter;
             public static bool overpoweredHunter;
             public static bool aggressiveHunter;
             public static float fiendFlickerMin;
