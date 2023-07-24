@@ -1,0 +1,21 @@
+Name|Casual Mode
+Author|Precipitator
+Difficulty|1
+Description|A more casual version of the base game meant for a more relaxing and easier experience.
+Version|6.0 Indev
+Setting|Custom Value
+Minimum Monster Spawntime (seconds)|120
+Maximum Monster Spawntime (seconds)|180
+Inventory Size|8
+Infinite Fire Extinguisher Fuel|True
+Spawn With Flare Gun|True
+Infinite Flashlight Power|True
+Infinite Fuel Can Fuel|True
+Monster Compass|True
+Better Smashables|True
+Add Smoke Grenade|True
+Add Molotov|True
+Spawn Deactivated Items|True
+No Cameras|True
+No Steam|True
+No Pit Traps|True

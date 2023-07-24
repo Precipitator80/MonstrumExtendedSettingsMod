@@ -1,0 +1,25 @@
+Name|Paddling Pool Mode
+Author|Precipitator
+Difficulty|0
+Description|An extremely casual version of the base game meant for new players.
+Version|6.0 Indev
+Setting|Custom Value
+Minimum Monster Spawntime (seconds)|240
+Maximum Monster Spawntime (seconds)|360
+No Monster Stun Immunity|True
+Monster Movement Speed Multiplier|0.75
+Inventory Size|10
+Player Movement Speed Multiplier|1.1
+Infinite Fire Extinguisher Fuel|True
+Spawn With Flare Gun|True
+Overpowered Flare Gun|True
+Infinite Flashlight Power|True
+Infinite Fuel Can Fuel|True
+Monster Compass|True
+Better Smashables|True
+Add Smoke Grenade|True
+Add Molotov|True
+Spawn Deactivated Items|True
+No Cameras|True
+No Steam|True
+No Pit Traps|True

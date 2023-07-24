@@ -1,0 +1,43 @@
+Name|Apocalypse
+Author|rVuCL
+Difficulty|8
+Description|It's complete darkness. You tried to use the liferaft, but it seems to be completely broken. Exhausted and out of breath, you feel a strange tingling sensation in the air as you scramble to fix one of the other escape routes. On top of that, your usual hiding spots seem to give you a shock when touched, making hiding in them impossible. Good luck!\nMade by rVuCL with edits by Precipitator.
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Sparkies|1
+Add Sparky To The Game|True
+Use Indev Sparky Model|True
+Monsters Search Randomly|True
+Sparky Difficulty Preset|Hard
+Dark Ship|True
+Powerable Lights|True
+Use Custom Doors Mode|True
+Custom Door Type|6
+Foggy Ship|True
+Fog Near Distance|7.5
+Fog Far Distance|15
+Monster Vision Affected By Fog|True
+Foggy Ship Alternative Mode|True
+No Hiding|True
+Disable Liferaft|True
+Player Stamina Mode|True
+Player Stamina Mode Stamina Duration|5
+Player Stamina Mode Stamina Penalty|100
+Player Stamina Mode Walking Recovery Factor|0.75
+Player Stamina Mode Standing Recovery Factor|1.5
+Extended Jump Cooldown|True
+Monster Compass|True
+Better Smashables|True
+Add Smoke Grenade|True
+Spawn Deactivated Items|True
+No Pre-filled Fuse Boxes|True
+Overpowered Steam Vents|True
+Unbreakable Pit Traps|True
+Spawn Additional Engine Room Workshops|True
+Add Deck Zero|True
+Random Start Room|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2
