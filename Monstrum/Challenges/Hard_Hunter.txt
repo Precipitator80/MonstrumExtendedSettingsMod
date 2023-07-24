@@ -1,14 +1,14 @@
-Name|Insane Hunter
+Name|Hard Hunter
 Author|Ink
-Difficulty|7
+Difficulty|5
 Description|A significantly enhanced version of the Hunter. This slimy creature has become bigger and much more deadly. The number of traps he leaves behind can drive you crazy.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1
-Monster Animation Speed Multiplier|1.75
-Monster Movement Speed Multiplier|1.75
-Monster Rotation Speed Multiplier|1.75
+Monster Animation Speed Multiplier|1.4
+Monster Movement Speed Multiplier|1.4
+Monster Rotation Speed Multiplier|2
 Custom Monster Scale|1.15
 Overpowered Hunter|True
 Extended Jump Cooldown|True

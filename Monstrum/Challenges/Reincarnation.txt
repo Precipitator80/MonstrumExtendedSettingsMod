@@ -1,6 +1,6 @@
 Name|Reincarnation
 Author|Ink
-Difficulty|6
+Difficulty|7
 Description|Excellent training before the challenge "Annihilation". You have 3 lives and exactly the same rights for failure or accident.
 Version|6.0 Indev
 Setting|Custom Value

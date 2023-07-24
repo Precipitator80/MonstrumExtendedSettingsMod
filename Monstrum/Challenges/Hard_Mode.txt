@@ -1,15 +1,9 @@
-Name|Insane Trio
+Name|Hard Mode
 Author|Ink
-Difficulty|9
-Description|A game against 3 enhanced versions of monsters that have long been familiar to us. It will be a worthy challenge and incredibly difficult.
+Difficulty|5
+Description|The opportunity to play against one of 3 reinforced (insane) monsters from the other challenges.
 Version|6.0 Indev
 Setting|Custom Value
-Number of Random Monsters|0
-Number of Brutes|1
-Number of Hunters|1
-Number of Fiends|1
-Minimum Monster Spawntime (seconds)|40
-Maximum Monster Spawntime (seconds)|60
 Monster Animation Speed Multiplier|1.4
 Monster Movement Speed Multiplier|1.4
 Monster Rotation Speed Multiplier|1.4
@@ -22,13 +16,10 @@ Overpowered Hunter|True
 Fiend Flicker Minimum Range|1
 Fiend Flicker Medium Range|2
 Fiend Flicker Maximum Range|3
-Fiend Mind Attack Damage Multiplier|100
-Fiend Mind Attack Attack Timer Charge Rate|10
+Fiend Mind Attack Damage Multiplier|50
+Fiend Mind Attack Attack Timer Charge Rate|1.5
 Fiend Mind Attack Attack Timer Decay Rate|0.2
-Fiend Door Teleportation|True
 Give Fiend A Slow Aura|True
-Slow Aura Range|20
-Slow Aura Maximum Slow Factor|0
 Extended Jump Cooldown|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2

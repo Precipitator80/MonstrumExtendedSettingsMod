@@ -1,13 +1,13 @@
 Name|Underwater
 Author|Ink
-Difficulty|4
+Difficulty|3
 Description|The ship sank and your chances of survival sank with you to the bottom. The helicopter won't help you anymore. And although your enemies have lost some of their abilities underwater... They feel great here
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1
 Maximum Monster Spawntime (seconds)|45
-Monster Animation Speed Multiplier|2
+Monster Animation Speed Multiplier|1.5
 Fiend Flicker Minimum Range|-1
 Fiend Flicker Medium Range|-1
 Fiend Flicker Maximum Range|-1

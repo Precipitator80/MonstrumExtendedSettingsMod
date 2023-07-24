@@ -1,6 +1,6 @@
 Name|Call of Bruty
 Author|Precipitator
-Difficulty|4
+Difficulty|3
 Description|It's the Call of Bruty! Face off against five double speed Brutes using your overpowered flare gun to teleport away any Brutes shot.
 Version|6.0 Indev
 Setting|Custom Value

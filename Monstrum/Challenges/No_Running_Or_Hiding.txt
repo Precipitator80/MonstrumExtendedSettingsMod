@@ -1,4 +1,4 @@
-Name|No Running Nor Hiding
+Name|No Running Or Hiding
 Author|Nauti & FM Frederic & Be App
 Difficulty|5
 Description|You cannot run nor hide. As seen in Naiden Monstrum episode 61.

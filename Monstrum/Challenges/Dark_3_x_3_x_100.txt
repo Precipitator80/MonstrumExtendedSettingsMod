@@ -1,6 +1,6 @@
 Name|Dark 3 x 3 x 100
 Author|Minimineon64 & HUE Hummel
-Difficulty|6
+Difficulty|7
 Description|Uses three of each monster plus dark ship with no flashlight and a 100% run requiring all three escape routes to be prepared. As seen in Naiden Monstrum episode 74.
 Version|6.0 Indev
 Setting|Custom Value

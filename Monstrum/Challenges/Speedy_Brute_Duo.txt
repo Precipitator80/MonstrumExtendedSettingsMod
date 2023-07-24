@@ -1,6 +1,6 @@
 Name|Speedy Brute Duo
 Author|Naiden
-Difficulty|6
+Difficulty|7
 Description|Uses two Brutes at double speed. As seen in Naiden Monstrum episode 72.
 Version|6.0 Indev
 Setting|Custom Value

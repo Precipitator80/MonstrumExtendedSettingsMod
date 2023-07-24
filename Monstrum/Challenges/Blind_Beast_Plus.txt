@@ -1,14 +1,18 @@
-Name|Blind Beast
+Name|Blind Beast+
 Author|Ink
-Difficulty|4
+Difficulty|7
 Description|Welcome to the darkness in which a blind beast is hunting you. Be careful. Collect all the glowsticks to win and don't get lost in the darkness. Focus on the sounds.\n30% of the gamma is recommended
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
+Maximum Monster Spawntime (seconds)|30
+Monster Animation Speed Multiplier|2
+Monster Movement Speed Multiplier|1.5
+Monster Rotation Speed Multiplier|2
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|2.5
-Brute Chase Speed Buff Rate|1
+Brute Chase Speed Buff Multiplier|3
+Brute Chase Speed Buff Rate|1.5
 Glowstick Hunt|True
 Special Glowsticks Required|8
 Special Glowsticks To Create|14
