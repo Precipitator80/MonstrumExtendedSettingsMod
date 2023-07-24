@@ -1,4 +1,4 @@
-Name|Under Water
+Name|Underwater+
 Author|Ink
 Difficulty|6
 Description|The ship sank and your chances of survival sank with you to the bottom. The helicopter won't help you anymore. And although your enemies have lost some of their abilities underwater... They feel great here
@@ -16,6 +16,7 @@ Fiend Mind Attack Damage Multiplier|0
 Fiend Mind Attack Attack Timer Charge Rate|-1
 Fiend Mind Attack Delay Timer Rate|10000
 Foggy Ship|True
+Monster Vision Affected By Fog|True
 Foggy Ship Alternative Mode|True
 Disable Helicopter|True
 Gravity Y Acceleration|-5

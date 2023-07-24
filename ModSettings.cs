@@ -1005,7 +1005,7 @@ namespace MonstrumExtendedSettingsMod
                     foggyShip = new MESMSetting<bool>("Foggy Ship", "Creates fog in front of the player, stopping them from seeing what is ahead of them", false).userValue;
                     fogNearDistance = new MESMSetting<float>("Fog Near Distance", "How far away from the player the start point of the camera fog is", 8f, true, true).userValue;
                     fogFarDistance = new MESMSetting<float>("Fog Far Distance", "How far away from the player the end point of the camera fog is", 16f, true, true).userValue;
-                    fogDensity = new MESMSetting<float>("Fog Density", "How quickly the camera fog thickens over distance", 50f, true, true, 0f, 100f).userValue;
+                    fogDensity = new MESMSetting<float>("Fog Density", "How quickly the camera fog thickens over distance. Setting it to 0 calculates density based on near and far distance", 0f, true, true, 0f, 100f).userValue;
                     monsterVisionAffectedByFog = new MESMSetting<bool>("Monster Vision Affected By Fog", "Makes monster vision be affected by the fog, meaning that monsters will not see you from beyond it", false, false, true).userValue;
                     foggyShipAlternativeMode = new MESMSetting<bool>("Foggy Ship Alternative Mode", "Creates particle fog instead of simply not rendering past the fog distance", false, false, true).userValue;
                     smokyShip = new MESMSetting<bool>("Smoky Ship", "Fills the ship's corridors with dangerous smoke when they are unpowered", false).userValue;
@@ -1668,9 +1668,11 @@ namespace MonstrumExtendedSettingsMod
                     else
                     {
                         //globalFog.globalFogColor = new Color(0.137f, 0.137f, 0.137f); // PS4//new Color(0.035f, 0.055f, 0.043f); //Switch // It is not grey by default.
-                        globalFog.globalFogColor = Color.black;
+                        //globalFog.globalFogColor = Color.black;
+                        //globalFog.globalFogColor = new Color(0.048f, 0.059f, 0.057f);
+                        globalFog.globalFogColor = new Color(0.025f, 0.025f, 0.029f);
                     }
-                    globalFog.globalDensity = fogDensity;
+                    globalFog.globalDensity = fogDensity == 0f ? 230f / (Mathf.Abs(fogFarDistance - fogNearDistance)) : fogDensity; //100f / (Mathf.Abs(fogFarDistance - fogNearDistance));//fogDensity;
                     mainCamera.farClipPlane = fogFarDistance;
                     mainCamera.clearFlags = CameraClearFlags.Color;
                     mainCamera.backgroundColor = globalFog.globalFogColor;
