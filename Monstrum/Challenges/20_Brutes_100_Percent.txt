@@ -1,0 +1,9 @@
+Name|20 Brutes 100%
+Author|Naiden
+Difficulty|9
+Description|Twenty Brutes shake the halls like an earthquake in this challenge. On top of that, all three escape routes are required to escape. As seen on Naiden's channel.
+Version|6.0 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|20
+Escape Routes To Win|3

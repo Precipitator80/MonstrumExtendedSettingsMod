@@ -1,7 +1,7 @@
 Name|Underwater+
 Author|Ink
 Difficulty|6
-Description|The ship sank and your chances of survival sank with you to the bottom. The helicopter won't help you anymore. And although your enemies have lost some of their abilities underwater... They feel great here
+Description|The ship has sunken much deeper than before, inviting even stronger deep-sea monsters. Plan each move carefully as the creatures hunting you are much more accustomed to the depths than you.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0

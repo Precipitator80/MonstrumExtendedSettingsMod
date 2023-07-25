@@ -1,7 +1,7 @@
 Name|Underwater
 Author|Ink
 Difficulty|3
-Description|The ship sank and your chances of survival sank with you to the bottom. The helicopter won't help you anymore. And although your enemies have lost some of their abilities underwater... They feel great here
+Description|The ship sank to the bottom of the ocean and with it your chances of survival. The helicopter won't help you anymore and although your enemy has lost some of their abilities underwater, they feel great here.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0

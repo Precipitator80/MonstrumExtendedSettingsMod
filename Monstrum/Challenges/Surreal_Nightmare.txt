@@ -1,7 +1,7 @@
 Name|Surreal Nightmare
 Author|Ink
 Difficulty|7
-Description|When the surreal ship appears before you in a dream he stops being such. He's becoming a nightmare.
+Description|When the surreal ship appears before you in a dream, the dream stops simply being a dream. It becomes a nightmare.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0

@@ -57,8 +57,25 @@ namespace MonstrumExtendedSettingsMod
                     stringBuilder.Append(setting.value);
                 }
                 Directory.CreateDirectory(CHALLENGE_FOLDER); // Create the challenges folder if it does not exist to avoid errors.
-                File.WriteAllText(CHALLENGE_FOLDER + challenge.name.Replace(" ", "_").Replace("+", "_Plus") + ".txt", stringBuilder.ToString());
+                File.WriteAllText(CHALLENGE_FOLDER + FormatFilename(challenge.name) + ".txt", stringBuilder.ToString());
                 Debug.Log("Saved new challenge: " + challenge.name);
+            }
+
+            // Replace Multiple String Elements in Csharp - user151323 - https://stackoverflow.com/questions/1321331/replace-multiple-string-elements-in-c-sharp - Accessed 26.07.2023
+            public static string FormatFilename(string originalName)
+            {
+                StringBuilder stringBuilder = new StringBuilder(originalName);
+
+                stringBuilder.Replace("&", "_and_");
+                stringBuilder.Replace(",", "");
+                stringBuilder.Replace("  ", " ");
+                stringBuilder.Replace(" ", "_");
+                stringBuilder.Replace("'", "");
+                stringBuilder.Replace(".", "");
+                stringBuilder.Replace("+", "_Plus");
+                stringBuilder.Replace("%", "_Percent");
+
+                return stringBuilder.ToString();
             }
 
             public static void DeleteChallenge(Challenge challenge)

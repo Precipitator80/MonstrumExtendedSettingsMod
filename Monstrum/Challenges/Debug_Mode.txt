@@ -9,11 +9,21 @@ Number of Brutes|1
 Minimum Monster Spawntime (seconds)|1
 Maximum Monster Spawntime (seconds)|2
 Spawn Monster In Starter Room|True
+Infinite Fire Extinguisher Fuel|True
+Overpowered Flare Gun|True
+Infinite Flashlight Power|True
+Infinite Fuel Can Fuel|True
+Monster Compass|True
+Better Smashables|True
+Add Smoke Grenade|True
+Add Molotov|True
 Use Custom Seed|True
 Seed To Use|1
 Starter Room Region|Upper Deck
+Spawn Deactivated Items|True
 No Cameras|True
 No Steam|True
+No Pit Traps|True
 Enable Debug Mode|True
 Invincibility / God Mode In Debug Mode|True
 Invisibility In Debug Mode|True

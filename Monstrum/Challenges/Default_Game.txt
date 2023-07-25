@@ -1,6 +1,6 @@
 Name|Default Game
 Author|Team Junkfish
 Difficulty|2
-Description|This is the default experience, saved as a challenge to allow you to track your time.
+Description|You wake up alone at night on the Hisa Maru with a splitting headache. The rest of the crew has disappeared, yet you can't shake the feeling that you are not alone on the ship. This is the default experience, saved as a challenge to allow you to track your time.
 Version|6.0 Indev
 Setting|Custom Value

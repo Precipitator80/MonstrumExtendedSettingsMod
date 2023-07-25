@@ -1,7 +1,7 @@
 Name|Surreal Ship
 Author|Ink
 Difficulty|6
-Description|Welcome to the surreal ship that arrived from somewhere in the wilds of dreams. Avoid spatial anomalies and try not to get lost in such a wrong and dangerous ship.
+Description|Welcome to the surreal ship, arrived from somewhere in the wilds of dreams. Avoid spatial anomalies and try not to get lost in such a wrong and dangerous ship.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0

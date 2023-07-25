@@ -1,7 +1,7 @@
 Name|Child's Nightmare
 Author|Ink
 Difficulty|8
-Description|The worst place a child can get into. Welcome to the darkest ship. Welcome to the real nightmare. (Less than 40% of the gamma is recommended)
+Description|The worst place a child can find themselves in during a dream. Welcome to the darkest ship. Welcome to the real nightmare.\nLess than 40% gamma is recommended.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0

@@ -1,7 +1,7 @@
 Name|Reincarnation
 Author|Ink
-Difficulty|7
-Description|Excellent training before the challenge "Annihilation". You have 3 lives and exactly the same rights for failure or accident.
+Difficulty|8
+Description|Excellent training for the "Annihilation" challenge. You have the same settings but 3 lives to practise with.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0

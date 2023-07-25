@@ -1,8 +1,12 @@
 Name|No Running Or Hiding
 Author|Nauti & FM Frederic & Be App
-Difficulty|5
-Description|You cannot run nor hide. As seen in Naiden Monstrum episode 61.
+Difficulty|6
+Description|You've injured your leg, making it impossible to run. On top of that, it seems whatever is lurking the halls has a keen eye for hiding spots, making them ineffective. As seen in Naiden Monstrum episode 61.
 Version|6.0 Indev
 Setting|Custom Value
 No Hiding|True
 Disable Running|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

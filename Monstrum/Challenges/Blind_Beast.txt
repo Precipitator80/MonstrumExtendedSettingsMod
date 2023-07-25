@@ -1,7 +1,7 @@
 Name|Blind Beast
 Author|Ink
 Difficulty|4
-Description|Welcome to the darkness in which a blind beast is hunting you. Be careful. Collect all the glowsticks to win and don't get lost in the darkness. Focus on the sounds.\n30% of the gamma is recommended
+Description|Welcome to the darkness... Be careful, as a blind beast hunts in the shadows. Collect all the glowsticks to win and don't get lost in the darkness. Focus on the sounds.\n30% gamma is recommended.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0

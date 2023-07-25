@@ -1,7 +1,7 @@
 Name|Blind Beast+
 Author|Ink
 Difficulty|7
-Description|Welcome to the darkness in which a blind beast is hunting you. Be careful. Collect all the glowsticks to win and don't get lost in the darkness. Focus on the sounds.\n30% of the gamma is recommended
+Description|Enraged by your previous escape, the blind beast has tuned its senses, drawing power from the darkness and hunting with much more speed than before.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0
