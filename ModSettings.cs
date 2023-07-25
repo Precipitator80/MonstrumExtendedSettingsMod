@@ -1075,7 +1075,9 @@ namespace MonstrumExtendedSettingsMod
                     betterSmashables = new MESMSetting<bool>("Better Smashables", "Makes smashables not break when they impact with only a small velocity", false).userValue;
                     unsmashables = new MESMSetting<bool>("Unsmashables", "Makes smashables never smash. Try holding the throw button! Just a fun setting", false, false, true).userValue;
                     addSmokeGrenade = new MESMSetting<bool>("Add Smoke Grenade", "Gives smashable bottles a 33% chance to spawn as a smoke grenade. When smashed, the bottle will emit smoke that can stun the monster like fire extinguisher powder and block its vision", false).userValue;
+                    smokeGrenadeDuration = new MESMSetting<float>("Smoke Grenade Duration", "The number of seconds the smoke grenade will be active", 30f, true, true).userValue;
                     addMolotov = new MESMSetting<bool>("Add Molotov", "Gives smashable bottles a 33% chance to spawn as a molotov. When smashed, the bottle will spawn fire that can stun the monster like lit fuel", false).userValue;
+                    molotovDuration = new MESMSetting<float>("Molotov Duration", "The number of seconds the molotov will be active", 20f, true, true).userValue;
 
 
                     // Read Level Generation Settings Variables
@@ -3704,7 +3706,9 @@ namespace MonstrumExtendedSettingsMod
             public static bool betterSmashables;
             public static bool unsmashables;
             public static bool addSmokeGrenade;
+            public static float smokeGrenadeDuration;
             public static bool addMolotov;
+            public static float molotovDuration;
 
 
             // Level Generation Settings Variables

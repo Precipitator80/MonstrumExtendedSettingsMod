@@ -7825,7 +7825,6 @@ namespace MonstrumExtendedSettingsMod
             private static GameObject molotovModelPrefab;
 
             private static GameObject smokeGrenadePrefab;
-            private static float smokeGrenadeDuration = 26f;
             private static float smokeGrenadeParticleStartLifeTime = 8f;
             private static void CreateSmokeGrenadePrefab()
             {
@@ -7843,7 +7842,7 @@ namespace MonstrumExtendedSettingsMod
                     ParticleSystem particleSystem = particlesParent.GetComponentInChildren<ParticleSystem>();
                     particlesParent.transform.name = "FireParticleSystemTransform";
 
-                    float duration = smokeGrenadeDuration;
+                    float duration = ModSettings.smokeGrenadeDuration;
                     float startLifetime = smokeGrenadeParticleStartLifeTime;
                     ParticleSystem.EmissionModule psem = particleSystem.emission;
                     psem.enabled = true;
@@ -7915,7 +7914,7 @@ namespace MonstrumExtendedSettingsMod
             */
 
             private static GameObject molotovPrefab;
-            private static float molotovDuration = 26f;
+            private static readonly float fireIntensityBuffer = 4f;
             private static float molotovParticleStartLifeTime = 3f;
             private static void CreateMolotovPrefab()
             {
@@ -7940,12 +7939,11 @@ namespace MonstrumExtendedSettingsMod
                     fuelDecal.flammable.fire.transform.SetParent(fuelDecal.flammable.transform, false);
 
                     // Change the duration of the fire's burning.
-                    float duration = molotovDuration;
+                    float duration = ModSettings.molotovDuration;
                     float startLifetime = molotovParticleStartLifeTime;
-                    float fireIntensityBuffer = 6f;
-                    fuelDecal.flammable.fireFuel = duration - fireIntensityBuffer;
-                    fuelDecal.flammable.lowFuel = duration - fireIntensityBuffer;
-                    fuelDecal.maxFuel = duration - fireIntensityBuffer;
+                    fuelDecal.flammable.fireFuel = ModSettings.molotovDuration - fireIntensityBuffer;
+                    fuelDecal.flammable.lowFuel = ModSettings.molotovDuration - fireIntensityBuffer;
+                    fuelDecal.maxFuel = ModSettings.molotovDuration - fireIntensityBuffer;
 
                     // Change the size of the PlayerDamage BoxCollider and rotate it to face correctly.
                     BoxCollider boxCollider = fuelDecal.flammable.fire.GetComponentInChildren<BoxCollider>();
@@ -7964,9 +7962,6 @@ namespace MonstrumExtendedSettingsMod
                     ParticleSystem.ShapeModule shape = particleSystem.shape;
                     shape.shapeType = ParticleSystemShapeType.Circle;
                     shape.radius = fireShroudDiameter / 2f;
-
-                    ParticleSystem.EmissionModule emission = particleSystem.emission;
-                    emission.rateOverTime = new ParticleSystem.MinMaxCurve(50f, new AnimationCurve(new Keyframe(0f, 1f), new Keyframe((duration - startLifetime) / duration - 0.01f, 1f), new Keyframe((duration - startLifetime) / duration, 0f), new Keyframe(1f, 0f)));
 
                     // Ignite the fire.
                     fuelDecal.flammable.StartFire();
@@ -7990,7 +7985,7 @@ namespace MonstrumExtendedSettingsMod
                 AudioSource audioSource = smokeGrenade.GetComponent<AudioSource>();
                 AudioSystem.PlaySound("Noises/Actions/Extinguisher/ACT_ExtinguishLoop_00", audioSource);
                 audioSource.pitch *= 0.85f;
-                Destroy(smokeGrenade, smokeGrenadeDuration);
+                Destroy(smokeGrenade, ModSettings.smokeGrenadeDuration);
                 float timePassed = 0f;
                 while (smashable != null && smashable.debris[0] != null)
                 {
@@ -7998,7 +7993,7 @@ namespace MonstrumExtendedSettingsMod
                     smokeGrenade.transform.position = smashable.debris[0].transform.position;
                     yield return null;
                 }
-                yield return new WaitForSeconds(smokeGrenadeDuration - smokeGrenadeParticleStartLifeTime - timePassed);
+                yield return new WaitForSeconds(ModSettings.smokeGrenadeDuration - smokeGrenadeParticleStartLifeTime - timePassed);
                 audioSource.Stop();
                 if (ModSettings.enableMultiplayer && !MultiplayerMode.useLegacyAudio)
                 {
@@ -8013,7 +8008,6 @@ namespace MonstrumExtendedSettingsMod
                         Debug.Log("VAS is null!\n" + new StackTrace().ToString());
                     }
                 }
-                yield break;
             }
 
             public static IEnumerator TriggerMolotovOnSmashable(Smashable smashable)
@@ -8027,32 +8021,14 @@ namespace MonstrumExtendedSettingsMod
                 AudioSource audioSource = molotov.GetComponent<AudioSource>();
                 AudioSystem.PlaySound("Noises/Actions/Fire", audioSource);
                 molotov.GetComponent<VolumeController>().StartVolume *= 5f;
-                Destroy(molotov, molotovDuration);
-                float timePassed = 0f;
+                Destroy(molotov, ModSettings.molotovDuration);
                 ParticleSystem particleSystem = molotov.GetComponent<FuelDecal>().flammable.fire.gameObject.GetComponent<ParticleSystem>();
                 while (smashable != null && smashable.debris[0] != null)
                 {
-                    timePassed += Time.deltaTime;
                     molotov.transform.position = smashable.debris[0].transform.position;
                     particleSystem.transform.position = molotov.transform.position;
                     yield return null;
                 }
-                yield return new WaitForSeconds(molotovDuration - molotovParticleStartLifeTime - timePassed);
-                audioSource.Stop();
-                if (ModSettings.enableMultiplayer && !MultiplayerMode.useLegacyAudio)
-                {
-                    VirtualAudioSource virtualAudioSource = audioSource.gameObject.GetComponent<VirtualAudioSource>();
-                    if (virtualAudioSource != null)
-                    {
-                        virtualAudioSource.Stop();
-                        virtualAudioSource.time = 0f;
-                    }
-                    else if (ModSettings.logDebugText)
-                    {
-                        Debug.Log("VAS is null!\n" + new StackTrace().ToString());
-                    }
-                }
-                yield break;
             }
 
             /*----------------------------------------------------------------------------------------------------*/

@@ -136,6 +136,8 @@ Added Settings:
 - Extended Jump Cooldown
 - Disable Running
 - Flares Teleport Monsters
+- Smoke Grenade Duration
+- Molotov Duration
 
 * Level Generation Settings
 - Consistent Level Generation
@@ -162,6 +164,7 @@ Changes:
 - Overpowered Flare Gun flares will now despawn after the light lifetime has been used up for optimisation.
 - Bonus movement speed calculation has been simplified.
 - Default fog colour is now black.
+- Changed smoke grenade duration to 30 seconds and calibrated molotov to 20 seconds by default.
 -----
 Bug Fixes:
 - Fixed vanilla bug that any fire in contact with steam would damage the player.
