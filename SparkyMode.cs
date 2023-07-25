@@ -1543,7 +1543,6 @@ namespace MonstrumExtendedSettingsMod
                 base.Start();
                 float radius = ModSettings.slowAuraRange;
                 boxCollider.size = new Vector3(radius, 1.15f, radius);
-                boxCollider.transform.localPosition = new Vector3(0f, 1.25f, 0f);
             }
 
             protected override void OnTriggerExit(Collider _collider)

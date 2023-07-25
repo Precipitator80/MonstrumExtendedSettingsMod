@@ -7860,6 +7860,10 @@ namespace MonstrumExtendedSettingsMod
                     main.simulationSpace = ParticleSystemSimulationSpace.World;
                     main.maxParticles = 1000;
 
+                    main.startColor = new Color(0.49f, 0.21f, 0.15f);
+                    ParticleSystem.ColorOverLifetimeModule colorOverLifetime = particleSystem.colorOverLifetime;
+                    colorOverLifetime.color = main.startColor;
+
                     BoxCollider boxCollider = smokeGrenade.AddComponent<BoxCollider>();
                     boxCollider.transform.position += Vector3.up;
                     boxCollider.size = new Vector3(5f, 3f, 5f);
