@@ -1558,11 +1558,10 @@ namespace MonstrumExtendedSettingsMod
 
             IEnumerator RemoveMindAttackEffect(MindAttackEffect playerMindAttackEffect)
             {
-                float lastStrength = playerMindAttackEffect.strength;
-                while (playerMindAttackEffect.strength > 0f && playerMindAttackEffect.strength == lastStrength)
+                while (playerMindAttackEffect.strength > playerMindAttackEffect.impact)
                 {
-                    playerMindAttackEffect.strength = Mathf.Clamp(playerMindAttackEffect.strength - Time.deltaTime, 0f, 1f);
-                    lastStrength = playerMindAttackEffect.strength;
+                    playerMindAttackEffect.enabled = true;
+                    playerMindAttackEffect.strength = Mathf.Clamp(playerMindAttackEffect.strength - Time.deltaTime, playerMindAttackEffect.impact, 1f);
                     yield return null;
                 }
                 if (playerMindAttackEffect.strength == 0f)

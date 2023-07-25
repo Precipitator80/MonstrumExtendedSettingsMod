@@ -168,6 +168,7 @@ Bug Fixes:
 - Many Monsters Mode could not spawn multiple random monsters of the same type.
 - Improved consistency of persistent monster mode and fixed a vanilla monster state bug when a monster would climb a container.
 - The molotov fire particles now match the time its damage is active.
+- Corridors powered at the start of a round with Always Smoky on during Smoky Ship will now also be filled with smoke.
 ------------------------------------------------------------
 Monstrum Extended Settings Mod V5.0 (Partiality) — 06.09.2022
 -----

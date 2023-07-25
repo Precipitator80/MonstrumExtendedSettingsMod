@@ -87,7 +87,7 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 // Check whether the room is unpowered.
-                if (!FuseBoxManager.Instance.fuseboxes[room.PrimaryRegion].powered)
+                if (!FuseBoxManager.Instance.fuseboxes[room.PrimaryRegion].powered || ModSettings.alwaysSmoky)
                 {
                     emission.enabled = true;
                 }

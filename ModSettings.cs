@@ -1011,7 +1011,7 @@ namespace MonstrumExtendedSettingsMod
                     monsterVisionAffectedByFog = new MESMSetting<bool>("Monster Vision Affected By Fog", "Makes monster vision be affected by the fog, meaning that monsters will not see you from beyond it", false, false, true).userValue;
                     foggyShipAlternativeMode = new MESMSetting<bool>("Foggy Ship Alternative Mode", "Creates particle fog instead of simply not rendering past the fog distance", false, false, true).userValue;
                     smokyShip = new MESMSetting<bool>("Smoky Ship", "Fills the ship's corridors with dangerous smoke when they are unpowered", false).userValue;
-                    alwaysSmoky = new MESMSetting<bool>("Always Smoky", "Corridors are filled with smoke even when they are powered. Does nothing outwith Smoky Ship mode.", false, false, true).userValue;
+                    alwaysSmoky = new MESMSetting<bool>("Always Smoky", "Corridors are filled with smoke even when they are powered. Does nothing outwith Smoky Ship mode", false, false, true).userValue;
                     breathAmount = new MESMSetting<float>("Breath Amount", "The maximum number of seconds the player may be in smoke with a breath drain of 1", 20f, true, true).userValue;
                     breathRecovery = new MESMSetting<float>("Breath Recovery", "The amount of breath to recover per second outside of smoke", 2f, true, true).userValue;
                     smokeShroudBreathDrain = new MESMSetting<float>("Smoke Shroud Breath Drain", "The amount of breath to drain per second inside of a smoke shroud", 2f, true, true).userValue;
