@@ -102,6 +102,9 @@ Added Settings:
 - Use Indev Sparky Model
 - Brute Chase Speed Buff Rate
 - Brute Fire Shroud
+- Brute Long Range Wander Speed Buff
+- Brute Long Range Wander Speed Buff Multiplier
+- Apply Long Range Wander Speed Buff To All Monsters
 - Hunter Maximum Cooldown Time Multiplier
 - Quiet Hunter
 - Fiend Mind Attack Damage Multiplier

@@ -1,26 +1,18 @@
 Name|Hard Mode
 Author|Ink
-Difficulty|5
-Description|The opportunity to play against one of 3 reinforced (insane) monsters from the other challenges.
+Difficulty|4
+Description|The opportunity to play against one of 3 reinforced (hard) monsters from the other challenges.
 Version|6.0 Indev
 Setting|Custom Value
-Monster Animation Speed Multiplier|1.4
-Monster Movement Speed Multiplier|1.4
-Monster Rotation Speed Multiplier|1.4
+Monster Animation Speed Multiplier|1.2
+Monster Movement Speed Multiplier|1.2
+Monster Rotation Speed Multiplier|1.2
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|1.4
-Brute Fire Shroud|True
-Fire Shroud Radius|1.5
-Fire Blast Radius|0
-Overpowered Hunter|True
-Fiend Flicker Minimum Range|1
-Fiend Flicker Medium Range|2
-Fiend Flicker Maximum Range|3
-Fiend Mind Attack Damage Multiplier|50
-Fiend Mind Attack Attack Timer Charge Rate|1.5
-Fiend Mind Attack Attack Timer Decay Rate|0.2
-Give Fiend A Slow Aura|True
-Extended Jump Cooldown|True
+Brute Chase Speed Buff Multiplier|1.5
+Brute Long Range Wander Speed Buff|True
+Hunter Maximum Cooldown Time Multiplier|0.5
+Quiet Hunter|True
+Fiend Mind Attack Attack Timer Charge Rate|2.5
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

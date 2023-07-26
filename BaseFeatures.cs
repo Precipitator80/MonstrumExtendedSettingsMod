@@ -6630,7 +6630,8 @@ namespace MonstrumExtendedSettingsMod
             {
                 if (LevelGeneration.Instance.finishedGenerating)
                 {
-                    FSMState.StateTypes stateType = movementControl.monster.GetComponent<FSM>().Current.typeofState;
+                    FSMState currentState = movementControl.monster.GetComponent<FSM>().Current;
+                    FSMState.StateTypes stateType = currentState.typeofState;
                     float modifiedSpeed = ModSettings.monsterAnimationSpeedMultiplier;
                     bool applyChaseBuff = stateType == FSMState.StateTypes.Chase && movementControl.AnimationSpeed > 95f && (ModSettings.applyChaseSpeedBuffToAllMonsters || (ModSettings.bruteChaseSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute));
                     if (applyChaseBuff)
@@ -6649,6 +6650,11 @@ namespace MonstrumExtendedSettingsMod
                         {
                             modifiedSpeed += ModSettings.sparkyMaxSpeedFactorIncreaseFromBuff * movementControl.monster.GetComponent<SparkyAura>().buffPercentage;
                         }
+                    }
+
+                    if ((ModSettings.applyLongRangeWanderSpeedBuffToAllMonsters || (ModSettings.bruteLongRangeWanderSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute)) && currentState.GetType() == typeof(MWanderState) && (movementControl.monster.Patrol != null && movementControl.monster.Patrol.ShouldRun) || (movementControl.monster.DistanceToPlayer > 40f && movementControl.monster.DistanceToGoal() > 20f))
+                    {
+                        modifiedSpeed *= ModSettings.bruteLongRangeWanderSpeedBuffMultiplier;
                     }
 
                     if (applyChaseBuff)

@@ -8,17 +8,20 @@ Number of Random Monsters|0
 Number of Brutes|1
 Maximum Monster Spawntime (seconds)|30
 Monster Animation Speed Multiplier|1.5
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|1.5
+Brute Chase Speed Buff Rate|1
 Fiend Flicker Minimum Range|1
 Fiend Flicker Medium Range|1
 Fiend Flicker Maximum Range|6
 Give All Monsters A Fiend Aura|True
 Dark Ship|True
-Glowstick Hunt|True
-Special Glowsticks Required|1
-Special Glowsticks To Create|2
+Foggy Ship|True
+Fog Near Distance|20
+Fog Far Distance|30
 No Time Freeze In Pause Menu|True
-Player Movement Speed Multiplier|1.3
-Custom Player Scale|0.7
+Player Movement Speed Multiplier|1.4
+Custom Player Scale|0.8
 Disable Running|True
 Infinite Flashlight Power|True
 Flashlight Intensity Multiplier|2

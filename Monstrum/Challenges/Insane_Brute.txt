@@ -6,15 +6,17 @@ Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
-Monster Animation Speed Multiplier|1.75
-Monster Movement Speed Multiplier|1.75
-Monster Rotation Speed Multiplier|1.75
+Monster Animation Speed Multiplier|1.4
+Monster Movement Speed Multiplier|1.4
+Monster Rotation Speed Multiplier|1.4
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|1.75
-Apply Chase Speed Buff To All Monsters|True
+Brute Chase Speed Buff Multiplier|1.4
+Brute Chase Speed Buff Rate|1
 Brute Fire Shroud|True
-Give All Monsters A Fire Shroud|True
 Fire Shroud Radius|1.5
+Fire Blast Radius|1
+Brute Long Range Wander Speed Buff|True
+Brute Long Range Wander Speed Buff Multiplier|2
 Extended Jump Cooldown|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2

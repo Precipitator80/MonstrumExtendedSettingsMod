@@ -1,21 +1,15 @@
 Name|Hard Fiend
 Author|Ink
-Difficulty|5
-Description|A significantly enhanced version of the Fiend. It has become faster and harder to detect. And he can also finish you off in a second at a distance.
+Difficulty|4
+Description|The hard version of the Fiend.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1
-Monster Animation Speed Multiplier|1.4
-Monster Movement Speed Multiplier|1.4
-Fiend Flicker Minimum Range|1
-Fiend Flicker Medium Range|2
-Fiend Flicker Maximum Range|3
-Fiend Mind Attack Damage Multiplier|50
-Fiend Mind Attack Attack Timer Charge Rate|1.5
-Fiend Mind Attack Attack Timer Decay Rate|0.2
-Give Fiend A Slow Aura|True
-Extended Jump Cooldown|True
+Monster Animation Speed Multiplier|1.2
+Monster Movement Speed Multiplier|1.2
+Monster Rotation Speed Multiplier|1.2
+Fiend Mind Attack Attack Timer Charge Rate|2.5
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

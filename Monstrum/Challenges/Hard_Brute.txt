@@ -1,22 +1,17 @@
 Name|Hard Brute
 Author|Ink
-Difficulty|5
-Description|A significantly enhanced version of the classic Brute. More speed. More power. More fire.
+Difficulty|4
+Description|The hard version of the Brute.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
-Monster Animation Speed Multiplier|1.4
-Monster Movement Speed Multiplier|1.4
-Monster Rotation Speed Multiplier|1.4
+Monster Animation Speed Multiplier|1.2
+Monster Movement Speed Multiplier|1.2
+Monster Rotation Speed Multiplier|1.2
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|1.4
-Apply Chase Speed Buff To All Monsters|True
-Brute Fire Shroud|True
-Give All Monsters A Fire Shroud|True
-Fire Shroud Radius|1.5
-Fire Blast Radius|0
-Extended Jump Cooldown|True
+Brute Chase Speed Buff Multiplier|1.5
+Brute Long Range Wander Speed Buff|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2
