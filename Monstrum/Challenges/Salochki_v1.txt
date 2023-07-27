@@ -1,0 +1,30 @@
+Name|Salochki v1
+Author|Ink
+Difficulty|4
+Description|There's no time to explain! Run!\nLight up 8 special glowsticks and escape!
+Version|6.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Maximum Monster Spawntime (seconds)|1
+Persistent Monster|True
+Seer Monster|True
+Monster Animation Speed Multiplier|1.3
+Monster Movement Speed Multiplier|1.3
+Monster Rotation Speed Multiplier|1.3
+Glowstick Hunt|True
+Special Glowsticks Required|8
+Special Glowsticks To Create|25
+No Time Freeze In Pause Menu|True
+No Hiding|True
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
+Inventory Size|1
+Diverse Item Spawns|True
+Spawn Items Anywhere|True
+No Doors|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2
