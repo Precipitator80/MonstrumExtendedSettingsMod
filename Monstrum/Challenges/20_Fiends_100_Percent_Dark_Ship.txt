@@ -8,3 +8,4 @@ Number of Random Monsters|0
 Number of Fiends|20
 Dark Ship|True
 Escape Routes To Win|3
+Do Not Pre-Render Monsters|True

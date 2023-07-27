@@ -7,3 +7,4 @@ Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|20
 Escape Routes To Win|3
+Do Not Pre-Render Monsters|True

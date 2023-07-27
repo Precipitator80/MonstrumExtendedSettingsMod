@@ -1,7 +1,7 @@
 Name|Hard Brute
 Author|Ink
 Difficulty|4
-Description|The hard version of the Brute.
+Description|This challenge pits you up against a harder version of the Brute, built to keep up with you throughout the ship and be faster in chases.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0

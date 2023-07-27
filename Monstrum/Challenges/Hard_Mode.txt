@@ -1,7 +1,7 @@
 Name|Hard Mode
 Author|Ink
 Difficulty|4
-Description|The opportunity to play against one of 3 reinforced (hard) monsters from the other challenges.
+Description|This challenge gives you the opportunity to play against one of 3 strengthened (hard) monsters from the other challenges.
 Version|6.0 Indev
 Setting|Custom Value
 Monster Animation Speed Multiplier|1.2
@@ -12,7 +12,11 @@ Brute Chase Speed Buff Multiplier|1.5
 Brute Long Range Wander Speed Buff|True
 Hunter Maximum Cooldown Time Multiplier|0.5
 Quiet Hunter|True
-Fiend Mind Attack Attack Timer Charge Rate|2.5
+Fiend Mind Attack Damage Multiplier|1.5
+Fiend Mind Attack Attack Timer Charge Rate|2
+Fiend Mind Attack Attack Timer Decay Rate|0.5
+Fiend Mind Attack Delay Timer Rate|0.75
+Give Fiend A Slow Aura|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

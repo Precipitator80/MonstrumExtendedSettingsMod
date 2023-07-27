@@ -46,6 +46,8 @@ namespace MonstrumExtendedSettingsMod
         private static int mediumFontSize;
         private static int mediumSmallFontSize;
 
+        public static readonly Vector3 clipboardOffset = new Vector3(0f, 0f, -7.5f); // To stop Z-fighting with the clipboard.
+
         public class ChallengeCreator : ChallengeSubPage
         {
             private static readonly int MIN_DIFFICULTY = 0;
@@ -92,7 +94,7 @@ namespace MonstrumExtendedSettingsMod
                 difficultyInput.placeholderText.color = nameInput.placeholderText.color;
                 difficultyInput.placeholderText.text = "Default Game Is " + DEFAULT_DIFFICULTY;
 
-                MenuInputField descriptionInput = new MenuTextInputField(categories[3], gameObject.transform, bottomRowOffset - new Vector3(parentGridLayoutGroup.cellSize.x + parentGridLayoutGroup.spacing.x, 0f, 0f) + MenuList.clipboardOffset, 420);
+                MenuInputField descriptionInput = new MenuTextInputField(categories[3], gameObject.transform, bottomRowOffset - new Vector3(parentGridLayoutGroup.cellSize.x + parentGridLayoutGroup.spacing.x, 0f, 0f) + clipboardOffset, 420);
                 descriptionInput.inputField.lineType = InputField.LineType.MultiLineNewline; // UI Input Field - text not wrapping - pfreese - https://answers.unity.com/questions/1294056/ui-input-field-text-not-wrapping.html - Accessed 04.06.2023
                 descriptionInput.text.rectTransform.sizeDelta = new Vector2(parentGridLayoutGroup.cellSize.x, bottomRowHeight);
                 descriptionInput.image.rectTransform.sizeDelta = descriptionInput.text.rectTransform.sizeDelta;
@@ -246,7 +248,7 @@ namespace MonstrumExtendedSettingsMod
                 versionText.text.rectTransform.sizeDelta = smallButtonSizeDelta;
                 versionText.text.fontSize /= 2;
 
-                MenuText descriptionMenuText = new MenuText(challenge.description, gameObject.transform, bottomRowOffset - new Vector3(parentGridLayoutGroup.cellSize.x + parentGridLayoutGroup.spacing.x, 0f, 0f) + MenuList.clipboardOffset);
+                MenuText descriptionMenuText = new MenuText(challenge.description, gameObject.transform, bottomRowOffset - new Vector3(parentGridLayoutGroup.cellSize.x + parentGridLayoutGroup.spacing.x, 0f, 0f) + clipboardOffset);
                 descriptionMenuText.text.rectTransform.sizeDelta = new Vector2(parentGridLayoutGroup.cellSize.x, bottomRowHeight);
 
                 PostConstructorInitialisation();
@@ -410,7 +412,7 @@ namespace MonstrumExtendedSettingsMod
                 versionText.text.rectTransform.sizeDelta = smallButtonSizeDelta;
                 versionText.text.fontSize /= 2;
 
-                MenuTextButton creditsButton = new MenuTextButton("Credits", gameObject.transform, exitButtonGO.transform, new Vector3(250f, 0f, 0f) + MenuList.clipboardOffset, false);
+                MenuTextButton creditsButton = new MenuTextButton("Credits", gameObject.transform, exitButtonGO.transform, new Vector3(250f, 0f, 0f) + clipboardOffset, false);
                 creditsButton.text.rectTransform.sizeDelta = smallButtonSizeDelta;
                 creditsButton.text.fontSize /= 2;
                 CreditsSubMenu creditsMenu = new CreditsSubMenu(gameObject, creditsButton.button);
@@ -817,7 +819,7 @@ namespace MonstrumExtendedSettingsMod
 
             // Create a warning box to alert the user of restart conditions and errors.
             // Use a base canvas and adjust its sorting order to appear on top of the menu buttons.
-            globalWarningBox = new WarningBox("GlobalWarningBox", optionsUI.optionsButtons.transform, new Vector3(0f, 0f, -7.5f));
+            globalWarningBox = new WarningBox("GlobalWarningBox", optionsUI.optionsButtons.transform, clipboardOffset);
 
             // Add functionality to the box.
             globalWarningBox.button.onClick.AddListener(delegate ()
@@ -827,7 +829,7 @@ namespace MonstrumExtendedSettingsMod
             });
 
             // Create the initial navigation sub menu.
-            NavigationSubMenu navigationSubMenu = new NavigationSubMenu("MES Mod", optionsUI.optionsButtons, new Vector3(0f, 140f, -5f), buttonList[3].transform.parent, (buttonList[3].transform.localPosition - buttonList[3].transform.parent.localPosition) - 3f * (buttonList[3].transform.localPosition - buttonList[1].transform.localPosition));
+            NavigationSubMenu navigationSubMenu = new NavigationSubMenu("MES Mod", optionsUI.optionsButtons, new Vector3(0f, 140f, 0f) + clipboardOffset, buttonList[3].transform.parent, (buttonList[3].transform.localPosition - buttonList[3].transform.parent.localPosition) - 3f * (buttonList[3].transform.localPosition - buttonList[1].transform.localPosition));
 
             // Discover all the categories used for the settings in order to set up pages for them.
             List<string> categories = new List<string>();
@@ -1484,7 +1486,6 @@ namespace MonstrumExtendedSettingsMod
 
         public abstract class MenuList : MenuImage
         {
-            public static readonly Vector3 clipboardOffset = new Vector3(0f, 0f, -7.5f); // To stop Z-fighting with the clipboard.
             public GameObjectFollowingRectTransform contentGameObject; // GameObject to hold any items displayed in the list.
             protected VerticalLayoutGroup verticalLayoutGroup;
             protected static readonly Vector2 fullRect = new Vector2(5f * referenceOptionImage.rectTransform.sizeDelta.x, 15f * referenceOptionImage.rectTransform.sizeDelta.y);

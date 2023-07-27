@@ -1,7 +1,7 @@
 Name|Hard Hunter
 Author|Ink
 Difficulty|4
-Description|The hard version of the Hunter.
+Description|This challenge pits you up against a harder version of the Hunter, with a stealthier and more aggressive hunting style.
 Version|6.0 Indev
 Setting|Custom Value
 Number of Random Monsters|0
