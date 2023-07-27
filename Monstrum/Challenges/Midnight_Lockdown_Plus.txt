@@ -14,6 +14,7 @@ Use Custom Doors Mode|True
 Custom Door Type|3
 Foggy Ship|True
 Monster Vision Affected By Fog|True
+Starter Room Region|Upper Deck
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2
