@@ -2,7 +2,7 @@ Name|Seven Monsters
 Author|Freddy Meister Frederic
 Difficulty|5
 Description|Is the number seven your lucky number, or will it spell disaster for your run? Uses two Brutes, two Hunters and three Fiends. As seen in Naiden Monstrum episode 71.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|2

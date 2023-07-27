@@ -2,7 +2,7 @@ Name|Speedy Brute Duo
 Author|Naiden
 Difficulty|8
 Description|The Brutes have been training hard to chase you down, now being able to move at double their usual speed. As seen in Naiden Monstrum episode 72.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|2

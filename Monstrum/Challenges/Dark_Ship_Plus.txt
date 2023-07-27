@@ -2,7 +2,7 @@ Name|Dark Ship+
 Author|Precipitator
 Difficulty|4
 Description|Fiend has stepped it up a level, not only removing fuses installed in the ship, but also filling any unpowered areas with dangerous purple smoke. Make sure sure hold your breath and power through!
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1

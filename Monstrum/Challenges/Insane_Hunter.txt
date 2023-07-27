@@ -2,7 +2,7 @@ Name|Insane Hunter
 Author|Ink
 Difficulty|7
 Description|A significantly enhanced version of the Hunter. This slimy creature has become bigger and much more deadly. Its stealth and the number of traps it leaves behind can drive you crazy.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1

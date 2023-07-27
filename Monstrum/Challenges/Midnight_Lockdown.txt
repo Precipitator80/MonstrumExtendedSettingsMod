@@ -2,7 +2,7 @@ Name|Midnight Lockdown
 Author|Precipitator
 Difficulty|3
 Description|The ship is in lockdown mode, with almost all doors having been replaced by power locked doors. On top of that, the entire ship has been plunged into darkness... What can go wrong? As seen in Precipitator Monstrum episode 2.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1

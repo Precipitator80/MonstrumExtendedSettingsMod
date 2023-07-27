@@ -2,7 +2,7 @@ Name|Blind Beast+
 Author|Ink
 Difficulty|7
 Description|Enraged by your previous escape, the blind beast has tuned its senses, drawing power from the darkness and hunting with much more speed than before.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1

@@ -2,7 +2,7 @@ Name|Apocalypse
 Author|rVuCL
 Difficulty|8
 Description|It's complete darkness. You tried to use the liferaft, but it seems to be completely broken. Exhausted and out of breath, you feel a strange tingling sensation in the air as you scramble to fix one of the other escape routes. On top of that, your usual hiding spots seem to give you a shock when touched, making hiding in them impossible. Good luck!\nMade by rVuCL with edits by Precipitator.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Sparkies|1

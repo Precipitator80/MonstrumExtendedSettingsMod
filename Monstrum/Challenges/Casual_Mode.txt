@@ -2,7 +2,7 @@ Name|Casual Mode
 Author|Precipitator
 Difficulty|1
 Description|A more casual version of the base game meant for a more relaxing and easier experience.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Minimum Monster Spawntime (seconds)|120
 Maximum Monster Spawntime (seconds)|180

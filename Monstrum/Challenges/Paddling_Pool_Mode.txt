@@ -2,7 +2,7 @@ Name|Paddling Pool Mode
 Author|Precipitator
 Difficulty|0
 Description|An extremely casual version of the base game meant for new players.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Minimum Monster Spawntime (seconds)|240
 Maximum Monster Spawntime (seconds)|360

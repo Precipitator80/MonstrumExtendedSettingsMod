@@ -2,7 +2,7 @@ Name|Dark 3 x 3 x 100
 Author|Minimineon64 & HUE Hummel
 Difficulty|7
 Description|The monsters have strengthened their numbers, hunting with three of each monster. Furthermore, they've rigged the ship in their favour, making it pitch black with all working flashlights removed. Finally, they've linked the escape route systems together, requiring all three to be fully prepared. As seen in Naiden Monstrum episode 74.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|3

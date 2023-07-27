@@ -2,7 +2,7 @@ Name|20 Fiends 100% Dark Ship
 Author|Naiden
 Difficulty|9
 Description|The twenty Fiends in this challenge generate such a strong aura that the entire ship is plunged into darkness with no way of restoring lighting and all three escape routes being required to escape. As seen on Naiden's channel.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|20

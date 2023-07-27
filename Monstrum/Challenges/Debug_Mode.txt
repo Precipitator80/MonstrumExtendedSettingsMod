@@ -2,7 +2,7 @@ Name|Debug Mode
 Author|Precipitator
 Difficulty|0
 Description|A collection of settings serving as a base for testing new and existing features of the mod.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1

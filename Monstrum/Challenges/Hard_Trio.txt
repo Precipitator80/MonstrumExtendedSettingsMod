@@ -2,7 +2,7 @@ Name|Hard Trio
 Author|Ink
 Difficulty|6
 Description|A harder version of our trio, kitted out with additional abilities and increased agility.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1

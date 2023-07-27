@@ -2,7 +2,7 @@ Name|Insane Trio
 Author|Ink
 Difficulty|9
 Description|A game against 3 enhanced (insane) versions of monsters that have long been familiar to us. It will be a worthy challenge and incredibly difficult.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1

@@ -2,7 +2,7 @@ Name|Persistent Seer Monster
 Author|Max und das knosbrige käzien
 Difficulty|4
 Description|The monster has locked on to your scent, allowing it to chase you persistently throughout your entire escape attempt. As seen in Naiden Monstrum episode 56.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Persistent Monster|True
 Seer Monster|True

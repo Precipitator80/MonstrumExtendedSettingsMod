@@ -2,7 +2,7 @@ Name|Insane Fiend
 Author|Ink
 Difficulty|7
 Description|A significantly enhanced version of the Fiend. It has become faster and harder to detect, also being able finish you off in a second at a distance.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1

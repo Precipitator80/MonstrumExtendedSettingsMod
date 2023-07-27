@@ -2,7 +2,7 @@ Name|Monstrum Extended
 Author|Precipitator
 Difficulty|2
 Description|Uses a variety of settings that aim to extend the base gameplay of the game without increasing the difficulty.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Add Sparky To The Game|True
 Better Smashables|True

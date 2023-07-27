@@ -2,7 +2,7 @@ Name|Reincarnation
 Author|Ink
 Difficulty|8
 Description|Excellent training for the "Annihilation" challenge. You have the same settings but 3 lives to practise with.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1

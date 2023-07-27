@@ -2,7 +2,7 @@ Name|Ghosthouse
 Author|EliseyPays
 Difficulty|4
 Description|Three Fiends have invited you into their ghosthouse of darkness. Tread carefully through each corridor and beware of the ghosthouse's inspector. As seen in Naiden Monstrum episode 77.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1

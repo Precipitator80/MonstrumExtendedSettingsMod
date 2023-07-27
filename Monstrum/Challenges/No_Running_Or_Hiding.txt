@@ -2,7 +2,7 @@ Name|No Running Or Hiding
 Author|Nauti & FM Frederic & Be App
 Difficulty|6
 Description|You've injured your leg, making it impossible to run. On top of that, it seems whatever is lurking the halls has a keen eye for hiding spots, making them ineffective. As seen in Naiden Monstrum episode 61.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 No Hiding|True
 Disable Running|True

@@ -2,7 +2,7 @@ Name|Insane Mode
 Author|Ink
 Difficulty|7
 Description|This challenge gives you the opportunity to play against one of 3 strengthened (insane) monsters from the other challenges.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Monster Animation Speed Multiplier|1.4
 Monster Movement Speed Multiplier|1.4

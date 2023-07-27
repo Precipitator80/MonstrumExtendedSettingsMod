@@ -2,7 +2,7 @@ Name|Midnight Lockdown+
 Author|Precipitator
 Difficulty|4
 Description|The inspector has arrived to help Fiend in enforcing the ship's lockdown. As if things couldn't get any worse, a thick fog has surrounded the ship, making it even harder to navigate.
-Version|6.0 Indev
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1
