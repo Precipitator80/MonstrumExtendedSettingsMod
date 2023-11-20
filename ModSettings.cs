@@ -995,6 +995,7 @@ namespace MonstrumExtendedSettingsMod
                     randomiserMode = new MESMSetting<bool>("Randomiser Mode", "Randomises which settings are used and what they are set to", false).userValue;
                     chaosMultiplier = new MESMSetting<float>("Chaos Multiplier", "Increases or decreases the probability of settings being used and the magnitude of each setting", 1, false, true).userValue;
                     glowstickHunt = new MESMSetting<bool>("Glowstick Hunt", "A few glowsticks are chosen at random to be of a different colour than the rest. Activating all of the special glowsticks will prepare the liferaft for you", false).userValue;
+                    noGlowstickHuntFinale = new MESMSetting<bool>("No Glowstick Hunt Finale", "Stops the finale from activating at the end of glowstick hunt", false, false, true).userValue;
                     specialGlowsticksRequired = new MESMSetting<int>("Special Glowsticks Required", "Sets how many glowsticks are required to start the Glowstick Hunt finale. The colours used cycle through the colours of the rainbow", 6, false, true).userValue;
                     specialGlowsticksToCreate = new MESMSetting<int>("Special Glowsticks To Create", "Sets how many normal glowsticks will be selected to be special glowsticks when the round starts. Will always be set to at least the number of special glowsticks required", 12, false, true).userValue;
                     useCustomDoors = new MESMSetting<bool>("Use Custom Doors Mode", "Sets each door on the ship to this door type. This may cause a bug when exiting the tutorial room", false).userValue;
@@ -3634,6 +3635,7 @@ namespace MonstrumExtendedSettingsMod
             private static bool randomiserMode;
             private static float chaosMultiplier;
             public static bool glowstickHunt;
+            public static bool noGlowstickHuntFinale;
             public static int specialGlowsticksRequired;
             private static int specialGlowsticksToCreate;
             public static List<Color> glowstickHuntColours;

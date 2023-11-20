@@ -2541,13 +2541,16 @@ namespace MonstrumExtendedSettingsMod
                 // Create a custom escape string to show to the player.
                 string escapeString = "All glowsticks found.\n";
 
-                if (ModSettings.numberOfMonsters > 1)
+                if (!ModSettings.noGlowstickHuntFinale)
                 {
-                    escapeString += "Monsters approaching... ";
-                }
-                else if (ModSettings.numberOfMonsters == 1)
-                {
-                    escapeString += "Monster approaching... ";
+                    if (ModSettings.numberOfMonsters > 1)
+                    {
+                        escapeString += "Monsters approaching... ";
+                    }
+                    else if (ModSettings.numberOfMonsters == 1)
+                    {
+                        escapeString += "Monster approaching... ";
+                    }
                 }
 
                 escapeString += "Get to the liferaft!";
@@ -2558,11 +2561,15 @@ namespace MonstrumExtendedSettingsMod
 
                 yield return new WaitForSeconds(5f);
 
-                if (ModSettings.numberOfMonsters > 0)
+
+                if (!ModSettings.noGlowstickHuntFinale)
                 {
-                    // After 10 seconds, make the monster(s) persistent and force a chase.
-                    ModSettings.persistentMonster = true;
-                    ModSettings.ForceChase();
+                    if (ModSettings.numberOfMonsters > 0)
+                    {
+                        // After 10 seconds, make the monster(s) persistent and force a chase.
+                        ModSettings.persistentMonster = true;
+                        ModSettings.ForceChase();
+                    }
                 }
                 yield break;
             }
@@ -6633,7 +6640,7 @@ namespace MonstrumExtendedSettingsMod
                     FSMState currentState = movementControl.monster.GetComponent<FSM>().Current;
                     FSMState.StateTypes stateType = currentState.typeofState;
                     float modifiedSpeed = ModSettings.monsterAnimationSpeedMultiplier;
-                    bool applyChaseBuff = stateType == FSMState.StateTypes.Chase && movementControl.AnimationSpeed > 95f && (ModSettings.applyChaseSpeedBuffToAllMonsters || (ModSettings.bruteChaseSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute));
+                    bool applyChaseBuff = stateType == FSMState.StateTypes.Chase && movementControl.AnimationSpeed > 95f && (ModSettings.applyChaseSpeedBuffToAllMonsters || (ModSettings.bruteChaseSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute && !movementControl.monster.monsterType.Equals("Sparky")));
                     if (applyChaseBuff)
                     {
                         modifiedSpeed *= ModSettings.bruteChaseSpeedBuffMultiplier;
@@ -6652,7 +6659,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
 
-                    if ((ModSettings.applyLongRangeWanderSpeedBuffToAllMonsters || (ModSettings.bruteLongRangeWanderSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute)) && currentState.GetType() == typeof(MWanderState) && (movementControl.monster.Patrol != null && movementControl.monster.Patrol.ShouldRun) || (movementControl.monster.DistanceToPlayer > 40f && movementControl.monster.DistanceToGoal() > 20f))
+                    if ((ModSettings.applyLongRangeWanderSpeedBuffToAllMonsters || (ModSettings.bruteLongRangeWanderSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute && !movementControl.monster.monsterType.Equals("Sparky"))) && currentState.GetType() == typeof(MWanderState) && (movementControl.monster.Patrol != null && movementControl.monster.Patrol.ShouldRun) || (movementControl.monster.DistanceToPlayer > 40f && movementControl.monster.DistanceToGoal() > 20f))
                     {
                         modifiedSpeed *= ModSettings.bruteLongRangeWanderSpeedBuffMultiplier;
                     }

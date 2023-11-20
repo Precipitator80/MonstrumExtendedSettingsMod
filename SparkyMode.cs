@@ -569,7 +569,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         mChasingState.sinceDoorCheck.StartTimer();
                     }
-                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute))
+                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute && !mChasingState.monster.monsterType.Equals("Sparky")))
                     {
                         ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
                     }
@@ -584,7 +584,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         mChasingState.sinceDoorCheck.ResetTimer();
                     }
-                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute))
+                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute && !mChasingState.monster.monsterType.Equals("Sparky")))
                     {
                         ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
                     }
