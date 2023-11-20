@@ -27,8 +27,8 @@ namespace MonstrumExtendedSettingsMod
 
     public partial class ExtendedSettingsModScript
     {
-        public const string VERSION = "6.0";
-        public const string VERSION_WITH_TEXT = VERSION/* + " Indev"*/;
+        public const string VERSION = "6.1";
+        public const string VERSION_WITH_TEXT = VERSION + " Indev";
 
         public abstract class MESMSetting
         {
