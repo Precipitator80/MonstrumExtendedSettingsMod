@@ -2477,6 +2477,28 @@ namespace MonstrumExtendedSettingsMod
                 genericLight.normalIntensity *= ModSettings.shipGenericLightIntensityMultiplier;
                 ((MonoBehaviour)genericLight).GetComponent<Light>().range *= ModSettings.shipGenericLightRangeMultiplier;
                 orig.Invoke(genericLight);
+
+                // # LATEST INDEV CHANGE
+                try
+                {
+                    Light light = ((MonoBehaviour)genericLight).GetComponent<Light>();
+                    Light[] lights = References.Monster.GetComponentsInChildren<Light>();
+                    LightShafts lightShafts = References.Monster.GetComponentInChildren<LightShafts>();
+                    Light[] bruteEyes = new Light[] { lights[4] /*Brute's left eye*/, lights[5] /*Brute's right eye*/ };
+
+                    if (light.gameObject.GetComponentInChildren<LightShafts>() == null)
+                    {
+                        light.intensity *= 0.01f;
+                        //light.range *= 0.5f;
+                        LightShafts newLightShafts = Utilities.CopyComponent(lightShafts, light.gameObject);
+                        newLightShafts.m_Brightness = light.intensity;
+                        newLightShafts.m_BrightnessColored = newLightShafts.m_Brightness;
+                    }
+                }
+                catch
+                {
+                    Debug.Log("Could not update lights in ReadAfterGeneration");
+                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/

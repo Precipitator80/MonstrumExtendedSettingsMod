@@ -350,36 +350,20 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
-            /* Not currently used utilities.
-            public static IEnumerator ActivateGameObjectAfterTime(GameObject gameObject, float timeToWait)
-            {
-                yield return new WaitForSeconds(timeToWait);
-                gameObject.SetActive(true);
-            }
-            
-            private static void RecursiveTransformCheck(Transform transform, int layer)
-            {
-                for (int i = 0; i < transform.childCount; i++)
-                {
-                    Debug.Log("Transform found in layer " + layer + ": " + transform.GetChild(i));
-                    RecursiveTransformCheck(transform.GetChild(i), layer + 1);
-                }
-            }
-
             // @CopyComponent
-            public static T CopyComponent<T>(T original, GameObject destination) where T : Component // Copy a component at runtime - Shaffe - https://answers.unity.com/questions/458207/copy-a-component-at-runtime.html - Accessed 14.07.2021
-            {
-                System.Type type = original.GetType();
-                Component copy = destination.AddComponent(type);
-                System.Reflection.FieldInfo[] fields = type.GetFields();
-                foreach (System.Reflection.FieldInfo field in fields)
-                {
-                    field.SetValue(copy, field.GetValue(original));
-                }
-                return copy as T;
-            }
+            // public static T CopyComponent<T>(T original, GameObject destination) where T : Component // Copy a component at runtime - Shaffe - https://answers.unity.com/questions/458207/copy-a-component-at-runtime.html - Accessed 14.07.2021
+            // {
+            //     System.Type type = original.GetType();
+            //     Component copy = destination.AddComponent(type);
+            //     System.Reflection.FieldInfo[] fields = type.GetFields();
+            //     foreach (System.Reflection.FieldInfo field in fields)
+            //     {
+            //         field.SetValue(copy, field.GetValue(original));
+            //     }
+            //     return copy as T;
+            // }
 
-
+            // # LATEST INDEV CHANGE
             // Copy a component at runtime - turbanov - https://answers.unity.com/questions/458207/copy-a-component-at-runtime.html - Accessed 19.08.2022
             public static T CopyComponent<T>(T original, GameObject destination) where T : Component
             {
@@ -399,6 +383,22 @@ namespace MonstrumExtendedSettingsMod
                     prop.SetValue(dst, prop.GetValue(original, null), null);
                 }
                 return dst as T;
+            }
+
+            /* Not currently used utilities.
+            public static IEnumerator ActivateGameObjectAfterTime(GameObject gameObject, float timeToWait)
+            {
+                yield return new WaitForSeconds(timeToWait);
+                gameObject.SetActive(true);
+            }
+            
+            private static void RecursiveTransformCheck(Transform transform, int layer)
+            {
+                for (int i = 0; i < transform.childCount; i++)
+                {
+                    Debug.Log("Transform found in layer " + layer + ": " + transform.GetChild(i));
+                    RecursiveTransformCheck(transform.GetChild(i), layer + 1);
+                }
             }
             */
 
