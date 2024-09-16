@@ -80,6 +80,9 @@ namespace MonstrumExtendedSettingsMod
                 // No Cameras
                 On.SecurityCamera.Start += new On.SecurityCamera.hook_Start(HookSecurityCamera);
 
+                //Cameras Timer
+                On.AmberState.ctor += new On.AmberState.hook_ctor(HookAmberStateCtor);
+
                 // No Steam
                 On.SteamVentManager.Awake += new On.SteamVentManager.hook_Awake(HookSteamVentManager);
 
@@ -7591,6 +7594,14 @@ namespace MonstrumExtendedSettingsMod
                 {
                     securityCamera.StopByDuctTape();
                 }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @SecurityCamera
+
+            private static void HookAmberStateCtor(On.AmberState.orig_ctor orig, AmberState amberState)
+            {
+                amberState.warningTime = ModSettings.camTimer;
             }
 
             /*----------------------------------------------------------------------------------------------------*/

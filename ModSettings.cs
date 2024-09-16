@@ -1093,6 +1093,7 @@ namespace MonstrumExtendedSettingsMod
                     consistentLevelGeneration = new MESMSetting<bool>("Consistent Level Generation", "Level generation for the same seed and settings will always be the same. This is setting is automatically enabled when using a custom seed", false, false, true).userValue;
                     startRoomRegion = new MESMSettingMultipleChoice("Starter Room Region", "Can be Upper Deck, Lower Deck or Either", "Either", new string[] { "Either", "Upper Deck", "Lower Deck" }).userValue;
                     spawnDeactivatedItems = new MESMSetting<bool>("Spawn Deactivated Items", "Lets the compass and walkie talkie items spawn. These items were spawned in older versions of the game, but later removed", false).userValue;
+                    camTimer = new MESMSetting<int>("Camera Timer", "Sets the timer for how long a camera needs until it triggers its alarm", 2, true, false, 0).userValue;
                     noCameras = new MESMSetting<bool>("No Cameras", "All cameras are covered with duct tape", false).userValue;
                     noSteam = new MESMSetting<bool>("No Steam", "Sets the engine room's steam override to off. Model does not update", false).userValue;
                     allPreFilledFuseBoxes = new MESMSetting<bool>("All Pre-filled Fuse Boxes", "Spawns each fuse box with a fuse", false).userValue;
@@ -3686,6 +3687,7 @@ namespace MonstrumExtendedSettingsMod
             public static string startRoomRegion;
             public static bool spawnDeactivatedItems;
             public static bool noCameras;
+            public static int camTimer;
             public static bool noSteam;
             private static bool allPreFilledFuseBoxes;
             public static bool noPreFilledFuseBoxes;
