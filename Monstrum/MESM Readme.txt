@@ -82,6 +82,7 @@ Credits:
 - Birdbonanza#5821 / birdbonanza - Creating custom music for Sparky.
 - Noba#1916 / _noba - Creating the molotov and smoke grenade models.
 - bee#2660 / bee2660 - Creating advanced code to help with specific problems related to Partiality modding.
+- TierMaster1 - Creating the Camera Timer setting.
 - ArieX (https://steamcommunity.com/id/ariesalex/) - The creation of the Monstrum Multihack, which offered some late inspiration and code examples of additional features used in the M.E.S. mod.
 - An anonymous person for creating the foundation for noclip mode and the cloning of items.
 
