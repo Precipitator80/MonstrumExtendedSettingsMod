@@ -1040,11 +1040,15 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @AnimationControl
 
+            /// <summary>
+            /// Checks whether to disable monster stun immunity. Disabled with the no monster stun immunity setting and for monster players in PvP.
+            /// </summary>
             private static void HookAnimationControlCheckIfStunned(On.AnimationControl.orig_CheckIfStunned orig, AnimationControl animationControl)
             {
                 orig.Invoke(animationControl);
                 if (ModSettings.noMonsterStunImmunity || (ModSettings.enableCrewVSMonsterMode && !CrewVsMonsterMode.letAIControlMonster && ManyMonstersMode.MonsterNumber(animationControl.monster.GetInstanceID()) < ModSettings.numbersOfMonsterPlayers.Count))
                 {
+                    // Leave enough time for the stun animation to play once before resetting.
                     if (animationControl.immuneTime > 1.5f)
                     {
                         animationControl.immuneToStun = false;
@@ -1052,6 +1056,9 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Applies the monster animation speed multiplier.
+            /// </summary>
             private static void HookAnimationControlStart(On.AnimationControl.orig_Start orig, AnimationControl animationControl)
             {
                 orig.Invoke(animationControl);
@@ -1061,6 +1068,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @CameraFOV
 
+            /// <summary>
+            /// Applies the player's custom FOV with range set by the settings.
+            /// </summary>
             private static void HookCameraFOV(On.CameraFOV.orig_Awake orig, CameraFOV cameraFOV)
             {
                 if (PlayerPrefs.HasKey("FOV"))
@@ -1092,6 +1102,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @ChooseAttack
 
+            /// <summary>
+            /// Notes the death type for the custom game over screens.
+            /// </summary>
             private static void HookChooseAttackWhatDeathByPlayer(On.ChooseAttack.orig_WhatDeathByPlayer orig, ChooseAttack.PlayerDeath PD)
             {
                 Room playerRoom = References.Monster.GetComponent<Monster>().PlayerDetectRoom.GetRoom;
@@ -1106,6 +1119,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @CompassScript
 
+            /// <summary>
+            /// Applies custom compass logic when using the monster compass setting.
+            /// </summary>
             private static void HookCompassScriptUpdate(On.CompassScript.orig_Update orig, CompassScript compassScript)
             {
                 if (!ModSettings.monsterCompass || !MonsterStarter.spawned)
@@ -1116,96 +1132,24 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (compassScript.equip)
                     {
-                        Transform monsterTransform;
-                        if (!ModSettings.startedWithMMM)
-                        {
-                            monsterTransform = References.Monster.transform;
-                        }
-                        else
-                        {
-                            monsterTransform = ManyMonstersMode.monsterList[ManyMonstersMode.ClosestMonsterToThis(compassScript.needleTrans.position)].transform;
-                        }
+                        // Use the reference monster when not playing MMM and the closest monster otherwise.
+                        Transform monsterTransform = !ModSettings.startedWithMMM ? References.Monster.transform : ManyMonstersMode.monsterList[ManyMonstersMode.ClosestMonsterToThis(compassScript.needleTrans.position)].transform;
 
-                        Transform playerTransform;
-                        if (!ModSettings.enableMultiplayer)
-                        {
-                            playerTransform = References.Player.transform;
-                        }
-                        else
-                        {
-                            playerTransform = MultiplayerMode.InventoryFromItemClass(compassScript.gameObject).newPlayerClass.transform;
-                        }
+                        // Use the reference player when not playing multiplayer and the inventory player otherwise.
+                        Transform playerTransform = !ModSettings.enableMultiplayer ? References.Player.transform : MultiplayerMode.InventoryFromItemClass(compassScript.gameObject).newPlayerClass.transform;
 
+                        // Reset the compass' base transform to make calculation easier.
                         Quaternion rotation = compassScript.baseTrans.rotation;
                         compassScript.baseTrans.rotation = Quaternion.identity;
+
+                        // Calculate and set the angle of the compass needle.
                         Vector3 distanceVectorToMonster = monsterTransform.position - playerTransform.position;
                         distanceVectorToMonster.y = playerTransform.forward.y;
                         float angle = MultiplayerMode.SignedAngleBetween(playerTransform.forward, distanceVectorToMonster, Vector3.up);
-                        //Debug.Log("Angle between compass and monster is " + angle);
-
                         compassScript.needleTrans.rotation = Quaternion.Euler(0, angle, 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(Vector3.forward, Vector3.up);
 
-                        //compassScript.baseTrans.rotation = Quaternion.AngleAxis(0f /*Vector3.Angle(Vector3.up, compassScript.baseTrans.up)*/, Vector3.up) * Quaternion.Euler(0, 90f, 0); //* compassScript.baseTrans.rotation;// * Quaternion.Euler(0, Vector3.Angle(compassScript.baseTrans.up, monsterTransform.up), 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(Vector3.forward, Vector3.up);
-                        //compassScript.needleTrans.rotation *= Quaternion.Euler(0, Quaternion.Angle(compassScript.needleTrans.rotation, monsterTransform.rotation), 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(/*Vector3.forward*/monsterTransform.position, Vector3.up);
-                        //compassScript.needleTrans.rotation = new Quaternion(compassScript.needleTrans.rotation.x, compassScript.needleTrans.rotation.y * Quaternion.Angle(Quaternion.LookRotation(Vector3.forward, Vector3.up), monsterTransform.rotation), compassScript.needleTrans.rotation.z, compassScript.needleTrans.rotation.w);
-
+                        // Reset the compass' base transform to the original rotation.
                         compassScript.baseTrans.rotation = rotation;
-                        //compassScript.baseTrans.rotation = Quaternion.identity;
-
-                        /*
-                        Transform monsterTransform;
-                        if (!ModSettings.startedWithMMM)
-                        {
-                            monsterTransform = References.Monster.transform;
-                        }
-                        else
-                        {
-                            monsterTransform = ManyMonstersMode.monsterList[ManyMonstersMode.ClosestMonsterToThis(compassScript.needleTrans.position)].transform;
-                        }
-                        Quaternion rotation = compassScript.baseTrans.rotation;
-                        //Vector3 axis = Vector3.Cross(compassScript.baseTrans.up, Vector3.up);
-                        compassScript.baseTrans.rotation = Quaternion.AngleAxis(0f, Vector3.up);////Quaternion.Euler(0, Quaternion.Angle(compassScript.baseTrans.rotation, monsterTransform.rotation), 0);
-
-                        Vector3 distanceVectorToMonster = monsterTransform.position - References.Player.transform.position;
-                        float angle = MultiplayerMode.SignedAngleBetween(References.Player.transform.forward, distanceVectorToMonster, Vector3.up);
-                        Debug.Log("Angle between compass and monster is " + angle);
-                        //compassScript.baseTrans.rotation *= Quaternion.Euler(0, angle, 0);
-                        compassScript.baseTrans.rotation *= Quaternion.Euler(0, 0, 0);
-
-                        compassScript.needleTrans.rotation = Quaternion.Euler(0, angle, 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(Vector3.forward, Vector3.up);
-                        */
-
-                        //compassScript.baseTrans.rotation = Quaternion.AngleAxis(0f /*Vector3.Angle(Vector3.up, compassScript.baseTrans.up)*/, Vector3.up) * Quaternion.Euler(0, 90f, 0); //* compassScript.baseTrans.rotation;// * Quaternion.Euler(0, Vector3.Angle(compassScript.baseTrans.up, monsterTransform.up), 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(Vector3.forward, Vector3.up);
-                        //compassScript.needleTrans.rotation *= Quaternion.Euler(0, Quaternion.Angle(compassScript.needleTrans.rotation, monsterTransform.rotation), 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(/*Vector3.forward*/monsterTransform.position, Vector3.up);
-                        //compassScript.needleTrans.rotation = new Quaternion(compassScript.needleTrans.rotation.x, compassScript.needleTrans.rotation.y * Quaternion.Angle(Quaternion.LookRotation(Vector3.forward, Vector3.up), monsterTransform.rotation), compassScript.needleTrans.rotation.z, compassScript.needleTrans.rotation.w);
-
-                        //compassScript.baseTrans.rotation = rotation;
-                        //compassScript.baseTrans.rotation = Quaternion.identity;
-
-
-                        /*
-                        Transform monsterTransform;
-                        if (!ModSettings.startedWithMMM)
-                        {
-                            monsterTransform = References.Monster.transform;
-                        }
-                        else
-                        {
-                            monsterTransform = ManyMonstersMode.monsterList[ManyMonstersMode.ClosestMonsterToThis(compassScript.needleTrans.position)].transform;
-                        }
-                        Quaternion rotation = compassScript.baseTrans.rotation;
-                        Vector3 axis = Vector3.Cross(compassScript.baseTrans.up, Vector3.up);
-                        compassScript.baseTrans.rotation = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, compassScript.baseTrans.up), axis) * compassScript.baseTrans.rotation;
-                        compassScript.needleTrans.rotation = compassScript.rotate90AroundUp; //* Quaternion.LookRotation(Vector3.forward, Vector3.up);
-                        compassScript.needleTrans.rotation = new Quaternion(compassScript.needleTrans.rotation.x, compassScript.needleTrans.rotation.y * Quaternion.Angle(compassScript.rotate90AroundUp, monsterTransform.rotation), compassScript.needleTrans.rotation.z, compassScript.needleTrans.rotation.w);
-                        compassScript.baseTrans.rotation = rotation;
-                        */
                     }
                 }
             }
@@ -1213,16 +1157,17 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @CraneChain
 
+            /// <summary>
+            /// Changes the crane chain length based on the deck the chain is on.
+            /// </summary>
             private static void HookCraneChainStart(On.CraneChain.orig_Start orig, CraneChain craneChain)
             {
                 if (ModSettings.addAdditionalCrewDeckBuilding)
                 {
-                    //Debug.Log("Max length before is " + craneChain.maxLength + ".");
-                    //craneChain.maxLength = 7 * (RegionManager.Instance.ConvertPointToRegionNode(craneChain.transform.position).y - 1) / 7;
-                    //craneChain.maxLength = RegionManager.Instance.ConvertPointToRegionNode(craneChain.transform.position).y - 1;
-                    craneChain.maxLength = 7 * (RegionManager.Instance.ConvertPointToRegionNode(craneChain.transform.position).y - 1 - 5) / 2; // This gives the chain a maximum length as a ratio of deck difference of the corrected deck number to check and the original position times the original length. ORIGINAL: Deck 8 -> Deck 7 adjusted. Deck 7 to deck 5 is 2 decks difference. The original maximum chain length is 7 -> 7 * 2 / 2 = 7. DIFFERENT EXAMPLE: Deck 9 -> Deck 8 adjusted. Deck 8 to deck 5 is 3 decks differnce. The original maximum chain length is 7 -> 7 * 3 / 2 = 10.5.
-                    //craneChain.maxLength = 9;
-                    //Debug.Log("Using max length of " + craneChain.maxLength + " for crane chain as it is at " + RegionManager.Instance.ConvertPointToRegionNode(craneChain.transform.position) + ".");
+                    // This gives the chain a maximum length as a ratio of deck difference of the corrected deck number to check and the original position times the original length.
+                    // ORIGINAL: Deck 8 -> Deck 7 adjusted. Deck 7 to deck 5 is 2 decks difference. The original maximum chain length is 7 -> 7 * 2 / 2 = 7.
+                    // DIFFERENT EXAMPLE: Deck 9 -> Deck 8 adjusted. Deck 8 to deck 5 is 3 decks differnce. The original maximum chain length is 7 -> 7 * 3 / 2 = 10.5.
+                    craneChain.maxLength = 7 * (RegionManager.Instance.ConvertPointToRegionNode(craneChain.transform.position).y - 1 - 5) / 2;
                 }
                 orig.Invoke(craneChain);
             }
@@ -1231,30 +1176,36 @@ namespace MonstrumExtendedSettingsMod
             // @DeathMenu
 
             private static Dictionary<PrimaryRegionType, List<Sprite>> regionBackgrounds; // Death Menu Region Backgrounds.
-            private static Dictionary<String, List<Sprite>> monsterFrames; // Death Menu Monster Frames.
+            private static Dictionary<string, List<Sprite>> monsterFrames; // Death Menu Monster Frames.
             private static Dictionary<ChooseAttack.PlayerDeath, List<Sprite>> deathTypeFrames; // Death Menu Death Type Frames.
 
             private static PrimaryRegionType deathRegion; // The region the player died in.
             private static string deathMonster = string.Empty; // The monster the player died to.
             private static ChooseAttack.PlayerDeath deathType; // The death type the player had (non-direct to monster).
 
+            /// <summary>
+            /// Loads death screens from their asset bundle.
+            /// </summary>
             private static void LoadDeathScreens()
             {
+                // Create dictionaries for each sprite type.
                 regionBackgrounds = new Dictionary<PrimaryRegionType, List<Sprite>>();
                 monsterFrames = new Dictionary<string, List<Sprite>>();
                 deathTypeFrames = new Dictionary<ChooseAttack.PlayerDeath, List<Sprite>>();
 
-                UnityEngine.Object[] deathScreensUnpacked = Utilities.LoadAssetBundle("deathscreens");
-
+                // Use a vanilla sprite as reference when creating custom sprites.
                 Sprite referenceSprite = Hints.GetRandomHint().texture;
-                foreach (UnityEngine.Object deathScreenObject in deathScreensUnpacked)
+
+                // Unpack the death screens and create a sprite for each object. Finally, register each sprite under the correct dictionary and key.
+                foreach (UnityEngine.Object deathScreenObject in Utilities.LoadAssetBundle("deathscreens"))
                 {
+                    // Verify the object is a Texture2D as expected.
                     if (deathScreenObject.GetType() == typeof(Texture2D))
                     {
+                        // Use the texture to create a sprite.
                         Texture2D deathScreenTexture = (Texture2D)deathScreenObject;
                         Sprite loadingScreenSprite = Sprite.Create(deathScreenTexture, referenceSprite.rect, referenceSprite.pivot, referenceSprite.pixelsPerUnit);
 
-                        bool added = false;
                         // Check whether the image is a region background.
                         foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
                         {
@@ -1268,48 +1219,41 @@ namespace MonstrumExtendedSettingsMod
                                 }
                                 // Add the image to the list of sprites for the key.
                                 regionBackgrounds[primaryRegionType].Add(loadingScreenSprite);
-                                added = true;
-                                break;
+                                continue;
                             }
                         }
-                        if (!added)
+
+                        // Check whether the image is a monster frame.
+                        foreach (string monsterName in ModSettings.monsterNames)
                         {
-                            // Check whether the image is a monster frame.
-                            foreach (string monsterName in ModSettings.monsterNames)
+                            // Check the name of the image against the monster names.
+                            if (deathScreenTexture.name.Substring(0, deathScreenTexture.name.Length - 1).Equals(monsterName)) // Assumes there is a one-digit number at the end!
                             {
-                                // Check the name of the image against the monster names.
-                                if (deathScreenTexture.name.Substring(0, deathScreenTexture.name.Length - 1).Equals(monsterName)) // Assumes there is a one-digit number at the end!
+                                // Create a list of sprites if there is none for the key.
+                                if (!monsterFrames.ContainsKey(monsterName))
                                 {
-                                    // Create a list of sprites if there is none for the key.
-                                    if (!monsterFrames.ContainsKey(monsterName))
-                                    {
-                                        monsterFrames.Add(monsterName, new List<Sprite>());
-                                    }
-                                    // Add the image to the list of sprites for the key.
-                                    monsterFrames[monsterName].Add(loadingScreenSprite);
-                                    added = true;
-                                    break;
+                                    monsterFrames.Add(monsterName, new List<Sprite>());
                                 }
+                                // Add the image to the list of sprites for the key.
+                                monsterFrames[monsterName].Add(loadingScreenSprite);
+                                continue;
                             }
-                            if (!added)
+                        }
+
+                        // Check whether the image is a death type frame.
+                        foreach (ChooseAttack.PlayerDeath playerDeath in Enum.GetValues(typeof(ChooseAttack.PlayerDeath)))
+                        {
+                            // Check the name of the image against the playerDeath enum.
+                            if (deathScreenTexture.name.Contains(playerDeath.ToString()))
                             {
-                                // Check whether the image is a death type frame.
-                                foreach (ChooseAttack.PlayerDeath playerDeath in Enum.GetValues(typeof(ChooseAttack.PlayerDeath)))
+                                // Create a list of sprites if there is none for the key.
+                                if (!deathTypeFrames.ContainsKey(playerDeath))
                                 {
-                                    // Check the name of the image against the playerDeath enum.
-                                    if (deathScreenTexture.name.Contains(playerDeath.ToString()))
-                                    {
-                                        // Create a list of sprites if there is none for the key.
-                                        if (!deathTypeFrames.ContainsKey(playerDeath))
-                                        {
-                                            deathTypeFrames.Add(playerDeath, new List<Sprite>());
-                                        }
-                                        // Add the image to the list of sprites for the key.
-                                        deathTypeFrames[playerDeath].Add(loadingScreenSprite);
-                                        added = true;
-                                        break;
-                                    }
+                                    deathTypeFrames.Add(playerDeath, new List<Sprite>());
                                 }
+                                // Add the image to the list of sprites for the key.
+                                deathTypeFrames[playerDeath].Add(loadingScreenSprite);
+                                continue;
                             }
                         }
                     }
@@ -1318,9 +1262,12 @@ namespace MonstrumExtendedSettingsMod
                 deathTypeFrames.Add(ChooseAttack.PlayerDeath.MindAttack, monsterFrames[Monster.MonsterTypeEnum.Fiend.ToString()]);
             }
 
+            /// <summary>
+            /// Applies custom death screens.
+            /// </summary>
             private static void HookDeathMenuStart(On.DeathMenu.orig_Start orig, DeathMenu deathMenu)
             {
-                // Load custom death screens if required.
+                // Load custom death screens if not yet loaded.
                 if (regionBackgrounds == null)
                 {
                     LoadDeathScreens();
@@ -1334,21 +1281,23 @@ namespace MonstrumExtendedSettingsMod
                 Image frame = Instantiate(deathMenu.backgroundImage, deathMenu.backgroundImage.rectTransform);
                 frame.preserveAspect = true;
 
+                // Check whether the monster was a Sparky Brute (instead of just Sparky).
                 if (deathMonster.Equals("Sparky") && !ModSettings.customSparkyModel)
                 {
                     deathMonster = "SparkyBrute";
                 }
 
+                // Check whether the player died by a supported Monster.
                 if (ModSettings.monsterNames.Contains(deathMonster) && monsterFrames.ContainsKey(deathMonster) && monsterFrames[deathMonster].Count > 0)
                 {
                     Debug.Log("Setting monster frame.");
                     frame.sprite = monsterFrames[deathMonster][UnityEngine.Random.Range(0, monsterFrames[deathMonster].Count)];
-                }
+                } // Check whether the player had a supported non-monster death.
                 else if (deathTypeFrames.ContainsKey(deathType) && deathTypeFrames[deathType].Count > 0)
                 {
                     Debug.Log("Setting special death frame.");
                     frame.sprite = deathTypeFrames[deathType][UnityEngine.Random.Range(0, deathTypeFrames[deathType].Count)];
-                }
+                } // If the death type was not supported, disable the death frame.
                 else
                 {
                     Debug.Log("Disabling death frame.");
@@ -1359,11 +1308,12 @@ namespace MonstrumExtendedSettingsMod
                 deathMenu.backgrounds = new Sprite[1];
                 DeathMenu.backgroundID = 0;
 
+                // Check whether the player died in a supported region.
                 if (regionBackgrounds.ContainsKey(deathRegion) && regionBackgrounds[deathRegion].Count > 0)
                 {
                     Debug.Log("Setting death region background.");
                     deathMenu.backgrounds[0] = regionBackgrounds[deathRegion][UnityEngine.Random.Range(0, regionBackgrounds[deathRegion].Count)];
-                }
+                } // If the death region was not supported, disable the region background.
                 else
                 {
                     Debug.Log("Disabling region background.");
@@ -1373,9 +1323,9 @@ namespace MonstrumExtendedSettingsMod
                 // Reset the values for the next round after chosen.
                 // What is the default value for enum variable? - BoltClock - https://stackoverflow.com/questions/4967656/what-is-the-default-value-for-enum-variable - Accessed 30.04.2023
                 Debug.Log("Death Region: " + deathRegion + "\nDeath Monster: " + deathMonster + "\nDeath Type: " + deathType);
-                deathRegion = default(PrimaryRegionType);
+                deathRegion = default;
                 deathMonster = string.Empty;
-                deathType = default(ChooseAttack.PlayerDeath); // Default is Steam. MindAttack is also used for specific Fiend frames.
+                deathType = default; // Default is Steam. MindAttack is also used for specific Fiend frames.
 
                 // Change the render mode of the canvas to overlay the screen.
                 deathMenu.backgroundImage.canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -1401,11 +1351,10 @@ namespace MonstrumExtendedSettingsMod
                             text.transform.parent.parent.localScale = new Vector3(1.65f, 1.65f, 1.65f);
                         }
                     }
-                    // Show the frame when hiding the exit confirmation.
+                    // Show the frame when hiding the exit confirmation ("No Button").
                     if (ueObject.name.Equals("NoButton") && frame.enabled)
                     {
-                        Button noButton = ((Button)ueObject);
-                        noButton.onClick.AddListener(delegate ()
+                        ((Button)ueObject).onClick.AddListener(delegate ()
                         {
                             frame.enabled = true;
                         });
@@ -1462,6 +1411,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @DuctTape
 
+            /// <summary>
+            /// Runs the duct tape item destruction check for each life raft when more than one is spawned in.
+            /// </summary>
             private static void HookDuctTapeOnFinishItemAnimation(On.DuctTape.orig_OnFinishItemAnimation orig, DuctTape ductTape)
             {
                 if (ModSettings.addAdditionalCrewDeckBuilding)
@@ -1481,6 +1433,10 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @EscapeRoute
 
+            /// <summary>
+            /// Supports the Speedrun Timer, Escape Routes to Win and Escape Route Toggle settings.
+            /// Also has small misc features such as showing debug mode text and picking the escape scene monster in MMM.
+            /// </summary>
             private static void HookEscapeRoute(On.EscapeRoute.orig_OnInteract orig, EscapeRoute escapeRoute)
             {
                 // Record the final time when an escape attempt is made to stop lag from the checks affecting the time.
@@ -1573,6 +1529,11 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Checks whether a type of escape route is allowed when attempting to use it.
+            /// </summary>
+            /// <param name="escapeRouteType">The type of escape route attempting to be used.</param>
+            /// <returns>Whether escape via this escape route type is allowed or not.</returns>
             private static bool EscapeRouteTypeAllowed(EscapeRoute.EscapeRouteType escapeRouteType)
             {
                 switch (escapeRouteType)
@@ -1596,6 +1557,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FadeScript
 
+            /// <summary>
+            /// Starts the speedrun timer and logs a message for it when the game has finished loading.
+            /// </summary>
             private static void HookFadeScriptBeginFadeIn(On.FadeScript.orig_BeginFadeIn orig)
             {
                 if (ModSettings.useSpeedrunTimer)
