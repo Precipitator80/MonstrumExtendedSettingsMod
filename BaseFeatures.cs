@@ -290,7 +290,6 @@ namespace MonstrumExtendedSettingsMod
                 // Fiend Mind Attack Customisation
                 if (!ModSettings.startedWithMMM)
                 {
-                    On.FiendMindAttack.AttackCheck += new On.FiendMindAttack.hook_AttackCheck(HookFiendMindAttackAttackCheck);
                     On.FiendMindAttack.ChangeTimers += new On.FiendMindAttack.hook_ChangeTimers(HookFiendMindAttackChangeTimers);
                 }
 
@@ -1578,42 +1577,28 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookFiendAura()
             {
-                On.FiendAura.ctor += new On.FiendAura.hook_ctor(HookFiendAuraCtor);
-                On.FiendAura.ResetRanges += new On.FiendAura.hook_ResetRanges(HookFiendAuraResetRanges);
                 On.FiendAura.SetRangesTo += new On.FiendAura.hook_SetRangesTo(HookFiendAuraSetRangesTo);
                 On.FiendAura.Start += new On.FiendAura.hook_Start(HookFiendAuraStart);
             }
 
-            private static void HookFiendAuraCtor(On.FiendAura.orig_ctor orig, FiendAura fiendAura)
-            {
-                if (ModSettings.fiendFlickerMin != 0f && ModSettings.fiendFlickerMed != 0f && ModSettings.fiendFlickerMax != 0f)
-                {
-                    fiendAura.largeRadius = ModSettings.fiendFlickerMax;
-                    fiendAura.mediumRadius = ModSettings.fiendFlickerMed;
-                    fiendAura.smallRadius = ModSettings.fiendFlickerMin;
-                }
-            }
-
-            private static void HookFiendAuraResetRanges(On.FiendAura.orig_ResetRanges orig, FiendAura fiendAura)
-            {
-                if (ModSettings.fiendFlickerMin != 0f && ModSettings.fiendFlickerMed != 0f && ModSettings.fiendFlickerMax != 0f)
-                {
-                    fiendAura.smallRadius = fiendAura.srt_smlRad;
-                    fiendAura.mediumRadius = fiendAura.srt_medRad;
-                    fiendAura.largeRadius = fiendAura.srt_lrgRad;
-                }
-            }
-
+            /// <summary>
+            /// Applies the custom Fiend ranges as multipliers to the new range values.
+            /// </summary>
             private static void HookFiendAuraSetRangesTo(On.FiendAura.orig_SetRangesTo orig, FiendAura fiendAura, float smallRad, float medRad, float largeRad)
             {
                 if (ModSettings.fiendFlickerMin != 0f && ModSettings.fiendFlickerMed != 0f && ModSettings.fiendFlickerMax != 0f)
                 {
-                    fiendAura.smallRadius = smallRad;
-                    fiendAura.mediumRadius = medRad;
-                    fiendAura.largeRadius = largeRad;
+                    smallRad *= ModSettings.fiendFlickerMin / 3f;
+                    medRad *= ModSettings.fiendFlickerMed / 4.5f;
+                    largeRad *= ModSettings.fiendFlickerMed / 6f;
                 }
+                orig.Invoke(fiendAura, smallRad, medRad, largeRad);
             }
 
+            /// <summary>
+            /// Only apply custom values for Fiend ranges when these are set (non-zero).
+            /// The original function sets the start values for each aura radius ("srt_"), which are used as reference when resetting the radii.
+            /// </summary>
             private static void HookFiendAuraStart(On.FiendAura.orig_Start orig, FiendAura fiendAura)
             {
                 if (ModSettings.fiendFlickerMin != 0f && ModSettings.fiendFlickerMed != 0f && ModSettings.fiendFlickerMax != 0f)
@@ -1622,84 +1607,43 @@ namespace MonstrumExtendedSettingsMod
                     fiendAura.mediumRadius = ModSettings.fiendFlickerMed;
                     fiendAura.smallRadius = ModSettings.fiendFlickerMin;
                 }
-                fiendAura.srt_lrgRad = fiendAura.largeRadius;
-                fiendAura.srt_medRad = fiendAura.mediumRadius;
-                fiendAura.srt_smlRad = fiendAura.smallRadius;
+                orig.Invoke(fiendAura);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @FiendLightController
-
             // FiendLightController is a component of Flashlight.
+
+            /// <summary>
+            /// Uses slightly different logic for allowing non-Fiend monsters to disrupt lights.
+            /// Applied separately in Many Monsters Mode.
+            /// </summary>
             private static void HookFiendLightControllerLateUpdate(On.FiendLightController.orig_LateUpdate orig, FiendLightController fiendLightController)
             {
                 if (ModSettings.giveAllMonstersAFiendAura)
                 {
-                    if (fiendLightController.aura != null)
-                    {
-                        if (fiendLightController.aura != null && fiendLightController.aura.enabled)
-                        {
-                            FiendLightDisruptor fiendLightDisruptor = fiendLightController.aura.GetComponent<FiendLightDisruptor>();
-                            if (fiendLightDisruptor.timeSinceDisrupt == 0f)
-                            {
-                                if (MathHelper.RoundToNearest(fiendLightController.aura.transform.position, Settings.CuboidDim.y).y == MathHelper.RoundToNearest(((MonoBehaviour)fiendLightController).transform.position, Settings.CuboidDim.y).y)
-                                {
-                                    float num = Vector3.Distance(fiendLightController.aura.transform.position, ((MonoBehaviour)fiendLightController).transform.position);
-                                    if (num < fiendLightController.aura.largeRadius * Settings.CuboidDim.x)
-                                    {
-                                        if (num < fiendLightController.aura.smallRadius * Settings.CuboidDim.x)
-                                        {
-                                            fiendLightController.fiendOverride = GenericLight.LightTypes.Off;
-                                        }
-                                        else
-                                        {
-                                            fiendLightController.fiendOverride = GenericLight.LightTypes.Flickering2;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        fiendLightController.fiendOverride = GenericLight.LightTypes.Normal;
-                                    }
-                                }
-                                else
-                                {
-                                    fiendLightController.fiendOverride = GenericLight.LightTypes.Normal;
-                                }
-                            }
-                        }
-                    }
-                    else
+                    // Ignore the Fiend check when trying to set the aura.
+                    if (fiendLightController.aura == null)
                     {
                         fiendLightController.aura = References.Monster.GetComponent<FiendAura>();
                     }
-                    if (fiendLightController.fiendOverride != GenericLight.LightTypes.Normal && fiendLightController.flashlight.on)
+
+                    // Only run the original code when the aura is enabled and has a non-zero time since disrupt.
+                    if (fiendLightController.aura == null || !fiendLightController.aura.enabled || fiendLightController.aura.GetComponent<FiendLightDisruptor>().timeSinceDisrupt != 0f)
                     {
-                        GenericLight.LightTypes lightTypes = fiendLightController.fiendOverride;
-                        if (lightTypes != GenericLight.LightTypes.Off)
-                        {
-                            if (lightTypes == GenericLight.LightTypes.Flickering2)
-                            {
-                                fiendLightController.Flicker();
-                            }
-                        }
-                        else
-                        {
-                            foreach (Light light in fiendLightController.lights)
-                            {
-                                light.intensity = 0f;
-                            }
-                        }
+                        return;
                     }
                 }
-                else
-                {
-                    orig.Invoke(fiendLightController);
-                }
+                orig.Invoke(fiendLightController);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @FiendMindAttack
 
+            /// <summary>
+            /// Applies mind attack only when the targeted player does not currently have invincibility mode on.
+            /// Also hooked consecutively in Multiplayer Mode.
+            /// </summary>
             private static void HookFiendMindAttackUpdate(On.FiendMindAttack.orig_Update orig, FiendMindAttack fiendMindAttack)
             {
                 int crewPlayerIndex = 0;
@@ -1707,49 +1651,16 @@ namespace MonstrumExtendedSettingsMod
                 {
                     crewPlayerIndex = MultiplayerMode.crewPlayers.IndexOf(fiendMindAttack.monster.PlayerDetectRoom.player);
                 }
-                if (ModSettings.invincibilityMode[crewPlayerIndex])
-                {
-                    return;
-                }
-                else
+                if (!ModSettings.invincibilityMode[crewPlayerIndex])
                 {
                     orig.Invoke(fiendMindAttack);
                 }
             }
 
-            private static void HookFiendMindAttackAttackCheck(On.FiendMindAttack.orig_AttackCheck orig, FiendMindAttack fiendMindAttack)
-            {
-                bool flag = false;
-                if (Calculations.PlayerToMonsterDistance() < fiendMindAttack.attackRange && fiendMindAttack.monster.CanSeePlayer && fiendMindAttack.attackTimer == fiendMindAttack.maxTime && fiendMindAttack.delayTimer == fiendMindAttack.maxDelay)
-                {
-                    if (fiendMindAttack.fiendAnims != null)
-                    {
-                        flag = true;
-                    }
-                    else
-                    {
-                        fiendMindAttack.fiendAnims = fiendMindAttack.monster.GetComponentInChildren<FiendAnimations>();
-                    }
-                }
-                if (flag)
-                {
-                    fiendMindAttack.fiendAnims.DoMindAttack = true;
-                    fiendMindAttack.monster.MoveControl.GetAniControl.DesiredUpperBodyWeight = 1f;
-                    if (!OculusManager.isOculusEnabled)
-                    {
-                        fiendMindAttack.mindAttackBleed.impact = 2f;
-                    }
-                    else
-                    {
-                        fiendMindAttack.oculusMindAttackBleed.impact = 2f;
-                    }
-                    fiendMindAttack.PlayAttackSound();
-                    fiendMindAttack.PlayerEffects();
-                    fiendMindAttack.delayTimer = 0f;
-                    fiendMindAttack.playerHealth.DoDamage(35f * ModSettings.fiendMindAttackDamageMultiplier, false, PlayerHealth.DamageTypes.MindAttack, false);
-                }
-            }
-
+            /// <summary>
+            /// Applies custom Fiend timer multipliers. Applied separately in Many Monsters Mode.
+            /// It might be cleaner to edit timers before or after running the function instead of replicating the entire function, but it is difficult to do this without changing the logic.
+            /// </summary>
             private static void HookFiendMindAttackChangeTimers(On.FiendMindAttack.orig_ChangeTimers orig, FiendMindAttack fiendMindAttack)
             {
                 bool flag = false;
@@ -1855,6 +1766,10 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @Fire
 
+            /// <summary>
+            /// Fixes the vanilla bug that the fire damage script identifies as the player instead of fire.
+            /// This would result in the player being damaged when fire touches steam.
+            /// </summary>
             private static void HookFireDamageStart(On.FireDamage.orig_Start orig, FireDamage fireDamage)
             {
                 orig.Invoke(fireDamage);
@@ -1864,6 +1779,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FireExtinguisher
 
+            /// <summary>
+            /// Applies the infinite fire extinguisher fuel setting.
+            /// </summary>
             private static void HookFireExtinguisherUpdate(On.FireExtinguisher.orig_Update orig, FireExtinguisher fireExtinguisher)
             {
                 if (ModSettings.infiniteFireExtinguisherFuel && fireExtinguisher.IsUsing)
@@ -1876,6 +1794,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FlareGun
 
+            /// <summary>
+            /// Applies the overpowered flare gun setting, letting it always be fired regardless of delay or ammo.
+            /// </summary>
             private static void HookFlareGunUpdate(On.FlareGun.orig_Update orig, FlareGun flareGun)
             {
                 if (!ModSettings.overpoweredFlareGun)
@@ -1891,33 +1812,33 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FlareObject
 
+            /// <summary>
+            /// Supports the overpowered flare gun, MMM, flares disable monsters and flares teleport monsters settings.
+            /// </summary>
             private static void HookFlareObjectHitMonster(On.FlareObject.orig_HitMonster orig, FlareObject flareObject)
             {
+                // Hit the monster if it is not a Brute or the flare gun is overpowered.
                 if (flareObject.monster.MonsterType != Monster.MonsterTypeEnum.Brute || ModSettings.overpoweredFlareGun)
                 {
                     flareObject.monster.MoveControl.GetAniControl.Stun(1f);
+                    // Let the flare hit multiple monsters.
                     if (ModSettings.numberOfMonsters < 2)
                     {
                         flareObject.hasStunnedMonster = true;
                     }
+                    // Disable monsters if desired.
                     if (ModSettings.flaresDisableMonsters)
                     {
                         flareObject.monster.gameObject.SetActive(false);
                     }
+                    // Try to teleport monsters if desired.
                     if (ModSettings.flaresTeleportMonsters)
                     {
+                        // Pick spawn points near the player. Try several times to pick a spawn point that is far enough away from the player.
                         for (int i = 0, maxAttempts = 5; i < maxAttempts; i++)
                         {
                             Vector3 spawnPosition = LevelGeneration.Instance.MonsterSpawnPoints[UnityEngine.Random.Range(0, LevelGeneration.Instance.MonsterSpawnPoints.Count)].transform.position;
-                            Vector3 closestPlayerPosition;
-                            if (ModSettings.enableMultiplayer)
-                            {
-                                closestPlayerPosition = MultiplayerMode.newPlayerClasses[MultiplayerMode.ClosestPlayerToThis(spawnPosition)].transform.position;
-                            }
-                            else
-                            {
-                                closestPlayerPosition = References.Player.transform.position;
-                            }
+                            Vector3 closestPlayerPosition = ModSettings.enableMultiplayer ? MultiplayerMode.newPlayerClasses[MultiplayerMode.ClosestPlayerToThis(spawnPosition)].transform.position : References.Player.transform.position;
                             if (Vector3.Distance(closestPlayerPosition, spawnPosition) > 16f || i == maxAttempts - 1)
                             {
                                 flareObject.monster.gameObject.transform.position = spawnPosition;
@@ -1933,6 +1854,9 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Applies the flare lifetime setting and destroys flares after expiry to avoid lag if using overpowered flare gun.
+            /// </summary>
             private static void HookFlareObjectStart(On.FlareObject.orig_Start orig, FlareObject flareObject)
             {
                 orig.Invoke(flareObject);
@@ -1943,17 +1867,29 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Utility class to destroy an object after a timer has expired.
+            /// </summary>
             private class DestroyAfterTime : MonoBehaviour
             {
+                /// <summary>
+                /// Start the coroutine to destroy the object.
+                /// </summary>
+                /// <param name="time">The time after which to destroy the object.</param>
                 public void Trigger(float time)
                 {
                     this.StartCoroutine(DestructionTimer(time));
                 }
 
+                /// <summary>
+                /// Destroys the object after a timer has expired.
+                /// </summary>
+                /// <param name="time">The time after which to destroy the object.</param>
+                /// <returns></returns>
                 private IEnumerator DestructionTimer(float time)
                 {
                     yield return new WaitForSeconds(time);
-                    Destroy(this.gameObject);
+                    Destroy(gameObject);
                 }
             }
 
@@ -7040,12 +6976,16 @@ namespace MonstrumExtendedSettingsMod
                 {
                     crewPlayerIndex = MultiplayerMode.crewPlayers.IndexOf(playerHealth.NPC);
                 }
-                if (ModSettings.logDebugText)
-                {
-                    Debug.Log("Damaged by type: " + DMG + " with damage " + damageVal + ". Stack Trace:\n" + new StackTrace().ToString());
-                }
                 if (!ModSettings.invincibilityMode[crewPlayerIndex])
                 {
+                    if (DMG == PlayerHealth.DamageTypes.MindAttack)
+                    {
+                        damageVal *= ModSettings.fiendMindAttackDamageMultiplier;
+                    }
+                    if (ModSettings.logDebugText)
+                    {
+                        Debug.Log("Damaged by type: " + DMG + " with damage " + damageVal + ". Stack Trace:\n" + new StackTrace().ToString());
+                    }
                     orig.Invoke(playerHealth, damageVal, overTime, DMG, isAreaEffectDamage);
                 }
             }

@@ -2988,7 +2988,7 @@ namespace MonstrumExtendedSettingsMod
                                 fiendsMonsterComponents[i].MoveControl.GetAniControl.DesiredUpperBodyWeight = 1f;
                             }
                         }
-                        fiendMindAttack.playerHealth.DoDamage(35f * ModSettings.fiendMindAttackDamageMultiplier, false, PlayerHealth.DamageTypes.MindAttack, false);
+                        fiendMindAttack.playerHealth.DoDamage(35f, false, PlayerHealth.DamageTypes.MindAttack, false);
                         if (!OculusManager.isOculusEnabled)
                         {
                             fiendMindAttack.mindAttackBleed.impact = 2f;
