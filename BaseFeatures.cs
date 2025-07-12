@@ -133,9 +133,6 @@ namespace MonstrumExtendedSettingsMod
                 // Disable Monster Particle Systems & Part 1 of Silent Monster
                 HookMonster();
 
-                // Increase Key Items
-                // On.KeyItem.RandomizeCount += new On.KeyItem.hook_RandomizeCount(HookKeyItemRandomizeCount); // Integrated into Spawn Deactivated Items.
-
                 // No Player Jump Cooldown In Debug Mode (Integrated Into Debug Mode)
                 On.PlayerMotor.PerformJump += new On.PlayerMotor.hook_PerformJump(HookPlayerMotorPerformJump);
 
@@ -159,12 +156,12 @@ namespace MonstrumExtendedSettingsMod
                 On.FlareObject.HitMonster += new On.FlareObject.hook_HitMonster(HookFlareObjectHitMonster);
                 On.FlareObject.Start += new On.FlareObject.hook_Start(HookFlareObjectStart);
 
-                // Spawn Deactivated Items, Change Key Item Spawn Numbers & Diverse Spawns
+                // Spawn Deactivated Items, Change Key Item Spawn Numbers, Spawn Anywhere & Diverse Spawns
                 On.KeyItemSystem.SetUpLists += new On.KeyItemSystem.hook_SetUpLists(HookKeyItemSystemSetUpLists);
                 On.KeyItemPlaceholder.CalculateSuitability += new On.KeyItemPlaceholder.hook_CalculateSuitability(HookKeyItemPlaceholderCalculateSuitability);
 
                 // Infinite Flashlight Power
-                HookFlashlight();
+                On.Flashlight.Update += new On.Flashlight.hook_Update(HookFlashlightUpdate);
 
                 // Teleport Through Door
                 On.MDestroyState.OnEnter += new On.MDestroyState.hook_OnEnter(HookMDestroyStateOnEnter);
@@ -1896,51 +1893,48 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @Flashlight
 
-            private static void HookFlashlight()
-            {
-                On.Flashlight.Update += new On.Flashlight.hook_Update(HookFlashlightUpdate);
-            }
-
+            /// <summary>
+            /// Supports flashlight colour, range and intensity settings.
+            /// </summary>
             private static void HookFlashlightStart(On.Flashlight.orig_Start orig, Flashlight flashlight)
             {
                 orig.Invoke(flashlight);
 
-                if (ModSettings.UseCustomColour(ModSettings.flashlightColour) || ModSettings.randomFlashlightColours)
+                // Check whether to use a custom colour (set or random).
+                // If a custom colour is set and random colours are enabled, give a chance for each.
+                var useCustomFlashlightColour = ModSettings.UseCustomColour(ModSettings.flashlightColour);
+                if (ModSettings.randomFlashlightColours && (!useCustomFlashlightColour || UnityEngine.Random.value > 0.5f))
                 {
-                    if (ModSettings.UseCustomColour(ModSettings.flashlightColour) && ModSettings.randomFlashlightColours)
-                    {
-                        float randomChance = UnityEngine.Random.value;
-                        if (randomChance > 0.5f)
-                        {
-                            flashlight.flashLight.color = ModSettings.ConvertColourStringToColour(ModSettings.flashlightColour);
-                        }
-                        else
-                        {
-                            flashlight.flashLight.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                        }
-                    }
-                    else if (ModSettings.UseCustomColour(ModSettings.flashlightColour))
-                    {
-                        flashlight.flashLight.color = ModSettings.ConvertColourStringToColour(ModSettings.flashlightColour);
-                    }
-                    else
-                    {
-                        flashlight.flashLight.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                    }
-                    flashlight.originalFlashLightColor = flashlight.flashLight.color;
+                    flashlight.flashLight.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
                 }
+                else if (useCustomFlashlightColour)
+                {
+                    flashlight.flashLight.color = ModSettings.ConvertColourStringToColour(ModSettings.flashlightColour);
+                }
+
+                // Reset the original flashlight colour in case a custom colour was set.
+                flashlight.originalFlashLightColor = flashlight.flashLight.color;
+
+                // Apply multipliers to flashlight properties.
                 flashlight.flashLightIntensity *= ModSettings.flashlightIntensityMultiplier;
                 flashlight.maxFlashLightIntensity *= ModSettings.flashlightIntensityMultiplier;
                 flashlight.flashLight.range *= ModSettings.flashlightRangeMultiplier;
             }
 
+            /// <summary>
+            /// Supports infinite flashlight power and multiplayer audio.
+            /// </summary>
             private static void HookFlashlightUpdate(On.Flashlight.orig_Update orig, Flashlight flashlight)
             {
+                // Check whether to use infinite flashlight power.
                 if (ModSettings.infiniteFlashlightPower && flashlight.on)
                 {
                     flashlight.power = 260f;
                 }
+
                 orig.Invoke(flashlight);
+
+                // Check whether to pause the flashlight for multiplayer audio.
                 if (ModSettings.enableMultiplayer && !MultiplayerMode.useLegacyAudio && !(flashlight.on && flashlight.power >= 15f) && !(flashlight.on && flashlight.power < 15f) && LevelGeneration.Instance.finishedGenerating)
                 {
                     VirtualAudioSource virtualAudioSource = flashlight.torchSource.gameObject.GetComponent<VirtualAudioSource>();
@@ -1958,6 +1952,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FloatHum
 
+            /// <summary>
+            /// Supports silent monster, muting Fiend's hum.
+            /// </summary>
             private static void HookFloatHumStart(On.FloatHum.orig_Start orig, FloatHum floatHum)
             {
                 orig.Invoke(floatHum);
@@ -1970,6 +1967,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FootStepManager
 
+            /// <summary>
+            /// Supports silent monster, muting monster footsteps.
+            /// </summary>
             private static void HookFootStepManagerStart(On.FootStepManager.orig_Start orig, FootStepManager footStepManager)
             {
                 orig.Invoke(footStepManager);
@@ -1989,6 +1989,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FOVCheck
 
+            /// <summary>
+            /// #Seems to be the same as CameraFOV. Unsure which is used when. Could be tested and streamlined.
+            /// </summary>
             private static void HookFOVCheck(On.FOVCheck.orig_Start orig, FOVCheck fOVCheck)
             {
                 if (PlayerPrefs.HasKey("FOV"))
@@ -2025,11 +2028,15 @@ namespace MonstrumExtendedSettingsMod
                 On.FOVSlider.Test += new On.FOVSlider.hook_Test(HookFOVSliderTest);
             }
 
+            /// <summary>
+            /// Supports custom FOV, keeping the menu within usable bounds.
+            /// It is unclear whether all of the custom code is needed or just the menu check.
+            /// </summary>
             private static void HookFOVSliderStart(On.FOVSlider.orig_Start orig, FOVSlider fOVSlider)
             {
+                // Set the slider bounds to match the mod settings.
                 fOVSlider.FOVSliderObject.minValue = ModSettings.minimumValueOnFOVSlider;
                 fOVSlider.FOVSliderObject.maxValue = ModSettings.maximumValueOnFOVSlider;
-
 
                 fOVSlider.delta.IsRealtime = true;
                 fOVSlider.delta.StartTimer();
@@ -2038,22 +2045,15 @@ namespace MonstrumExtendedSettingsMod
                 fOVSlider.aspectRatio = fOVSlider.width / fOVSlider.height;
                 if (PlayerPrefs.HasKey("FOV"))
                 {
-                    fOVSlider.fovFloat = PlayerPrefs.GetFloat("FOV");
-                    if (fOVSlider.fovFloat < fOVSlider.FOVSliderObject.minValue)
-                    {
-                        fOVSlider.fovFloat = fOVSlider.FOVSliderObject.minValue;
-                    }
-                    else if (fOVSlider.fovFloat > fOVSlider.FOVSliderObject.maxValue)
-                    {
-                        fOVSlider.fovFloat = fOVSlider.FOVSliderObject.maxValue;
-                    }
-                    //fOVSlider.fovFloat = 50f + ((PlayerPrefs.GetFloat("FOV") - ModSettings.minimumValueOnFOVSlider) * 20f / (ModSettings.maximumValueOnFOVSlider - ModSettings.minimumValueOnFOVSlider));
+                    // Use the currently set FOV, clamping it to the slider's bounds.
+                    fOVSlider.fovFloat = Mathf.Clamp(PlayerPrefs.GetFloat("FOV"), fOVSlider.FOVSliderObject.minValue, fOVSlider.FOVSliderObject.maxValue);
                     fOVSlider.FOVSliderObject.value = fOVSlider.fovFloat;
                     fOVSlider.vFOVInRads = fOVSlider.fovFloat * 0.0174532924f;
                     fOVSlider.hFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.vFOVInRads / 2f) * fOVSlider.aspectRatio);
 
-                    //Debug.Log("Current scene name is: " + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
-                    if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainSecondary") // MainSecondary is the generated level. Use the first bracket if the player is not in the generated level, which locks the FOV to the vanilla range of 50 to 70 to allow for proper menu UI interaction.
+                    // Lock the FOV to the vanilla range everywhere except the game level to allow for proper menu interaction.
+                    // MainSecondary is the generated level. Use the first bracket if the player is not in the generated level, which locks the FOV to the vanilla range of 50 to 70 to allow for proper menu UI interaction.
+                    if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainSecondary")
                     {
                         for (int i = 0; i < fOVSlider.cameraList.Count; i++)
                         {
@@ -2075,40 +2075,30 @@ namespace MonstrumExtendedSettingsMod
                     fOVSlider.vFOVInRads = 1.04719758f;
                     fOVSlider.hFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.vFOVInRads / 2f) * fOVSlider.aspectRatio);
                 }
-
-
-                //orig.Invoke(fOVSlider);
             }
 
+            /// <summary>
+            /// Bounds the FOV when not fully loaded into the game.
+            /// Seems a bit similar in purpose to Start, but not sure whether this bounding is needed.
+            /// </summary>
             private static void HookFOVSliderTest(On.FOVSlider.orig_Test orig, FOVSlider fOVSlider)
             {
-                if (LevelGeneration.Instance != null && LevelGeneration.Instance.finishedGenerating)
+                var useBoundedValue = LevelGeneration.Instance == null || !LevelGeneration.Instance.finishedGenerating;
+                var originalValue = fOVSlider.FOVSliderObject.value;
+                if (useBoundedValue)
                 {
-                    for (int i = 0; i < fOVSlider.cameraList.Count; i++)
-                    {
-                        fOVSlider.aspectRatio = fOVSlider.width / fOVSlider.height;
-                        fOVSlider.vFOVInRads = fOVSlider.FOVSliderObject.value * 0.0174532924f;
-                        fOVSlider.hFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.vFOVInRads / 2f) * fOVSlider.aspectRatio);
-                        fOVSlider.vFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.hFOVInRads / 2f) / fOVSlider.aspectRatio);
-                        fOVSlider.cameraList[i].fieldOfView = fOVSlider.vFOVInRads * 57.29578f;
-                    }
+                    fOVSlider.FOVSliderObject.value = (50f + ((fOVSlider.FOVSliderObject.value - ModSettings.minimumValueOnFOVSlider) * 20f / (ModSettings.maximumValueOnFOVSlider - ModSettings.minimumValueOnFOVSlider))) * 0.0174532924f;
                 }
-                else
-                {
-                    for (int i = 0; i < fOVSlider.cameraList.Count; i++)
-                    {
-                        fOVSlider.aspectRatio = fOVSlider.width / fOVSlider.height;
-                        fOVSlider.vFOVInRads = (50f + ((fOVSlider.FOVSliderObject.value - ModSettings.minimumValueOnFOVSlider) * 20f / (ModSettings.maximumValueOnFOVSlider - ModSettings.minimumValueOnFOVSlider))) * 0.0174532924f;
-                        fOVSlider.hFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.vFOVInRads / 2f) * fOVSlider.aspectRatio);
-                        fOVSlider.vFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.hFOVInRads / 2f) / fOVSlider.aspectRatio);
-                        fOVSlider.cameraList[i].fieldOfView = fOVSlider.vFOVInRads * 57.29578f;
-                    }
-                }
+                orig.Invoke(fOVSlider);
+                fOVSlider.FOVSliderObject.value = originalValue;
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @FuelDecal
 
+            /// <summary>
+            /// Supports fire property modifiers.
+            /// </summary>
             private static void HookFuelDecalStart(On.FuelDecal.orig_Start orig, FuelDecal fuelDecal)
             {
                 orig.Invoke(fuelDecal);
@@ -2120,6 +2110,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FuelParticles
 
+            /// <summary>
+            /// Supports infinite fuel.
+            /// </summary>
             private static void HookFuelParticlesUpdate(On.FuelParticles.orig_Update orig, FuelParticles fuelParticles)
             {
                 if (ModSettings.infiniteFuelCanFuel && fuelParticles.pouring)
@@ -2132,6 +2125,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FuseBoxManager
 
+            /// <summary>
+            /// Supports Add Additional Crew Deck Building Support, letting multiple fuze boxes be set up in one region.
+            /// </summary>
             private static void HookFuseBoxManagerAddFuseBox(On.FuseBoxManager.orig_AddFuseBox orig, FuseBoxManager fuseBoxManager, FuseBox _fuseBox)
             {
                 if (!fuseBoxManager.fuseboxes.ContainsKey(_fuseBox.powerRegion))
@@ -2144,12 +2140,17 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Supports no pre-filled fuse boxes and dark ship.
+            /// </summary>
             private static void HookFuseBoxManagerSetupFuse(On.FuseBoxManager.orig_SetupFuse orig, FuseBoxManager fuseBoxManager, FuseBox _fusebox)
             {
+                // Only add a fuse if allowing pre-filled fuse boxes.
                 if (!ModSettings.noPreFilledFuseBoxes)
                 {
                     _fusebox.AddFuse();
                     _fusebox.AddPreExistingFuse();
+                    // Do not activate the fuse box if using dark ship.
                     if (!ModSettings.darkShip)
                     {
                         _fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
@@ -2167,61 +2168,60 @@ namespace MonstrumExtendedSettingsMod
                 On.GenericLight.Start += new On.GenericLight.hook_Start(HookGenericLightStart);
             }
 
+            /// <summary>
+            /// Supports dark ship and powerable lights, setting light type after generation.
+            /// </summary>
             private static void HookGenericLightOnGenerationComplete(On.GenericLight.orig_OnGenerationComplete orig, GenericLight genericLight)
             {
-                genericLight.lightCuller = ((MonoBehaviour)genericLight).GetComponent<Light>().GetComponent<LightCull2>();
-                genericLight.UpdateLight();
+                orig.Invoke(genericLight);
                 if (ModSettings.darkShip)
                 {
+                    // If not allowing powerable lights, force the light to stay off forever.
                     if (!ModSettings.powerableLights)
                     {
                         genericLight.startingLightType = GenericLight.LightTypes.Off;
                     }
+                    // Set the light to off after generation.
                     genericLight.lightType = GenericLight.LightTypes.Off;
                 }
-                GenericLight.genComplete = true;
             }
 
+            /// <summary>
+            /// Supports dark ship and powerable lights.
+            /// Sets light type back to normal on power up in dark ship mode if using powerable lights.
+            /// </summary>
             private static void HookGenericLightOnPowerUp(On.GenericLight.orig_OnPowerUp orig, GenericLight genericLight)
             {
-                genericLight.isPowered = true;
                 if (ModSettings.darkShip && ModSettings.powerableLights)
                 {
                     genericLight.lightType = GenericLight.LightTypes.Normal;
                 }
-                genericLight.UpdateLight();
+                orig.Invoke(genericLight);
             }
 
+            /// <summary>
+            /// Supports ship light colour, intensity and range settings.
+            /// </summary>
             private static void HookGenericLightStart(On.GenericLight.orig_Start orig, GenericLight genericLight)
             {
-                if (ModSettings.UseCustomColour(ModSettings.shipGenericLightsColour) || ModSettings.randomShipGenericLightsColours)
+                // Check whether to use a custom colour (set or random).
+                // If a custom colour is set and random colours are enabled, give a chance for each.
+                var useCustomShipLightColour = ModSettings.UseCustomColour(ModSettings.shipGenericLightsColour);
+                if (ModSettings.randomShipGenericLightsColours && (!useCustomShipLightColour || UnityEngine.Random.value > 0.5f))
                 {
-                    if (ModSettings.UseCustomColour(ModSettings.shipGenericLightsColour) && ModSettings.randomShipGenericLightsColours)
-                    {
-                        float randomChance = UnityEngine.Random.value;
-                        if (randomChance > 0.5f)
-                        {
-                            ((MonoBehaviour)genericLight).GetComponent<Light>().color = ModSettings.ConvertColourStringToColour(ModSettings.shipGenericLightsColour);
-                        }
-                        else
-                        {
-                            ((MonoBehaviour)genericLight).GetComponent<Light>().color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                        }
-                    }
-                    else if (ModSettings.UseCustomColour(ModSettings.shipGenericLightsColour))
-                    {
-                        ((MonoBehaviour)genericLight).GetComponent<Light>().color = ModSettings.ConvertColourStringToColour(ModSettings.shipGenericLightsColour);
-                    }
-                    else
-                    {
-                        ((MonoBehaviour)genericLight).GetComponent<Light>().color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                    }
+                    ((MonoBehaviour)genericLight).GetComponent<Light>().color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
                 }
+                else if (useCustomShipLightColour)
+                {
+                    ((MonoBehaviour)genericLight).GetComponent<Light>().color = ModSettings.ConvertColourStringToColour(ModSettings.shipGenericLightsColour);
+                }
+
+                // Apply multipliers to ship light properties.
                 genericLight.normalIntensity *= ModSettings.shipGenericLightIntensityMultiplier;
                 ((MonoBehaviour)genericLight).GetComponent<Light>().range *= ModSettings.shipGenericLightRangeMultiplier;
                 orig.Invoke(genericLight);
 
-                // # LATEST INDEV CHANGE
+                // # LATEST INDEV CHANGE - Sets all ship lights to be Brute lights.
                 // try
                 // {
                 //     Light light = ((MonoBehaviour)genericLight).GetComponent<Light>();
@@ -2247,9 +2247,12 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @GlobalMusic
 
+            /// <summary>
+            /// Supports spawn protection. Plays NoAlert music when a player has spawn protection.
+            /// This code is only run when MMM is not enabled.
+            /// </summary>
             private static void HookGlobalMusic(On.GlobalMusic.orig_CheckMusicState orig, GlobalMusic globalMusic)
             {
-                // This code is only run when MMM is not enabled.
                 bool doesAPlayerHaveSpawnProtection = false;
                 for (int i = 0; i < ModSettings.spawnProtection.Count; i++)
                 {
@@ -2268,20 +2271,22 @@ namespace MonstrumExtendedSettingsMod
                 if (!doesAPlayerHaveSpawnProtection)
                 {
                     orig.Invoke(globalMusic);
+                    return;
                 }
-                else
+
+                globalMusic.song = "Music/NoAlert/" + globalMusic.monsterType;
+                if (globalMusic.currentlyPlaying != globalMusic.song)
                 {
-                    globalMusic.song = "Music/NoAlert/" + globalMusic.monsterType;
-                    if (globalMusic.currentlyPlaying != globalMusic.song)
-                    {
-                        globalMusic.ChangeVariables(false, true, true, false, 0f);
-                    }
+                    globalMusic.ChangeVariables(false, true, true, false, 0f);
                 }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @GlowStick
 
+            /// <summary>
+            /// Supports glowstick hunt, updating the hunt counter and starting the finale if required count has been reached.
+            /// </summary>
             private static void HookGlowStickActivateGlowstick(On.GlowStick.orig_ActivateGlowstick orig, GlowStick glowStick)
             {
                 orig.Invoke(glowStick);
@@ -2291,11 +2296,13 @@ namespace MonstrumExtendedSettingsMod
                     if (ModSettings.glowstickHuntCounter >= ModSettings.specialGlowsticksRequired)
                     {
                         TimeScaleManager.Instance.StartCoroutine(StartGlowstickHuntFinale());
-                        //((MonoBehaviour)glowStick).StartCoroutine(StartGlowstickHuntFinale());
                     }
                 }
             }
 
+            /// <summary>
+            /// Readies the life raft and starts a permanent chase as a finale for glowstick hunt.
+            /// </summary>
             private static IEnumerator StartGlowstickHuntFinale()
             {
                 // Start the liferaft escape sequence.
@@ -2339,6 +2346,10 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
+            /// <summary>
+            /// Supports glowstick colour, intensity and range settings.
+            /// Unclear whether try catch statements are needed.
+            /// </summary>
             private static void HookGlowStick(On.GlowStick.orig_Start orig, GlowStick glowStick)
             {
                 orig.Invoke(glowStick);
@@ -2371,6 +2382,12 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Assigns a custom colour to a glowstick.
+            /// </summary>
+            /// <param name="glowStick">The glowstick to assign a colour to.</param>
+            /// <param name="customColour">The colour to assign to the glowstick.</param>
+            /// <param name="modifyOnlyOneGlowstick">Whether to only modify this glowstick. Matters because glowsticks share a common material.</param>
             public static void AssignCustomGlowstickColour(GlowStick glowStick, Color customColour, bool modifyOnlyOneGlowstick = false)
             {
                 glowStick.glowLight.color = customColour;
@@ -2385,6 +2402,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @Hiding
 
+            /// <summary>
+            /// Supports overpowered hiding spots, making monsters unable to detect whether the player is hiding.
+            /// </summary>
             public static bool HookHidingget_IsHiding(Hiding hiding)
             {
                 if (ModSettings.overpoweredHidingSpots)
@@ -2397,6 +2417,10 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @HunterAnimationsScript
 
+            /// <summary>
+            /// Supports quiet Hunter, muting Hunter spawning when the sub room has not been breached.
+            /// #This likely makes the Hunter normal when breaching the sub room but loud permanently afterwards, which may be undesired. If there is no bug associated with keeping Hunter quiet, the sub check is probably better removed.
+            /// </summary>
             private static bool HookHunterAnimationsScriptSpawnHunter(On.HunterAnimationsScript.orig_SpawnHunter orig, HunterAnimationsScript hunterAnimationsScript)
             {
                 bool spawnedHunter = orig.Invoke(hunterAnimationsScript);
@@ -2432,7 +2456,9 @@ namespace MonstrumExtendedSettingsMod
             Welding Kit
             */
 
-
+            /// <summary>
+            /// Supports hide inventory.
+            /// </summary>
             private static void HookInventoryDisplayInventory(On.Inventory.orig_DisplayInventory orig, Inventory inventory)
             {
                 if (!ModSettings.hideInventory)
@@ -2441,6 +2467,9 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Supports custom inventory size.
+            /// </summary>
             private static void HookInventoryStart(On.Inventory.orig_Start orig, Inventory inventory)
             {
                 if (ModSettings.inventorySize != 0)
@@ -2451,162 +2480,39 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
-            // @KeyItem
-
-            private static void HookKeyItemRandomizeCount(On.KeyItem.orig_RandomizeCount orig, KeyItem keyItem)
-            {
-                if (ModSettings.changeKeyItemSpawnNumbers != 0)
-                {
-                    // Make sure the minimum number of each key item that spawns is at least 1. This should spawn items that are usually disabled.
-                    if (keyItem.minCount <= 0)
-                    {
-                        keyItem.minCount = 1;
-                    }
-
-                    // If the increase in the maximum number of items is greater than 0, increase the maximum number of the key item to spawn. Else, set the maximum number of the key item to spawn to the minimum.
-                    if (ModSettings.changeKeyItemSpawnNumbers > 0)
-                    {
-                        keyItem.maxCount += ModSettings.changeKeyItemSpawnNumbers;
-                    }
-                    if (ModSettings.changeKeyItemSpawnNumbers < 0)
-                    {
-                        keyItem.maxCount = keyItem.minCount;
-                    }
-                }
-                orig.Invoke(keyItem);
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
             // @KeyItemPlaceholder
 
+            /// <summary>
+            /// Supports spawn items anywhere and diverse item spawns.
+            /// </summary>
             private static float HookKeyItemPlaceholderCalculateSuitability(On.KeyItemPlaceholder.orig_CalculateSuitability orig, KeyItemPlaceholder keyItemPlaceholder, PrimaryRegionType _idealRegion, KeyItem _item, Dictionary<PrimaryRegionType, Dictionary<string, int>> _regionItemCounts, Dictionary<PrimaryRegionType, Dictionary<string, int>> _maxRegionItems)
             {
-                if (!ModSettings.spawnItemsAnywhere)
-                {
-                    if (_item.category == KeyItem.KeyItemCategory.Wall && keyItemPlaceholder.category != KeyItem.KeyItemCategory.Wall)
-                    {
-                        return -1f;
-                    }
-                    if (!keyItemPlaceholder.room.allowKeyItemSpawning && !ModSettings.diverseItemSpawns)
-                    {
-                        return -1f;
-                    }
-                    float suitability = UnityEngine.Random.Range(0f, 1f);
-                    bool flag = false;
-                    if (_item.category == keyItemPlaceholder.category && _item.category != KeyItem.KeyItemCategory.Any)
-                    {
-                        suitability += 1000f;
-                        flag = true;
-                    }
-                    else
-                    {
-                        switch (_item.category)
-                        {
-                            case KeyItem.KeyItemCategory.Small:
-                                {
-                                    KeyItem.KeyItemCategory keyItemCategory = keyItemPlaceholder.category;
-                                    if (keyItemCategory != KeyItem.KeyItemCategory.Medium)
-                                    {
-                                        if (keyItemCategory != KeyItem.KeyItemCategory.Large)
-                                        {
-                                            if (keyItemCategory == KeyItem.KeyItemCategory.Any)
-                                            {
-                                                suitability += 700f;
-                                                flag = true;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            suitability += 800f;
-                                            flag = true;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        suitability += 900f;
-                                        flag = true;
-                                    }
-                                    break;
-                                }
-                            case KeyItem.KeyItemCategory.Medium:
-                                {
-                                    KeyItem.KeyItemCategory keyItemCategory2 = keyItemPlaceholder.category;
-                                    if (keyItemCategory2 != KeyItem.KeyItemCategory.Large)
-                                    {
-                                        if (keyItemCategory2 == KeyItem.KeyItemCategory.Any)
-                                        {
-                                            suitability += 950f;
-                                            flag = true;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        suitability += 1000f;
-                                        flag = true;
-                                    }
-                                    break;
-                                }
-                            case KeyItem.KeyItemCategory.Large:
-                                {
-                                    KeyItem.KeyItemCategory keyItemCategory3 = keyItemPlaceholder.category;
-                                    if (keyItemCategory3 == KeyItem.KeyItemCategory.Any)
-                                    {
-                                        suitability += 1000f;
-                                        flag = true;
-                                    }
-                                    break;
-                                }
-                            case KeyItem.KeyItemCategory.Any:
-                                switch (keyItemPlaceholder.category)
-                                {
-                                    case KeyItem.KeyItemCategory.Small:
-                                        suitability += 1000f;
-                                        flag = true;
-                                        break;
-                                    case KeyItem.KeyItemCategory.Medium:
-                                        suitability += 900f;
-                                        flag = true;
-                                        break;
-                                    case KeyItem.KeyItemCategory.Large:
-                                        suitability += 800f;
-                                        flag = true;
-                                        break;
-                                    case KeyItem.KeyItemCategory.Any:
-                                        suitability += 700f;
-                                        flag = true;
-                                        break;
-                                }
-                                break;
-                        }
-                    }
-                    if (!flag)
-                    {
-                        return -1f;
-                    }
-                    if (keyItemPlaceholder.IsValidRegion(_item, _regionItemCounts, _maxRegionItems))
-                    {
-                        suitability += 25f;
-                    }
-                    suitability -= Mathf.Clamp((float)keyItemPlaceholder.room.itemsSpawned * KeyItemPlaceholder.itemPenalty, 0f, 1f);
-                    if (_idealRegion == keyItemPlaceholder.primaryRegion)
-                    {
-                        suitability += 25f;
-                    }
-                    return suitability;
-                }
-                else
+                // If letting items spawn anywhere, return max suitability to skip the check.
+                if (ModSettings.spawnItemsAnywhere)
                 {
                     return float.MaxValue;
                 }
+
+                // If using diverse item spawns, let key items spawn in this room regardless of original setting.
+                if (ModSettings.diverseItemSpawns)
+                {
+                    keyItemPlaceholder.room.allowKeyItemSpawning = true;
+                }
+
+                return orig.Invoke(keyItemPlaceholder, _idealRegion, _item, _regionItemCounts, _maxRegionItems);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @KeyItemSystem
 
+            /// <summary>
+            /// Suports spawning deactivated items, spawning with flare gun, changing key item spawn numbers and diverse item spawns.
+            /// </summary>
             private static void HookKeyItemSystemSetUpLists(On.KeyItemSystem.orig_SetUpLists orig, KeyItemSystem keyItemSystem)
             {
                 try
                 {
+                    // Ensure the walkie talkie and flare gun spawn when using relevant settings.
                     if (ModSettings.spawnDeactivatedItems || ModSettings.spawnWithFlareGun)
                     {
                         KeyItem[] keyItems = Resources.FindObjectsOfTypeAll<KeyItem>();
@@ -2619,6 +2525,7 @@ namespace MonstrumExtendedSettingsMod
                                 {
                                     Debug.Log("Key item found via FindObjectsOfTypeAll is " + keyItem.name + ". It is set to spawn a minimum of " + keyItem.minCount + " times and a maximum of " + keyItem.maxCount + " times. Its priority is " + keyItem.priority + " and its category is " + keyItem.category + ".");
                                 }
+                                // Re-enable the walkie talkie.
                                 if (ModSettings.spawnDeactivatedItems && keyItem.name.Equals("WalkieTalkie"))
                                 {
                                     keyItem.gameObject.SetActive(true);
@@ -2628,6 +2535,7 @@ namespace MonstrumExtendedSettingsMod
                                     keyItemSystem.keyItems.Add(keyItem);
                                     Debug.Log("Walkie talkie added successfully via FindObjectsOfTypeAll.");
                                 }
+                                // Ensure a flare gun is always spawned when using the spawn with flare gun setting.
                                 else if (ModSettings.spawnWithFlareGun && keyItem.name.Equals("FlareGunNew") && !keyItemSystem.keyItems.Contains(keyItem))
                                 {
                                     keyItem.gameObject.SetActive(true);
@@ -2644,6 +2552,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
 
+                    // Re-enable the compass.
                     foreach (KeyItem keyItem in keyItemSystem.keyItems)
                     {
                         if (ModSettings.spawnDeactivatedItems && keyItem.name.Equals("Compass"))
@@ -2651,6 +2560,10 @@ namespace MonstrumExtendedSettingsMod
                             keyItem.minCount = 2;
                             keyItem.maxCount = 3;
                             keyItem.priority = 1;
+                            if (!ModSettings.logDebugText)
+                            {
+                                break;
+                            }
                         }
 
                         if (ModSettings.logDebugText)
@@ -2658,77 +2571,46 @@ namespace MonstrumExtendedSettingsMod
                             Debug.Log("Key item in KeyItemSystem is " + keyItem.name + ". It is set to spawn a minimum of " + keyItem.minCount + " times and a maximum of " + keyItem.maxCount + " times. Its priority is " + keyItem.priority + " and its category is " + keyItem.category + ".");
                         }
                     }
+
+                    // Run the original code.
                     orig.Invoke(keyItemSystem);
 
+                    // Let the walkie talkies spawn on the crew decks.
                     if (ModSettings.spawnDeactivatedItems)
                     {
                         keyItemSystem.maxes[PrimaryRegionType.CrewDeck]["WalkieTalkie"] = 10;
                     }
 
+                    // Adjust item counts if desired.
                     if (ModSettings.changeKeyItemSpawnNumbers != 0)
                     {
+                        // Define a minimum based on whether items should be allowed to not spawn at all.
+                        // Calculate a second min for each item and region to ensure item counts are not increased when they should not be.
+                        var minGlobal = ModSettings.allowKeyItemsToNotSpawnAtAll ? 0 : 1;
                         foreach (KeyItem keyItem in keyItemSystem.keyItems)
                         {
-                            // If the increase in the maximum number of items is greater than 0, increase the maximum number of the key item to spawn. Else, set the maximum number of the key item to spawn to the minimum.
+                            // Adjust each count while ensuring they do not go negative and have a normal relative relationship.
+                            var minItem = Mathf.Min(minGlobal, keyItem.minCount);
+                            keyItem.minCount = Mathf.Max(minItem, keyItem.minCount + ModSettings.changeKeyItemSpawnNumbers);
+                            keyItem.maxCount = Mathf.Max(keyItem.minCount, keyItem.maxCount + ModSettings.changeKeyItemSpawnNumbers);
 
-                            keyItem.minCount += ModSettings.changeKeyItemSpawnNumbers;
-                            keyItem.maxCount += ModSettings.changeKeyItemSpawnNumbers;
-
-                            if (keyItem.maxCount < 1)
-                            {
-                                // If the maximum count is less than 1, then the minimum count will also be less than 1 as the highest the minimum count can be is the maximum count.
-                                if (!ModSettings.allowKeyItemsToNotSpawnAtAll)
-                                {
-                                    keyItem.minCount = 1;
-                                    keyItem.maxCount = 1;
-                                }
-                                else
-                                {
-                                    keyItem.minCount = 0;
-                                    keyItem.maxCount = 0;
-                                }
-                            }
-                            else if (keyItem.minCount < 1)
-                            {
-                                // Even if the maximum count is not less than one, the minimum count still has to be checked as this may be less than the maximum count and thus below zero.
-                                if (!ModSettings.allowKeyItemsToNotSpawnAtAll)
-                                {
-                                    keyItem.minCount = 1;
-                                }
-                                else
-                                {
-                                    keyItem.minCount = 0;
-                                }
-                            }
-
+                            // Adjust the maximums for each region.
                             foreach (PrimaryRegionType primaryRegionType in keyItemSystem.maxes.Keys)
                             {
-                                keyItemSystem.maxes[primaryRegionType][keyItem.name] += ModSettings.changeKeyItemSpawnNumbers;
-                                if (keyItemSystem.maxes[primaryRegionType][keyItem.name] < 1)
-                                {
-                                    if (!ModSettings.allowKeyItemsToNotSpawnAtAll)
-                                    {
-                                        keyItemSystem.maxes[primaryRegionType][keyItem.name] = 1;
-                                    }
-                                    else
-                                    {
-                                        keyItemSystem.maxes[primaryRegionType][keyItem.name] = 0;
-                                    }
-                                }
+                                var minInRegion = Mathf.Min(minGlobal, keyItemSystem.maxes[primaryRegionType][keyItem.name]);
+                                keyItemSystem.maxes[primaryRegionType][keyItem.name] = Mathf.Max(minInRegion, keyItemSystem.maxes[primaryRegionType][keyItem.name] + ModSettings.changeKeyItemSpawnNumbers);
                             }
                         }
                     }
 
+                    // If using diverse spawns, ensure at least 1 of the item can spawn in each region.
                     if (ModSettings.diverseItemSpawns)
                     {
                         foreach (KeyItem keyItem in keyItemSystem.keyItems)
                         {
                             foreach (PrimaryRegionType primaryRegionType in keyItemSystem.maxes.Keys)
                             {
-                                if (keyItemSystem.maxes[primaryRegionType][keyItem.name] < 1)
-                                {
-                                    keyItemSystem.maxes[primaryRegionType][keyItem.name] = 1;
-                                }
+                                keyItemSystem.maxes[primaryRegionType][keyItem.name] = Mathf.Max(1, keyItemSystem.maxes[primaryRegionType][keyItem.name]);
                             }
                         }
                     }

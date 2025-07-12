@@ -2678,16 +2678,14 @@ namespace MonstrumExtendedSettingsMod
             }
 
             // @UseCustomColour
-            public static bool UseCustomColour(String colourString)
+            /// <summary>
+            /// Checks whether a colour string is set to use a custom colour.
+            /// </summary>
+            /// <param name="colourString">The colour string to check.</param>
+            /// <returns>Whether the colour string is set to use a custom colour.</returns>
+            public static bool UseCustomColour(string colourString)
             {
-                if (colourString.Equals("Default") || colourString.Equals("default"))
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
+                return !colourString.ToLower().Equals("default");
             }
 
             // @ConvertColourStringToColour
