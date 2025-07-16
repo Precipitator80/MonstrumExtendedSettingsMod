@@ -2080,17 +2080,21 @@ namespace MonstrumExtendedSettingsMod
             /// <summary>
             /// Bounds the FOV when not fully loaded into the game.
             /// Seems a bit similar in purpose to Start, but not sure whether this bounding is needed.
+            /// Setting fOVSlider.FOVSliderObject.value and then calling orig does not work because setting is hooked to call the test method again, causing recursion.
             /// </summary>
             private static void HookFOVSliderTest(On.FOVSlider.orig_Test orig, FOVSlider fOVSlider)
             {
                 var useBoundedValue = LevelGeneration.Instance == null || !LevelGeneration.Instance.finishedGenerating;
                 var originalValue = fOVSlider.FOVSliderObject.value;
-                if (useBoundedValue)
+                var vFOVToUse = (useBoundedValue ? originalValue : 50f + ((originalValue - ModSettings.minimumValueOnFOVSlider) * 20f / (ModSettings.maximumValueOnFOVSlider - ModSettings.minimumValueOnFOVSlider))) * 0.0174532924f;
+                for (int i = 0; i < fOVSlider.cameraList.Count; i++)
                 {
-                    fOVSlider.FOVSliderObject.value = (50f + ((fOVSlider.FOVSliderObject.value - ModSettings.minimumValueOnFOVSlider) * 20f / (ModSettings.maximumValueOnFOVSlider - ModSettings.minimumValueOnFOVSlider))) * 0.0174532924f;
+                    fOVSlider.aspectRatio = fOVSlider.width / fOVSlider.height;
+                    fOVSlider.vFOVInRads = vFOVToUse;
+                    fOVSlider.hFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.vFOVInRads / 2f) * fOVSlider.aspectRatio);
+                    fOVSlider.vFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.hFOVInRads / 2f) / fOVSlider.aspectRatio);
+                    fOVSlider.cameraList[i].fieldOfView = fOVSlider.vFOVInRads * 57.29578f;
                 }
-                orig.Invoke(fOVSlider);
-                fOVSlider.FOVSliderObject.value = originalValue;
             }
 
             /*----------------------------------------------------------------------------------------------------*/
