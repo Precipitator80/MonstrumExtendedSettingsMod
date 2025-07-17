@@ -2652,6 +2652,10 @@ namespace MonstrumExtendedSettingsMod
                 */
             }
 
+            /// <summary>
+            /// Code shared at the start of LevelGeneration.Awake when Many Monsters Mode is on or off.
+            /// Supports seed selection.
+            /// </summary>
             public static void CommonLevelGeneration1(LevelGeneration levelGeneration)
             {
                 ModSettings.ReadBeforeGeneration();
@@ -2678,6 +2682,10 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Code shared at the end of LevelGeneration.Awake when Many Monsters Mode is on or off.
+            /// Supports wallhacks mode and start region selection.
+            /// </summary>
             public static void CommonLevelGeneration2(LevelGeneration levelGeneration)
             {
                 if (ModSettings.WallhacksMode)
@@ -2686,16 +2694,19 @@ namespace MonstrumExtendedSettingsMod
                     levelGeneration.winterWonderland = true;
                 }
 
-                if (ModSettings.startRoomRegion.Equals("Upper Deck") || ModSettings.startRoomRegion.Equals("upper deck"))
+                if (ModSettings.startRoomRegion.ToLower().Equals("upper deck"))
                 {
                     LevelGeneration.Instance.spawnRoomType = LevelGeneration.SpawnRoomType.Upper;
                 }
-                else if (ModSettings.startRoomRegion.Equals("Lower Deck") || ModSettings.startRoomRegion.Equals("lower deck"))
+                else if (ModSettings.startRoomRegion.ToLower().Equals("lower deck"))
                 {
                     LevelGeneration.Instance.spawnRoomType = LevelGeneration.SpawnRoomType.Lower;
                 }
             }
 
+            /// <summary>
+            /// Supports monster selection and banned monnsters.
+            /// </summary>
             private static void HookLevelGenerationAwake(On.LevelGeneration.orig_Awake orig, LevelGeneration levelGeneration)
             {
                 CommonLevelGeneration1(levelGeneration);
@@ -2747,6 +2758,9 @@ namespace MonstrumExtendedSettingsMod
                 levelGeneration.StartCoroutine(StartGenerationAfterAFrame(orig, levelGeneration));
             }
 
+            /// <summary>
+            /// Core of the LevelGeneration.Begin hook. Supports level generation changes, loading text and post-level generation code.
+            /// </summary>
             private static IEnumerator StartGenerationAfterAFrame(On.LevelGeneration.orig_Begin orig, LevelGeneration levelGeneration)
             {
                 Debug.Log("Starting LevelGeneration.Begin");
@@ -2888,6 +2902,10 @@ namespace MonstrumExtendedSettingsMod
             }
 
 
+            /// <summary>
+            /// Avoids breaks in the middle of level generation when using custom seeds or consistent level generation.
+            /// This encourages RNG to be called in the same way each run, upping the chances of consistent level generation.
+            /// </summary>
             private static bool HookLevelGenerationDoBreak(On.LevelGeneration.orig_DoBreak orig, LevelGeneration levelGeneration)
             {
                 if (ModSettings.useCustomSeed || ModSettings.consistentLevelGeneration)
@@ -2897,6 +2915,9 @@ namespace MonstrumExtendedSettingsMod
                 return orig.Invoke(levelGeneration);
             }
 
+            /// <summary>
+            /// Supports adding an additional crew deck building. Likely increases the amount of life raft areas that can spawn.
+            /// </summary>
             private static void HookLevelGenerationSpawnInitialRooms(On.LevelGeneration.orig_SpawnInitialRooms orig, LevelGeneration levelGeneration)
             {
                 if (ModSettings.addAdditionalCrewDeckBuilding)
@@ -3631,6 +3652,9 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
+            /// <summary>
+            /// Calls extra mod code after level generation has finished.
+            /// </summary>
             private static IEnumerator WaitUntilGenerationIsFinished()
             {
                 while (!LevelGeneration.Instance.finishedGenerating)
