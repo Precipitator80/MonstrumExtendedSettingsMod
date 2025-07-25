@@ -2086,7 +2086,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 var useBoundedValue = LevelGeneration.Instance == null || !LevelGeneration.Instance.finishedGenerating;
                 var originalValue = fOVSlider.FOVSliderObject.value;
-                var vFOVToUse = (useBoundedValue ? originalValue : 50f + ((originalValue - ModSettings.minimumValueOnFOVSlider) * 20f / (ModSettings.maximumValueOnFOVSlider - ModSettings.minimumValueOnFOVSlider))) * 0.0174532924f;
+                var vFOVToUse = (useBoundedValue ? 50f + ((originalValue - ModSettings.minimumValueOnFOVSlider) * 20f / (ModSettings.maximumValueOnFOVSlider - ModSettings.minimumValueOnFOVSlider)) : originalValue) * 0.0174532924f;
                 for (int i = 0; i < fOVSlider.cameraList.Count; i++)
                 {
                     fOVSlider.aspectRatio = fOVSlider.width / fOVSlider.height;
