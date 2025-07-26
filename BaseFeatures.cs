@@ -2637,11 +2637,10 @@ namespace MonstrumExtendedSettingsMod
                 On.LevelGeneration.Begin += new On.LevelGeneration.hook_Begin(HookLevelGenerationBegin);
                 On.LevelGeneration.DoBreak += new On.LevelGeneration.hook_DoBreak(HookLevelGenerationDoBreak);
                 On.LevelGeneration.SpawnInitialRooms += new On.LevelGeneration.hook_SpawnInitialRooms(HookLevelGenerationSpawnInitialRooms);
-                new Hook(typeof(LevelGeneration).GetNestedType("<SpawnRooms>c__Iterator1", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookLevelGenerationSpawnRoomsIntermediateHook"), null);
-                new Hook(typeof(LevelGeneration).GetNestedType("<SpawnRandomRooms>c__Iterator2", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookLevelGenerationSpawnRandomRoomsIntermediateHook"), null);
-                new Hook(typeof(LevelGeneration).GetNestedType("<SpawnCorridors>c__Iterator3", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookLevelGenerationSpawnCorridorsIntermediateHook"), null);
-                new Hook(typeof(LevelGeneration).GetNestedType("<SpawnJointsAndDoors>c__Iterator4", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookLevelGenerationSpawnJointsAndDoorsIntermediateHook"), null);
-
+                Utilities.HookIterator<LevelGeneration>("<SpawnRooms>c__Iterator1", HookLevelGenerationSpawnRooms);
+                Utilities.HookIterator<LevelGeneration>("<SpawnRandomRooms>c__Iterator2", HookLevelGenerationSpawnRandomRooms);
+                Utilities.HookIterator<LevelGeneration>("<SpawnCorridors>c__Iterator3", HookLevelGenerationSpawnCorridors);
+                Utilities.HookIterator<LevelGeneration>("<SpawnJointsAndDoors>c__Iterator4", HookLevelGenerationSpawnJointsAndDoors);
                 /*
                 On.SpawnDeckLG.SpawnDeckPieces += new On.SpawnDeckLG.hook_SpawnDeckPieces(HookSpawnDeckLGSpawnDeckPieces);
                 On.SpawnDeckCargoArea.GenerateCargoArea += new On.SpawnDeckCargoArea.hook_GenerateCargoArea(HookSpawnDeckCargoAreaGenerateCargoArea);
@@ -3075,17 +3074,6 @@ namespace MonstrumExtendedSettingsMod
 
             private static bool busyWithCoroutine;
 
-            public static bool HookLevelGenerationSpawnRoomsIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLevelGenerationSpawnRooms((LevelGeneration)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookLevelGenerationSpawnRooms(LevelGeneration levelGeneration)
             {
                 // ~ Experimental level generation changes.
@@ -3368,17 +3356,6 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
-            public static bool HookLevelGenerationSpawnRandomRoomsIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLevelGenerationSpawnRandomRooms((LevelGeneration)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookLevelGenerationSpawnRandomRooms(LevelGeneration levelGeneration)
             {
                 //Debug.Log("Spawn random rooms is being hooked");
@@ -3561,17 +3538,6 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
-            public static bool HookLevelGenerationSpawnCorridorsIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLevelGenerationSpawnCorridors((LevelGeneration)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookLevelGenerationSpawnCorridors(LevelGeneration levelGeneration)
             {
                 //Debug.Log("Spawn corridors is being hooked");
@@ -3620,17 +3586,6 @@ namespace MonstrumExtendedSettingsMod
                 }
                 busyWithCoroutine = false;
                 yield break;
-            }
-
-            public static bool HookLevelGenerationSpawnJointsAndDoorsIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLevelGenerationSpawnJointsAndDoors((LevelGeneration)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
             }
 
             private static IEnumerator HookLevelGenerationSpawnJointsAndDoors(LevelGeneration levelGeneration)

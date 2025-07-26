@@ -47,8 +47,6 @@ namespace MonstrumExtendedSettingsMod
             public static List<bool> monstersFinishedLerpToHidingSpot;
             public static List<bool> monstersFinishedGrab;
 
-            public readonly static Dictionary<IEnumerator, IEnumerator> IEnumeratorDictionary = new Dictionary<IEnumerator, IEnumerator>();
-
             // #ManyMonstersModeAfterGenerationInitialisation
             public static void ManyMonstersModeAfterGenerationInitialisation()
             {
@@ -249,7 +247,7 @@ namespace MonstrumExtendedSettingsMod
                 HookMAttackingState2();
                 HookMChasingState();
                 HookMClimbingState();
-                new Hook(typeof(MDestroyState).GetNestedType("<LerpToDoor>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookMDestroyStateIntermediateHook"), null);
+                Utilities.HookIterator<MDestroyState>("<LerpToDoor>c__Iterator0", HookMDestroyStateLerpToDoor);
                 HookMHideState();
                 HookMHuntingState();
                 On.MIdleState.OnUpdate += new On.MIdleState.hook_OnUpdate(HookMIdleState);
@@ -283,8 +281,8 @@ namespace MonstrumExtendedSettingsMod
             {
                 On.DraggedOutHiding.DragPlayer += new On.DraggedOutHiding.hook_DragPlayer(HookDraggedOutHidingDragPlayer);
                 On.DragPlayer.Mec_OnReleasePlayer += new On.DragPlayer.hook_Mec_OnReleasePlayer(HookDragPlayer);
-                new Hook(typeof(LerpToHidingSpot).GetNestedType("<LerpToPosRot>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookLerpToHidingSpotIntermediateHook"), null);
-                new Hook(typeof(LerpToSearchSpot).GetNestedType("<LerpToPosRot>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookLerpToSearchSpotIntermediateHook"), null);
+                Utilities.HookIterator<LerpToHidingSpot>("<LerpToPosRot>c__Iterator0", HookLerpToHidingSpot);
+                Utilities.HookIterator<LerpToSearchSpot>("<LerpToPosRot>c__Iterator0", HookLerpToSearchSpot);
                 On.NoIntroAnimation.OnHidingEventTriggered += new On.NoIntroAnimation.hook_OnHidingEventTriggered(HookNoIntroAnimation);
                 On.NoSearchAnimation.OnHidingEventTriggered += new On.NoSearchAnimation.hook_OnHidingEventTriggered(HookNoSearchAnimation);
                 On.RipOffCurtain.Mec_OnGrabDoor += new On.RipOffCurtain.hook_Mec_OnGrabDoor(HookRipOffCurtain);
@@ -299,7 +297,7 @@ namespace MonstrumExtendedSettingsMod
                 On.GameplayAudio.OnSoundPlayed += new On.GameplayAudio.hook_OnSoundPlayed(HookGameplayAudio);
                 HookGlobalMusic();
                 On.LevelGeneration.Awake += new On.LevelGeneration.hook_Awake(HookLevelGenerationAwake);
-                new Hook(typeof(RenderOnce).GetNestedType("<Render>c__Iterator1", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookRenderOnceIntermediateHook"), null);
+                Utilities.HookIterator<RenderOnce>("<Render>c__Iterator1", HookRenderOnce);
                 // On.Room.ChooseRandomRoomID += new On.Room.hook_ChooseRandomRoomID(HookRoom); // Breaks Level Generation.
             }
 
@@ -3708,17 +3706,6 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @LerpToHidingSpot
 
-            public static bool HookLerpToHidingSpotIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLerpToHidingSpot((LerpToHidingSpot)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookLerpToHidingSpot(LerpToHidingSpot lerpToHidingSpot)
             {
                 HidingSpot spot = ((MonsterHidingEvents)lerpToHidingSpot).GetComponentInParent<HidingSpot>();
@@ -3752,17 +3739,6 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @LerpToSearchSpot
-
-            public static bool HookLerpToSearchSpotIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLerpToSearchSpot((LerpToSearchSpot)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookLerpToSearchSpot(LerpToSearchSpot lerpToSearchSpot)
             {
@@ -4378,22 +4354,11 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookMClimbingState()
             {
-                new Hook(typeof(MClimbingState).GetNestedType("<LerpTo>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookMClimbingStateLerpToIntermediateHook"), null);
+                Utilities.HookIterator<MClimbingState>("<LerpTo>c__Iterator0", HookMClimbingStateLerpTo);
 
                 // Moved to BaseFeatures to fix a non-reversal bug affecting music in Persistent Monster mode.
                 //On.MClimbingState.OnEnter += new On.MClimbingState.hook_OnEnter(HookMClimbingStateOnEnter);
                 //On.MClimbingState.FinishClimb += new On.MClimbingState.hook_FinishClimb(HookMClimbingStateFinishClimb);
-            }
-
-            public static bool HookMClimbingStateLerpToIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookMClimbingStateLerpTo((MClimbingState)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
             }
 
             private static IEnumerator HookMClimbingStateLerpTo(MClimbingState mClimbingState)
@@ -4420,17 +4385,6 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @MDestroyState
-
-            public static bool HookMDestroyStateIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookMDestroyStateLerpToDoor((MDestroyState)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookMDestroyStateLerpToDoor(MDestroyState mDestroyState)
             {
@@ -4517,7 +4471,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     On.MHideState.FinishedHiding += new On.MHideState.hook_FinishedHiding(HookMHideStateFinishedHiding); // Alternating Monsters Mode
                 }
-                new Hook(typeof(MHideState).GetNestedType("<MoveTowardsHidingPlace>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookMHideStateMoveTowardsHidingPlaceIntermediateHook"), null);
+                Utilities.HookIterator<MHideState>("<MoveTowardsHidingPlace>c__Iterator0", HookMHideStateMoveTowardsHidingPlace);
                 On.MHideState.StateChanges += new On.MHideState.hook_StateChanges(HookMHideStateStateChanges);
                 On.MHideState.OnEnter += new On.MHideState.hook_OnEnter(HookMHideStateOnEnter);
                 On.MHideState.OnUpdate += new On.MHideState.hook_OnUpdate(HookMHideStateOnUpdate);
@@ -4530,17 +4484,6 @@ namespace MonstrumExtendedSettingsMod
                     TimeScaleManager.Instance.StartCoroutine(SwitchMonster(((MState)mHideState).monster, mHideState.trapToReturn.HideFromHere.position));
                 }
                 orig.Invoke(mHideState);
-            }
-
-            public static bool HookMHideStateMoveTowardsHidingPlaceIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookMHideStateMoveTowardsHidingPlace((MHideState)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
             }
 
             private static IEnumerator HookMHideStateMoveTowardsHidingPlace(MHideState mHideState)
@@ -5531,21 +5474,10 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookMonsterReaction()
             {
-                new Hook(typeof(MonsterReaction).GetNestedType("<LerpToDestruction>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookMonsterReactionLerpToDestructionIntermediateHook"), null);
+                Utilities.HookIterator<MonsterReaction>("<LerpToDestruction>c__Iterator0", HookMonsterReactionLerpToDestruction);
                 On.MonsterReaction.OnTriggerEnter += new On.MonsterReaction.hook_OnTriggerEnter(HookMonsterReactionOnTriggerEnter);
                 On.MonsterReaction.OnTriggerExit += new On.MonsterReaction.hook_OnTriggerExit(HookMonsterReactionOnTriggerExit);
                 On.MonsterReaction.Update += new On.MonsterReaction.hook_Update(HookMonsterReactionUpdate);
-            }
-
-            public static bool HookMonsterReactionLerpToDestructionIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookMonsterReactionLerpToDestruction((MonsterReaction)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
             }
 
             private static IEnumerator HookMonsterReactionLerpToDestruction(MonsterReaction monsterReaction)
@@ -7492,17 +7424,6 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @RenderOnce
-
-            public static bool HookRenderOnceIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookRenderOnce((RenderOnce)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookRenderOnce(RenderOnce renderOnce)
             {

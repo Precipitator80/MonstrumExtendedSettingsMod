@@ -1152,7 +1152,7 @@ namespace MonstrumExtendedSettingsMod
                 On.DraggedOutHiding.Start += new On.DraggedOutHiding.hook_Start(HookDraggedOutHidingStart);
                 On.DragPlayer.Mec_OnGrabPlayer += new On.DragPlayer.hook_Mec_OnGrabPlayer(HookDragPlayerMec_OnGrabPlayer);
                 //On.DragPlayer.PullOutPlayer += new On.DragPlayer.hook_PullOutPlayer(HookDragPlayerPullOutPlayer);
-                new Hook(typeof(DragPlayer).GetNestedType("<PullOutPlayer>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookDragPlayerPullOutPlayerIntermediateHook"), null);
+                Utilities.HookIterator<DragPlayer>("<PullOutPlayer>c__Iterator0", HookDragPlayerPullOutPlayer);
                 On.MRoomSearch.OnExit += new On.MRoomSearch.hook_OnExit(HookMRoomSearchOnExit);
                 //On.MChasingState.OnExit += new On.MChasingState.hook_OnExit(HookMChasingStateOnExit); // Moved to Many Monsters Mode
                 On.Hiding.Awake += new On.Hiding.hook_Awake(HookHidingAwake);
@@ -1181,7 +1181,7 @@ namespace MonstrumExtendedSettingsMod
                 On.CraneController.OnHandGrab += new On.CraneController.hook_OnHandGrab(HookCraneControllerOnHandGrab);
                 On.CraneController.OnHandRelease += new On.CraneController.hook_OnHandRelease(HookCraneControllerOnHandRelease);
                 //On.Liferaft.Inflate += new On.Liferaft.hook_Inflate(HookLiferaftInflate);
-                new Hook(typeof(Liferaft).GetNestedType("<Inflate>c__Iterator2", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookLiferaftInflateIntermediateHook"), null);
+                Utilities.HookIterator<Liferaft>("<Inflate>c__Iterator2", HookLiferaftInflate);
                 On.CraneSpoolBox.CheckForSpool += new On.CraneSpoolBox.hook_CheckForSpool(HookCraneSpoolBoxCheckForSpool);
 
                 On.Backpack.OnInteract += new On.Backpack.hook_OnInteract(HookBackpackOnInteract);
@@ -1215,7 +1215,7 @@ namespace MonstrumExtendedSettingsMod
                 //On.FootStepManager.Start += new On.FootStepManager.hook_Start(HookFootStepManagerStart);
                 On.FootStepManager.SetUpStep += new On.FootStepManager.hook_SetUpStep(HookFootStepManagerSetUpStep);
                 //On.FuseBoxDoor.OpenClose += new On.FuseBoxDoor.hook_OpenClose(HookFuseBoxDoorOpenClose);
-                new Hook(typeof(FuseBoxDoor).GetNestedType("<OpenClose>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookFuseBoxDoorOpenCloseIntermediateHook"), null);
+                Utilities.HookIterator<FuseBoxDoor>("<OpenClose>c__Iterator0", HookFuseBoxDoorOpenClose);
                 On.HeadIKMovement.CheckAngle += new On.HeadIKMovement.hook_CheckAngle(HookHeadIKMovementCheckAngle);
                 On.HeadIKMovement.OnAnimatorIK += new On.HeadIKMovement.hook_OnAnimatorIK(HookHeadIKMovementOnAnimatorIK);
                 On.HookCondition.IsConditionMet += new On.HookCondition.hook_IsConditionMet(HookHookConditionIsConditionMet);
@@ -1225,7 +1225,6 @@ namespace MonstrumExtendedSettingsMod
                 On.PitTrap.Update += new On.PitTrap.hook_Update(HookPitTrapUpdate);
                 On.TestJump.Update += new On.TestJump.hook_Update(HookTestJumpUpdate);
                 On.TestPronePullOut.PullOutPlayer += new On.TestPronePullOut.hook_PullOutPlayer(HookTestPronePullOutPullOutPlayer);
-                //new Hook(typeof(TestPronePullOut).GetNestedType("<PullOutPlayer>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookTestPronePullOutPullOutPlayerIntermediateHook"), null);
                 On.Welder.OnFinishItemAnimation += new On.Welder.hook_OnFinishItemAnimation(HookWelderOnFinishItemAnimation);
                 HookWallClimb();
                 HookAutoStand();
@@ -1238,7 +1237,7 @@ namespace MonstrumExtendedSettingsMod
 
                 // Notes from next day. Pit trap and auto stand seem to have been fixed by using parent instead of same level. Inventory bug did not immediately happen again. The phone tracking the interaction button has been removed. Flashlight angle tracking has been added via an ItemAngleUpdater hook. Moving player 1 into locker also causes player 2 to lerp slightly. Make sure to look into the Hunter spawning algorithm again. Moving objects like chairs doesn't seem to work properly. Not using fiends in many monsters mode in a second round when they were used in the first round causes an exception in HookFiendLightControllerOnGenerationComplete. Camera can move down somehow in either multiplayer mode or crew vs monster mode.
                 //On.RopeDragRelease.Test += new On.RopeDragRelease.hook_Test(HookRopeDragReleaseTest);
-                new Hook(typeof(TestPronePullOut).GetNestedType("<PullOutPlayer>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookRopeDragReleaseTestIntermediateHook"), null);
+                Utilities.HookIterator<RopeDragRelease>("<Test>c__Iterator0", HookRopeDragReleaseTest);
                 On.ItemAngleUpdater.Update += new On.ItemAngleUpdater.hook_Update(HookItemAngleUpdaterUpdate);
                 On.Smashable.Smash += new On.Smashable.hook_Smash(HookSmashableSmash);
                 On.SearchState.Update += new On.SearchState.hook_Update(HookSearchStateUpdate);
@@ -1309,7 +1308,7 @@ namespace MonstrumExtendedSettingsMod
                     On.HelicopterEscape.Update += new On.HelicopterEscape.hook_Update(HookHelicopterEscapeUpdate);
                     On.LightFlicker.Flicker += new On.LightFlicker.hook_Flicker(HookLightFlickerFlicker);
                     //On.MasterControlValve.TurnTheValve += new On.MasterControlValve.hook_TurnTheValve(HookMasterControlValveTurnTheValve);
-                    new Hook(typeof(MasterControlValve).GetNestedType("<TurnTheValve>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookMasterControlValveTurnTheValveIntermediateHook"), null);
+                    Utilities.HookIterator<MasterControlValve>("<TurnTheValve>c__Iterator0", HookMasterControlValveTurnTheValve);
                     On.MFiendSubDoors.DoorWasBlocked += new On.MFiendSubDoors.hook_DoorWasBlocked(HookMFiendSubDoorsDoorWasBlocked);
                     On.MonsterDoorSmoke.TurnOffDoorSmoke += new On.MonsterDoorSmoke.hook_TurnOffDoorSmoke(HookMonsterDoorSmokeTurnOffDoorSmoke);
                     On.Phone.EndPhoneCall += new On.Phone.hook_EndPhoneCall(HookPhoneEndPhoneCall);
@@ -1324,7 +1323,7 @@ namespace MonstrumExtendedSettingsMod
                     On.SecurityMonitors.OnPowerDown += new On.SecurityMonitors.hook_OnPowerDown(HookSecurityMonitorsOnPowerDown);
                     On.SteamVents.TurnOffSteam += new On.SteamVents.hook_TurnOffSteam(HookSteamVentsTurnOffSteam);
                     //On.SubmarineDoor.Opening += new On.SubmarineDoor.hook_Opening(HookSubmarineDoorOpening);
-                    new Hook(typeof(SubmarineDoor).GetNestedType("<Opening>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookSubmarineDoorOpeningIntermediateHook"), null);
+                    Utilities.HookIterator<SubmarineDoor>("<Opening>c__Iterator0", HookSubmarineDoorOpening);
                     On.TapeRecorder.StopLog += new On.TapeRecorder.hook_StopLog(HookTapeRecorderStopLog);
                     On.TV.TurnOffSound += new On.TV.hook_TurnOffSound(HookTVTurnOffSound);
                     On.WalkieTalkie.OnEndReceive += new On.WalkieTalkie.hook_OnEndReceive(HookWalkieTalkieOnEndReceive);
@@ -4389,17 +4388,6 @@ namespace MonstrumExtendedSettingsMod
                 draggedOutHiding.DragPlayer();
             }
 
-            public static bool HookDragPlayerPullOutPlayerIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookDragPlayerPullOutPlayer((DragPlayer)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookDragPlayerPullOutPlayer(DragPlayer dragPlayer)
             {
                 Debug.Log("This hook is working!: " + new StackTrace().ToString()); // # IEnumerator Hook Test
@@ -6003,17 +5991,6 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @FuseBoxDoor
-
-            public static bool HookFuseBoxDoorOpenCloseIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookFuseBoxDoorOpenClose((FuseBoxDoor)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookFuseBoxDoorOpenClose(FuseBoxDoor fuseBoxDoor)
             {
@@ -7943,17 +7920,6 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @Liferaft
 
-            public static bool HookLiferaftInflateIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLiferaftInflate((Liferaft)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookLiferaftInflate(Liferaft liferaft)
             {
                 NewPlayerClass newPlayerClass = lastPlayerSentMessage;
@@ -8269,17 +8235,6 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
                 }
-            }
-
-            public static bool HookMasterControlValveTurnTheValveIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookMasterControlValveTurnTheValve((MasterControlValve)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
             }
 
             private static IEnumerator HookMasterControlValveTurnTheValve(MasterControlValve masterControlValve)
@@ -11347,17 +11302,6 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @RopeDragRelease
 
-            public static bool HookRopeDragReleaseTestIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookRopeDragReleaseTest((RopeDragRelease)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookRopeDragReleaseTest(RopeDragRelease ropeDragRelease)
             {
                 Debug.Log("This hook is working!: " + new StackTrace().ToString()); // # IEnumerator Hook Test
@@ -11654,7 +11598,7 @@ namespace MonstrumExtendedSettingsMod
 
                 On.SimpleOcclusion.Update += new On.SimpleOcclusion.hook_Update(HookSimpleOcclusionUpdate);
                 //On.SimpleOcclusion.RaycastOcclusion += new On.SimpleOcclusion.hook_RaycastOcclusion(HookSimpleOcclusionRaycastOcclusion);
-                new Hook(typeof(SimpleOcclusion).GetNestedType("<RaycastOcclusion>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookSimpleOcclusionRaycastOcclusionIntermediateHook"), null);
+                Utilities.HookIterator<SimpleOcclusion>("<RaycastOcclusion>c__Iterator0", HookSimpleOcclusionRaycastOcclusion);
             }
 
             private static void HookSimpleOcclusionStart(On.SimpleOcclusion.orig_Start orig, SimpleOcclusion simpleOcclusion)
@@ -11909,17 +11853,6 @@ namespace MonstrumExtendedSettingsMod
             }
 
             // # SimpleOcclusionRaycastOcclusion
-
-            public static bool HookSimpleOcclusionRaycastOcclusionIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookSimpleOcclusionRaycastOcclusion((SimpleOcclusion)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookSimpleOcclusionRaycastOcclusion(SimpleOcclusion simpleOcclusion)
             {
@@ -12780,17 +12713,6 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @SubmarineDoor
 
-            public static bool HookSubmarineDoorOpeningIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookSubmarineDoorOpening((SubmarineDoor)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookSubmarineDoorOpening(SubmarineDoor submarineDoor)
             {
                 float t = 0f;
@@ -12860,19 +12782,6 @@ namespace MonstrumExtendedSettingsMod
             // @TestPronePullOut
 
             // Intermediate hook is not necessary as a single passed variable will stop the bug that does not properly do hooks due to not enough information being passed.
-            /*
-            public static bool HookTestPronePullOutPullOutPlayerIntermediateHook(IEnumerator self, Transform _transformTo)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookTestPronePullOutPullOutPlayer((TestPronePullOut)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self), _transformTo);
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-            */
-
             private static IEnumerator HookTestPronePullOutPullOutPlayer(On.TestPronePullOut.orig_PullOutPlayer orig, TestPronePullOut testPronePullOut, Transform _transformTo)
             {
                 Debug.Log("This hook is working!: " + new StackTrace().ToString()); // # IEnumerator Hook Test

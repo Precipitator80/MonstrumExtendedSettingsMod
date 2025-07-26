@@ -2,6 +2,10 @@
 using UnityEngine;
 using System.IO;
 using System.Collections;
+using System.Reflection;
+using MonoMod.RuntimeDetour;
+using System;
+using System.Collections.Generic;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -13,6 +17,77 @@ namespace MonstrumExtendedSettingsMod
 
         private static class Utilities
         {
+            /// <summary>
+            /// Maps original iterator nested types to a lambda function that acts as an intermediate hook to handle iterator instances.
+            /// </summary>
+            private static readonly Dictionary<Type, Func<IEnumerator, bool>> _iteratorHooks = new Dictionary<Type, Func<IEnumerator, bool>>();
+
+            /// <summary>
+            /// Maps original coroutine instances to replacement instance.
+            /// </summary>
+            private static readonly Dictionary<IEnumerator, IEnumerator> _iEnumeratorDictionary = new Dictionary<IEnumerator, IEnumerator>();
+
+            /// <summary>
+            /// Hooks a compiler-generated iterator's MoveNext method to use a replacement IEnumerator.
+            /// Using this method is not necessary when the IEnumerator function has a single passed variable, which stops the bug that does not properly do hooks due to not enough information being passed.
+            /// </summary>
+            /// <typeparam name="TOwner">The type that owns the iterator (e.g., LevelGeneration).</typeparam>
+            /// <param name="iteratorName">The name of the nested iterator class (e.g., "<SpawnRooms>c__Iterator1").</param>
+            /// <param name="hookFunction">The function to hook the iterator to.</param>
+            public static void HookIterator<TOwner>(string iteratorName, Func<TOwner, IEnumerator> hookFunction)
+            {
+                // Get the compiler-generated iterator nested type (e.g., <SpawnRooms>c__Iterator1).
+                // Binding flags allow access to all possible nested types and members (public/private/static/instance).
+                var typeFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+                var iteratorType = typeof(TOwner).GetNestedType(iteratorName, typeFlags);
+
+                // Find the MoveNext method on the iterator (always present in IEnumerator).
+                var methodFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+                var moveNext = iteratorType.GetMethod("MoveNext", methodFlags);
+
+                // Store a lambda function that acts as an intermediate hook to handle iterator instances.
+                _iteratorHooks[iteratorType] = self =>
+                {
+                    // Check whether this specific IEnumerator instance has already been replaced with a hooked version, creating one if not.
+                    if (!_iEnumeratorDictionary.TryGetValue(self, out var replacement))
+                    {
+                        // Get the owning class instance (e.g. levelGeneration) via the compiler-generated `$this` field.
+                        var owner = (TOwner)self.GetType().GetField("$this", methodFlags).GetValue(self);
+
+                        // Use the hook function to create a replacement IEnumerator with the owning class instance.
+                        replacement = hookFunction(owner);
+
+                        // Store the replacement in a dictionary for future use.
+                        _iEnumeratorDictionary[self] = replacement;
+                    }
+
+                    // Call MoveNext on the replacement instance instead of the original.
+                    // If the coroutine has finished, remove the replacement instance from the dictionary.
+                    bool result = replacement.MoveNext();
+                    if (!result)
+                    {
+                        _iEnumeratorDictionary.Remove(self);
+                    }
+                    return result;
+                };
+
+                // Register a shared static hook that delegates back to the correct Func<IEnumerator, bool>
+                new Hook(moveNext, typeof(Utilities).GetMethod(nameof(GenericIteratorHook), BindingFlags.Static | BindingFlags.NonPublic), null);
+            }
+
+            /// <summary>
+            /// Shared static hook method that calls the correct intermediate hook for a given IEnumerator instance.
+            /// </summary>
+            private static bool GenericIteratorHook(IEnumerator orig)
+            {
+                // Try to get the intermediate hook registered for this IEnumerator's type.
+                if (_iteratorHooks.TryGetValue(orig.GetType(), out var hook))
+                    return hook(orig);
+
+                // As a fallback, call the original MoveNext in case the intermediate hook was not correctly registered (coding logic error).
+                return orig.MoveNext();
+            }
+
             public static void CopyParticleSystem(ParticleSystem pastePS, ParticleSystem copyPS)
             {
                 ParticleSystem.CollisionModule pasteC = pastePS.collision;
