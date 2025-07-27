@@ -2704,7 +2704,7 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /// <summary>
-            /// Supports monster selection and banned monnsters.
+            /// Supports monster selection and banned monsters.
             /// </summary>
             private static void HookLevelGenerationAwake(On.LevelGeneration.orig_Awake orig, LevelGeneration levelGeneration)
             {
@@ -3074,6 +3074,9 @@ namespace MonstrumExtendedSettingsMod
 
             private static bool busyWithCoroutine;
 
+            /// <summary>
+            /// Supports loading text.
+            /// </summary>
             private static IEnumerator HookLevelGenerationSpawnRooms(LevelGeneration levelGeneration)
             {
                 // ~ Experimental level generation changes.
@@ -3356,6 +3359,9 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
+            /// <summary>
+            /// Unmodded function with "busyWithCoroutine" indicator required by HookLevelGenerationSpawnRooms.
+            /// </summary>
             private static IEnumerator HookLevelGenerationSpawnRandomRooms(LevelGeneration levelGeneration)
             {
                 //Debug.Log("Spawn random rooms is being hooked");
@@ -3538,6 +3544,9 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
+            /// <summary>
+            /// Unmodded function with "busyWithCoroutine" indicator required by HookLevelGenerationSpawnRooms.
+            /// </summary>
             private static IEnumerator HookLevelGenerationSpawnCorridors(LevelGeneration levelGeneration)
             {
                 //Debug.Log("Spawn corridors is being hooked");
@@ -3588,6 +3597,9 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
+            /// <summary>
+            /// Unmodded function with "busyWithCoroutine" indicator required by HookLevelGenerationSpawnRooms.
+            /// </summary>
             private static IEnumerator HookLevelGenerationSpawnJointsAndDoors(LevelGeneration levelGeneration)
             {
                 //Debug.Log("Joints and doors is being hooked");
@@ -3705,96 +3717,17 @@ namespace MonstrumExtendedSettingsMod
             Region with index 39 has name Deck_BridgeWalkways and ID 143
             */
 
+            /// <summary>
+            /// Debug function used to list all regions.
+            /// </summary>
             private static void ListRegions()
             {
-                for (int j = 0; j < RegionManager.Instance.regions.Count; j++)
+                foreach (RegionEntry regionEntry in RegionManager.Instance.regions)
                 {
-                    RegionEntry regionEntry = RegionManager.Instance.regions[j];
-                    Debug.Log("Region name is: " + regionEntry.regionName + ". This has associated nodes:");
+                    Debug.Log("Nodes of " + regionEntry.regionName + ":");
                     foreach (Vector3 vector in regionEntry.associatedNodes)
                     {
                         Debug.Log(vector);
-                    }
-                }
-            }
-
-            private static void RegionPreviewTest(string regionName, int yLock = -1)
-            {
-                for (int j = 0; j < RegionManager.Instance.regions.Count; j++)
-                {
-                    RegionEntry regionEntry = RegionManager.Instance.regions[j];
-                    if (regionEntry.regionName.Equals("Inaccessible"))
-                    {
-                        RegionEntry holdCover = RegionManager.Instance.regions[RegionManager.Instance.StringToRegionIndex(regionName)];
-                        for (int i = 0; i < regionEntry.associatedNodes.Count; i++)
-                        {
-                            Vector3 vector = regionEntry.associatedNodes[i];
-                            bool editVector = false;
-                            if (yLock != -1)
-                            {
-                                if (vector.y == yLock)
-                                {
-                                    editVector = true;
-                                }
-                            }
-                            else
-                            {
-                                editVector = true;
-                            }
-
-                            if (editVector)
-                            {
-                                holdCover.associatedNodes.Add(vector);
-                                regionEntry.associatedNodes.Remove(vector);
-                                if (!RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID.Contains(holdCover.regionID))
-                                {
-                                    //RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Add(regionID);
-                                    RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID[0] = holdCover.regionID;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            private static void RegionAddTest(string regionKeyWord, string regionName)
-            {
-                for (int j = 0; j < RegionManager.Instance.regions.Count; j++)
-                {
-                    RegionEntry regionEntry = RegionManager.Instance.regions[j];
-                    if (regionEntry.regionName.Contains(regionKeyWord) && !regionEntry.regionName.Equals(regionName))
-                    {
-                        RegionEntry holdCover = RegionManager.Instance.regions[RegionManager.Instance.StringToRegionIndex(regionName)];
-                        for (int i = 0; i < regionEntry.associatedNodes.Count; i++)
-                        {
-                            Vector3 vector = regionEntry.associatedNodes[i];
-                            holdCover.associatedNodes.Add(vector);
-                            if (!RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID.Contains(holdCover.regionID))
-                            {
-                                RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID.Add(holdCover.regionID);
-                            }
-                        }
-                    }
-                }
-            }
-
-            private static void RegionIDAddTest(string regionKeyWord, string regionName)
-            {
-                for (int j = 0; j < RegionManager.Instance.regions.Count; j++)
-                {
-                    RegionEntry regionEntry = RegionManager.Instance.regions[j];
-                    if (regionEntry.regionName.Contains(regionKeyWord) && !regionEntry.regionName.Equals(regionName))
-                    {
-                        RegionEntry holdCover = RegionManager.Instance.regions[RegionManager.Instance.StringToRegionIndex(regionName)];
-                        for (int i = 0; i < regionEntry.associatedNodes.Count; i++)
-                        {
-                            Vector3 vector = regionEntry.associatedNodes[i];
-                            //holdCover.associatedNodes.Add(vector);
-                            if (!RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID.Contains(holdCover.regionID))
-                            {
-                                RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID.Add(holdCover.regionID);
-                            }
-                        }
                     }
                 }
             }
@@ -3805,9 +3738,6 @@ namespace MonstrumExtendedSettingsMod
                 //CopyRegionOverYUsingReferenceNode(24, 4, 2, 24, 35, 4, 7, 2, 13);
                 CopyRegionOverYUsingReferenceNode(24, 4, 2, 27, 35, 5, 5, 3, 12);
                 //CopyRegionOverYUsingReferenceNode(23, 4, 2, 36, 36, 6, 6, 4, 11);
-                //RegionAddTest("Tower", "Cargo_Catwalks");
-                //RegionAddTest("Tower", "Cargo_MainHold");
-                //RegionIDAddTest("Tower", "Cargo_Catwalks");
 
                 // Edit SpawnCargoContainersLG (Currently edited in dnSpy)
 
@@ -3818,11 +3748,6 @@ namespace MonstrumExtendedSettingsMod
 
             private static void LevelGenerationChanges()
             {
-                //RegionPreviewTest("Deck_HoldCover");
-                //RegionPreviewTest("Deck_CargoBowStairs", 5);
-                //RegionPreviewTest("Deck_CargoBowStairs", 4);
-                //RegionAddTest("Cargo", "Engines_Stairs");
-
                 //HelicopterCargoExtension();
 
                 Settings.stairsPerLevel = 4; // Reset stairs per level as the count is kept across multiple rounds.
@@ -3839,7 +3764,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     // The section below tries to let deck 4 of the lower deck side be used like deck 3.
                     CopyRegionOverY(49, (int)Settings.ShipCubesCount.x - 1, 3, 4, 0, (int)Settings.ShipCubesCount.z - 1);
-                    IncreaseRoomCounts(false, PrimaryRegionType.LowerDeck, 4, 6);
+                    ChangeRoomCounts(4, 6, PrimaryRegionType.LowerDeck);
                 }
 
                 if (ModSettings.extendLowerDecks)
@@ -3851,7 +3776,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                     SetRegionInRange("Lower Deck", 49, (int)Settings.ShipCubesCount.x - 1, 1, maxY, 1, 14); // This has a similar effect to the extend map one, but only affects the lower decks on the submersible side and has much faster loading times.
                     SetRegionInRange("Lower Deck", 16, 20, 3, 3, 1, 14); // Deck 3 Region Definition
-                    IncreaseRoomCounts(false, PrimaryRegionType.LowerDeck, 2, 3);
+                    ChangeRoomCounts(2, 3, PrimaryRegionType.LowerDeck);
                 }
 
                 if (ModSettings.numberOfCorridorsToCargoHoldFromDeckThree > 0)
@@ -3979,7 +3904,7 @@ namespace MonstrumExtendedSettingsMod
                         CopyRegionOverYUsingReferenceNode(9, 0, 7, 12, 13, 0, 0, 6, 8);
                     }
 
-                    IncreaseRoomCounts(false, PrimaryRegionType.LowerDeck, 6, 8);
+                    ChangeRoomCounts(6, 8, PrimaryRegionType.LowerDeck);
                 }
 
                 if (ModSettings.addDeckZero)
@@ -4064,7 +3989,7 @@ namespace MonstrumExtendedSettingsMod
                     customBottomStairLevelList.Add(bottomStairLevelDeckZero);
                     Settings.stairsPerLevel++;
 
-                    IncreaseRoomCounts(false, PrimaryRegionType.LowerDeck, 10, 15);
+                    ChangeRoomCounts(10, 15, PrimaryRegionType.LowerDeck);
                 }
 
                 if (ModSettings.addAdditionalCrewDeckBuilding)
@@ -4247,8 +4172,8 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
 
-                    IncreaseRoomCounts(false, PrimaryRegionType.CrewDeck, 4, 6);
-                    IncreaseRoomCounts(false, PrimaryRegionType.UpperDeck, 2, 3);
+                    ChangeRoomCounts(4, 6, PrimaryRegionType.CrewDeck);
+                    ChangeRoomCounts(2, 3, PrimaryRegionType.UpperDeck);
 
                     // CopyRegionOverYUsingReferenceNode(23, 4, 2, 23, 23, 5, 5, 2, 2); // Cargo Hold Ceiling Cover Test
                 }
@@ -4392,34 +4317,41 @@ namespace MonstrumExtendedSettingsMod
 
                 if (ModSettings.increaseRoomMinimumCount != 0 || ModSettings.increaseRoomMaximumCount != 0)
                 {
-                    if (ModSettings.includeUniqueRoomsInCountChange)
-                    {
-                        IncreaseRoomCounts(true);
-                    }
-                    else
-                    {
-                        IncreaseRoomCounts(false);
-                    }
+                    ChangeRoomCounts(ModSettings.increaseRoomMinimumCount, ModSettings.increaseRoomMaximumCount, includeUniqueRooms: ModSettings.includeUniqueRoomsInCountChange);
                 }
 
-                if (ModSettings.extendMapAdditive)
+                if (ModSettings.extendMap || ModSettings.extendMapAdditive)
                 {
-                    Debug.Log("Starting additive map extension.");
-                    foreach (string convertibleRegion in convertibleRegions)
-                    {
-                        ExtendMapAdditively(coreRegions, convertibleRegion);
-                    }
-                    Debug.Log("Additive map extension completed.");
-                }
-                else if (ModSettings.extendMap)
-                {
-                    Debug.Log("Starting map extension.");
-                    foreach (string convertibleRegion in convertibleRegions)
-                    {
-                        // Add all inaccessible nodes to the core regions at their respective y levels.
-                        ExtendSpecificRegion(coreRegions, convertibleRegion);
-                    }
-                    Debug.Log("Map extension completed.");
+                    // Get references to all the regions.
+                    var regionManager = RegionManager.Instance;
+                    var regions = regionManager.regions;
+                    var upperDeck = regions[regionManager.StringToRegionIndex("Upper Deck")];
+                    var crewDeck = regions[regionManager.StringToRegionIndex("Crew Deck")];
+                    var lowerDeck = regions[regionManager.StringToRegionIndex("Lower Deck")];
+                    var inaccessible = regions[regionManager.StringToRegionIndex("Inaccessible")];
+
+                    // Log changes.                
+                    string mode = ModSettings.extendMapAdditive ? "additive " : "";
+                    Debug.Log($"Starting {mode}map extension.");
+
+                    // Use an inline function to avoid repeating code. Use replace mode when not extending additively.
+                    bool replace = !ModSettings.extendMapAdditive;
+                    void GrowRegionUsingInaccessible(RegionEntry source, int start, int end)
+                        => GrowRegionUsingRefRegion(source, inaccessible, replace, replace ? start : -1, replace ? end : -1);
+
+                    // Grow each of the core regions using the inaccessible region.
+                    GrowRegionUsingInaccessible(upperDeck, 7, 8);
+                    GrowRegionUsingInaccessible(crewDeck, 5, 6);
+                    GrowRegionUsingInaccessible(lowerDeck, ModSettings.addDeckZero ? 0 : 1, 4);
+
+                    // DOES NOT SEEM TO ACTUALLY BE REQUIRED.
+                    // If not replacing ref nodes while copying, clean up inaccessible nodes at the end instead.
+                    // if (!replace)
+                    // {
+                    //     CleanUpInaccessibleNodes();
+                    // }
+
+                    Debug.Log($"Finished {mode}map extension.");
                 }
 
                 if (ModSettings.shuffledRegions)
@@ -4429,8 +4361,6 @@ namespace MonstrumExtendedSettingsMod
                     Debug.Log("Region shuffle completed.");
                 }
 
-                //IncreaseStairHeight();
-
                 // # Temporary Test Level Generation Changes
                 //CopyRegionOverYUsingReferenceNode(0, 3, 3, 10, 13, 2, 2, 7, 9); // Mini engine room extension attempt
                 //CopyRegionOverYUsingReferenceNode(new Vector3(0, 3, 3), new Vector3(10, 2, 3), new Vector3(21, 2, 13)); // Bigger engine room extension attempt
@@ -4438,7 +4368,12 @@ namespace MonstrumExtendedSettingsMod
                 //CopyRegionOverYUsingReferenceNode(new Vector3(0, 3, 3), new Vector3(11, 2, 3), new Vector3(53, 2, 13)); // Replacing cargo hold with engine room
             }
 
-            private static void ShuffleRegions(string[] coreRegions)
+            /// <summary>
+            /// Shuffles either a list of regions provided or all regions if using crazy shuffle.
+            /// Supports shuffled regions and crazy shuffle.
+            /// </summary>
+            /// <param name="regionsToShuffle">An array of region names specifying the regions to shuffle.</param>
+            private static void ShuffleRegions(string[] regionsToShuffle)
             {
                 // Create a list of permitted region IDs.
                 List<int> allowedRegionIDs = new List<int>();
@@ -4446,7 +4381,7 @@ namespace MonstrumExtendedSettingsMod
                 // Add all core regions to the allowed regions list. If crazy shuffle mode is on, add all regions to the allowed regions list.
                 if (!ModSettings.crazyShuffle)
                 {
-                    foreach (string regionName in coreRegions)
+                    foreach (string regionName in regionsToShuffle)
                     {
                         allowedRegionIDs.Add(RegionManager.Instance.StringToRegionID(regionName));
                     }
@@ -4459,20 +4394,17 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                // Create an array of region IDs to choose from.
-                int[] regionIDs = allowedRegionIDs.ToArray();
-
                 for (int swapCount = 0; swapCount < ModSettings.numberOfTimesToShuffleRegions; swapCount++)
                 {
-                    // Choose two region indices between 0 and the number of regions IDs in the array minus 1.
-                    int regionIndex1 = UnityEngine.Random.Range(0, regionIDs.Length);
-                    int regionIndex2 = UnityEngine.Random.Range(0, regionIDs.Length);
+                    // Choose two region indices between 0 and the number of regions IDs in the list minus 1.
+                    int regionIndex1 = UnityEngine.Random.Range(0, allowedRegionIDs.Count);
+                    int regionIndex2 = UnityEngine.Random.Range(0, allowedRegionIDs.Count);
 
-                    // Get the IDs from the region ID array.
-                    int regionID1 = regionIDs[regionIndex1];
-                    int regionID2 = regionIDs[regionIndex2];
+                    // Get the IDs from the region ID list.
+                    int regionID1 = allowedRegionIDs[regionIndex1];
+                    int regionID2 = allowedRegionIDs[regionIndex2];
 
-                    // Get the indeces used by the region manager from the IDs.
+                    // Get the indices used by the region manager from the IDs.
                     int regionManagerRegionIndex1 = RegionManager.Instance.IDToIndex(regionID1);
                     int regionManagerRegionIndex2 = RegionManager.Instance.IDToIndex(regionID2);
 
@@ -4488,6 +4420,11 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Swaps the associated nodes of two regions, making sure to keep region IDs consistent with the swap.
+            /// </summary>
+            /// <param name="regionIndex1">The index of the first region to swap.</param>
+            /// <param name="regionIndex2">The index of the second region to swap.</param>
             private static void SwapRegions(int regionIndex1, int regionIndex2)
             {
                 // First, swap the vectors of associated nodes of the two regions.
@@ -4502,98 +4439,14 @@ namespace MonstrumExtendedSettingsMod
                 Debug.Log("Swapped regions: " + RegionManager.Instance.regions[regionIndex1].regionName + " & " + RegionManager.Instance.regions[regionIndex2].regionName);
             }
 
-            private static void ConvertRegion(string increasingRegion, string convertingRegion, bool heightDependence = false, bool removePointsFromConvertingRegion = true)
-            {
-                int increasingRegionIndex = RegionManager.Instance.StringToRegionIndex(increasingRegion);
-                int convertingRegionIndex = RegionManager.Instance.StringToRegionIndex(convertingRegion);
-
-                if (!heightDependence)
-                {
-                    RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.AddRange(RegionManager.Instance.regions[convertingRegionIndex].associatedNodes);
-                    ConvertRegionID(increasingRegionIndex, convertingRegionIndex);
-                }
-                else
-                {
-                    // First, get the minimum and maximum y values of the region.
-                    float minY = RegionManager.Instance.regions[increasingRegionIndex].associatedNodes[0].y;
-                    float maxY = minY;
-
-                    for (int i = 1; i < RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Count; i++)
-                    {
-                        if (RegionManager.Instance.regions[increasingRegionIndex].associatedNodes[i].y < minY)
-                        {
-                            minY = RegionManager.Instance.regions[increasingRegionIndex].associatedNodes[i].y;
-                        }
-                        else if (RegionManager.Instance.regions[increasingRegionIndex].associatedNodes[i].y > minY)
-                        {
-                            maxY = RegionManager.Instance.regions[increasingRegionIndex].associatedNodes[i].y;
-                        }
-                    }
-
-                    if (RegionManager.Instance.regions[increasingRegionIndex].regionName.Equals("Upper Deck"))
-                    {
-                        maxY = Settings.ShipCubesCount.y;
-                    }
-                    else if (RegionManager.Instance.regions[increasingRegionIndex].regionName.Equals("Lower Deck"))
-                    {
-                        minY = 0;
-                    }
-
-                    // If the node in the converting region is at the right y level, add it to the increasing region.
-                    foreach (Vector3 node in RegionManager.Instance.regions[convertingRegionIndex].associatedNodes)
-                    {
-                        if (node.y >= minY && node.y <= maxY)
-                        {
-                            RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Add(node);
-                        }
-                    }
-
-                    ConvertRegionID(increasingRegionIndex, convertingRegionIndex, (int)minY, (int)maxY);
-                }
-
-                if (removePointsFromConvertingRegion)
-                {
-                    RegionManager.Instance.regions[convertingRegionIndex].associatedNodes.Clear();
-                }
-            }
-
-            private static void ExtendMapAdditively(string[] coreRegions, string convertingRegion)
-            {
-                int[] increasingRegionIndices = new int[coreRegions.Length];
-                for (int regionIndex = 0; regionIndex < coreRegions.Length; regionIndex++)
-                {
-                    increasingRegionIndices[regionIndex] = RegionManager.Instance.StringToRegionIndex(coreRegions[regionIndex]);
-                }
-
-                int convertingRegionIndex = RegionManager.Instance.StringToRegionIndex(convertingRegion);
-
-                for (int regionIndex = 0; regionIndex < coreRegions.Length; regionIndex++)
-                {
-                    RegionManager.Instance.regions[increasingRegionIndices[regionIndex]].associatedNodes.AddRange(RegionManager.Instance.regions[convertingRegionIndex].associatedNodes);
-                    AddRegionIDToNewAssociatedNodes(increasingRegionIndices[regionIndex], convertingRegionIndex);
-                    Debug.Log("Added all " + RegionManager.Instance.regions[convertingRegionIndex].regionName + " nodes to the " + RegionManager.Instance.regions[increasingRegionIndices[regionIndex]].regionName + " region.");
-                }
-
-                RegionManager.Instance.regions[convertingRegionIndex].associatedNodes.Clear();
-            }
-
-            private static void ExtendSpecificRegion(string[] coreRegions, string convertingRegion)
-            {
-                for (int increasingRegionIndex = 0; increasingRegionIndex < coreRegions.Length; increasingRegionIndex++)
-                {
-                    if (increasingRegionIndex != coreRegions.Length - 1)
-                    {
-                        ConvertRegion(coreRegions[increasingRegionIndex], convertingRegion, true, false);
-                    }
-                    else
-                    {
-                        ConvertRegion(coreRegions[increasingRegionIndex], convertingRegion, true, true);
-                    }
-                    Debug.Log("Extended the " + coreRegions[increasingRegionIndex] + " region using the " + convertingRegion + " region.");
-                }
-            }
-
-            private static void ConvertRegionID(int increasingRegionIndex, int convertingRegionIndex, int minY = 0, int maxY = 0)
+            /// <summary>
+            /// Ensures a growing region's associated nodes include the region's ID and replaces the first ID reference to a shrinking region on those nodes.
+            /// </summary>
+            /// <param name="growingRegionIndex">The index of the region to grow.</param>
+            /// <param name="shrinkingRegionIndex">The index of the region to shrink.</param>
+            /// <param name="minY">The minimum y coordinate to convert across or 0 if converting all y levels.</param>
+            /// <param name="maxY">The maximum y coordinate to convert across or 0 if converting all y levels.</param>
+            private static void ConvertRegionID(int growingRegionIndex, int shrinkingRegionIndex, int minY = 0, int maxY = 0)
             {
                 if (maxY == 0)
                 {
@@ -4605,7 +4458,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         for (int z = 0; z < Settings.ShipCubesCount.z; z++)
                         {
-                            for (int regionIDFromArrayIndex = 0; regionIDFromArrayIndex < RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Count; regionIDFromArrayIndex++)
+                            if (RegionManager.Instance.regions[growingRegionIndex].associatedNodes.Contains(new Vector3(x, y, z)))
                             {
                                 /*
                                 A point in space can be associated with multiple regions.
@@ -4616,42 +4469,26 @@ namespace MonstrumExtendedSettingsMod
                                 This means that the point will be contained in the Upper Deck's associated nodes as we swapped the nodes earlier, but will have the Lower Deck region ID.
                                 This means we can replace the ID where the Lower Deck's region ID was stored before with the Upper Deck region ID.
                                 After this operation, the point will be associated with the Engine region and the Upper Deck region, which will allow it to pass the ID consistency check in PositionRoomLG.RoomCollision.
+
+                                Simplified: Replace the ID of the original region with the ID of the new region or just add the new region ID if the original was not found.
                                 */
-                                if (RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Contains(new Vector3((float)x, (float)y, (float)z)) && RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID[regionIDFromArrayIndex] == RegionManager.Instance.regions[convertingRegionIndex].regionID)
+
+                                // Get the node / point to convert and the IDs of the regions to shrink and grow.
+                                var node = RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z];
+                                var shrinkingRegionID = RegionManager.Instance.regions[shrinkingRegionIndex].regionID;
+                                var growingRegionID = RegionManager.Instance.regions[growingRegionIndex].regionID;
+
+                                // Try to replace the first occurrence of the shrinking region ID with the growing region ID.
+                                int index = node.regionID.IndexOf(shrinkingRegionID);
+                                if (index != -1)
                                 {
-                                    RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID[regionIDFromArrayIndex] = RegionManager.Instance.regions[increasingRegionIndex].regionID;
+                                    // Replace the first occurrence with the growing region ID
+                                    node.regionID[index] = growingRegionID;
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-
-            private static void AddRegionIDToNewAssociatedNodes(int increasingRegionIndex, int convertingRegionIndex)
-            {
-                int increasingRegionID = RegionManager.Instance.regions[increasingRegionIndex].regionID;
-                for (int x = 0; x < Settings.ShipCubesCount.x; x++)
-                {
-                    for (int y = 0; y < Settings.shipCubesCount.y; y++)
-                    {
-                        for (int z = 0; z < Settings.ShipCubesCount.z; z++)
-                        {
-                            if (RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Contains(new Vector3((float)x, (float)y, (float)z)))
-                            {
-                                bool containsRegionAlready = false;
-
-                                for (int regionIDFromArrayIndex = 0; regionIDFromArrayIndex < RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Count; regionIDFromArrayIndex++)
+                                // Ensure the growing region ID is added even if the shrinking region ID was not found.
+                                else if (!node.regionID.Contains(growingRegionID))
                                 {
-                                    if (RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID[regionIDFromArrayIndex] == increasingRegionID)
-                                    {
-                                        containsRegionAlready = true;
-                                        break;
-                                    }
-                                }
-
-                                if (!containsRegionAlready)
-                                {
-                                    RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Add(increasingRegionID);
+                                    node.regionID.Add(growingRegionID);
                                 }
                             }
                         }
@@ -4661,36 +4498,25 @@ namespace MonstrumExtendedSettingsMod
 
             // # Giving monster some kind of radar for the monster player would help balance. Could also indicate camera positions when triggered. Items are shown to monster even when player is hiding. Only in lockers? Can't use interactable like crane when first player is crouched and hiding. Other player still lerps on some occasions. Maybe only first lerp of a kind. Add tip to screen when player is downed. Player cameras / body positions are still not always properly reset after a player has been revived. Monster light of Hunter is still a problem (Only when monster is number 1...???!!!!).
 
-            private static void IncreaseRoomCounts(bool changeSingleRooms = false, PrimaryRegionType specificRegion = PrimaryRegionType.None, int specificMinimum = 0, int specificMaximum = 0)
+            /// <summary>
+            /// Changes the minimum and maximum counts of rooms.
+            /// </summary>
+            /// <param name="minChange">The change in minimum number of rooms to use.</param>
+            /// <param name="maxChange">The change in maximum number of rooms to use.</param>
+            /// <param name="specificRegion">Which specific region to change room counts of or all regions if unspecified.</param>
+            /// <param name="includeUniqueRooms">Whether to change the count of rooms with a spawn count of 1.</param>
+            private static void ChangeRoomCounts(int minChange, int maxChange, PrimaryRegionType specificRegion = PrimaryRegionType.None, bool includeUniqueRooms = false)
             {
+                // Rooms with counts that should not be changed.
                 string[] specialRooms = { "Bridge_v1", "Upd_FuseRoom_CrewDeck", "Escape_SubRoom", "Lwd_FuseRoom", "EscapeRoom_Helicopter", "Deck_BowRoom", "Deck_CargoWalkwayTower", "Deck_Stern" };
-                int minToUse = ModSettings.increaseRoomMinimumCount;
-                int maxToUse = ModSettings.increaseRoomMaximumCount;
-                if (specificMinimum != 0)
-                {
-                    minToUse = specificMinimum;
-                }
-                if (specificMaximum != 0)
-                {
-                    maxToUse = specificMaximum;
-                }
 
                 foreach (Room room in LevelGeneration.Instance.roomPrefabs)
                 {
                     //Debug.Log("Found roomPrefab. Its name is " + room.name + ". Its minRoomCount is " + room.MinRoomCount + " and its maxRoomCount is " + room.MaxRoomCount + ". ceaseSpawning = " + room.ceaseSpawning + ".");
-                    if ((specificRegion == PrimaryRegionType.None || specificRegion == room.PrimaryRegion) && (changeSingleRooms || room.roomAmountMax > 1) && !specialRooms.Contains(room.name))
+                    if ((specificRegion == PrimaryRegionType.None || specificRegion == room.PrimaryRegion) && (includeUniqueRooms || room.roomAmountMax > 1) && !specialRooms.Contains(room.name))
                     {
-                        room.roomAmountMin += minToUse;
-                        room.roomAmountMax += maxToUse;
-
-                        if (room.roomAmountMin < 1)
-                        {
-                            room.roomAmountMin = 1;
-                        }
-                        if (room.roomAmountMax < 1)
-                        {
-                            room.roomAmountMax = 1;
-                        }
+                        room.roomAmountMin = Mathf.Max(1, room.roomAmountMin + minChange);
+                        room.roomAmountMax = Mathf.Max(1, room.roomAmountMax + maxChange);
 
                         foreach (ModelData modelData in room.roomModels)
                         {
@@ -4699,100 +4525,32 @@ namespace MonstrumExtendedSettingsMod
                                 ModelSpawnCountData modelSpawnCountData = modelData.model.GetComponent<ModelSpawnCountData>();
                                 if (modelSpawnCountData != null)
                                 {
-                                    modelSpawnCountData.minCount += minToUse;
-                                    modelSpawnCountData.maxCount += maxToUse;
-                                    if (modelSpawnCountData.minCount < 1)
-                                    {
-                                        modelSpawnCountData.minCount = 1;
-                                    }
-                                    if (modelSpawnCountData.maxCount < 1)
-                                    {
-                                        modelSpawnCountData.maxCount = 1;
-                                    }
+                                    modelSpawnCountData.minCount = Mathf.Max(1, modelSpawnCountData.minCount + minChange);
+                                    modelSpawnCountData.maxCount = Mathf.Max(1, modelSpawnCountData.maxCount + maxChange);
                                 }
-                                else
+                                else if (ModSettings.logDebugText)
                                 {
-                                    if (ModSettings.logDebugText)
-                                    {
-                                        Debug.Log("Room modelSpawnCountData is null!");
-                                    }
+                                    Debug.Log("Room modelSpawnCountData is null!");
                                 }
                             }
-                            else
+                            else if (ModSettings.logDebugText)
                             {
-                                if (ModSettings.logDebugText)
-                                {
-                                    Debug.Log("Room modelData.model is null!");
-                                }
+                                Debug.Log("Room modelData.model is null!");
                             }
                         }
                     }
                 }
             }
 
-            private static void IncreaseStairHeight()
-            {
-                int stairsRegionIndex = RegionManager.Instance.StringToRegionIndex("Stairs");
-                int inaccessibleRegionIndex = RegionManager.Instance.StringToRegionIndex("Inaccessible");
-
-                for (int nodeIndex = 0; nodeIndex < RegionManager.Instance.regions[stairsRegionIndex].associatedNodes.Count; nodeIndex++)
-                {
-                    Vector3 nodeAbove = RegionManager.Instance.regions[stairsRegionIndex].associatedNodes[nodeIndex] + Vector3.up;
-
-                    ConvertNode(nodeAbove, stairsRegionIndex, inaccessibleRegionIndex);
-                }
-            }
-
-            private static void ConvertNode(Vector3 node, int increasingRegionIndex, int convertingRegionIndex)
-            {
-                if (CheckBoundariesLG.NodeWithinShipBounds(node) && !RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Contains(node + Vector3.up))
-                {
-                    int nodeX = (int)node.x;
-                    int nodeY = (int)node.y;
-                    int nodeZ = (int)node.z;
-
-                    RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Add(node);
-
-                    for (int x = 0; x < Settings.ShipCubesCount.x; x++)
-                    {
-                        for (int y = 0; y < Settings.ShipCubesCount.y; y++)
-                        {
-                            for (int z = 0; z < Settings.ShipCubesCount.z; z++)
-                            {
-                                for (int regionIDFromArrayIndex = 0; regionIDFromArrayIndex < RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Count; regionIDFromArrayIndex++)
-                                {
-                                    if (RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID[regionIDFromArrayIndex] == RegionManager.Instance.regions[convertingRegionIndex].regionID)
-                                    {
-                                        RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID[regionIDFromArrayIndex] = RegionManager.Instance.regions[increasingRegionIndex].regionID;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    /*
-                    for (int stairIndex = 0; stairIndex < LevelGeneration.Instance.stairPrefabs.Count; stairIndex++)
-                    {
-                        if (LevelGeneration.Instance.stairPrefabs[stairIndex].StairsType == StairStructure.Middle)
-                        {
-                            LevelGeneration.Instance.stairPrefabs.Add(LevelGeneration.Instance.stairPrefabs[stairIndex]);
-                            break;
-                        }
-                    }
-                    */
-
-                    /*
-                    foreach (int regionIDFromArrayIndex in RegionManager.Instance.regionData[nodeX].regionDataY[nodeY].regionDataZ[nodeZ].regionID)
-                    {
-                        if (RegionManager.Instance.regionData[nodeX].regionDataY[nodeY].regionDataZ[nodeZ].regionID[regionIDFromArrayIndex] == RegionManager.Instance.regions[convertingRegionIndex].regionID)
-                        {
-                            RegionManager.Instance.regionData[nodeX].regionDataY[nodeY].regionDataZ[nodeZ].regionID[regionIDFromArrayIndex] = RegionManager.Instance.regions[increasingRegionIndex].regionID;
-                        }
-                    }
-                    */
-                }
-            }
-
+            /// <summary>
+            /// Copies region data in an x-z area from one y level to another.
+            /// </summary>
+            /// <param name="minX">The starting x coordinate of the bounds to copy and paste.</param>
+            /// <param name="maxX">The ending x coordinate of the bounds to copy and paste (inclusive).</param>
+            /// <param name="copyY">The y level to copy from.</param>
+            /// <param name="pasteY">The y level to paste to.</param>
+            /// <param name="minZ">The starting z coordinate of the bounds to copy and paste.</param>
+            /// <param name="maxZ">The ending z coordinate of the bounds to copy and paste (inclusive).</param>
             private static void CopyRegionOverY(int minX, int maxX, int copyY, int pasteY, int minZ, int maxZ)
             {
                 Debug.Log("Starting region copy over y.");
@@ -4800,83 +4558,37 @@ namespace MonstrumExtendedSettingsMod
                 {
                     for (int z = minZ; z <= maxZ; z++)
                     {
-                        List<int> copyRegionIDs = RegionManager.Instance.regionData[x].regionDataY[copyY].regionDataZ[z].regionID;
-                        List<int> pasteRegionIDs = RegionManager.Instance.regionData[x].regionDataY[pasteY].regionDataZ[z].regionID;
-
-                        // May be able to use either of the two lines below. Properties are occupied and regionID, so a direct copy is probably better.
-                        RegionManager.Instance.regionData[x].regionDataY[pasteY].regionDataZ[z] = RegionManager.Instance.regionData[x].regionDataY[copyY].regionDataZ[z];
-                        //RegionManager.Instance.regionData[x].regionDataY[pasteY].regionDataZ[z].regionID = RegionManager.Instance.regionData[x].regionDataY[copyY].regionDataZ[z].regionID;
-
-                        Vector3 copyNode = RegionManager.Instance.ConvertPointToRegionNode(Settings.ShipPos + new Vector3(x * Settings.CuboidDim.x, copyY * Settings.CuboidDim.y, z * Settings.CuboidDim.z));
-                        Vector3 pasteNode = RegionManager.Instance.ConvertPointToRegionNode(Settings.ShipPos + new Vector3(x * Settings.CuboidDim.x, pasteY * Settings.CuboidDim.y, z * Settings.CuboidDim.z));
-                        //Debug.Log("Copy node is " + copyNode + " and paste node is " + pasteNode + ".");
-
-                        foreach (int pasteRegionID in pasteRegionIDs)
-                        {
-                            int pasteRegionIndex = RegionManager.Instance.IDToIndex(pasteRegionID);
-                            RegionManager.Instance.regions[pasteRegionIndex].associatedNodes.Remove(pasteNode);
-                        }
-                        foreach (int copyRegionID in copyRegionIDs)
-                        {
-                            int copyRegionIndex = RegionManager.Instance.IDToIndex(copyRegionID);
-                            if (!RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Contains(pasteNode))
-                            {
-                                RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Add(pasteNode);
-                            }
-                        }
-
-                        /*
-                        for (int i = 0; i < RegionManager.Instance.regions.Count; i++)
-                        {
-                            if (RegionManager.Instance.regions[i].associatedNodes.Contains(pasteNode))
-                            {
-                                //Debug.Log(RegionManager.Instance.regions[i].regionName + " contains node " + pasteNode + ". Removing it.");
-                                RegionManager.Instance.regions[i].associatedNodes.Remove(pasteNode);
-                                break;
-                            }
-                        }
-
-                        for (int i = 0; i < RegionManager.Instance.regions.Count; i++)
-                        {
-                            if (RegionManager.Instance.regions[i].associatedNodes.Contains(copyNode))
-                            {
-                                //Debug.Log(RegionManager.Instance.regions[i].regionName + " contains node " + copyNode + ". Adding " + pasteNode + ".");
-                                RegionManager.Instance.regions[i].associatedNodes.Add(pasteNode);
-                                break;
-                            }
-                        }
-                        */
+                        RegionNodeDataZ copyRegionData = RegionManager.Instance.regionData[x].regionDataY[copyY].regionDataZ[z];
+                        CopyAndPasteNode(copyRegionData, x, pasteY, z);
                     }
                 }
-
-                /*
-                foreach (RegionEntry regionEntry in RegionManager.Instance.regions)
-                {
-                    Debug.Log("Nodes of " + regionEntry.regionName + ":");
-                    foreach (Vector3 vector in regionEntry.associatedNodes)
-                    {
-                        Debug.Log(vector);
-                    }
-                }
-                */
             }
 
-            private static void CopyRegionOverYUsingReferenceNode(Vector3 copyVector, Vector3 rangeStartVector, Vector3 rangeEndVector)
-            {
-                CopyRegionOverYUsingReferenceNode((int)copyVector.x, (int)copyVector.y, (int)copyVector.z, (int)rangeStartVector.x, (int)rangeEndVector.x, (int)rangeStartVector.y, (int)rangeEndVector.y, (int)rangeStartVector.z, (int)rangeEndVector.z);
-            }
-
+            /// <summary>
+            /// Copies the region data and region IDs of a reference node onto all nodes in specified bounds.
+            /// </summary>
+            /// <param name="copyX">The x coordinate of the node to copy.</param>
+            /// <param name="copyY">The y coordinate of the node to copy.</param>
+            /// <param name="copyZ">The z coordinate of the node to copy.</param>
+            /// <param name="minX">The starting x coordinate of the bounds to paste into.</param>
+            /// <param name="maxX">The ending x coordinate of the bounds to paste into (inclusive).</param>
+            /// <param name="minY">The starting y coordinate of the bounds to paste into.</param>
+            /// <param name="maxY">The ending y coordinate of the bounds to paste into (inclusive).</param>
+            /// <param name="minZ">The starting z coordinate of the bounds to paste into.</param>
+            /// <param name="maxZ">The ending z coordinate of the bounds to paste into (inclusive).</param>
             private static void CopyRegionOverYUsingReferenceNode(int copyX, int copyY, int copyZ, int minX, int maxX, int minY, int maxY, int minZ, int maxZ)
             {
+                // Check whether the reference / copy node is within ship bounds.
                 if (!CheckBoundariesLG.NodeWithinShipBounds(new Vector3(copyX, copyY, copyZ)))
                 {
                     Debug.Log("Copy node " + new Vector3(copyX, copyY, copyZ) + " is not in ship bounds!");
                     return;
                 }
-                RegionNodeDataZ copyRegionData = RegionManager.Instance.regionData[copyX].regionDataY[copyY].regionDataZ[copyZ];
-                List<int> copyRegionIDs = copyRegionData.regionID;
-                Vector3 copyNode = RegionManager.Instance.ConvertPointToRegionNode(Settings.ShipPos + new Vector3(copyX * Settings.CuboidDim.x, copyY * Settings.CuboidDim.y, copyZ * Settings.CuboidDim.z));
 
+                // Get the region data and region IDs of the reference / copy node.
+                RegionNodeDataZ copyRegionData = RegionManager.Instance.regionData[copyX].regionDataY[copyY].regionDataZ[copyZ];
+
+                // Copy across the 3D bounds specified.
                 Debug.Log("Starting region copy over y using reference node.");
                 for (int x = minX; x <= maxX; x++)
                 {
@@ -4884,45 +4596,119 @@ namespace MonstrumExtendedSettingsMod
                     {
                         for (int z = minZ; z <= maxZ; z++)
                         {
-                            if (CheckBoundariesLG.NodeWithinShipBounds(new Vector3(x, y, z)))
-                            {
-                                List<int> pasteRegionIDs = RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID;
-
-                                RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z] = copyRegionData;
-                                Vector3 pasteNode = RegionManager.Instance.ConvertPointToRegionNode(Settings.ShipPos + new Vector3(x * Settings.CuboidDim.x, y * Settings.CuboidDim.y, z * Settings.CuboidDim.z));
-
-                                foreach (int pasteRegionID in pasteRegionIDs)
-                                {
-                                    int pasteRegionIndex = RegionManager.Instance.IDToIndex(pasteRegionID);
-                                    RegionManager.Instance.regions[pasteRegionIndex].associatedNodes.Remove(pasteNode);
-                                }
-                                foreach (int copyRegionID in copyRegionIDs)
-                                {
-                                    int copyRegionIndex = RegionManager.Instance.IDToIndex(copyRegionID);
-                                    if (!RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Contains(pasteNode))
-                                    {
-                                        RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Add(pasteNode);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Debug.Log("Paste node " + new Vector3(x, y, z) + " is not in ship bounds!");
-                            }
+                            CopyAndPasteNode(copyRegionData, x, y, z);
                         }
                     }
                 }
+            }
 
-                /*
-                foreach (RegionEntry regionEntry in RegionManager.Instance.regions)
+            /// <summary>
+            /// Copies region data into a given node, updating associated nodes.
+            /// </summary>
+            /// <param name="copyRegionData">The region data to copy into the given node.</param>
+            /// <param name="x">The x coordinate of the given node.</param>
+            /// <param name="y">The y coordinate of the given node.</param>
+            /// <param name="z">The z coordinate of the given node.</param>
+            private static void CopyAndPasteNode(RegionNodeDataZ copyRegionData, int x, int y, int z)
+            {
+                // Only paste to nodes within the ship bounds.
+                Vector3 pasteNode = new Vector3(x, y, z);
+                if (!CheckBoundariesLG.NodeWithinShipBounds(pasteNode))
                 {
-                    Debug.Log("Nodes of " + regionEntry.regionName + ":");
-                    foreach (Vector3 vector in regionEntry.associatedNodes)
+                    Debug.Log($"Paste node {pasteNode} is not in ship bounds!");
+                    return;
+                }
+
+                // Remove the paste node from all its associated regions.
+                RegionNodeDataZ regionData = RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z];
+                foreach (int pasteRegionID in regionData.regionID)
+                {
+                    int pasteRegionIndex = RegionManager.Instance.IDToIndex(pasteRegionID);
+                    RegionManager.Instance.regions[pasteRegionIndex].associatedNodes.Remove(pasteNode);
+                }
+
+                // Add the paste node to all the associated regions of the copy node.
+                foreach (int copyRegionID in copyRegionData.regionID)
+                {
+                    int copyRegionIndex = RegionManager.Instance.IDToIndex(copyRegionID);
+                    if (!RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Contains(pasteNode))
                     {
-                        Debug.Log(vector);
+                        RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Add(pasteNode);
                     }
                 }
-                */
+
+                // Copy the region data of the copy node to the paste node.
+                regionData.regionID = copyRegionData.regionID.ToList();
+                regionData.occupied = copyRegionData.occupied;
+            }
+
+            /// <summary>
+            /// Copies region data from one region to another.
+            /// </summary>
+            /// <param name="sourceRegion">The region to add nodes to and copy the ID of.</param>
+            /// <param name="refRegion">The region to copy nodes from and optionally replace.</param>
+            /// <param name="replace">Whether to replace the ref region with the source region.</param>
+            /// <param name="minY">The minimum y bound to copy across or -1 if there is none.</param>
+            /// <param name="maxY">The maximum y bound to copy across (inclusive) or -1 if there is none.</param>
+            private static void GrowRegionUsingRefRegion(RegionEntry growRegion, RegionEntry refRegion, bool replace = false, int minY = -1, int maxY = -1)
+            {
+                var refNodes = refRegion.associatedNodes;
+                for (int i = refNodes.Count - 1; i >= 0; i--)
+                {
+                    // Process the node if it is within the desired y bounds.
+                    var node = refNodes[i];
+                    if ((node.y >= minY || minY == -1) && (node.y <= maxY || maxY == -1))
+                    {
+                        // Add the node if the grow region does not already contain it.
+                        if (!growRegion.associatedNodes.Contains(node))
+                        {
+                            growRegion.associatedNodes.Add(node);
+                        }
+
+                        // Also update the region data to include the grow region's ID.
+                        var regionData = RegionManager.Instance.regionData[(int)node.x].regionDataY[(int)node.y].regionDataZ[(int)node.z];
+                        if (!regionData.regionID.Contains(growRegion.regionID))
+                        {
+                            regionData.regionID.Add(growRegion.regionID);
+                        }
+
+                        // REMOVING INACCESSIBLE IDS FROM REGION DATA SEEMS TO STOP THE STARTING ROOMS / LIFE RAFT FROM SPAWNING IN.
+                        // If replacing the ref region, remove the ref node from the list and remove the region ID from the region data.
+                        // if (replace)
+                        // {
+                        //     refNodes.RemoveAt(i);
+                        //     if (regionData.regionID.Contains(refRegion.regionID))
+                        //     {
+                        //         regionData.regionID.Remove(refRegion.regionID);
+                        //     }
+                        // }
+                    }
+                }
+                Debug.Log("Added all " + refRegion.regionName + " nodes to the " + growRegion.regionName + " region.");
+            }
+
+            /// <summary>
+            /// Removes inaccessibility references from nodes that are actually accessible.
+            /// A node should be accessible if there is another region ID stored for it in the region data.
+            /// </summary>
+            private static void CleanUpInaccessibleNodes()
+            {
+                // Go through each inaccessible node, checking whether the node is actually accessible.
+                var inaccessibleRegion = RegionManager.Instance.regions[RegionManager.Instance.StringToRegionIndex("Inaccessible")];
+                var nodes = inaccessibleRegion.associatedNodes;
+                for (int i = nodes.Count - 1; i >= 0; i--)
+                {
+                    var node = nodes[i];
+                    if (CheckBoundariesLG.NodeWithinShipBounds(node))
+                    {
+                        var regionIDs = RegionManager.Instance.regionData[(int)node.x].regionDataY[(int)node.y].regionDataZ[(int)node.z].regionID;
+                        if (regionIDs.Any(id => id != inaccessibleRegion.regionID))
+                        {
+                            regionIDs.RemoveAll(id => id == inaccessibleRegion.regionID);
+                            nodes.RemoveAt(i);
+                        }
+                    }
+                }
             }
 
             private static void SetRegionInRange(string regionString, int minX, int maxX, int minY, int maxY, int minZ, int maxZ, bool useAsOnlyRegion = false)
@@ -4935,8 +4721,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         for (int z = minZ; z <= maxZ; z++)
                         {
-                            Vector3 copyNode = RegionManager.Instance.ConvertPointToRegionNode(Settings.ShipPos + new Vector3(x * Settings.CuboidDim.x, y * Settings.CuboidDim.y, z * Settings.CuboidDim.z));
-
+                            Vector3 copyNode = new Vector3(x, y, z);
                             if (!RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Contains(regionID))
                             {
                                 if (useAsOnlyRegion)
