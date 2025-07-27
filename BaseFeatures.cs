@@ -297,7 +297,7 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 // Overpowered Hiding Spots
-                new Hook(typeof(Hiding).GetProperty("IsHiding", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetGetMethod(), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookHidingget_IsHiding"), null);
+                Utilities.HookGetter<Hiding, bool>(nameof(Hiding.IsHiding), HookHidingget_IsHiding);
 
                 // No Hiding
                 if (!ModSettings.startedWithMMM)

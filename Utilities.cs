@@ -51,7 +51,7 @@ namespace MonstrumExtendedSettingsMod
                     // Check whether this specific IEnumerator instance has already been replaced with a hooked version, creating one if not.
                     if (!_iEnumeratorDictionary.TryGetValue(self, out var replacement))
                     {
-                        // Get the owning class instance (e.g. levelGeneration) via the compiler-generated `$this` field.
+                        // Get the owning class instance (e.g., levelGeneration) via the compiler-generated `$this` field.
                         var owner = (TOwner)self.GetType().GetField("$this", methodFlags).GetValue(self);
 
                         // Use the hook function to create a replacement IEnumerator with the owning class instance.
@@ -87,6 +87,25 @@ namespace MonstrumExtendedSettingsMod
                 // As a fallback, call the original MoveNext in case the intermediate hook was not correctly registered (coding logic error).
                 return orig.MoveNext();
             }
+
+            /// <summary>
+            /// Creates a hook for a getter function.
+            /// </summary>
+            /// <typeparam name="TOwner">The type that owns the getter (e.g., Hiding).</typeparam>
+            /// <typeparam name="TReturn">The type that the getter returns (e.g., bool).</typeparam>
+            /// <param name="propertyName">The name of the property holding the getter (e.g., nameof(Hiding.IsHiding)).</param>
+            /// <param name="replacementGetter">The function to hook the getter to.</param>
+            public static void HookGetter<TOwner, TReturn>(string propertyName, Func<TOwner, TReturn> replacementGetter)
+            {
+                // Get the MethodInfo of the original getter.
+                var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                var getMethod = typeof(TOwner).GetProperty(propertyName, flags).GetGetMethod(true);
+
+                // Create a hook from the original getter to the replacement getter via the MethodInfo of each.
+                MethodInfo hookMethod = replacementGetter.Method;
+                new Hook(getMethod, hookMethod, null);
+            }
+
 
             public static void CopyParticleSystem(ParticleSystem pastePS, ParticleSystem copyPS)
             {

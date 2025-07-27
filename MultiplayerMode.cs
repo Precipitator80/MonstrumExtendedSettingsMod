@@ -1124,7 +1124,7 @@ namespace MonstrumExtendedSettingsMod
                 On.FuelCan.OnUseItem += new On.FuelCan.hook_OnUseItem(HookFuelCanOnUseItem);
                 //On.FuelPump.DestroyCan += new On.FuelPump.hook_DestroyCan(HookFuelPumpDestroyCan);
                 On.HeadLights.OnStartItemAnimation += new On.HeadLights.hook_OnStartItemAnimation(HookHeadLightsOnStartItemAnimation);
-                new Hook(typeof(Inventory).GetProperty("AllowShowItem", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetGetMethod(), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookInventoryget_AllowShowItem"), null);
+                Utilities.HookGetter<Inventory, bool>(nameof(Inventory.AllowShowItem), HookInventoryget_AllowShowItem);
 
                 // Patch 2
                 On.ItemFlashManager.Update += new On.ItemFlashManager.hook_Update(HookItemFlashManagerUpdate);
@@ -8425,7 +8425,7 @@ namespace MonstrumExtendedSettingsMod
             private static void HookMonster()
             {
                 On.Monster.Awake += new On.Monster.hook_Awake(HookMonsterAwake);
-                new Hook(typeof(Monster).GetProperty("DistanceToPlayer", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetGetMethod(), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookMonsterget_DistanceToPlayer"), null);
+                Utilities.HookGetter<Monster, float>(nameof(Monster.DistanceToPlayer), HookMonsterget_DistanceToPlayer);
             }
 
             private static void HookMonsterAwake(On.Monster.orig_Awake orig, Monster monster)
