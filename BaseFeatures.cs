@@ -4711,6 +4711,19 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Sets the first region of given bounds to a given region.
+            /// Has a similar effect to CopyRegionOverY, but does not work for all use cases.
+            /// Used for extending lower decks, for example.
+            /// </summary>
+            /// <param name="regionString">The region to set the target bounds to.</param>
+            /// <param name="minX">The starting x coordinate of the bounds to set.</param>
+            /// <param name="maxX">The ending x coordinate of the bounds to set (inclusive).</param>
+            /// <param name="minY">The starting y coordinate of the bounds to set.</param>
+            /// <param name="maxY">The ending y coordinate of the bounds to set (inclusive).</param>
+            /// <param name="minZ">The starting z coordinate of the bounds to set.</param>
+            /// <param name="maxZ">The ending z coordinate of the bounds to set (inclusive).</param>
+            /// <param name="useAsOnlyRegion">Whether to remove all other regions.</param>
             private static void SetRegionInRange(string regionString, int minX, int maxX, int minY, int maxY, int minZ, int maxZ, bool useAsOnlyRegion = false)
             {
                 int regionID = RegionManager.Instance.StringToRegionID(regionString);
@@ -4853,6 +4866,10 @@ namespace MonstrumExtendedSettingsMod
                 On.LightShafts.UpdateLightType += new On.LightShafts.hook_UpdateLightType(HookLightShaftsUpdateLightType);
             }
 
+            /// <summary>
+            /// Conditionally renders Brute's light shafts.
+            /// Do not render if set explicitly or if playing as the Brute.
+            /// </summary>
             private static void HookLightShaftsOnRenderObject(On.LightShafts.orig_OnRenderObject orig, LightShafts lightShafts)
             {
                 if (ModSettings.doNotRenderBruteLight || (ModSettings.enableCrewVSMonsterMode && ModSettings.numbersOfMonsterPlayers.Contains(0) && ManyMonstersMode.monsterListMonsterComponents[0].MonsterType == Monster.MonsterTypeEnum.Brute))
@@ -4862,33 +4879,24 @@ namespace MonstrumExtendedSettingsMod
                 orig.Invoke(lightShafts);
             }
 
+            /// <summary>
+            /// Supports custom Brute light and random Brute light colours.
+            /// </summary>
             private static void HookLightShaftsUpdateLightType(On.LightShafts.orig_UpdateLightType orig, LightShafts lightShafts)
             {
                 if (lightShafts.m_Light == null)
                 {
                     lightShafts.m_Light = ((MonoBehaviour)lightShafts).GetComponent<Light>();
-                    if (ModSettings.UseCustomColour(ModSettings.bruteLightColour) || ModSettings.randomBruteLightColours)
+                    // Check whether to use a custom colour (set or random).
+                    // If a custom colour is set and random colours are enabled, give a chance for each.
+                    var useCustomBruteLightColour = ModSettings.UseCustomColour(ModSettings.bruteLightColour);
+                    if (ModSettings.randomBruteLightColours && (!useCustomBruteLightColour || UnityEngine.Random.value > 0.5f))
                     {
-                        if (ModSettings.UseCustomColour(ModSettings.bruteLightColour) && ModSettings.randomBruteLightColours)
-                        {
-                            float randomChance = UnityEngine.Random.value;
-                            if (randomChance > 0.5f)
-                            {
-                                lightShafts.m_Light.color = ModSettings.ConvertColourStringToColour(ModSettings.bruteLightColour);
-                            }
-                            else
-                            {
-                                lightShafts.m_Light.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                            }
-                        }
-                        else if (ModSettings.UseCustomColour(ModSettings.bruteLightColour))
-                        {
-                            lightShafts.m_Light.color = ModSettings.ConvertColourStringToColour(ModSettings.bruteLightColour);
-                        }
-                        else
-                        {
-                            lightShafts.m_Light.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                        }
+                        lightShafts.m_Light.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
+                    }
+                    else if (useCustomBruteLightColour)
+                    {
+                        lightShafts.m_Light.color = ModSettings.ConvertColourStringToColour(ModSettings.bruteLightColour);
                     }
                     lightShafts.m_Light.intensity *= ModSettings.bruteLightIntensityMultiplier;
                     lightShafts.m_Light.range *= ModSettings.bruteLightRangeMultiplier;
@@ -4899,7 +4907,13 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @LoadingBackground
 
+            /// <summary>
+            /// Contains both original and custom loading screens.
+            /// </summary>
             private static Hints.HintCollection[] extendedLoadingScreenArray;
+            /// <summary>
+            /// Maps loading screen file names to arrays of possible loading messages.
+            /// </summary>
             private static readonly Dictionary<string, string[]> customLoadingScreenMessages = new Dictionary<string, string[]>()
             {
                 { "AlphaBunks",             new String[]{"The structure of the Hisa Maru was changed a lot throughout construction."}},
@@ -4922,7 +4936,7 @@ namespace MonstrumExtendedSettingsMod
                 { "Map",                    new String[]{"Maps placed on the walls throughout the ship may help you relocate yourself if lost."}},
                 { "MESMSettings",           new String[]{"The Extended Settings Mod offers hundreds of settings to customise your experience."}},
                 { "Monstrum2Documents",     new String[]{"The future answers many questions left unanswered by the past, but opens many others..."}},
-                { "Monstrum2HisaMaru",      new String[]{"The Hisa Maru survived into the 21st century, severely damaged by time.", "The contents of some of the cargo carried aboard the Hisa Maru remained classified.", "While other parts of the ship decayed severely over time, the Hisa Maru's upper decks remained in a relatively good condition."}},
+                { "Monstrum2HisaMaru",      new String[]{"The Hisa Maru survived into the 21st century, severely damaged by time.", "The contents of some of the cargo carried aboard the Hisa Maru remained classified.", "While other parts of the ship decayed severely over time, the Hisa Maru's upper decks remained in relatively good condition."}},
                 { "Monstrum2SeaFort",       new String[]{"Genetic research on the monsters continued into the 21st century aboard a seemingly derelict array of sea forts."}},
                 { "Multiplayer",            new String[]{"The local Multiplayer mode lets you play with friends on your computer. Third party software enables online play."}},
                 { "OverpoweredSteam",       new String[]{"Steam onboard the Hisa Maru can be quite dangerous, especially with additional modifications..."}},
@@ -4932,12 +4946,15 @@ namespace MonstrumExtendedSettingsMod
                 { "SparkyEasterEgg3",       new String[]{"Don't let Sparky catch you in the dark...", "It is unwise to let Sparky drain all the ship's power..." }},
                 { "SparkyPresence",         new String[]{"Sparky can drain the ship's power, requiring a region's electricity to be restored."}},
                 { "SteamShutoff",           new String[]{"The ship's steam can be shut off, but doing so can prove difficult."}},
-                { "Submersible",            new String[]{"The submersible requires uninterrupted time charging, providing monsters unaccounted for an ample opportunity to interfere."}},
+                { "Submersible",            new String[]{"The submersible requires uninterrupted time charging, giving monsters ample opportunity to interfere."}},
                 { "TV",                     new String[]{"Some objects that seem useless at first glance may prove to be more useful than thought."}},
                 { "UpperDecks",             new String[]{"Rooms in the upper decks are filled with smaller items and plenty of hiding spots."}},
                 { "Workstation",            new String[]{"Some items, notes and easter eggs may require a more thorough inspection of the environment to find."}}
             };
 
+            /// <summary>
+            /// Supports custom loading screens including an option to disable them.
+            /// </summary>
             private static void HookLoadingBackground(On.LoadingBackground.orig_Awake orig, LoadingBackground loadingBackground)
             {
                 if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Menus" || !ModSettings.skippedMenuScreen)
@@ -5000,6 +5017,9 @@ namespace MonstrumExtendedSettingsMod
                         // Choose a hint from the extended array.
                         Hints.instance.hints = extendedLoadingScreenArray;
                         randomHint = Hints.GetRandomHint();
+
+                        // Repick the hint if it is an easter egg and the random chance is not low enough.
+                        // This makes the easter egg hints rarer.
                         if (randomHint.texture.texture.name.Contains("EasterEgg") && UnityEngine.Random.value > 0.02f)
                         {
                             for (int tries = 0; tries < 10 && randomHint.texture.texture.name.Contains("EasterEgg"); tries++)
@@ -5022,9 +5042,16 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
+                // Set the loading background without any progress text.
                 SetLoadingText(loadingBackground);
             }
 
+            /// <summary>
+            /// Sets the loading screen background and text.
+            /// Shows custom hints, the mod version, active challenge and any error.
+            /// </summary>
+            /// <param name="loadingBackground">The loading background to use.</param>
+            /// <param name="loadingProgressText">Additional text to indicate loading progress.</param>
             private static void SetLoadingText(LoadingBackground loadingBackground, string loadingProgressText = "")
             {
                 if (!ModSettings.errorDuringLevelGeneration) // Don't update the text if an error has occurred during level generation.
@@ -5079,6 +5106,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @MAttackingState2
 
+            /// <summary>
+            /// Sets the death region and monster that killed the player for death backgrounds.
+            /// </summary>
             private static void HookMAttackingState2KillThePlayer(On.MAttackingState2.orig_KillThePlayer orig, MAttackingState2 mAttackingState2)
             {
                 deathRegion = mAttackingState2.monster.PlayerDetectRoom.GetRoom.PrimaryRegion;
@@ -5116,38 +5146,52 @@ namespace MonstrumExtendedSettingsMod
             }
             */
 
-            // Fire Shroud Fire Blast Version
+            /// <summary>
+            /// Supports custom abilities triggered at the same time as Fiend's door check.
+            /// </summary>
             private static void HookMChasingStateDoDoorCheck(On.MChasingState.orig_DoDoorCheck orig, MChasingState mChasingState, bool _overwrite)
             {
-                if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute))
+                if (!mChasingState.sinceDoorCheck.timerStarted || _overwrite)
                 {
-                    if (!mChasingState.sinceDoorCheck.timerStarted || _overwrite)
+                    if (!mChasingState.sinceDoorCheck.timerStarted)
                     {
-                        if (!mChasingState.sinceDoorCheck.timerStarted)
-                        {
-                            mChasingState.sinceDoorCheck.StartTimer();
-                        }
-                        ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
+                        mChasingState.sinceDoorCheck.StartTimer();
                     }
-                    else if (mChasingState.sinceDoorCheck.TimeElapsed > mChasingState.timeBetweenDoorCheck)
+                    TriggerDoorCheckAbilities();
+                }
+                else if (mChasingState.sinceDoorCheck.TimeElapsed > mChasingState.timeBetweenDoorCheck)
+                {
+                    if (((MState)mChasingState).monster.MonsterType != Monster.MonsterTypeEnum.Fiend)
                     {
-                        if (((MState)mChasingState).monster.MonsterType != Monster.MonsterTypeEnum.Fiend)
-                        {
-                            mChasingState.sinceDoorCheck.ResetTimer();
-                        }
-                        ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
+                        mChasingState.sinceDoorCheck.ResetTimer();
                     }
+                    TriggerDoorCheckAbilities();
                 }
                 orig.Invoke(mChasingState, _overwrite);
             }
 
+            /// <summary>
+            /// Triggers a fire blast and electric trap spawning if the monster has the relevant components.
+            /// </summary>
+            private static void TriggerDoorCheckAbilities()
+            {
+                ((MState)mChasingState).monster.GetComponent<FireShroud>()?.FireBlast();
+                ((MState)mChasingState).monster.GetComponent<SparkyAura>()?.SpawnTrapsNearSparky(0f, 0.75f * mChasingState.timeBetweenDoorCheck);
+            }
+
+            /// <summary>
+            /// Supports spawn protection,
+            /// </summary>
             private static void HookMChasingStateStateChanges(On.MChasingState.orig_StateChanges orig, MChasingState mChasingState)
             {
+                // Get the index of the current player being chased to check their spawn protection and invincibility.
                 int crewPlayerIndex = 0;
                 if (ModSettings.enableMultiplayer)
                 {
                     crewPlayerIndex = MultiplayerMode.crewPlayers.IndexOf(mChasingState.monster.PlayerDetectRoom.player);
                 }
+
+                // Only run normal chase code if the player is not spawn protected.
                 if (!ModSettings.spawnProtection[crewPlayerIndex])
                 {
                     mChasingState.changingState = false;
@@ -5188,13 +5232,16 @@ namespace MonstrumExtendedSettingsMod
                                 ((MState)mChasingState).monster.Hearing.ClearLastHeardPosition();
                                 ((MState)mChasingState).monster.Hearing.MarkAllSoundsAsExplored();
                             }
+                            // Attack the player if they are not invincible and within attack range.
                             if (!ModSettings.invincibilityMode[crewPlayerIndex] && ((MState)mChasingState).monster.IsPlayerInAttackRange())
                             {
                                 if ((((MState)mChasingState).monster.FoundPlayerBySound || ((MState)mChasingState).monster.IsPlayerLocationKnown || ((MState)mChasingState).monster.CanSeePlayer || ((MState)mChasingState).monster.CanSeeTorch) && (((MState)mChasingState).monster.IsPlayerHiding || ManyMonstersMode.PlayerToMonsterCast(((MState)mChasingState).monster)))
                                 {
                                     NewPlayerClass monsterNewPlayerClass = ((MState)mChasingState).monster.player.GetComponent<NewPlayerClass>();
-                                    if (!ModSettings.enableMultiplayer || (ModSettings.enableMultiplayer && MultiplayerMode.AllOtherPlayersDown(monsterNewPlayerClass)))
+                                    // Only kill the player if not using multiplayer or all players have already been downed.
+                                    if (!ModSettings.enableMultiplayer || MultiplayerMode.AllOtherPlayersDown(monsterNewPlayerClass))
                                     {
+                                        // Only kill the player if they do not have any lives left.
                                         if (!ModSettings.PlayerHasLivesLeft())
                                         {
                                             if (((MState)mChasingState).monster.IsPlayerHiding)
@@ -5202,6 +5249,7 @@ namespace MonstrumExtendedSettingsMod
                                                 mChasingState.spot = mChasingState.playerRoomDetect.PlayerHidingSpot(mChasingState.playerRoomDetect.GetRoom.HidingSpots);
                                                 ChooseAttack.WhatAttackHiding(mChasingState.spot);
 
+                                                // Reactivate all player lights while killing the player in PvP as they no longer have to be hidden.
                                                 if (ModSettings.enableCrewVSMonsterMode)
                                                 {
                                                     CrewVsMonsterMode.playersGoneIntoHiding[MultiplayerMode.PlayerNumber(mChasingState.monster.PlayerDetectRoom.player.GetInstanceID())] = false;
@@ -5239,6 +5287,7 @@ namespace MonstrumExtendedSettingsMod
                                 ((MState)mChasingState).StopCoroutine("LerpToHidingSpot");
                             }
                         }
+                        // Do not switch to search room state in PvP while one player is playing as the monster as this would give away where the other player is hiding.
                         else if (((MState)mChasingState).monster.InSearchableArea() && !((MState)mChasingState).monster.IsPlayerLocationKnown && (!ModSettings.enableCrewVSMonsterMode || CrewVsMonsterMode.letAIControlMonster))
                         {
                             mChasingState.changingState = true;
@@ -5256,8 +5305,12 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Supports Alternating Monsters, Multiplayer and Persistent Monster.
+            /// </summary>
             private static void HookMChasingStateChase(On.MChasingState.orig_Chase orig, MChasingState mChasingState, bool instantCalc)
             {
+                // Keep monster alert and timers reset if persistent.
                 if (ModSettings.persistentMonster)
                 {
                     ((MState)mChasingState).monster.GetAlertMeters.mSightAlert = 100f;
@@ -5323,9 +5376,12 @@ namespace MonstrumExtendedSettingsMod
                         mChasingState.ChaseGoal(((MState)mChasingState).monster.LastSeenPlayerPosition + Vector3.up);
                     }
                 }
+                // Keep the monster in chase mode if persistent.
                 else if (!mChasingState.changingState && !ModSettings.persistentMonster)
                 {
                     ((MState)mChasingState).SendEvent("PlayerLoseSight");
+                    // If using alternating monsters and there are monsters available to switch, switch the monster.
+                    // If the monster is a Hunter, switch when going to go back into the vents rather than directly after a chase.
                     if (ModSettings.alternatingMonstersMode && ModSettings.numberOfMonsters > ModSettings.numberOfAlternatingMonsters && ((MState)mChasingState).monster.MonsterType != Monster.MonsterTypeEnum.Hunter)
                     {
                         TimeScaleManager.Instance.StartCoroutine(ManyMonstersMode.SwitchMonster(((MState)mChasingState).monster));

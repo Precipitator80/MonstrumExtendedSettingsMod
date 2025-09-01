@@ -401,7 +401,6 @@ namespace MonstrumExtendedSettingsMod
                 {
                     On.FootStepManager.SetUpStep += new On.FootStepManager.hook_SetUpStep(HookFootStepManagerSetUpStep);
                 }
-                On.MChasingState.DoDoorCheck += new On.MChasingState.hook_DoDoorCheck(HookMChasingStateDoDoorCheck);
                 On.Monster.TeleportTo += new On.Monster.hook_TeleportTo(HookMonsterTeleportTo);
                 /*
                 // Moved to BaseFeatures.
@@ -556,44 +555,6 @@ namespace MonstrumExtendedSettingsMod
                     return;
                 }
                 orig.Invoke(footStepManager, _speed);
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
-            // @MChasingState
-
-            private static void HookMChasingStateDoDoorCheck(On.MChasingState.orig_DoDoorCheck orig, MChasingState mChasingState, bool _overwrite)
-            {
-                if (!mChasingState.sinceDoorCheck.timerStarted || _overwrite)
-                {
-                    if (!mChasingState.sinceDoorCheck.timerStarted)
-                    {
-                        mChasingState.sinceDoorCheck.StartTimer();
-                    }
-                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute && !mChasingState.monster.monsterType.Equals("Sparky")))
-                    {
-                        ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
-                    }
-                    if (((MState)mChasingState).monster.monsterType.Equals("Sparky"))
-                    {
-                        ((MState)mChasingState).monster.GetComponent<SparkyAura>().SpawnTrapsNearSparky(0f, 0.75f * mChasingState.timeBetweenDoorCheck);
-                    }
-                }
-                else if (mChasingState.sinceDoorCheck.TimeElapsed > mChasingState.timeBetweenDoorCheck)
-                {
-                    if (((MState)mChasingState).monster.MonsterType != Monster.MonsterTypeEnum.Fiend)
-                    {
-                        mChasingState.sinceDoorCheck.ResetTimer();
-                    }
-                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute && !mChasingState.monster.monsterType.Equals("Sparky")))
-                    {
-                        ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
-                    }
-                    if (((MState)mChasingState).monster.monsterType.Equals("Sparky"))
-                    {
-                        ((MState)mChasingState).monster.GetComponent<SparkyAura>().SpawnTrapsNearSparky(0f, 0.75f * mChasingState.timeBetweenDoorCheck);
-                    }
-                }
-                orig.Invoke(mChasingState, _overwrite);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
