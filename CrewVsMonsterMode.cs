@@ -1900,7 +1900,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                     if (((MState)mInvestigateState).monster.InSearchableArea() && letAIControlMonster)
                     {
-                        if ((((MState)mInvestigateState).monster.Hearing.CurrentSoundSource == null || !((MState)mInvestigateState).monster.Hearing.CurrentSoundSource.Source.isPlaying))
+                        if (((MState)mInvestigateState).monster.Hearing.CurrentSoundSource == null || !((MState)mInvestigateState).monster.Hearing.CurrentSoundSource.Source.isPlaying)
                         {
                             ((MState)mInvestigateState).SendEvent("RoomSearch");
                         }

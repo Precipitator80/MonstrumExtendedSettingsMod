@@ -5877,11 +5877,11 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 if (ControllerCheck.enableControllerSupport)
                                 {
-                                    mouseLookCustom.rotationX += Input.GetAxis("Mouse X") * (mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX) + XboxCtrlrInput.XCI.RightStickValueX() * (mouseLookCustom.stick_SensitivityX * (float)mouseLookCustom.invertX);
+                                    mouseLookCustom.rotationX += Input.GetAxis("Mouse X") * mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX + XboxCtrlrInput.XCI.RightStickValueX() * mouseLookCustom.stick_SensitivityX * (float)mouseLookCustom.invertX;
                                 }
                                 else
                                 {
-                                    mouseLookCustom.rotationX += Input.GetAxis("Mouse X") * (mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX);
+                                    mouseLookCustom.rotationX += Input.GetAxis("Mouse X") * mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX;
                                 }
                                 mouseLookCustom.rotationX = Mathf.Clamp(mouseLookCustom.rotationX, mouseLookCustom.minimumX, mouseLookCustom.maximumX);
                             }
@@ -5893,11 +5893,11 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 if (ControllerCheck.enableControllerSupport)
                                 {
-                                    mouseLookCustom.rotationY += Input.GetAxis("Mouse Y") * (mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY) + XboxCtrlrInput.XCI.RightStickValueY() * (mouseLookCustom.stick_SensitivityY * (float)mouseLookCustom.invertY);
+                                    mouseLookCustom.rotationY += Input.GetAxis("Mouse Y") * mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY + XboxCtrlrInput.XCI.RightStickValueY() * mouseLookCustom.stick_SensitivityY * (float)mouseLookCustom.invertY;
                                 }
                                 else
                                 {
-                                    mouseLookCustom.rotationY += Input.GetAxis("Mouse Y") * (mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY);
+                                    mouseLookCustom.rotationY += Input.GetAxis("Mouse Y") * mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY;
                                 }
                                 mouseLookCustom.rotationY = Mathf.Clamp(mouseLookCustom.rotationY, mouseLookCustom.minimumY, mouseLookCustom.maximumY);
                                 if (mouseLookCustom.cam != null && mouseLookCustom.rotationY <= 0f)
@@ -6151,14 +6151,14 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
 
-                    if ((ModSettings.applyLongRangeWanderSpeedBuffToAllMonsters || (ModSettings.bruteLongRangeWanderSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute && !movementControl.monster.monsterType.Equals("Sparky"))) && currentState.GetType() == typeof(MWanderState) && (movementControl.monster.Patrol != null && movementControl.monster.Patrol.ShouldRun) || (movementControl.monster.DistanceToPlayer > 40f && movementControl.monster.DistanceToGoal() > 20f))
+                    if ((ModSettings.applyLongRangeWanderSpeedBuffToAllMonsters || (ModSettings.bruteLongRangeWanderSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute && !movementControl.monster.monsterType.Equals("Sparky"))) && currentState.GetType() == typeof(MWanderState) && movementControl.monster.Patrol != null && movementControl.monster.Patrol.ShouldRun || (movementControl.monster.DistanceToPlayer > 40f && movementControl.monster.DistanceToGoal() > 20f))
                     {
                         modifiedSpeed *= ModSettings.bruteLongRangeWanderSpeedBuffMultiplier;
                     }
 
                     if (applyChaseBuff)
                     {
-                        movementControl.animController.monsterAnimation.speed = Mathf.MoveTowards(movementControl.animController.monsterAnimation.speed, modifiedSpeed, (Time.deltaTime * ModSettings.bruteChaseSpeedBuffRate) / 5f);
+                        movementControl.animController.monsterAnimation.speed = Mathf.MoveTowards(movementControl.animController.monsterAnimation.speed, modifiedSpeed, Time.deltaTime * ModSettings.bruteChaseSpeedBuffRate / 5f);
                     }
                     else
                     {
@@ -6617,7 +6617,7 @@ namespace MonstrumExtendedSettingsMod
                     pitTrap.selectedDirection = pitTrap.forwardsTrans;
                     Vector3 forward = pitTrap.player.transform.forward;
                     Vector3 forward2 = pitTrap.backwardsTrans.forward;
-                    forward.y = (forward2.y = 0f);
+                    forward.y = forward2.y = 0f;
                     if (Vector3.Angle(forward, forward2) < 90f)
                     {
                         pitTrap.selectedDirection = pitTrap.backwardsTrans;
@@ -7363,7 +7363,7 @@ namespace MonstrumExtendedSettingsMod
                     float startLifetime = smokeGrenadeParticleStartLifeTime;
                     ParticleSystem.EmissionModule psem = particleSystem.emission;
                     psem.enabled = true;
-                    psem.rateOverTime = new ParticleSystem.MinMaxCurve(4f, new AnimationCurve(new Keyframe(0f, 1f), new Keyframe((startLifetime / 8f) / duration - 0.01f, 1f), new Keyframe((startLifetime / 8f) / duration, 0.25f), new Keyframe((duration - startLifetime) / duration - 0.01f, 0.25f), new Keyframe((duration - startLifetime) / duration, 0f), new Keyframe(1f, 0f)));
+                    psem.rateOverTime = new ParticleSystem.MinMaxCurve(4f, new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(startLifetime / 8f / duration - 0.01f, 1f), new Keyframe(startLifetime / 8f / duration, 0.25f), new Keyframe((duration - startLifetime) / duration - 0.01f, 0.25f), new Keyframe((duration - startLifetime) / duration, 0f), new Keyframe(1f, 0f)));
 
                     ParticleSystem.ShapeModule shapeModule = particleSystem.shape;
                     shapeModule.shapeType = ParticleSystemShapeType.Hemisphere;

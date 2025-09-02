@@ -144,7 +144,7 @@ namespace MonstrumExtendedSettingsMod
                                         sparkyEvent.floatParameter = bruteEvent.floatParameter;
                                         sparkyEvent.stringParameter = bruteEvent.stringParameter;
                                         sparkyEvent.objectReferenceParameter = bruteEvent.objectReferenceParameter;
-                                        float scaledBruteTime = (bruteEvent.time / bruteClip.length); // Scale the event to Sparky's animation.
+                                        float scaledBruteTime = bruteEvent.time / bruteClip.length; // Scale the event to Sparky's animation.
                                         sparkyEvent.time = sparkyClip.length * scaledBruteTime;
                                         sparkyClip.AddEvent(sparkyEvent);
                                     }
@@ -895,7 +895,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                         if (nearbyRooms.Count > 0)
                         {
-                            buffPercentage = (nearbyActiveRooms.Count / nearbyRooms.Count) * maxRoomBuffPercentage;
+                            buffPercentage = nearbyActiveRooms.Count / nearbyRooms.Count * maxRoomBuffPercentage;
                         }
                         else
                         {
@@ -1538,7 +1538,7 @@ namespace MonstrumExtendedSettingsMod
                 for (; ; )
                 {
                     // y = mx + c = (1 - slowfactor) * distance from centre + slowfactor = 0.2x + 0.8 // The line goes from 1 down to the slow factor (default 0.8).
-                    float distanceFactor = Mathf.Clamp((Vector3.Distance(playerMotor.transform.position, this.transform.position) / boxCollider.size.x), 0f, 1f);
+                    float distanceFactor = Mathf.Clamp(Vector3.Distance(playerMotor.transform.position, this.transform.position) / boxCollider.size.x, 0f, 1f);
                     float rangedSlowFactor = (1f - slowFactor) * distanceFactor + slowFactor;
                     playerMotor.xMovement *= rangedSlowFactor;
                     playerMotor.zMovement *= rangedSlowFactor;

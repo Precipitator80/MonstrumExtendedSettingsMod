@@ -52,7 +52,7 @@ namespace MonstrumExtendedSettingsMod
                 //Debug.Log("Processing setting: " + this.modSettingsText);
                 this.defaultValueString = defaultValueString;
                 this.modSettingsDescription = modSettingsDescription + ".\nDefault = " + defaultValueString;
-                int lineOfSettingText = (modSettingsExist ? FindLineOfSettingText(this.modSettingsText) : 0);
+                int lineOfSettingText = modSettingsExist ? FindLineOfSettingText(this.modSettingsText) : 0;
                 this.childSetting = childSetting;
                 this.modSettingsLine = lineOfSettingText + 1;
                 this.category = currentCategoryBeingAssigned;
@@ -397,7 +397,7 @@ namespace MonstrumExtendedSettingsMod
             public MESMSetting(string modSettingsText, string modSettingsDescription, T defaultValue, bool absoluteValue = false, bool childSetting = false, float lowerClamp = float.MinValue, float upperClamp = float.MaxValue) : base(modSettingsText, modSettingsDescription, childSetting, defaultValue.ToString())
             {
                 this.defaultValue = defaultValue;
-                this.userValue = (modSettingsExist ? FindSetting(this.modSettingsLine) : defaultValue);
+                this.userValue = modSettingsExist ? FindSetting(this.modSettingsLine) : defaultValue;
                 this.minClamp = lowerClamp == float.MinValue ? 0f : lowerClamp;
                 this.maxClamp = upperClamp == float.MaxValue ? 0f : upperClamp;
 
@@ -1680,7 +1680,7 @@ namespace MonstrumExtendedSettingsMod
                         //globalFog.globalFogColor = new Color(0.048f, 0.059f, 0.057f);
                         globalFog.globalFogColor = new Color(0.025f, 0.025f, 0.029f);
                     }
-                    globalFog.globalDensity = fogDensity == 0f ? 230f / (Mathf.Abs(fogFarDistance - fogNearDistance)) : fogDensity; //100f / (Mathf.Abs(fogFarDistance - fogNearDistance));//fogDensity;
+                    globalFog.globalDensity = fogDensity == 0f ? 230f / Mathf.Abs(fogFarDistance - fogNearDistance) : fogDensity; //100f / (Mathf.Abs(fogFarDistance - fogNearDistance));//fogDensity;
                     mainCamera.farClipPlane = fogFarDistance;
                     mainCamera.clearFlags = CameraClearFlags.Color;
                     mainCamera.backgroundColor = globalFog.globalFogColor;
@@ -2029,7 +2029,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     playerMovementSpeedEndMultiplier = playerMovementSpeedMultiplier[0] * ((References.PlayerClass.Motor.walkX + playerStaminaModeSpeedPenaltyMultiplier * (References.PlayerClass.Motor.runX - References.PlayerClass.Motor.walkX)) / References.PlayerClass.Motor.runX);
 
-                    staminaModeMaximumMultiplierChange = (playerMovementSpeedStartMultiplier - playerMovementSpeedEndMultiplier);
+                    staminaModeMaximumMultiplierChange = playerMovementSpeedStartMultiplier - playerMovementSpeedEndMultiplier;
 
                     /*
                     float inner1 = (playerMovementSpeedEndMultiplier - playerMovementSpeedStartMultiplier) / staminaModeMaximumMultiplierChange;

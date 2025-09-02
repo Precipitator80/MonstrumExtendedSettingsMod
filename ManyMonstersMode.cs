@@ -2927,7 +2927,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                return (IsFiendMinimumInGroup(playerNumber, monsterNumber) && !canAFiendInGroupSeePlayer);
+                return IsFiendMinimumInGroup(playerNumber, monsterNumber) && !canAFiendInGroupSeePlayer;
             }
 
             // Legacy code used in old versions when I thought there was only one FiendMindAttack. // Adapted to new system.
@@ -3195,7 +3195,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         if (_source.gameObject.GetComponent<DistractionSound>() == null)
                         {
-                            distractionSound = (_source.gameObject.AddComponent(typeof(DistractionSound)) as DistractionSound);
+                            distractionSound = _source.gameObject.AddComponent(typeof(DistractionSound)) as DistractionSound;
                         }
                         else
                         {
