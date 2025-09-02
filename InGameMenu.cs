@@ -1977,7 +1977,7 @@ namespace MonstrumExtendedSettingsMod
                 base.CreateButtonForSetting(referenceTransform, referenceOffset); // Creates and assigns settingsButton
 
                 // Edit settingsButton
-                MenuSliderInputFieldWithDescription menuSliderInputFieldWithDescription = (MenuSliderInputFieldWithDescription)settingsButton;
+                MenuSliderInputFieldWithDescription menuSliderInputFieldWithDescription = (MenuSliderInputFieldWithDescription)button;
                 inputField = menuSliderInputFieldWithDescription.menuInputField.inputField;
 
                 EventTrigger.Entry entry = new EventTrigger.Entry();
@@ -1993,7 +1993,7 @@ namespace MonstrumExtendedSettingsMod
 
                 ChangeTextColour();
 
-                return settingsButton;
+                return button;
             }
         }
 

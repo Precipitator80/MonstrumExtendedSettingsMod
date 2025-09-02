@@ -32,50 +32,88 @@ namespace MonstrumExtendedSettingsMod
 
         public abstract class MESMSetting
         {
+            /// <summary>
+            /// The settings being used.
+            /// </summary>
             public static string[] modSettings;
+            /// <summary>
+            /// Whether the settings have been written to a file.
+            /// </summary>
             public static bool modSettingsExist;
+            /// <summary>
+            /// The category to use for any settings being initialised.
+            /// </summary>
             public static string currentCategoryBeingAssigned;
 
-            public string modSettingsText;
-            protected string modSettingsDescription;
+            /// <summary>
+            /// What the setting is called.
+            /// </summary>
+            public string title;
+            /// <summary>
+            /// Text detailing what the setting does.
+            /// </summary>
+            protected string description;
+            /// <summary>
+            /// The default value of the setting as a string.
+            /// </summary>
             public string defaultValueString;
+            /// <summary>
+            /// The current value of the setting set by the user as a string.
+            /// </summary>
             public string userValueString;
-            public int modSettingsLine;
+            /// <summary>
+            /// The line number of the setting's value in the text file.
+            /// </summary>
+            public int valueLine;
+            /// <summary>
+            /// Which category of settings the setting belongs to.
+            /// </summary>
             public string category;
             //private int linesToResult;
+            /// <summary>
+            /// Whether this setting is closely related to the previous setting.
+            /// Any child settings do not have a filler line printed before them in the settings text file.
+            /// </summary>
             private bool childSetting;
-            public MenuDescriptionBox settingsButton;
+            /// <summary>
+            /// The button used to edit this setting.
+            /// </summary>
+            public MenuDescriptionBox button;
 
-            public MESMSetting(string modSettingsText, string modSettingsDescription, bool childSetting, string defaultValueString)
+            public MESMSetting(string title, string description, bool childSetting, string defaultValueString)
             {
-                this.modSettingsText = modSettingsText;//modSettingsText.Split(new string[] { " -" }, System.StringSplitOptions.None)[0];
+                this.title = title;//modSettingsText.Split(new string[] { " -" }, System.StringSplitOptions.None)[0];
                 //Debug.Log("Processing setting: " + this.modSettingsText);
                 this.defaultValueString = defaultValueString;
-                this.modSettingsDescription = modSettingsDescription + ".\nDefault = " + defaultValueString;
-                int lineOfSettingText = modSettingsExist ? FindLineOfSettingText(this.modSettingsText) : 0;
+                this.description = description + ".\nDefault = " + defaultValueString;
+                int titleLine = modSettingsExist ? FindTitleLine(this.title) : 0;
                 this.childSetting = childSetting;
-                this.modSettingsLine = lineOfSettingText + 1;
+                this.valueLine = titleLine + 1;
                 this.category = currentCategoryBeingAssigned;
                 ModSettings.allSettings.Add(this);
             }
 
-            protected static int FindLineOfSettingText(string searchText)
+            /// <summary>
+            /// Finds the line of a setting by its title.
+            /// </summary>
+            /// <param name="title">The title to search for.</param>
+            /// <returns>The line number of the setting.</returns>
+            /// <exception cref="ArgumentException">If the line could not be found.</exception>
+            protected static int FindTitleLine(string title)
             {
                 // For each line of the settings string array, look for a snippet of text describing a setting. If the relevant line is found, skip ahead a given number of lines (default = 1) to find the corresponding setting in its raw format. This means the search can be automated instead of requiring defined numbers. While this may be a bit slower than the previous implementation, it should also make the settings file less prone to incorrect formatting.
-                for (int line = 0; line < modSettings.Length; line++)
+                int line = Array.FindIndex(modSettings, line => line.Contains(title + " -"));
+                if (line < 0)
                 {
-                    if (modSettings[line].Contains(searchText + " -"))
-                    {
-                        return line;
-                    }
+                    Debug.Log($"Could not find setting for {title} -");
+                    throw new ArgumentException(nameof(title));
                 }
-                Debug.Log("Could not find setting for " + searchText + " -");
-                throw new ArgumentException();
+                return line;
             }
 
-            public static string FindSetting(string searchText, int linesToResult = 1)
+            public static string FindSetting(string title, int linesToResult = 1)
             {
-                string result = modSettings[FindLineOfSettingText(searchText) + linesToResult];
+                string result = modSettings[FindTitleLine(title) + linesToResult];
                 //Debug.Log("Returning " + result);
                 return result;
             }
@@ -103,7 +141,7 @@ namespace MonstrumExtendedSettingsMod
                                 // Update the variable and then the text file
                                 try
                                 {
-                                    value = mESMSetting.settingsButton.GetText();
+                                    value = mESMSetting.button.GetText();
                                 }
                                 catch (Exception e)
                                 {
@@ -114,7 +152,7 @@ namespace MonstrumExtendedSettingsMod
                             }
                             else if (t == typeof(MESMSettingRGB))
                             {
-                                value = mESMSetting.settingsButton.GetText();
+                                value = mESMSetting.button.GetText();
                                 ((MESMSettingRGB)mESMSetting).userValue = Convert.ToInt32(value);
                             }
                             else
@@ -124,11 +162,11 @@ namespace MonstrumExtendedSettingsMod
                                     Type gt = mESMSetting.GetType().GetGenericArguments()[0]; // How to get the type of T from a member of a generic class or method - Tamas Czinege - https://stackoverflow.com/questions/557340/how-to-get-the-type-of-t-from-a-member-of-a-generic-class-or-method - Accessed 26.10.2021
                                     if (gt == typeof(int) || gt == typeof(float))
                                     {
-                                        value = mESMSetting.settingsButton.GetText();
+                                        value = mESMSetting.button.GetText();
                                         if (gt == typeof(int))
                                         {
                                             ((MESMSetting<int>)mESMSetting).userValue = Convert.ToInt32(value);
-                                            if (mESMSetting.modSettingsText.Equals("Number of Random Monsters") || mESMSetting.modSettingsText.Equals("Number of Brutes") || mESMSetting.modSettingsText.Equals("Number of Hunters") || mESMSetting.modSettingsText.Equals("Number of Fiends") || mESMSetting.modSettingsText.Equals("Number of Sparkies"))
+                                            if (mESMSetting.title.Equals("Number of Random Monsters") || mESMSetting.title.Equals("Number of Brutes") || mESMSetting.title.Equals("Number of Hunters") || mESMSetting.title.Equals("Number of Fiends") || mESMSetting.title.Equals("Number of Sparkies"))
                                             {
                                                 newNumberOfMonsters += ((MESMSetting<int>)mESMSetting).userValue;
                                             }
@@ -140,7 +178,7 @@ namespace MonstrumExtendedSettingsMod
                                     }
                                     else if (gt == typeof(bool))
                                     {
-                                        MenuBoolButtonWithDescription menuBoolButtonWithDescription = (MenuBoolButtonWithDescription)mESMSetting.settingsButton;
+                                        MenuBoolButtonWithDescription menuBoolButtonWithDescription = (MenuBoolButtonWithDescription)mESMSetting.button;
                                         value = menuBoolButtonWithDescription.menuBoolButton.GetValue().ToString();
                                         ((MESMSetting<bool>)mESMSetting).userValue = menuBoolButtonWithDescription.menuBoolButton.GetValue();
                                     }
@@ -158,21 +196,21 @@ namespace MonstrumExtendedSettingsMod
                             //Debug.Log("Writing to line " + mESMSetting.modSettingsLine + ": " + value);
                             try
                             {
-                                modSettings[mESMSetting.modSettingsLine] = value;
+                                modSettings[mESMSetting.valueLine] = value;
                             }
                             catch (Exception e)
                             {
-                                Debug.Log("Failed to write to line " + mESMSetting.modSettingsLine + ": " + value);
+                                Debug.Log("Failed to write to line " + mESMSetting.valueLine + ": " + value);
                                 throw new Exception(e.ToString());
                             }
                             //Debug.Log("Wrote to line " + mESMSetting.modSettingsLine + ": " + value);
-                            if ((mESMSetting.modSettingsDescription.Contains("Restart") || mESMSetting.modSettingsDescription.Contains("restart")) && mESMSetting.userValueString != value)
+                            if ((mESMSetting.description.Contains("Restart") || mESMSetting.description.Contains("restart")) && mESMSetting.userValueString != value)
                             {
                                 changedSettingThatRequiresRestart = true;
-                                restartSettingsChanged.Add(mESMSetting.modSettingsText);
+                                restartSettingsChanged.Add(mESMSetting.title);
                             }
                             mESMSetting.userValueString = value;
-                            settingsLogger.Append(mESMSetting.modSettingsText);
+                            settingsLogger.Append(mESMSetting.title);
                             settingsLogger.Append(" = ");
                             settingsLogger.Append(mESMSetting.userValueString);
                             settingsLogger.Append("\t| ");
@@ -191,19 +229,19 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 modSettingsStringBuilder.Append("------------------------------\n");
                             }
-                            modSettingsStringBuilder.Append(mESMSetting.modSettingsText);
+                            modSettingsStringBuilder.Append(mESMSetting.title);
                             modSettingsStringBuilder.Append(" - ");
-                            modSettingsStringBuilder.Append(mESMSetting.modSettingsDescription.Replace("\n", " - "));
+                            modSettingsStringBuilder.Append(mESMSetting.description.Replace("\n", " - "));
                             modSettingsStringBuilder.Append("\n");
                             modSettingsStringBuilder.Append(value);
                         }
                     }
                     catch (Exception e)
                     {
-                        if (mESMSetting != null && mESMSetting.modSettingsText != null)
+                        if (mESMSetting != null && mESMSetting.title != null)
                         {
-                            Debug.Log("Error while saving setting: " + mESMSetting.modSettingsText + "\n" + e.ToString());
-                            badlyFormattedSettings.Add(mESMSetting.modSettingsText);
+                            Debug.Log("Error while saving setting: " + mESMSetting.title + "\n" + e.ToString());
+                            badlyFormattedSettings.Add(mESMSetting.title);
                         }
                         else
                         {
@@ -302,7 +340,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         try
                         {
-                            mESMSetting.settingsButton.SetText(mESMSetting.defaultValueString);
+                            mESMSetting.button.SetText(mESMSetting.defaultValueString);
                         }
                         catch
                         {
@@ -311,9 +349,9 @@ namespace MonstrumExtendedSettingsMod
                     }
                     else if (t == typeof(MESMSettingRGB))
                     {
-                        mESMSetting.settingsButton.SetText(mESMSetting.defaultValueString);
+                        mESMSetting.button.SetText(mESMSetting.defaultValueString);
                         ((MESMSettingRGB)mESMSetting).ChangeTextColour();
-                        ((MenuSliderInputFieldWithDescription)mESMSetting.settingsButton).menuSlider.slider.value = Convert.ToSingle(mESMSetting.defaultValueString);
+                        ((MenuSliderInputFieldWithDescription)mESMSetting.button).menuSlider.slider.value = Convert.ToSingle(mESMSetting.defaultValueString);
                     }
                     else
                     {
@@ -322,16 +360,16 @@ namespace MonstrumExtendedSettingsMod
                             Type gt = mESMSetting.GetType().GetGenericArguments()[0]; // How to get the type of T from a member of a generic class or method - Tamas Czinege - https://stackoverflow.com/questions/557340/how-to-get-the-type-of-t-from-a-member-of-a-generic-class-or-method - Accessed 26.10.2021
                             if (gt == typeof(int) || gt == typeof(float))
                             {
-                                mESMSetting.settingsButton.SetText(mESMSetting.defaultValueString);
+                                mESMSetting.button.SetText(mESMSetting.defaultValueString);
 
-                                if (mESMSetting.settingsButton.GetType() == typeof(MenuSliderInputFieldWithDescription))
+                                if (mESMSetting.button.GetType() == typeof(MenuSliderInputFieldWithDescription))
                                 {
-                                    ((MenuSliderInputFieldWithDescription)mESMSetting.settingsButton).menuSlider.slider.value = Convert.ToSingle(mESMSetting.defaultValueString);
+                                    ((MenuSliderInputFieldWithDescription)mESMSetting.button).menuSlider.slider.value = Convert.ToSingle(mESMSetting.defaultValueString);
                                 }
                             }
                             else if (gt == typeof(bool))
                             {
-                                ((MenuBoolButtonWithDescription)mESMSetting.settingsButton).menuBoolButton.SetValueAndUpdateText(((MESMSetting<bool>)mESMSetting).defaultValue);
+                                ((MenuBoolButtonWithDescription)mESMSetting.button).menuBoolButton.SetValueAndUpdateText(((MESMSetting<bool>)mESMSetting).defaultValue);
                             }
                             else
                             {
@@ -354,18 +392,18 @@ namespace MonstrumExtendedSettingsMod
             public MESMSettingString(string modSettingsText, string modSettingsDescription, string defaultValue, bool absoluteValue = false, bool childSetting = false, bool readOnlySetting = false) : base(modSettingsText, modSettingsDescription, childSetting, defaultValue)
             {
                 this.defaultValue = defaultValue;
-                this.userValue = modSettingsExist ? modSettings[this.modSettingsLine] : defaultValue;
+                this.userValue = modSettingsExist ? modSettings[this.valueLine] : defaultValue;
                 this.userValueString = this.userValue.ToString();
                 this.readOnlySetting = readOnlySetting;
             }
 
             public override MenuDescriptionBox CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
             {
-                MenuInputFieldWithDescription menuInputFieldWithDescription = new MenuTextInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset);
-                settingsButton = menuInputFieldWithDescription;
+                MenuInputFieldWithDescription menuInputFieldWithDescription = new MenuTextInputFieldWithDescription(this.description, this.title, referenceTransform, referenceOffset);
+                button = menuInputFieldWithDescription;
                 menuInputFieldWithDescription.menuInputField.inputField.text = userValue.ToString();
                 menuInputFieldWithDescription.menuInputField.inputField.readOnly = readOnlySetting;
-                return settingsButton;
+                return button;
             }
 
             public string defaultValue;
@@ -384,10 +422,10 @@ namespace MonstrumExtendedSettingsMod
 
             public override MenuDescriptionBox CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
             {
-                MenuMultipleChoiceButtonWithDescription menuMultipleChoiceButtonWithDescription = new MenuMultipleChoiceButtonWithDescription(this.modSettingsDescription, this.modSettingsText, choices, referenceTransform, referenceOffset);
-                settingsButton = menuMultipleChoiceButtonWithDescription;
+                MenuMultipleChoiceButtonWithDescription menuMultipleChoiceButtonWithDescription = new MenuMultipleChoiceButtonWithDescription(this.description, this.title, choices, referenceTransform, referenceOffset);
+                button = menuMultipleChoiceButtonWithDescription;
                 menuMultipleChoiceButtonWithDescription.SetText(userValue.ToString());
-                return settingsButton;
+                return button;
             }
         }
 
@@ -397,7 +435,7 @@ namespace MonstrumExtendedSettingsMod
             public MESMSetting(string modSettingsText, string modSettingsDescription, T defaultValue, bool absoluteValue = false, bool childSetting = false, float lowerClamp = float.MinValue, float upperClamp = float.MaxValue) : base(modSettingsText, modSettingsDescription, childSetting, defaultValue.ToString())
             {
                 this.defaultValue = defaultValue;
-                this.userValue = modSettingsExist ? FindSetting(this.modSettingsLine) : defaultValue;
+                this.userValue = modSettingsExist ? FindSetting(this.valueLine) : defaultValue;
                 this.minClamp = lowerClamp == float.MinValue ? 0f : lowerClamp;
                 this.maxClamp = upperClamp == float.MaxValue ? 0f : upperClamp;
 
@@ -444,7 +482,7 @@ namespace MonstrumExtendedSettingsMod
 
             public static new T FindSetting(string searchText, int linesToResult = 1)
             {
-                return FindSetting(FindLineOfSettingText(searchText) + linesToResult);
+                return FindSetting(FindTitleLine(searchText) + linesToResult);
             }
 
             public override MenuDescriptionBox CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
@@ -454,25 +492,25 @@ namespace MonstrumExtendedSettingsMod
                     MenuInputFieldWithDescription menuInputFieldWithDescription;
                     if (this.minClamp != 0f || this.maxClamp != 0f)
                     {
-                        MenuSliderInputFieldWithDescription menuSliderInputFieldDescriptionBox = new MenuSliderInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
-                        settingsButton = menuSliderInputFieldDescriptionBox;
+                        MenuSliderInputFieldWithDescription menuSliderInputFieldDescriptionBox = new MenuSliderInputFieldWithDescription(this.description, this.title, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
+                        button = menuSliderInputFieldDescriptionBox;
                         menuSliderInputFieldDescriptionBox.menuSlider.slider.value = Convert.ToSingle(userValue);
                         menuInputFieldWithDescription = menuSliderInputFieldDescriptionBox;
                     }
                     else
                     {
-                        menuInputFieldWithDescription = new MenuNumericInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
-                        settingsButton = menuInputFieldWithDescription;
+                        menuInputFieldWithDescription = new MenuNumericInputFieldWithDescription(this.description, this.title, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
+                        button = menuInputFieldWithDescription;
                     }
                     menuInputFieldWithDescription.menuInputField.inputField.text = userValue.ToString();
                 }
                 else /*if (typeof(T) == typeof(bool))*/
                 {
-                    MenuBoolButtonWithDescription menuBoolButtonWithDescription = new MenuBoolButtonWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset);
-                    settingsButton = menuBoolButtonWithDescription;
+                    MenuBoolButtonWithDescription menuBoolButtonWithDescription = new MenuBoolButtonWithDescription(this.description, this.title, referenceTransform, referenceOffset);
+                    button = menuBoolButtonWithDescription;
                     menuBoolButtonWithDescription.menuBoolButton.SetValueAndUpdateText((bool)Convert.ChangeType(userValue, typeof(bool)));
                 }
-                return settingsButton;
+                return button;
             }
         }
 
@@ -1318,7 +1356,7 @@ namespace MonstrumExtendedSettingsMod
                     StringBuilder settingsLogger = new StringBuilder("Listing all settings:\t ");
                     foreach (MESMSetting mESMSetting in allSettings)
                     {
-                        settingsLogger.Append(mESMSetting.modSettingsText);
+                        settingsLogger.Append(mESMSetting.title);
                         settingsLogger.Append(" = ");
                         settingsLogger.Append(mESMSetting.userValueString);
                         settingsLogger.Append("\t| ");
