@@ -5157,7 +5157,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         mChasingState.sinceDoorCheck.StartTimer();
                     }
-                    TriggerDoorCheckAbilities();
+                    TriggerDoorCheckAbilities(mChasingState);
                 }
                 else if (mChasingState.sinceDoorCheck.TimeElapsed > mChasingState.timeBetweenDoorCheck)
                 {
@@ -5165,7 +5165,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         mChasingState.sinceDoorCheck.ResetTimer();
                     }
-                    TriggerDoorCheckAbilities();
+                    TriggerDoorCheckAbilities(mChasingState);
                 }
                 orig.Invoke(mChasingState, _overwrite);
             }
@@ -5173,7 +5173,7 @@ namespace MonstrumExtendedSettingsMod
             /// <summary>
             /// Triggers a fire blast and electric trap spawning if the monster has the relevant components.
             /// </summary>
-            private static void TriggerDoorCheckAbilities()
+            private static void TriggerDoorCheckAbilities(MChasingState mChasingState)
             {
                 ((MState)mChasingState).monster.GetComponent<FireShroud>()?.FireBlast();
                 ((MState)mChasingState).monster.GetComponent<SparkyAura>()?.SpawnTrapsNearSparky(0f, 0.75f * mChasingState.timeBetweenDoorCheck);

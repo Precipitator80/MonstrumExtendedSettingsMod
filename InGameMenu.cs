@@ -504,7 +504,7 @@ namespace MonstrumExtendedSettingsMod
                             else
                             {
                                 // Create colour display text and the first component button.
-                                MenuText displayText = new MenuText(settings[i].modSettingsText.Replace(" Red Component", ""), settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset);
+                                MenuText displayText = new MenuText(settings[i].title.Replace(" Red Component", ""), settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset);
                                 k++;
                                 ((MESMSettingRGB)settings[i]).CreateRGBButton(settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset, displayText.text);
                             }

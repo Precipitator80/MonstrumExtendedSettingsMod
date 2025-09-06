@@ -102,7 +102,7 @@ namespace MonstrumExtendedSettingsMod
             protected static int FindTitleLine(string title)
             {
                 // For each line of the settings string array, look for a snippet of text describing a setting. If the relevant line is found, skip ahead a given number of lines (default = 1) to find the corresponding setting in its raw format. This means the search can be automated instead of requiring defined numbers. While this may be a bit slower than the previous implementation, it should also make the settings file less prone to incorrect formatting.
-                int line = Array.FindIndex(modSettings, line => line.Contains(title + " -"));
+                int line = Array.FindIndex(modSettings, potentialLine => potentialLine.Contains(title + " -"));
                 if (line < 0)
                 {
                     Debug.Log($"Could not find setting for {title} -");
