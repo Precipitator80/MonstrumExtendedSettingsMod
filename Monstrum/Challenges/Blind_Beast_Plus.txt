@@ -1,8 +1,8 @@
 Name|Blind Beast+
 Author|Ink
-Difficulty|7
+Difficulty|8
 Description|Enraged by your previous escape, the blind beast has tuned its senses, drawing power from the darkness and hunting with much more speed than before.
-Version|6.0
+Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
@@ -14,8 +14,9 @@ Brute Chase Speed Buff|True
 Brute Chase Speed Buff Multiplier|3
 Brute Chase Speed Buff Rate|1.5
 Glowstick Hunt|True
-Special Glowsticks Required|8
-Special Glowsticks To Create|14
+No Glowstick Hunt Finale|True
+Special Glowsticks Required|10
+Special Glowsticks To Create|15
 Foggy Ship|True
 Fog Near Distance|3
 Fog Far Distance|6

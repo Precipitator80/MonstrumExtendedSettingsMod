@@ -6,7 +6,8 @@ Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|3
-Maximum Monster Spawntime (seconds)|30
+Minimum Monster Spawntime (seconds)|50
+Maximum Monster Spawntime (seconds)|100
 Monster Animation Speed Multiplier|2
 Monster Movement Speed Multiplier|2
 Fiend Flicker Minimum Range|-1
@@ -15,13 +16,13 @@ Fiend Flicker Maximum Range|-1
 Fiend Mind Attack Damage Multiplier|0
 Fiend Mind Attack Attack Timer Charge Rate|-1
 Fiend Mind Attack Delay Timer Rate|10000
+Monsters Search Randomly|True
 Foggy Ship|True
 Monster Vision Affected By Fog|True
 Foggy Ship Alternative Mode|True
 Disable Helicopter|True
-Gravity Y Acceleration|-5
+Gravity Y Acceleration|-3.5
 Player Movement Speed Multiplier|1.25
-Extended Jump Cooldown|True
 Fire Duration Multiplier|0
 Unsmashables|True
 Flashlight Colour Red Component|130

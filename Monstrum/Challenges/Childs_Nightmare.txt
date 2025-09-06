@@ -2,7 +2,7 @@ Name|Child's Nightmare
 Author|Ink
 Difficulty|8
 Description|The worst place a child can find themselves in during a dream. Welcome to the darkest ship. Welcome to the real nightmare.\nLess than 40% gamma is recommended.
-Version|6.0
+Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
@@ -20,8 +20,9 @@ Foggy Ship|True
 Fog Near Distance|20
 Fog Far Distance|30
 No Time Freeze In Pause Menu|True
-Player Movement Speed Multiplier|1.4
-Custom Player Scale|0.8
+Player Movement Speed Multiplier|1.5
+Custom Player Scale|0.85
+Extended Jump Cooldown|True
 Disable Running|True
 Infinite Flashlight Power|True
 Flashlight Intensity Multiplier|2

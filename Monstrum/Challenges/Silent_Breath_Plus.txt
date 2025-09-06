@@ -1,0 +1,50 @@
+Name|Silent Breath+
+Author|Ink
+Difficulty|9
+Description|You have to be as quiet and careful as possible if you want to escape. There is nowhere to run and nowhere to hide. Good luck.\nYour stamina is limited to 5 seconds of running, but your speed will be enough to quickly change positions in case of danger.
+Version|6.1 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|3
+Minimum Monster Spawntime (seconds)|4
+Maximum Monster Spawntime (seconds)|5
+Monster Always Finds You In Hiding Spot|True
+Monster Animation Speed Multiplier|1.25
+Monster Movement Speed Multiplier|1.25
+Monster Rotation Speed Multiplier|1.25
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|2.5
+Brute Chase Speed Buff Rate|1.25
+Glowstick Hunt|True
+No Glowstick Hunt Finale|True
+Special Glowsticks Required|15
+Special Glowsticks To Create|100
+No Hiding|True
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
+Gravity Y Acceleration|-15
+Inventory Size|3
+Player Stamina Mode|True
+Player Stamina Mode Stamina Duration|5
+Player Stamina Mode Stamina Penalty|100
+Player Stamina Mode Walking Recovery Factor|0.5
+Player Stamina Mode Standing Recovery Factor|1
+Player Movement Speed Multiplier|1.5
+Extended Jump Cooldown|True
+Infinite Flashlight Power|True
+Add Smoke Grenade|True
+Starter Room Region|Upper Deck
+Spawn Deactivated Items|True
+No Pre-filled Fuse Boxes|True
+Add Additional Crew Deck Building|True
+Extend Lower Decks|True
+Spawn Additional Engine Room Workshops|True
+Aggressive Workshop Spawning|True
+Lengthened Cargo Hold Corridors|True
+Add Lower Deck Next To Engine Room|True
+Add Deck Zero|True
+No Doors|True
+Brute Light Intensity Multiplier|1.5
+Brute Light Range Multiplier|1.5
+Flashlight Intensity Multiplier|2

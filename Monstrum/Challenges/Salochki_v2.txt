@@ -1,24 +1,27 @@
 Name|Salochki v2
 Author|Ink
-Difficulty|4
-Description|There's no time to explain, run!\nLight up 8 special glowsticks and escape!
-Version|6.0
+Difficulty|5
+Description|There's no time to explain!\nLight up 10 special glowsticks to escape from 3 classic Brutes!
+Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|3
 Maximum Monster Spawntime (seconds)|1
 Persistent Monster|True
 Seer Monster|True
-Monster Animation Speed Multiplier|0.95
 Glowstick Hunt|True
-Special Glowsticks Required|8
-Special Glowsticks To Create|25
+Special Glowsticks Required|10
+Special Glowsticks To Create|50
 No Time Freeze In Pause Menu|True
 No Hiding|True
 Disable Liferaft|True
 Disable Helicopter|True
 Disable Submersible|True
 Inventory Size|1
+Add Additional Crew Deck Building|True
+Spawn Additional Engine Room Workshops|True
+Aggressive Workshop Spawning|True
+Add Lower Deck Next To Engine Room|True
 Diverse Item Spawns|True
 Spawn Items Anywhere|True
 No Doors|True

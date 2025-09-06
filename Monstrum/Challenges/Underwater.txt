@@ -2,25 +2,27 @@ Name|Underwater
 Author|Ink
 Difficulty|3
 Description|The ship sank to the bottom of the ocean and with it your chances of survival. The helicopter won't help you anymore and although your enemy has lost some of their abilities underwater, they feel great here.
-Version|6.0
+Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1
-Maximum Monster Spawntime (seconds)|45
-Monster Animation Speed Multiplier|1.5
+Minimum Monster Spawntime (seconds)|50
+Maximum Monster Spawntime (seconds)|100
+Monster Animation Speed Multiplier|2
+Monster Movement Speed Multiplier|2
 Fiend Flicker Minimum Range|-1
 Fiend Flicker Medium Range|-1
 Fiend Flicker Maximum Range|-1
 Fiend Mind Attack Damage Multiplier|0
 Fiend Mind Attack Attack Timer Charge Rate|-1
 Fiend Mind Attack Delay Timer Rate|10000
+Monsters Search Randomly|True
 Foggy Ship|True
 Monster Vision Affected By Fog|True
 Foggy Ship Alternative Mode|True
 Disable Helicopter|True
-Gravity Y Acceleration|-5
+Gravity Y Acceleration|-3.5
 Player Movement Speed Multiplier|1.25
-Extended Jump Cooldown|True
 Fire Duration Multiplier|0
 Unsmashables|True
 Flashlight Colour Red Component|130

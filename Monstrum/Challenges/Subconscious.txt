@@ -1,0 +1,61 @@
+Name|Subconscious
+Author|Ink
+Difficulty|10
+Description|You were trapped in your subconscious, which took the image of a familiar place. Try to escape from the trap of your mind and don't die in this storm. 15-30% of the gamma is highly recommended.
+Version|6.1 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|3
+Maximum Monster Spawntime (seconds)|25
+Monster Rotation Speed Multiplier|2
+Silent Monster|True
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|15
+Brute Chase Speed Buff Rate|15
+Dark Ship|True
+Glowstick Hunt|True
+No Glowstick Hunt Finale|True
+Special Glowsticks Required|15
+Special Glowsticks To Create|45
+Foggy Ship|True
+Fog Near Distance|0.2
+Fog Far Distance|750
+Fog Density|0.075
+No Time Freeze In Pause Menu|True
+Hide Reticule|True
+Hide Inventory|True
+Hide Task Notifications|True
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
+Gravity X Acceleration|20
+Gravity Y Acceleration|-5
+Extended Jump Cooldown|True
+Infinite Flashlight Power|True
+Fire Duration Multiplier|0.001
+Unsmashables|True
+No Cameras|True
+No Steam|True
+All Pre-filled Fuse Boxes|True
+No Barricaded Doors|True
+Aggressive Workshop Spawning|True
+Add Lower Deck Next To Engine Room|True
+No Pit Traps|True
+Brute Light Colour Red Component|255
+Brute Light Colour Green Component|255
+Brute Light Colour Blue Component|255
+Brute Light Intensity Multiplier|200
+Flashlight Colour Red Component|255
+Flashlight Colour Green Component|255
+Flashlight Colour Blue Component|255
+Flashlight Intensity Multiplier|2.25
+Flashlight Range Multiplier|2.25
+Glowstick Colour Red Component|1
+Glowstick Colour Green Component|1
+Glowstick Colour Blue Component|1
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|0.25
+Fog Colour Red Component|120
+Fog Colour Green Component|120
+Fog Colour Blue Component|120
+Disable Monster Particles|True

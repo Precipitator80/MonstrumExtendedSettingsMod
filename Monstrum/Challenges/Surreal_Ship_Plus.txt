@@ -1,11 +1,11 @@
-Name|Surreal Ship
+Name|Surreal Ship+
 Author|Ink
-Difficulty|4
-Description|Welcome to the surreal ship, arrived from somewhere in the wilds of dreams. Avoid spatial anomalies and try not to get lost in such a wrong and dangerous ship.
-Version|6.0
+Difficulty|6
+Description|Your weird dream doesn't stop and only gets more dangerous. You may not wake up.
+Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
-Number of Brutes|1
+Number of Brutes|3
 Monster Animation Speed Multiplier|1.33
 Monster Movement Speed Multiplier|1.33
 Monster Rotation Speed Multiplier|1.33
@@ -18,9 +18,15 @@ Aggressive Workshop Spawning|True
 Add Deck Zero|True
 Extend Map|True
 Extend Map Additively|True
+Brute Light Colour Red Component|255
+Brute Light Colour Green Component|255
+Brute Light Colour Blue Component|255
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2
 Glowstick Range Multiplier|2
+Ship Generic Lights Colour Red Component|255
+Ship Generic Lights Colour Green Component|255
+Ship Generic Lights Colour Blue Component|255
 Do Not Pre-Render Monsters|True
 Disable Monster Particles|True
