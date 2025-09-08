@@ -3844,6 +3844,7 @@ namespace MonstrumExtendedSettingsMod
 
             // Readonly Reference Variables
             public static readonly string[] monsterNames = new string[] { "Brute", "Hunter", "Fiend", "Sparky", "SparkyBrute" }; // SparkyBrute is only there for the death screens.
+            public static readonly string[] spawnableMonsters = new string[] { "Brute", "Hunter", "Fiend" };
         }
 
     }

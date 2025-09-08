@@ -5,6 +5,8 @@ using UnityEngine;
 using System.Collections;
 using MonoMod.RuntimeDetour;
 using System.Diagnostics;
+using System.Linq;
+using SRF;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -5805,154 +5807,49 @@ namespace MonstrumExtendedSettingsMod
 
             public static void CreateNewMonster(float spawnDelay = 0f, string monsterToCreateString = "")
             {
-                if (monsterToCreateString.Equals(""))
+                // Validate the passed string.
+                if (!ModSettings.spawnableMonsters.Contains(monsterToCreateString))
                 {
-                    // Determine which monsters are being used in the game.
-                    bool bruteInGame = ModSettings.numberOfBrutes != 0;
-                    bool hunterInGame = ModSettings.numberOfHunters != 0;
-                    bool fiendInGame = ModSettings.numberOfFiends != 0;
-
-                    // Pick a monster to create. Default is Brute (0). Max must be one above monster index because max is not inclusive.
-                    int monsterToCreateInteger = 0;
-
-                    // Conditionals that cover all possible monster presence combinations. These are 6 total. 5 below and 1 above. 100, 010, 001, 110, 011, 111.
-                    if (bruteInGame)
+                    // Create a list of monsters to choose from using those that are in the game.
+                    List<string> validMonsters = new List<string>();
+                    if (ModSettings.numberOfBrutes > 0)
                     {
-                        if (hunterInGame)
-                        {
-                            if (fiendInGame)
-                            {
-                                monsterToCreateInteger = UnityEngine.Random.Range(0, 3);
-                            }
-                            else
-                            {
-                                monsterToCreateInteger = UnityEngine.Random.Range(0, 2);
-                            }
-
-                        }
-                        else if (fiendInGame)
-                        {
-                            int randomMonsterNumber = UnityEngine.Random.Range(0, 2);
-                            if (randomMonsterNumber == 1)
-                            {
-                                randomMonsterNumber++;
-                            }
-                            monsterToCreateInteger = randomMonsterNumber;
-                        }
+                        validMonsters.Add("Brute");
                     }
-                    else if (hunterInGame)
+                    if (ModSettings.numberOfHunters > 0)
                     {
-                        if (fiendInGame)
-                        {
-                            monsterToCreateInteger = UnityEngine.Random.Range(1, 3);
-                        }
-                        else
-                        {
-                            monsterToCreateInteger = 1;
-                        }
+                        validMonsters.Add("Hunter");
                     }
-                    else if (fiendInGame)
+                    if (ModSettings.numberOfFiends > 0)
                     {
-                        monsterToCreateInteger = 2;
+                        validMonsters.Add("Fiend");
                     }
 
-                    // Change the monsterToCreateString based on the monsterToCreateInteger.
-                    switch (monsterToCreateInteger)
-                    {
-                        case 1:
-                            monsterToCreateString = "Hunter";
-                            break;
-                        case 2:
-                            monsterToCreateString = "Fiend";
-                            break;
-                        default:
-                            monsterToCreateString = "Brute";
-                            break;
-                    }
+                    // Pick a monster to create.
+                    monsterToCreateString = validMonsters.Random();
                 }
 
-                // # Ensure that list size declaration works. If not, fix it by adding elements manually, i.e. hunter thresholds and fiend auras.
-
-                // Resize the relevant monster arrays.
-                ModSettings.numberOfMonsters++;
-                int oldSize = monsterList.Count;
-
+                // Use the count of the list to get the new monster number.
+                int monsterNumber = monsterList.Count;
+                var errorMessage = "Failed monster specific cloning operations in create new monster.";
                 try
                 {
-                    // Using this for the array / list position will refer to the newly added object.
-                    //int newSize = oldSize + 1;
-                    //Array.Resize(ref monsterList, newSize);
-                    //Array.Resize(ref monsterListMonsterComponents, newSize);
-                    //Array.Resize(ref monsterInstanceIDs, newSize);
-                    //Array.Resize(ref monsterListStates, newSize);
-                    switch (monsterToCreateString)
-                    {
-                        case "Hunter":
-                            //int newSizeHunters = hunters.Count + 1;
-                            //Array.Resize(ref hunters, newSizeHunters);
-                            //Array.Resize(ref huntersMonsterComponents, newSizeHunters);
-                            //Array.Resize(ref huntersInstanceIDs, newSizeHunters);
-                            //Array.Resize(ref huntersTrappingStates, newSizeHunters);
-                            //Array.Resize(ref sightBelowThresholdArray, newSizeHunters);
-                            //Array.Resize(ref soundBelowThresholdArray, newSizeHunters);
-                            //Array.Resize(ref proxBelowThresholdArray, newSizeHunters);
-                            //Array.Resize(ref AllBelowThresholdArray, newSizeHunters);
-                            //Array.Resize(ref hunterThresholdValArray, newSizeHunters);
+                    // Clone the monster.
+                    var monsterGO = Instantiate(FindObjectOfType<MonsterSelection>().NameToObject(monsterToCreateString));
+                    monsterList.Add(monsterGO);
+                    ModSettings.numberOfMonsters++;
 
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Hunter"));
-
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(hunters[0]);
-
-                            monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Hunter")));
-
-                            //monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(hunters[0]));
-                            break;
-                        case "Fiend":
-                            //int newSizeFiends = fiends.Count + 1;
-                            //Array.Resize(ref fiends, newSizeFiends);
-                            //Array.Resize(ref fiendsMonsterComponents, newSizeFiends);
-                            //Array.Resize(ref fiendsInstanceIDs, newSizeFiends);
-                            //Array.Resize(ref fiendsThatAreInRangeOfPlayer, newSizeFiends);
-                            //Array.Resize(ref fiendsThatSeePlayer, newSizeFiends);
-                            //Array.Resize(ref auras, newSizeFiends);
-
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Fiend"));
-
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(fiends[0]);
-
-                            monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Fiend")));
-
-                            //monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(fiends[0]));
-                            break;
-                        default:
-                            //int newSizeBrutes = brutes.Count + 1;
-                            //Array.Resize(ref brutes, newSizeBrutes);
-                            //Array.Resize(ref brutesMonsterComponents, newSizeBrutes);
-                            //Array.Resize(ref brutesInstanceIDs, newSizeBrutes);
-
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Brute"));
-
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(brutes[0]);
-
-                            monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Brute")));
-
-                            //monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(brutes[0]));
-                            break;
-                    }
-                }
-                catch
-                {
-                    Debug.Log("Failed monster specific cloning operations in create new monster.");
-                }
-                try
-                {
-
-                    monsterList[oldSize].SetActive(true); // This will run Monster.Awake, letting components be assigned.
-                    monsterList[oldSize].SetActive(false);
-                    monsterListMonsterComponents.Add(monsterList[oldSize].GetComponent<Monster>());
-                    monsterInstanceIDtoMonsterNumberDict.Add(monsterListMonsterComponents[oldSize].GetInstanceID(), oldSize);
-                    monsterListStates.Add(monsterList[oldSize].GetComponent<MState>());
-                    monsterListStates[oldSize].m = monsterListMonsterComponents[oldSize];
+                    // Carry out generic list adjustments.
+                    errorMessage = "Failed generic monster list adjustment operations in create new monster.";
+                    monsterGO.SetActive(true); // This will run Monster.Awake, letting components be assigned.
+                    monsterGO.SetActive(false);
+                    var monster = monsterGO.GetComponent<Monster>();
+                    var instanceID = monster.GetInstanceID();
+                    monsterListMonsterComponents.Add(monster);
+                    monsterInstanceIDtoMonsterNumberDict.Add(monster.GetInstanceID(), monsterNumber);
+                    var mState = monsterGO.GetComponent<MState>();
+                    mState.m = monster;
+                    monsterListStates.Add(mState);
                     /*
                     if (monsterListStates[oldSize].Fsm == null)
                     {
@@ -5995,38 +5892,28 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
                     */
-                    UnityEngine.Debug.Log(string.Concat(new object[] { "INSTANCE ID FOR NEWLY CREATED MONSTER NUMBER ", oldSize, " of type ", monsterListMonsterComponents[oldSize].monsterType, " ----- The ID stored is " + monsterInstanceIDtoMonsterNumberDict[oldSize] + "." }));
-                }
-                catch
-                {
-                    Debug.Log("Failed generic monster list adjustment operations in create new monster.");
-                }
+                    Debug.Log(string.Concat(new object[] { "INSTANCE ID FOR NEWLY CREATED MONSTER NUMBER ", monsterNumber, " of type ", monster.monsterType, " ----- The ID stored is " + instanceID + "." }));
 
-                try
-                {
                     // Reassign components that were null.
-                    monsterListMonsterComponents[oldSize].playerRoomDetect = References.Player.GetComponentInChildren<DetectRoom>();
-                    monsterListMonsterComponents[oldSize].monsterRoomDetect = ((MonoBehaviour)monsterListMonsterComponents[oldSize]).GetComponentInChildren<MonstDetectRoom>();
-                    monsterListMonsterComponents[oldSize].sourceToUse = Instantiate<AudioSource>(monsterListMonsterComponents[0].sourceToUse, ((MonoBehaviour)monsterListMonsterComponents[oldSize]).transform);
-                    monsterListMonsterComponents[oldSize].GetComponent<PatrolPoints>().monster = monsterListMonsterComponents[oldSize];
-                }
-                catch
-                {
-                    Debug.Log("Failed null component adjustment operations in create new monster.");
-                }
+                    errorMessage = "Failed null component adjustment operations in create new monster.";
+                    monster.playerRoomDetect = References.Player.GetComponentInChildren<DetectRoom>();
+                    monster.monsterRoomDetect = ((MonoBehaviour)monster).GetComponentInChildren<MonstDetectRoom>();
+                    monster.sourceToUse = Instantiate<AudioSource>(monsterListMonsterComponents[0].sourceToUse, ((MonoBehaviour)monster).transform);
+                    monster.GetComponent<PatrolPoints>().monster = monster;
+                    monster.GetAniEvents.monster = monster;
 
-                try
-                {
+                    // Carry out monster specific list adjustments.
+                    errorMessage = "Failed monster specific list adjustment operations in create new monster.";
                     switch (monsterToCreateString)
                     {
                         case "Hunter":
-                            hunters.Add(monsterList[oldSize]);
-                            huntersMonsterComponents.Add(monsterListMonsterComponents[oldSize]);
-                            huntersInstanceIDs.Add(monsterInstanceIDtoMonsterNumberDict[oldSize], ModSettings.numberOfHunters);
+                            hunters.Add(monsterGO);
+                            huntersMonsterComponents.Add(monster);
+                            huntersInstanceIDs.Add(instanceID, ModSettings.numberOfHunters);
                             ModSettings.numberOfHunters++;
                             try
                             {
-                                huntersTrappingStates.Add(monsterListMonsterComponents[oldSize].TrappingState);
+                                huntersTrappingStates.Add(monster.TrappingState);
                             }
                             catch
                             {
@@ -6044,52 +5931,45 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 Debug.Log("Failed to add to hunter thresholds.");
                             }
-                            if (monsterListMonsterComponents[oldSize].ears == null)
+                            if (monster.ears == null)
                             {
-                                monsterListMonsterComponents[oldSize].ears = Instantiate<MonsterEars>(huntersMonsterComponents[0].ears, ((MonoBehaviour)monsterListMonsterComponents[oldSize]).transform);
+                                monster.ears = Instantiate<MonsterEars>(huntersMonsterComponents[0].ears, ((MonoBehaviour)monster).transform);
                             }
                             break;
                         case "Fiend":
-                            fiends.Add(monsterList[oldSize]);
-                            fiendsMonsterComponents.Add(monsterListMonsterComponents[oldSize]);
-                            fiendsInstanceIDs.Add(monsterInstanceIDtoMonsterNumberDict[oldSize], ModSettings.numberOfFiends);
+                            fiends.Add(monsterGO);
+                            fiendsMonsterComponents.Add(monster);
+                            fiendsInstanceIDs.Add(instanceID, ModSettings.numberOfFiends);
                             ModSettings.numberOfFiends++;
                             fiendsThatAreInRangeOfPlayer.Add(false);
+                            Debug.Log($"Added to fiendsThatAreInRangeOfPlayer. Count: {fiendsThatAreInRangeOfPlayer.Count}");
                             fiendsThatSeePlayer.Add(false);
-                            auras.Add(monsterList[oldSize].GetComponentsInChildren<FiendAura>(true)[0]);
-                            fiendMindAttackFiendsTargetingPlayer[0].Add(MonsterNumber(monsterInstanceIDtoMonsterNumberDict[oldSize]));
+                            auras.Add(monsterGO.GetComponentsInChildren<FiendAura>(true)[0]);
+                            fiendMindAttackFiendsTargetingPlayer[0].Add(monsterNumber);
                             break;
                         default:
-                            brutes.Add(monsterList[oldSize]);
-                            brutesMonsterComponents.Add(monsterListMonsterComponents[oldSize]);
-                            brutesInstanceIDs.Add(monsterInstanceIDtoMonsterNumberDict[oldSize], ModSettings.numberOfBrutes);
+                            brutes.Add(monsterGO);
+                            brutesMonsterComponents.Add(monster);
+                            brutesInstanceIDs.Add(instanceID, ModSettings.numberOfBrutes);
                             ModSettings.numberOfBrutes++;
                             break;
                     }
-                }
-                catch
-                {
-                    Debug.Log("Failed monster specific list adjustment operations in create new monster.");
-                }
 
-                try
-                {
-                    if (monsterListMonsterComponents[0].Starter != null)
+                    // Check the starter and spawn the monster if the previous monsters have already spawned.
+                    errorMessage = "Failed starter operations in create new monster.";
+                    if (monster.Starter == null)
                     {
-                        monsterListMonsterComponents[oldSize].Starter = monsterListMonsterComponents[0].Starter;
-                        if (MonsterStarter.spawned)
-                        {
-                            //monsterListMonsterComponents[oldSize].Awake();
-                            //monsterListMonsterComponents[oldSize].Patrol.monster = monsterListMonsterComponents[oldSize];
-
-                            //((MonoBehaviour)monsterListMonsterComponents[oldSize]).StartCoroutine(SpawnMonster(oldSize));
-                            TimeScaleManager.Instance.StartCoroutine(SpawnMonster(oldSize));
-                        }
+                        monster.Starter = monsterListMonsterComponents[0].Starter;
                     }
+                    if (MonsterStarter.spawned)
+                    {
+                        TimeScaleManager.Instance.StartCoroutine(SpawnMonster(monsterNumber));
+                    }
+                    Debug.Log($"Spawned {monsterToCreateString}.");
                 }
-                catch
+                catch (Exception e)
                 {
-                    Debug.Log("Failed starter operations in create new monster.");
+                    Debug.Log($"{errorMessage}\n{e}");
                 }
             }
 
