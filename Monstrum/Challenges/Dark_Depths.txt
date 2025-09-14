@@ -1,13 +1,13 @@
-Name|Underwater+
+Name|Dark Depths
 Author|Ink
-Difficulty|6
-Description|Your ship continues to sink, the oxygen supply getting smaller. Be careful, because there is something even more dangerous on the ship with you than pressure and lack of oxygen.
+Difficulty|8
+Description|Your ship has sunk to the very bottom, your oxygen is almost gone. Escape or become part of the depths of the sea.
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|3
-Minimum Monster Spawntime (seconds)|25
-Maximum Monster Spawntime (seconds)|75
+Minimum Monster Spawntime (seconds)|2.5
+Maximum Monster Spawntime (seconds)|7.5
 Monster Animation Speed Multiplier|2
 Monster Movement Speed Multiplier|2
 Monster Rotation Speed Multiplier|3
@@ -17,7 +17,9 @@ Fiend Flicker Maximum Range|-1
 Fiend Mind Attack Damage Multiplier|0
 Fiend Mind Attack Attack Timer Charge Rate|-1
 Fiend Mind Attack Delay Timer Rate|10000
-Death Countdown|600
+Death Countdown|450
+Item Monster Frenzy|True
+Monster Spawning Limit|2
 Foggy Ship|True
 Fog Near Distance|2
 Fog Far Distance|20
@@ -26,10 +28,10 @@ Foggy Ship Alternative Mode|True
 Disable Helicopter|True
 Gravity Y Acceleration|-3.5
 Player Movement Speed Multiplier|1.4
+Infinite Flashlight Power|True
 Fire Duration Multiplier|0
 Unsmashables|True
 No Steam|True
-Infinite Flashlight Power|True
 Flashlight Colour Red Component|100
 Flashlight Colour Green Component|225
 Flashlight Colour Blue Component|250
@@ -40,9 +42,9 @@ Glowstick Colour Green Component|116
 Glowstick Colour Blue Component|71
 Glowstick Range Multiplier|2
 Ship Generic Lights Colour Red Component|1
-Ship Generic Lights Colour Green Component|175
-Ship Generic Lights Colour Blue Component|225
+Ship Generic Lights Colour Green Component|75
+Ship Generic Lights Colour Blue Component|125
 Fog Colour Red Component|1
-Fog Colour Green Component|15
-Fog Colour Blue Component|20
+Fog Colour Green Component|5
+Fog Colour Blue Component|10
 Timescale|0.5
