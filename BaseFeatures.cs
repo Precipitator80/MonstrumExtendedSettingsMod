@@ -316,6 +316,14 @@ namespace MonstrumExtendedSettingsMod
                 On.FloatHum.Start += new On.FloatHum.hook_Start(HookFloatHumStart);
                 On.FootStepManager.Start += new On.FootStepManager.hook_Start(HookFootStepManagerStart);
                 On.MHuntingState.InitalSetups += new On.MHuntingState.hook_InitalSetups(HookMHuntingStateInitalSetups);
+
+                // Helicopter Fuel Amount and Helicopter Fuel Time
+                On.FuelScaleBar.Start += new On.FuelScaleBar.hook_Start(HookFuelScaleBarStart);
+                On.HelicopterEscape.Start += new On.HelicopterEscape.hook_Start(HookHelicopterEscapeStart);
+
+                // Submersible Charge Timer
+                On.SubAlarm.ctor += new On.SubAlarm.hook_ctor(HookSubAlarmctor);
+                On.VoiceoverSequence.Start += new On.VoiceoverSequence.hook_Start(HookVoiceoverSequenceStart);
             }
 
             /*
@@ -2127,6 +2135,16 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @FuelScaleBar
+
+            private static void HookFuelScaleBarStart(On.FuelScaleBar.orig_Start orig, FuelScaleBar fuelScaleBar)
+            {
+                // Change the max fuel from here so that the scale uses the correct max fuel value.
+                fuelScaleBar.fuelPump.maxFuel = ModSettings.helicopterFuelAmount;
+                orig.Invoke(fuelScaleBar);
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @FuseBoxManager
 
             /// <summary>
@@ -2406,6 +2424,15 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @HelicopterEscape
+
+            private static void HookHelicopterEscapeStart(On.HelicopterEscape.orig_Start orig, HelicopterEscape helicopterEscape)
+            {
+                helicopterEscape.maxTimer = ModSettings.helicopterFuelTime;
+                orig.Invoke(helicopterEscape);
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @Hiding
 
             /// <summary>
@@ -2595,6 +2622,12 @@ namespace MonstrumExtendedSettingsMod
                         var minGlobal = ModSettings.allowKeyItemsToNotSpawnAtAll ? 0 : 1;
                         foreach (KeyItem keyItem in keyItemSystem.keyItems)
                         {
+                            // Ensure the minimum amount of fuel cans is enough to fuel the helicopter.
+                            if (keyItem.name.Equals("FuelCan") && !ModSettings.disableHelicopter)
+                            {
+                                minGlobal = ModSettings.helicopterFuelAmount;
+                            }
+
                             // Adjust each count while ensuring they do not go negative and have a normal relative relationship.
                             var minItem = Mathf.Min(minGlobal, keyItem.minCount);
                             keyItem.minCount = Mathf.Max(minItem, keyItem.minCount + ModSettings.changeKeyItemSpawnNumbers);
@@ -2608,6 +2641,20 @@ namespace MonstrumExtendedSettingsMod
                             }
                         }
                     }
+                    else
+                    {
+                        // Ensure the minimum amount of fuel cans is enough to fuel the helicopter.
+                        foreach (KeyItem keyItem in keyItemSystem.keyItems)
+                        {
+                            if (keyItem.name.Equals("FuelCan"))
+                            {
+                                keyItem.minCount = Mathf.Max(keyItem.minCount, ModSettings.helicopterFuelAmount);
+                                keyItem.maxCount = Mathf.Max(keyItem.minCount, keyItem.maxCount);
+                                break;
+                            }
+                        }
+                    }
+
 
                     // If using diverse spawns, ensure at least 1 of the item can spawn in each region.
                     if (ModSettings.diverseItemSpawns)
@@ -8197,6 +8244,17 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @SubAlarm
+
+            private static void HookSubAlarmctor(On.SubAlarm.orig_ctor orig, SubAlarm subAlarm)
+            {
+                // Generally not the best to hook ctor as some hooks do not work. Start is better to hook.
+                // In this case ctor does work and avoids hooking on Start as this is used without orig.Invoke in MMM.
+                orig.Invoke(subAlarm);
+                subAlarm.SetTime = ModSettings.submersibleChargeTime;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @TimeScaleManager
 
             private static void HookTimeScaleManager()
@@ -8279,6 +8337,15 @@ namespace MonstrumExtendedSettingsMod
                 {
                     orig.Invoke(vision);
                 }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @VoiceoverSequence
+
+            private static void HookVoiceoverSequenceStart(On.VoiceoverSequence.orig_Start orig, VoiceoverSequence voiceoverSequence)
+            {
+                voiceoverSequence.timeScaler *= ModSettings.submersibleChargeTime / 120f;
+                orig.Invoke(voiceoverSequence);
             }
 
             /*----------------------------------------------------------------------------------------------------*/

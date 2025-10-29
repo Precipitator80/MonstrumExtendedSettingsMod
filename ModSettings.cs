@@ -1066,7 +1066,10 @@ namespace MonstrumExtendedSettingsMod
                     overpoweredHidingSpots = new MESMSetting<bool>("Overpowered Hiding Spots", "The monsters will not be able to search any hiding spots", false).userValue;
                     noHiding = new MESMSetting<bool>("No Hiding", "You will not be invisible to the monster in a hiding spot", false).userValue;
                     disableLiferaft = new MESMSetting<bool>("Disable Liferaft", "You will not be able to use the liferaft to escape", false).userValue;
+                    helicopterFuelAmount = new MESMSetting<int>("Helicopter Fuel Amount", "The number of fuel cans required to fuel the helicopter", 2, true).userValue;
+                    helicopterFuelTime = new MESMSetting<int>("Helicopter Fuel Time", "The number of seconds required to fuel the helicopter", 85, true).userValue;
                     disableHelicopter = new MESMSetting<bool>("Disable Helicopter", "You will not be able to use the helicopter to escape", false).userValue;
+                    submersibleChargeTime = new MESMSetting<int>("Submersible Charge Time", "The number of seconds required to charge the submersible", 120, true).userValue;
                     disableSubmersible = new MESMSetting<bool>("Disable Submersible", "You will not be able to use the submersible to escape", false).userValue;
                     escapeRoutesToWin = new MESMSetting<int>("Escape Routes To Win", "The number / percentage of all escape routes you need to fully prepare to win", 1, true, false, 1, 3).userValue;
                     gravityXComponent = new MESMSetting<float>("Gravity X Acceleration", "Changes the acceleration due to gravity in the x axis", 0f, false).userValue;
@@ -3667,7 +3670,10 @@ namespace MonstrumExtendedSettingsMod
             public static bool overpoweredHidingSpots;
             public static bool noHiding;
             public static bool disableLiferaft;
+            public static int helicopterFuelAmount;
+            public static int helicopterFuelTime;
             public static bool disableHelicopter;
+            public static int submersibleChargeTime;
             public static bool disableSubmersible;
             public static int escapeRoutesToWin;
             public static float gravityXComponent;
