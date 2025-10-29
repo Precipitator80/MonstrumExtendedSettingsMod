@@ -7263,9 +7263,16 @@ namespace MonstrumExtendedSettingsMod
                             try
                             {
                                 UnityEngine.Object[] smokeGrenadeUnpacked = Utilities.LoadAssetBundle("smokegrenade");
-                                if (smokeGrenadeUnpacked.Length > 0 && smokeGrenadeUnpacked[0] != null && smokeGrenadeUnpacked[0].GetType() == typeof(GameObject))
+                                foreach (UnityEngine.Object smokeGrenadeObject in smokeGrenadeUnpacked)
                                 {
-                                    smokeGrenadeModelPrefab = (GameObject)smokeGrenadeUnpacked[0];
+                                    if (smokeGrenadeObject.GetType() == typeof(Texture2D))
+                                    {
+                                        smokeGrenadeSprite = Sprite.Create((Texture2D)smokeGrenadeObject, inventoryItem.inventorySlotSprite.rect, inventoryItem.inventorySlotSprite.pivot, inventoryItem.inventorySlotSprite.pixelsPerUnit);
+                                    }
+                                    else if (smokeGrenadeObject.GetType() == typeof(GameObject))
+                                    {
+                                        smokeGrenadeModelPrefab = (GameObject)smokeGrenadeObject;
+                                    }
                                 }
                             }
                             catch
@@ -7290,6 +7297,11 @@ namespace MonstrumExtendedSettingsMod
                             inventoryItem.glowShader.Start();
                             itemShadow.render = inventoryItem.GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>();//((MonoBehaviour)itemShadow).GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>(); // Does this do anything?
 
+                            // Apply the custom sprite if loaded successfully.
+                            if (smokeGrenadeSprite != null)
+                            {
+                                inventoryItem.inventorySlotSprite = smokeGrenadeSprite;
+                            }
                         }
                     }
                     else if (ModSettings.addMolotov && randomValue >= 0.67f)
@@ -7307,9 +7319,16 @@ namespace MonstrumExtendedSettingsMod
                             try
                             {
                                 UnityEngine.Object[] molotovUnpacked = Utilities.LoadAssetBundle("molotov");
-                                if (molotovUnpacked.Length > 0 && molotovUnpacked[0] != null && molotovUnpacked[0].GetType() == typeof(GameObject))
+                                foreach (UnityEngine.Object molotovObject in molotovUnpacked)
                                 {
-                                    molotovModelPrefab = (GameObject)molotovUnpacked[0];
+                                    if (molotovObject.GetType() == typeof(Texture2D))
+                                    {
+                                        molotovSprite = Sprite.Create((Texture2D)molotovObject, inventoryItem.inventorySlotSprite.rect, inventoryItem.inventorySlotSprite.pivot, inventoryItem.inventorySlotSprite.pixelsPerUnit);
+                                    }
+                                    else if (molotovObject.GetType() == typeof(GameObject))
+                                    {
+                                        molotovModelPrefab = (GameObject)molotovObject;
+                                    }
                                 }
                             }
                             catch
@@ -7333,14 +7352,28 @@ namespace MonstrumExtendedSettingsMod
                             inventoryItem.GetMeshRender();
                             inventoryItem.glowShader.Start();
                             itemShadow.render = inventoryItem.GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>();//((MonoBehaviour)itemShadow).GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>(); // Does this do anything?
+
+                            // Apply the custom sprite if loaded successfully.
+                            if (molotovSprite != null)
+                            {
+                                inventoryItem.inventorySlotSprite = molotovSprite;
+                            }
                         }
                     }
                 }
             }
 
+            /// <summary>
+            /// The model used to build a prefab.
+            /// </summary>
             private static GameObject smokeGrenadeModelPrefab;
-            private static GameObject molotovModelPrefab;
-
+            /// <summary>
+            /// The sprite applied to inventory items using the prefab.
+            /// </summary>
+            private static Sprite smokeGrenadeSprite;
+            /// <summary>
+            /// The prefab used in the game.
+            /// </summary>
             private static GameObject smokeGrenadePrefab;
             private static float smokeGrenadeParticleStartLifeTime = 8f;
             private static void CreateSmokeGrenadePrefab()
@@ -7430,6 +7463,17 @@ namespace MonstrumExtendedSettingsMod
             Layer 31: 
             */
 
+            /// <summary>
+            /// The model used to build a prefab.
+            /// </summary>
+            private static GameObject molotovModelPrefab;
+            /// <summary>
+            /// The sprite applied to inventory items using the prefab.
+            /// </summary>
+            private static Sprite molotovSprite;
+            /// <summary>
+            /// The prefab used in the game.
+            /// </summary>
             private static GameObject molotovPrefab;
             private static readonly float fireIntensityBuffer = 4f;
             private static float molotovParticleStartLifeTime = 3f;
