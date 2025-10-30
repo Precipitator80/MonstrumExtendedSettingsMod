@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
+using System.Linq;
+using SRF;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -90,7 +92,7 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
-            private static Material smokeMaterial;
+            private static List<Material> smokeMaterials;
 
             // Volumetric Fog in Unity using Particles (Any Rendering Pipeline) - Etredal - https://www.youtube.com/watch?v=UllkvfMR96s - Accessed 21.05.2022
             // Try out the settings in the UnityEditor!
@@ -102,20 +104,13 @@ namespace MonstrumExtendedSettingsMod
 
                 ParticleSystemRenderer particleSystemRenderer = smokeGameObject.AddComponent<ParticleSystemRenderer>();
 
-                if (smokeMaterial == null)
+                if (smokeMaterials == null)
                 {
-                    ParticleSystemRenderer[] pss = FindObjectsOfType<ParticleSystemRenderer>();
-                    foreach (ParticleSystemRenderer ps in pss)
-                    {
-                        if (ps.material != null && ps.material.name.Contains("Smoke"))
-                        {
-                            smokeMaterial = ps.material;
-                            smokeMaterial.color = Color.white;
-                            break;
-                        }
-                    }
+                    smokeMaterials = Utilities.LoadAssetBundle("purplesmokematerials")
+                        .OfType<Material>()
+                        .ToList();
                 }
-                particleSystemRenderer.material = smokeMaterial;
+                particleSystemRenderer.material = smokeMaterials.Random();
 
                 ParticleSystem particleSystem = smokeGameObject.AddComponent<ParticleSystem>();
                 particleSystem.name = "SmokeEmitter";
