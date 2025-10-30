@@ -2324,6 +2324,10 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 Physics.gravity = new Vector3(gravityXComponent, gravityYComponent, gravityZComponent);
+
+                // Add any additional required components to the level generation instance.
+                LevelGeneration.Instance.gameObject.AddComponent<HintImageManager>();
+
                 Debug.Log("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
             }
