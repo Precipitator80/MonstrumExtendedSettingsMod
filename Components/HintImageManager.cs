@@ -62,7 +62,7 @@ namespace MonstrumExtendedSettingsMod
                             var canvas = Reticule.Instance.reticuleCanvas.canvas;
                             trans.SetParent(canvas.transform);
                             trans.anchoredPosition = new Vector2(0f, 0f);
-                            trans.sizeDelta = canvas.pixelRect.size * 0.8f;
+                            trans.sizeDelta = canvas.pixelRect.size * 0.85f;
 
                             var image = imageGO.AddComponent<Image>();
                             image.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
