@@ -5969,6 +5969,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     OnFuseReachedBox(fuse, newPlayerClass);
                 }
+                ModSettings.fusesAdded++;
                 yield break;
             }
 

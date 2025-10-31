@@ -1072,6 +1072,7 @@ namespace MonstrumExtendedSettingsMod
                     submersibleChargeTime = new MESMSetting<int>("Submersible Charge Time", "The number of seconds required to charge the submersible", 120, true).userValue;
                     disableSubmersible = new MESMSetting<bool>("Disable Submersible", "You will not be able to use the submersible to escape", false).userValue;
                     escapeRoutesToWin = new MESMSetting<int>("Escape Routes To Win", "The number / percentage of all escape routes you need to fully prepare to win", 1, true, false, 1, 3).userValue;
+                    escapeConditionsToWin = new MESMSetting<int>("Escape Conditions", "You cannot use escape routes until you have completed a number of three tasks. Power up 3 fuse boxes, turn off the master steam valve or have a flare gun and backpack", 0, true, false, 0, 3).userValue;
                     gravityXComponent = new MESMSetting<float>("Gravity X Acceleration", "Changes the acceleration due to gravity in the x axis", 0f, false).userValue;
                     gravityYComponent = new MESMSetting<float>("Gravity Y Acceleration", "Changes the acceleration due to gravity in the y axis", -9.81f, false, true).userValue;
                     gravityZComponent = new MESMSetting<float>("Gravity Z Acceleration", "Changes the acceleration due to gravity in the z axis", 0f, false, true).userValue;
@@ -2325,8 +2326,11 @@ namespace MonstrumExtendedSettingsMod
 
                 Physics.gravity = new Vector3(gravityXComponent, gravityYComponent, gravityZComponent);
 
+                // Track the number of fuses added for escape conditions.
+                ModSettings.fusesAdded = 0;
+
                 // Add any additional required components to the level generation instance.
-                LevelGeneration.Instance.gameObject.AddComponent<HintImageManager>();
+                hintImageManager = LevelGeneration.Instance.gameObject.AddComponent<HintImageManager>();
 
                 Debug.Log("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
@@ -3680,6 +3684,7 @@ namespace MonstrumExtendedSettingsMod
             public static int submersibleChargeTime;
             public static bool disableSubmersible;
             public static int escapeRoutesToWin;
+            public static int escapeConditionsToWin;
             public static float gravityXComponent;
             public static float gravityYComponent;
             public static float gravityZComponent;
@@ -3847,6 +3852,8 @@ namespace MonstrumExtendedSettingsMod
             public static Liferaft[] liferafts;
             public static Crane[] cranes;
             public static List<Vector3> accessibleNodes;
+            public static int fusesAdded;
+            public static HintImageManager hintImageManager;
 
             // No Declaration Needed
             public static Vector3 temporaryPlayerPosition;

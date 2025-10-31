@@ -45,7 +45,7 @@ namespace MonstrumExtendedSettingsMod
                     Dictionary<string, bool> hintConditions = new Dictionary<string, bool>()
                     {
                         { "DebugMode", ModSettings.debugMode },
-                        { "EscapeConditions", false },
+                        { "EscapeConditions", ModSettings.escapeConditionsToWin > 0 },
                         { "GlowstickHunt", ModSettings.glowstickHunt && !ModSettings.noGlowstickHuntFinale },
                         { "GlowstickHuntNoFinale", ModSettings.glowstickHunt && ModSettings.noGlowstickHuntFinale}
                     };
@@ -82,7 +82,15 @@ namespace MonstrumExtendedSettingsMod
             void Update()
             {
                 // Open and cycle through images with X.
-                if (hintImages.Count > 0 && Input.GetKeyDown(KeyCode.X))
+                if (Input.GetKeyDown(KeyCode.X))
+                {
+                    CycleHints();
+                }
+            }
+
+            public void CycleHints()
+            {
+                if (hintImages.Count > 0)
                 {
                     // Hide the current image.
                     if (currentImageIndex >= 0 && currentImageIndex < hintImages.Count)

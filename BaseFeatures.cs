@@ -324,6 +324,9 @@ namespace MonstrumExtendedSettingsMod
                 // Submersible Charge Timer
                 On.SubAlarm.ctor += new On.SubAlarm.hook_ctor(HookSubAlarmctor);
                 On.VoiceoverSequence.Start += new On.VoiceoverSequence.hook_Start(HookVoiceoverSequenceStart);
+
+                // Escape Conditions
+                On.FuseBox.OnFuseReachedBox += new On.FuseBox.hook_OnFuseReachedBox(HookFuseBoxOnFuseReachedBox);
             }
 
             /*
@@ -1548,6 +1551,13 @@ namespace MonstrumExtendedSettingsMod
             /// <returns>Whether escape via this escape route type is allowed or not.</returns>
             private static bool EscapeRouteTypeAllowed(EscapeRoute.EscapeRouteType escapeRouteType)
             {
+                // Do not allow escape if using escape conditions unless required conditions are fulfilled.
+                if (ModSettings.escapeConditionsToWin > 0 && EscapeConditionsPassed() < ModSettings.escapeConditionsToWin)
+                {
+                    ModSettings.hintImageManager.CycleHints();
+                    return false;
+                }
+
                 switch (escapeRouteType)
                 {
                     case EscapeRoute.EscapeRouteType.LifeRaft:
@@ -1564,6 +1574,31 @@ namespace MonstrumExtendedSettingsMod
                         }
                 }
                 return false;
+            }
+
+            /// <summary>
+            /// Counts the number of escape conditions currently passed.
+            /// </summary>
+            /// <returns>The number of escape conditions currently passed.</returns>
+            private static int EscapeConditionsPassed()
+            {
+                int conditionsPassed = 0;
+                if (ModSettings.fusesAdded >= 3)
+                {
+                    conditionsPassed++;
+                }
+                if (!SteamVentManager.Instance.MasterControlOverride)
+                {
+                    conditionsPassed++;
+                }
+                if (
+                    References.Inventory.HasItem("FlareGun") &&
+                    References.Inventory.maxInventoryCapacity > (ModSettings.inventorySize > 0 ? ModSettings.inventorySize : 6)
+                )
+                {
+                    conditionsPassed++;
+                }
+                return conditionsPassed;
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -2150,6 +2185,15 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @FuseBox
+
+            private static void HookFuseBoxOnFuseReachedBox(On.FuseBox.orig_OnFuseReachedBox orig, FuseBox fuseBox)
+            {
+                orig.Invoke(fuseBox);
+                ModSettings.fusesAdded++;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @FuseBoxManager
 
             /// <summary>
@@ -2573,8 +2617,8 @@ namespace MonstrumExtendedSettingsMod
                                     keyItemSystem.keyItems.Add(keyItem);
                                     Debug.Log("Walkie talkie added successfully via FindObjectsOfTypeAll.");
                                 }
-                                // Ensure a flare gun is always spawned when using the spawn with flare gun setting.
-                                else if (ModSettings.spawnWithFlareGun && keyItem.name.Equals("FlareGunNew") && !keyItemSystem.keyItems.Contains(keyItem))
+                                // Ensure a flare gun is always spawned when using the spawn with flare gun or escape conditions setting.
+                                else if ((ModSettings.spawnWithFlareGun || ModSettings.escapeConditionsToWin > 0) && keyItem.name.Equals("FlareGunNew") && !keyItemSystem.keyItems.Contains(keyItem))
                                 {
                                     keyItem.gameObject.SetActive(true);
                                     keyItem.minCount = 1;
