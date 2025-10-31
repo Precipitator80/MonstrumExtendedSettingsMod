@@ -9,6 +9,7 @@ using System.Text;
 using System.Linq;
 using System.IO;
 using UnityEngine.UI;
+using SRF;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -327,6 +328,9 @@ namespace MonstrumExtendedSettingsMod
 
                 // Escape Conditions
                 On.FuseBox.OnFuseReachedBox += new On.FuseBox.hook_OnFuseReachedBox(HookFuseBoxOnFuseReachedBox);
+
+                // No Starter Fuse
+                On.TutorialFuse.Start += new On.TutorialFuse.hook_Start(HookTutorialFuseStart);
             }
 
             /*
@@ -8371,6 +8375,19 @@ namespace MonstrumExtendedSettingsMod
                     orig.Invoke(tutorialDoor);
                 }
             }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @TutorialFuse
+
+            private static void HookTutorialFuseStart(On.TutorialFuse.orig_Start orig, TutorialFuse tutorialFuse)
+            {
+                orig.Invoke(tutorialFuse);
+                if (ModSettings.noStarterFuse)
+                {
+                    tutorialFuse.transform.position = FindObjectsOfType<KeyItemPlaceholder>().Random().transform.position;
+                }
+            }
+
 
             /*----------------------------------------------------------------------------------------------------*/
             // @Vision

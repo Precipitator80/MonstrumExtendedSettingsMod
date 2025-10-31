@@ -1140,6 +1140,7 @@ namespace MonstrumExtendedSettingsMod
                     noSteam = new MESMSetting<bool>("No Steam", "Sets the engine room's steam override to off. Model does not update", false).userValue;
                     allPreFilledFuseBoxes = new MESMSetting<bool>("All Pre-filled Fuse Boxes", "Spawns each fuse box with a fuse", false).userValue;
                     noPreFilledFuseBoxes = new MESMSetting<bool>("No Pre-filled Fuse Boxes", "Spawns each fuse box without a fuse", false).userValue;
+                    noStarterFuse = new MESMSetting<bool>("No Starter Fuse", "Teleports the fuse in the starter room to a random location", false).userValue;
                     noBarricadedDoors = new MESMSetting<bool>("No Barricaded Doors", "Removes the door of every barricaded room", false).userValue;
                     overpoweredSteamVents = new MESMSetting<bool>("Overpowered Steam Vents", "Lets steam be expelled from each possible point on a steam vent. This means every vent will have three steam spawn points and handles. Two handles will be clipped in each other, making it harder to turn off both", false).userValue;
                     unbreakablePitTraps = new MESMSetting<bool>("Unbreakable Pit Traps", "Pit traps are not destroyed when the player or monster runs over them", false).userValue;
@@ -3742,6 +3743,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool noSteam;
             private static bool allPreFilledFuseBoxes;
             public static bool noPreFilledFuseBoxes;
+            public static bool noStarterFuse;
             private static bool noBarricadedDoors;
             public static bool overpoweredSteamVents;
             public static bool unbreakablePitTraps;
