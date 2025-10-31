@@ -322,11 +322,8 @@ namespace MonstrumExtendedSettingsMod
                 foreach (PrimaryRegionType primaryRegionType in primaryFuseBoxRegions)
                 {
                     FuseBox fusebox = FuseBoxManager.Instance.fuseboxes[primaryRegionType];
-                    if (!ModSettings.noPreFilledFuseBoxes)
-                    {
-                        fusebox.AddFuse();
-                        fusebox.AddPreExistingFuse();
-                    }
+                    fusebox.AddFuse();
+                    fusebox.AddPreExistingFuse();
                 }
 
                 if (sparkyAudioClips != null)

@@ -1138,14 +1138,17 @@ namespace MonstrumExtendedSettingsMod
                     camTimer = new MESMSetting<int>("Camera Timer", "Sets the timer for how long a camera needs until it triggers its alarm", 2, true, false, 0).userValue;
                     noCameras = new MESMSetting<bool>("No Cameras", "All cameras are covered with duct tape", false).userValue;
                     noSteam = new MESMSetting<bool>("No Steam", "Sets the engine room's steam override to off. Model does not update", false).userValue;
-                    allPreFilledFuseBoxes = new MESMSetting<bool>("All Pre-filled Fuse Boxes", "Spawns each fuse box with a fuse", false).userValue;
-                    noPreFilledFuseBoxes = new MESMSetting<bool>("No Pre-filled Fuse Boxes", "Spawns each fuse box without a fuse", false).userValue;
+                    preFillStartRegionFuseBox = new MESMSetting<bool>("Pre-fill Start Region Fuse Box", "Pre-fills the fuse box of the player's start region", true).userValue;
+                    preFillLiferaftFuseBox = new MESMSetting<bool>("Pre-fill Liferaft Fuse Box", "Pre-fills the fuse box for the liferaft's crane and lights", true).userValue;
+                    preFillEngineRoomFuseBox = new MESMSetting<bool>("Pre-fill Engine Room Fuse Box", "Pre-fills the fuxe box of the engine room", false).userValue;
+                    preFillSubmersibleFuseBox = new MESMSetting<bool>("Pre-fill Submersible Fuse Box", "Pre-fills the fuse box of the submersible room", false).userValue;
+                    preFillLightFuseBoxes = new MESMSetting<bool>("Pre-fill Light Fuse Boxes", "Pre-fills all fuse boxes that power region lights (excluding the start region, liferaft, engine room and submersible fuse boxes)", false).userValue;
+                    preFillPowerLockFuseBoxes = new MESMSetting<bool>("Pre-fill Power Lock Fuse Boxes", "Pre-fills all fuse boxes of power-locked rooms", false).userValue;
                     noStarterFuse = new MESMSetting<bool>("No Starter Fuse", "Teleports the fuse in the starter room to a random location", false).userValue;
                     noBarricadedDoors = new MESMSetting<bool>("No Barricaded Doors", "Removes the door of every barricaded room", false).userValue;
                     overpoweredSteamVents = new MESMSetting<bool>("Overpowered Steam Vents", "Lets steam be expelled from each possible point on a steam vent. This means every vent will have three steam spawn points and handles. Two handles will be clipped in each other, making it harder to turn off both", false).userValue;
                     unbreakablePitTraps = new MESMSetting<bool>("Unbreakable Pit Traps", "Pit traps are not destroyed when the player or monster runs over them", false).userValue;
                     addAdditionalCrewDeckBuilding = new MESMSetting<bool>("Add Additional Crew Deck Building", "Removes some of the cargo containers in front of the bridge and replaces them with a small crew deck building with another life raft on top of it", false).userValue;
-                    additionalFuseBoxesToSetUpAfterGeneration = new List<FuseBox>();
                     useDeckFourOnSubmersibleSide = new MESMSetting<bool>("Use Deck Four On Submersible Side", "Allows deck 4 to spawn rooms like deck 3 on the submersible side. Also increases the spawn count of lower deck rooms a bit to help fill the additional space", false).userValue;
                     extendLowerDecks = new MESMSetting<bool>("Extend Lower Decks", "A setting that has a similar effect to the extend map one, but only affects the lower decks and has much faster loading times. Also increases the spawn count of lower deck rooms a tiny bit to help fill the additional space", false).userValue;
                     spawnAdditionalEngineRoomWorkshops = new MESMSetting<bool>("Spawn Additional Engine Room Workshops", "Spawns some more engine room workshops with phones", false).userValue;
@@ -1510,8 +1513,6 @@ namespace MonstrumExtendedSettingsMod
                     spawnDeactivatedItems = UsageRandomiser();
                     noCameras = UsageRandomiser(15f);
                     noSteam = UsageRandomiser(10f);
-                    allPreFilledFuseBoxes = UsageRandomiser(20f);
-                    noPreFilledFuseBoxes = UsageRandomiser(25f);
                     noBarricadedDoors = UsageRandomiser(10f);
                     overpoweredSteamVents = UsageRandomiser(5f);
                     unbreakablePitTraps = UsageRandomiser(7.5f);
@@ -1772,37 +1773,6 @@ namespace MonstrumExtendedSettingsMod
                     //SmokeMonster.SmokeMonsterAfterGenerationInitialisation();
                 }
 
-                if (allPreFilledFuseBoxes/* || darkShip*/)
-                {
-                    /*
-                    FuseBox[] fuseBoxes = FuseBoxManager.instance.fuseboxes.Values.ToList<FuseBox>().ToArray();
-                    foreach (FuseBox fuseBox in fuseBoxes)
-                    {
-                        FuseBoxManager.instance.SetupFuse(fuseBox);
-                    }
-                    */
-                    FuseBox[] allFuseBoxes = UnityEngine.Object.FindObjectsOfType<FuseBox>();
-                    if (allPreFilledFuseBoxes)
-                    {
-                        foreach (FuseBox fuseBox in allFuseBoxes)
-                        {
-                            FuseBoxManager.instance.SetupFuse(fuseBox);
-                        }
-                    }
-                    /*
-                    if (darkShip)
-                    {
-                        foreach (FuseBox fuseBox in allFuseBoxes)
-                        {
-                            if (fuseBox.powered)
-                            {
-                                fuseBox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false); // Just stop starting fuses from activating levers after generation.
-                            }
-                        }
-                    }
-                    */
-                }
-
                 if (noBarricadedDoors)
                 {
                     Room[] rooms = LevelGeneration.Instance.RoomsInUse.ToArray();
@@ -1896,7 +1866,7 @@ namespace MonstrumExtendedSettingsMod
                     if (spawnWithLiferaftItems)
                     {
                         slotsRequired += 3;
-                        if (noPreFilledFuseBoxes)
+                        if (!preFillLiferaftFuseBox)
                         {
                             slotsRequired++;
                         }
@@ -1926,7 +1896,7 @@ namespace MonstrumExtendedSettingsMod
                         FindItemWithSpecificName("Chain spool").AddToInventory();
                         FindItemWithSpecificName("DuctTape").AddToInventory();
                         FindItemWithSpecificName("Pump").AddToInventory();
-                        if (noPreFilledFuseBoxes)
+                        if (!preFillLiferaftFuseBox)
                         {
                             FindItemWithSpecificName("Fuse").AddToInventory();
                         }
@@ -2115,14 +2085,6 @@ namespace MonstrumExtendedSettingsMod
                         cranes[i].lifeRaft = liferafts[i];
                         cranes[i].escapeLifeRaft = escapeLifeRafts[i];
                         cranes[i].escapeLifeRaft.liferaft = liferafts[i];
-                    }
-                }
-
-                foreach (FuseBox fuseBox in ModSettings.additionalFuseBoxesToSetUpAfterGeneration)
-                {
-                    if (fuseBox.powerRegion == PrimaryRegionType.OuterDeck || (fuseBox.powerRegion == PrimaryRegionType.CrewDeck && LevelGeneration.Instance.StartRoom.PrimaryRegion == PrimaryRegionType.CrewDeck) || (fuseBox.powerRegion == PrimaryRegionType.LowerDeck && LevelGeneration.Instance.StartRoom.PrimaryRegion == PrimaryRegionType.LowerDeck))
-                    {
-                        FuseBoxManager.Instance.SetupFuse(fuseBox);
                     }
                 }
 
@@ -3741,14 +3703,17 @@ namespace MonstrumExtendedSettingsMod
             public static bool noCameras;
             public static int camTimer;
             public static bool noSteam;
-            private static bool allPreFilledFuseBoxes;
-            public static bool noPreFilledFuseBoxes;
+            public static bool preFillStartRegionFuseBox;
+            public static bool preFillLiferaftFuseBox;
+            public static bool preFillEngineRoomFuseBox;
+            public static bool preFillSubmersibleFuseBox;
+            public static bool preFillLightFuseBoxes;
+            public static bool preFillPowerLockFuseBoxes;
             public static bool noStarterFuse;
             private static bool noBarricadedDoors;
             public static bool overpoweredSteamVents;
             public static bool unbreakablePitTraps;
             public static bool addAdditionalCrewDeckBuilding;
-            public static List<FuseBox> additionalFuseBoxesToSetUpAfterGeneration;
             public static bool useDeckFourOnSubmersibleSide;
             public static bool extendLowerDecks;
             public static bool spawnAdditionalEngineRoomWorkshops;

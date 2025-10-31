@@ -74,8 +74,6 @@ namespace MonstrumExtendedSettingsMod
 
                 // Dark Ship Mode, Powerable Lights & Ship Generic Lights Colour, Intensity Multiplier & Range Multiplier
                 HookGenericLight();
-
-                // No Pre-filled Fuse Boxes
                 On.FuseBoxManager.SetupFuse += new On.FuseBoxManager.hook_SetupFuse(HookFuseBoxManagerSetupFuse);
 
                 // No Cameras
@@ -331,6 +329,9 @@ namespace MonstrumExtendedSettingsMod
 
                 // No Starter Fuse
                 On.TutorialFuse.Start += new On.TutorialFuse.hook_Start(HookTutorialFuseStart);
+
+                // Fuse Box Pre-fill Settings
+                Utilities.HookIterator<FuseBoxManager>("<OnGenerationComplete>c__Iterator0", HookFuseBoxManagerOnGenerationComplete);
             }
 
             /*
@@ -2201,7 +2202,7 @@ namespace MonstrumExtendedSettingsMod
             // @FuseBoxManager
 
             /// <summary>
-            /// Supports Add Additional Crew Deck Building Support, letting multiple fuze boxes be set up in one region.
+            /// Supports Add Additional Crew Deck Building Support & letting multiple fuse boxes be set up in one region.
             /// </summary>
             private static void HookFuseBoxManagerAddFuseBox(On.FuseBoxManager.orig_AddFuseBox orig, FuseBoxManager fuseBoxManager, FuseBox _fuseBox)
             {
@@ -2209,19 +2210,48 @@ namespace MonstrumExtendedSettingsMod
                 {
                     orig.Invoke(fuseBoxManager, _fuseBox);
                 }
-                else
-                {
-                    ModSettings.additionalFuseBoxesToSetUpAfterGeneration.Add(_fuseBox);
-                }
             }
 
             /// <summary>
-            /// Supports no pre-filled fuse boxes and dark ship.
+            /// Supports fuse box pre-fill settings.
+            /// </summary>
+            private static IEnumerator HookFuseBoxManagerOnGenerationComplete(FuseBoxManager fuseBoxManager)
+            {
+                // Run custom code that goes through all fuse boxes, including custom / duplicate ones like in the additional crew building.
+                foreach (FuseBox fuseBox in FindObjectsOfType<FuseBox>())
+                {
+                    switch (fuseBox.powerRegion)
+                    {
+                        case PrimaryRegionType.SubEscape:
+                            if (!ModSettings.preFillSubmersibleFuseBox) continue;
+                            break;
+                        case PrimaryRegionType.OuterDeck:
+                            if (!ModSettings.preFillLiferaftFuseBox) continue;
+                            break;
+                        case PrimaryRegionType.Engine:
+                            if (!ModSettings.preFillEngineRoomFuseBox) continue;
+                            break;
+                        case PrimaryRegionType.None:
+                            if (!ModSettings.preFillPowerLockFuseBoxes) continue;
+                            break;
+                        default:
+                            if (!ModSettings.preFillStartRegionFuseBox && fuseBox.powerRegion == LevelGeneration.Instance.startRoom.PrimaryRegion ||
+                            !ModSettings.preFillLightFuseBoxes && fuseBox.powerRegion != LevelGeneration.Instance.startRoom.PrimaryRegion) continue;
+                            break;
+                    }
+                    if (ModSettings.logDebugText)
+                    {
+                        Debug.Log("Pre-filling fuse box in region: " + fuseBox.powerRegion);
+                }
+                    FuseBoxManager.instance.SetupFuse(fuseBox);
+                }
+                yield break;
+            }
+
+            /// <summary>
+            /// Supports dark ship.
             /// </summary>
             private static void HookFuseBoxManagerSetupFuse(On.FuseBoxManager.orig_SetupFuse orig, FuseBoxManager fuseBoxManager, FuseBox _fusebox)
-            {
-                // Only add a fuse if allowing pre-filled fuse boxes.
-                if (!ModSettings.noPreFilledFuseBoxes)
                 {
                     _fusebox.AddFuse();
                     _fusebox.AddPreExistingFuse();
@@ -2229,7 +2259,6 @@ namespace MonstrumExtendedSettingsMod
                     if (!ModSettings.darkShip)
                     {
                         _fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
-                    }
                 }
             }
 

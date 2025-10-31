@@ -36,7 +36,10 @@ Fire Duration Multiplier|0.001
 Unsmashables|True
 No Cameras|True
 No Steam|True
-All Pre-filled Fuse Boxes|True
+Pre-fill Engine Room Fuse Box|True
+Pre-fill Submersible Fuse Box|True
+Pre-fill Light Fuse Boxes|True
+Pre-fill Power Lock Fuse Boxes|True
 No Barricaded Doors|True
 Aggressive Workshop Spawning|True
 Add Lower Deck Next To Engine Room|True

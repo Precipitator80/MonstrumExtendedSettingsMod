@@ -36,7 +36,8 @@ Infinite Flashlight Power|True
 Add Smoke Grenade|True
 Starter Room Region|Upper Deck
 Spawn Deactivated Items|True
-No Pre-filled Fuse Boxes|True
+Pre-fill Start Region Fuse Box|False
+Pre-fill Liferaft Fuse Box|False
 Add Additional Crew Deck Building|True
 Extend Lower Decks|True
 Spawn Additional Engine Room Workshops|True
