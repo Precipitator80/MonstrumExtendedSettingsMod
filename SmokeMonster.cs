@@ -50,7 +50,8 @@ namespace MonstrumExtendedSettingsMod
             public static GameObject CreateSmokeEmitter(Room room)
             {
                 float boxVolume = room.RoomBounds.size.x * room.RoomBounds.size.y * room.RoomBounds.size.z;
-                return CreateSmokeEmitter(room, new Vector3(1.5f, 1.5f, 1.5f), boxVolume / 25f);
+                float randomSize = Random.Range(1.25f, 2f);
+                return CreateSmokeEmitter(room, new Vector3(randomSize, randomSize, randomSize), boxVolume / 25f);
             }
 
             public static GameObject CreateSmokeEmitter(Room room, Vector3 size, float rate)
