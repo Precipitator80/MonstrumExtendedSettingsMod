@@ -718,6 +718,11 @@ namespace MonstrumExtendedSettingsMod
                                     inventoryItem.gameObject.transform.position = References.Player.transform.position + new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(0.5f, 1f), UnityEngine.Random.Range(-1f, 1f));
                                 }
                             }
+                            Backpack[] backpacks = FindObjectsOfType<Backpack>();
+                            foreach (Backpack backpack in backpacks)
+                            {
+                                backpack.gameObject.transform.position = References.Player.transform.position + new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(0.5f, 1f), UnityEngine.Random.Range(-1f, 1f));
+                            }
                         }
 
                         // Control godmode and invisibility.
