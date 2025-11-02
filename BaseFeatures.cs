@@ -332,6 +332,8 @@ namespace MonstrumExtendedSettingsMod
 
                 // Fuse Box Pre-fill Settings
                 Utilities.HookIterator<FuseBoxManager>("<OnGenerationComplete>c__Iterator0", HookFuseBoxManagerOnGenerationComplete);
+
+                On.SecurityMonitors.OnPowerUp += new On.SecurityMonitors.hook_OnPowerUp(HookSecurityMonitorsOnPowerUp);
             }
 
             /*
@@ -2242,7 +2244,7 @@ namespace MonstrumExtendedSettingsMod
                     if (ModSettings.logDebugText)
                     {
                         Debug.Log("Pre-filling fuse box in region: " + fuseBox.powerRegion);
-                }
+                    }
                     FuseBoxManager.instance.SetupFuse(fuseBox);
                 }
                 yield break;
@@ -2252,13 +2254,13 @@ namespace MonstrumExtendedSettingsMod
             /// Supports dark ship.
             /// </summary>
             private static void HookFuseBoxManagerSetupFuse(On.FuseBoxManager.orig_SetupFuse orig, FuseBoxManager fuseBoxManager, FuseBox _fusebox)
+            {
+                _fusebox.AddFuse();
+                _fusebox.AddPreExistingFuse();
+                // Do not activate the fuse box if using dark ship.
+                if (!ModSettings.darkShip)
                 {
-                    _fusebox.AddFuse();
-                    _fusebox.AddPreExistingFuse();
-                    // Do not activate the fuse box if using dark ship.
-                    if (!ModSettings.darkShip)
-                    {
-                        _fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
+                    _fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
                 }
             }
 
@@ -7344,6 +7346,73 @@ namespace MonstrumExtendedSettingsMod
             {
                 amberState.warningTime = ModSettings.camTimer;
             }
+
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @SecurityMonitors
+
+            private static void HookSecurityMonitorsOnPowerUp(On.SecurityMonitors.orig_OnPowerUp orig, SecurityMonitors securityMonitors)
+            {
+                // Call the original method first
+                orig.Invoke(securityMonitors);
+
+                Renderer rend = securityMonitors.monitors;
+                int screenIdx = securityMonitors.screenIndex;
+
+                if (rend == null || screenIdx < 0 || screenIdx >= rend.materials.Length) return;
+
+                Material originalMat = rend.materials[screenIdx];
+                Material[] mats = rend.materials;
+
+                int screensCount = 4; // 2x2 rack
+                for (int i = 0; i < screensCount; i++)
+                {
+                    // Clone the material for each screen
+                    var matInstance = new Material(originalMat)
+                    {
+                        name = originalMat.name + $"_RT_{i}"
+                    };
+
+                    // Create a unique RenderTexture
+                    var rt = new RenderTexture(256, 256, 16, RenderTextureFormat.ARGB32);
+                    rt.name = $"{securityMonitors.name}_ScreenRT_{i}";
+
+                    // Assign the render texture to shader slots
+                    matInstance.mainTexture = rt;
+                    matInstance.SetTexture("_EmissionMap", rt);
+                    matInstance.EnableKeyword("_EMISSION");
+
+                    // Replace the material in the array
+                    mats[screenIdx] = matInstance;
+
+                    // Spawn a small test camera for each screen
+                    Camera cam = new GameObject($"{securityMonitors.name}_TestCam_{i}").AddComponent<Camera>();
+                    cam.CopyFrom(References.camLeft);
+
+                    // Offset the camera slightly for visual separation
+                    cam.transform.position = securityMonitors.transform.position
+                                             + securityMonitors.transform.forward * 4f
+                                             + Vector3.up * 0.2f
+                                             + new Vector3((i % 2) * 0.1f, 0, (i / 2) * 0.1f);
+
+                    // Point the camera at the monitor
+                    cam.transform.rotation = Quaternion.LookRotation(-securityMonitors.transform.forward, Vector3.up);
+
+                    // Rotate each camera by 90° increments
+                    cam.transform.Rotate(Vector3.forward, 90f * i, Space.Self);
+
+                    // Assign the RenderTexture
+                    cam.targetTexture = rt;
+                    cam.enabled = true;
+                }
+
+                // Apply the modified materials array back to the renderer
+                rend.materials = mats;
+
+                Debug.Log($"✅ Assigned {screensCount} RenderTextures with rotated cameras to {securityMonitors.name}");
+            }
+
+
 
             /*----------------------------------------------------------------------------------------------------*/
             // @Smashable

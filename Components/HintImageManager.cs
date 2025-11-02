@@ -74,7 +74,7 @@ namespace MonstrumExtendedSettingsMod
                     // Set the first image to enabled if there is one.
                     if (hintImages.Count > 0)
                     {
-                        hintImages[0].SetActive(true);
+                        // hintImages[0].SetActive(true);
                     }
                 }
             }

@@ -1642,11 +1642,103 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            static IEnumerable<UnityEngine.Object> FindObjectsUsingMaterial(Material target)
+            {
+                if (target == null) yield break;
+
+                string baseName = target.name.Replace(" (Instance)", "");
+
+                foreach (var rend in Resources.FindObjectsOfTypeAll<Renderer>())
+                {
+                    foreach (var mat in rend.sharedMaterials)
+                    {
+                        if (mat == null) continue;
+
+                        // Compare by base name, shader, and main texture
+                        bool similar =
+                            mat.name.Replace(" (Instance)", "") == baseName &&
+                            mat.shader == target.shader &&
+                            mat.mainTexture == target.mainTexture;
+
+                        if (similar)
+                            yield return rend.gameObject;
+                    }
+                }
+
+                foreach (var img in Resources.FindObjectsOfTypeAll<Graphic>())
+                {
+                    var mat = img.material;
+                    if (mat == null) continue;
+
+                    bool similar =
+                        mat.name.Replace(" (Instance)", "") == baseName &&
+                        mat.shader == target.shader &&
+                        mat.mainTexture == target.mainTexture;
+
+                    if (similar)
+                        yield return img.gameObject;
+                }
+            }
+
             // #ReadAfterGeneration
             public static void ReadAfterGeneration()
             {
                 Debug.Log("READING LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READING LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
+
+                // start of cam test
+
+                // foreach (var mat in FindObjectsOfType<Material>())
+                // {
+                //     if (mat.name.ToLower().Contains("screen"))
+                //     {
+                //         Debug.Log(mat);
+                //         mat.color = Color.cyan;
+
+                //         foreach (var obj in FindObjectsUsingMaterial(mat))
+                //         {
+                //             Debug.Log($"→ {obj.name} uses {mat.name}", obj);
+                //         }
+                //     }
+                // }
+
+                // // --- quick inline render texture + camera duplication ---
+                // Camera srcCam = References.camLeft;
+                // if (srcCam == null)
+                // {
+                //     Debug.LogWarning("References.camLeft not set");
+                //     return;
+                // }
+
+                // // Create a duplicate camera for the screens
+                // Camera screenCam = GameObject.Instantiate(srcCam);
+                // screenCam.name = "ScreenCamera(Clone)";
+                // screenCam.enabled = true;
+                // screenCam.transform.SetParent(srcCam.transform, false);
+                // screenCam.transform.localPosition = Vector3.zero;
+                // screenCam.transform.localRotation = Quaternion.identity;
+                // screenCam.transform.SetParent(srcCam.transform, true);
+
+                // // Assign render texture to the duplicate only
+                // var rt = new RenderTexture(512, 512, 16, RenderTextureFormat.ARGB32);
+                // rt.name = "TempScreenCamRT";
+                // screenCam.targetTexture = rt;
+                // // ---------------------------------------------------------
+
+                // foreach (var mat in Resources.FindObjectsOfTypeAll<Material>())
+                // {
+                //     if (mat.name.ToLower().Contains("screenonmat"))
+                //     {
+                //         Debug.Log(mat);
+                //         // mat.color = Color.cyan;
+                //         mat.mainTexture = rt;
+
+                //         foreach (var obj in FindObjectsUsingMaterial(mat))
+                //             Debug.Log($"→ {obj.name} uses {mat.name}", obj);
+                //     }
+                // }
+
+                /// end of cam test
 
                 if (!ModSettings.alwaysSkipMenuScreen)
                 {
@@ -2294,6 +2386,8 @@ namespace MonstrumExtendedSettingsMod
 
                 // Add any additional required components to the level generation instance.
                 hintImageManager = LevelGeneration.Instance.gameObject.AddComponent<HintImageManager>();
+
+                // MonitorRenderTest.HookAllSecurityMonitors();
 
                 Debug.Log("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
