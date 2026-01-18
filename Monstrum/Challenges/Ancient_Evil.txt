@@ -17,8 +17,8 @@ Apply Chase Speed Buff To All Monsters|True
 Hunter Maximum Cooldown Time Multiplier|2
 Glowstick Hunt|True
 No Glowstick Hunt Finale|True
-Special Glowsticks Required|10
-Special Glowsticks To Create|50
+Special Glowsticks Required|12
+Special Glowsticks To Create|20
 No Hiding|True
 Disable Liferaft|True
 Disable Helicopter|True

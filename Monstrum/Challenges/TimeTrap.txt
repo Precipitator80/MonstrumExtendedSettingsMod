@@ -8,7 +8,9 @@ Number of Random Monsters|0
 Number of Brutes|1
 Number of Hunters|1
 Number of Fiends|1
-Player Movement Speed Multiplier|0.67
+Helicopter Fuel Time|9
+Submersible Charge Time|12
+Player Movement Speed Multiplier|0.666
 Infinite Flashlight Power|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2

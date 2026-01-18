@@ -1,16 +1,16 @@
 Name|Hard Hunter
 Author|Ink
 Difficulty|4
-Description|This challenge pits you up against a harder version of the Hunter, with a stealthier and more aggressive hunting style.
-Version|6.0
+Description|A challenge with a more difficult version of the Hunter, while maintaining the vanilla style of the game. The monster's activity has been significantly increased.
+Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1
-Monster Animation Speed Multiplier|1.2
-Monster Movement Speed Multiplier|1.2
-Monster Rotation Speed Multiplier|1.2
-Hunter Maximum Cooldown Time Multiplier|0.5
-Quiet Hunter|True
+Maximum Monster Spawntime (seconds)|60
+Monster Animation Speed Multiplier|1.25
+Monster Movement Speed Multiplier|1.25
+Monster Rotation Speed Multiplier|1.25
+Hunter Maximum Cooldown Time Multiplier|0.125
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

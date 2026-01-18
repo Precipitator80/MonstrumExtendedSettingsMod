@@ -1,30 +1,62 @@
 Name|Child's Nightmare
 Author|Ink
 Difficulty|8
-Description|The worst place a child can find themselves in during a dream. Welcome to the darkest ship. Welcome to the real nightmare.\nLess than 40% gamma is recommended.
+Description|Welcome to the Child's Nightmare.\nLess than 40% gamma is highly recommended.
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
-Maximum Monster Spawntime (seconds)|30
-Monster Animation Speed Multiplier|1.5
+Maximum Monster Spawntime (seconds)|45
+Monster Animation Speed Multiplier|1.425
+Monster Movement Speed Multiplier|1.425
+Monster Rotation Speed Multiplier|1.425
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|1.5
-Brute Chase Speed Buff Rate|1
-Fiend Flicker Minimum Range|1
-Fiend Flicker Medium Range|1
-Fiend Flicker Maximum Range|6
+Brute Chase Speed Buff Multiplier|2.85
+Brute Chase Speed Buff Rate|1.425
+Fiend Flicker Minimum Range|0.3
+Fiend Flicker Medium Range|1.5
+Fiend Flicker Maximum Range|7.5
 Give All Monsters A Fiend Aura|True
 Dark Ship|True
+Powerable Lights|True
 Foggy Ship|True
-Fog Near Distance|20
-Fog Far Distance|30
+Fog Near Distance|5
+Fog Far Distance|50
+Fog Density|1.875
 No Time Freeze In Pause Menu|True
+Hide Task Notifications|True
+Overpowered Hiding Spots|True
+Helicopter Fuel Time|9
+Submersible Charge Time|12
+Escape Conditions|1
+Inventory Size|4
 Player Movement Speed Multiplier|1.5
-Custom Player Scale|0.85
-Extended Jump Cooldown|True
+Custom Player Scale|0.8
 Disable Running|True
-Infinite Flashlight Power|True
-Flashlight Intensity Multiplier|2
-Flashlight Range Multiplier|3
-Glowstick Range Multiplier|4
+Pre-fill Start Region Fuse Box|False
+Pre-fill Liferaft Fuse Box|False
+Use Deck Four On Submersible Side|True
+Spawn Additional Engine Room Workshops|True
+Aggressive Workshop Spawning|True
+Number Of Corridors To Cargo Hold From Deck Three|2
+Lengthened Cargo Hold Corridors|True
+Diverse Item Spawns|True
+Brute Light Colour Red Component|255
+Brute Light Colour Green Component|0
+Brute Light Colour Blue Component|0
+Brute Light Intensity Multiplier|2.75
+Brute Light Range Multiplier|1.25
+Flashlight Intensity Multiplier|1.75
+Flashlight Range Multiplier|3.5
+Glowstick Colour Red Component|125
+Glowstick Colour Green Component|75
+Glowstick Colour Blue Component|0
+Glowstick Range Multiplier|2.75
+Ship Generic Lights Colour Red Component|50
+Ship Generic Lights Colour Green Component|0
+Ship Generic Lights Colour Blue Component|0
+Ship Generic Lights Intensity Multiplier|1.15
+Ship Generic Lights Range Multiplier|1.15
+Fog Colour Red Component|0
+Fog Colour Green Component|0
+Fog Colour Blue Component|0
