@@ -1,30 +1,28 @@
 Name|Insane Mode
 Author|Ink
-Difficulty|6
-Description|The game against a random monster of the "Insane" difficulty variant.
-Version|6.1 Indev
+Difficulty|7
+Description|This challenge gives you the opportunity to play against one of 3 strengthened (insane) monsters from the other challenges.
+Version|6.0
 Setting|Custom Value
-Number of Random Monsters|1
-Maximum Monster Spawntime (seconds)|30
-Monster Animation Speed Multiplier|1.5
-Monster Movement Speed Multiplier|1.5
-Monster Rotation Speed Multiplier|1.5
+Monster Animation Speed Multiplier|1.4
+Monster Movement Speed Multiplier|1.4
+Monster Rotation Speed Multiplier|1.4
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|1.5
-Brute Chase Speed Buff Rate|1.5
+Brute Chase Speed Buff Multiplier|1.4
+Brute Chase Speed Buff Rate|1
 Brute Fire Shroud|True
 Fire Shroud Radius|1.5
-Fire Blast Radius|0
-Hunter Maximum Cooldown Time Multiplier|0.25
+Fire Blast Radius|1
+Brute Long Range Wander Speed Buff|True
+Brute Long Range Wander Speed Buff Multiplier|2
+Quiet Hunter|True
 Overpowered Hunter|True
-Fiend Flicker Minimum Range|1.5
-Fiend Flicker Medium Range|2.25
+Fiend Flicker Minimum Range|1
+Fiend Flicker Medium Range|2
 Fiend Flicker Maximum Range|3
-Fiend Mind Attack Damage Multiplier|3
+Fiend Mind Attack Damage Multiplier|100
 Fiend Mind Attack Attack Timer Charge Rate|5
-Fiend Mind Attack Attack Timer Decay Rate|0.25
-Fiend Mind Attack Delay Timer Rate|5
-Camera Timer|1
+Extended Jump Cooldown|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

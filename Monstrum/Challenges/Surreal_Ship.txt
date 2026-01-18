@@ -1,68 +1,26 @@
 Name|Surreal Ship
 Author|Ink
-Difficulty|6
-Description|Welcome to the Surreal Ship, the most accurate embodiment of Hisa Maru from dreams. Follow certain rules and maybe you can escape:\n1. Do not attempt to go beyond the bow or stern of the ship.\n2. Avoid spatial anomalies.\n2. Don't try to jump on the ceiling of any rooms.\n4. Don't fall into the ocean.
-Version|6.1 Indev
+Difficulty|4
+Description|Welcome to the surreal ship, arrived from somewhere in the wilds of dreams. Avoid spatial anomalies and try not to get lost in such a wrong and dangerous ship.
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
-Force Many Monsters Mode|True
-Maximum Monster Spawntime (seconds)|45
-No Monster Stun Immunity|True
-Monster Animation Speed Multiplier|1.35
-Monster Movement Speed Multiplier|1.35
-Monster Rotation Speed Multiplier|1.35
-Varying Monster Sizes|True
-Brute Long Range Wander Speed Buff|True
-Fiend Door Teleportation|True
-Apply Door Teleportation To All Monsters|True
-Item Monster Frenzy|True
-Monster Spawning Limit|4
-Foggy Ship|True
-Fog Near Distance|125
-Fog Far Distance|250
-No Time Freeze In Pause Menu|True
-Hide Reticule|True
-Hide Task Notifications|True
-Helicopter Fuel Time|9
-Submersible Charge Time|12
-Unlock Player Head|True
-Flares Teleport Monsters|True
-Fire Duration Multiplier|0.75
-Looping Radio|False
-Unsmashables|True
-Add Smoke Grenade|True
-Smoke Grenade Duration|45
-Add Molotov|True
-Molotov Duration|10
-Spawn Deactivated Items|True
-Camera Timer|1
-Pre-fill Liferaft Fuse Box|False
-No Starter Fuse|True
+Monster Animation Speed Multiplier|1.33
+Monster Movement Speed Multiplier|1.33
+Monster Rotation Speed Multiplier|1.33
 Overpowered Steam Vents|True
 Add Additional Crew Deck Building|True
 Use Deck Four On Submersible Side|True
 Extend Lower Decks|True
 Spawn Additional Engine Room Workshops|True
 Aggressive Workshop Spawning|True
-Number Of Corridors To Cargo Hold From Deck Three|1
-Lengthened Cargo Hold Corridors|True
-Add Lower Deck Next To Engine Room|True
 Add Deck Zero|True
-Shuffled Regions|True
-Number Of Shuffles|2
 Extend Map|True
 Extend Map Additively|True
-Diverse Item Spawns|True
-Random Brute Light Colours|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2
 Glowstick Range Multiplier|2
-Ship Generic Lights Intensity Multiplier|1.125
-Ship Generic Lights Range Multiplier|1.125
-Random Ship Generic Light Colours|True
-Fog Colour Red Component|0
-Fog Colour Green Component|0
-Fog Colour Blue Component|0
+Do Not Pre-Render Monsters|True
 Disable Monster Particles|True

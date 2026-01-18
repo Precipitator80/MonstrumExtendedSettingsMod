@@ -1773,6 +1773,22 @@ namespace MonstrumExtendedSettingsMod
                     //SmokeMonster.SmokeMonsterAfterGenerationInitialisation();
                 }
 
+                if (noBarricadedDoors)
+                {
+                    Room[] rooms = LevelGeneration.Instance.RoomsInUse.ToArray();
+                    foreach (Room room in rooms)
+                    {
+                        Door[] doors = room.roomDoors.ToArray();
+                        foreach (Door door in doors)
+                        {
+                            if (door.DoorType == Door.doorType.Barricaded)
+                            {
+                                door.RipOffDoor2();
+                            }
+                        }
+                    }
+                }
+
                 if (debugMode)
                 {
                     if (noclip)
@@ -2260,11 +2276,11 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                if (noDoors || noBarricadedDoors)
+                if (noDoors)
                 {
                     foreach (Door door in FindObjectsOfType<Door>())
                     {
-                        if (door.attached && (noDoors && door.DoorType != Door.doorType.Sealed || noBarricadedDoors && door.DoorType == Door.doorType.Barricaded))
+                        if (door.attached && door.DoorType != Door.doorType.Sealed)
                         {
                             door.RipOffDoor2();
                         }

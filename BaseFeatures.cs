@@ -332,47 +332,6 @@ namespace MonstrumExtendedSettingsMod
 
                 // Fuse Box Pre-fill Settings
                 Utilities.HookIterator<FuseBoxManager>("<OnGenerationComplete>c__Iterator0", HookFuseBoxManagerOnGenerationComplete);
-
-                On.AudioLibrary.GetNext += new On.AudioLibrary.hook_GetNext(HookAudioLibraryGetNext);
-                On.WeightedSelection.Choose += new On.WeightedSelection.hook_Choose(HookWeightedSelectionChoose);
-            }
-
-
-            private static AudioClip HookAudioLibraryGetNext(On.AudioLibrary.orig_GetNext orig, AudioLibrary audioLibrary)
-            {
-                audioLibrary.volumeRandomness = 0f;
-                audioLibrary.granularRandomness = 0f;
-                audioLibrary.pitchRandomness = 0f;
-                audioLibrary.startGranular = 0f;
-                audioLibrary.startPitch = 0f;
-                audioLibrary.startVolume = 0f;
-                if (LevelGeneration.Instance == null || !LevelGeneration.Instance.finishedGenerating && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainSecondary" && audioLibrary.clips.Count > 0)
-                {
-                    return audioLibrary.clips[0];
-                }
-                return orig.Invoke(audioLibrary);
-            }
-
-
-            private static GameObject HookWeightedSelectionChoose(On.WeightedSelection.orig_Choose orig, WeightedSelection weightedSelection)
-            {
-                if (!ModSettings.useCustomSeed && !ModSettings.consistentLevelGeneration)
-                {
-                    return orig.Invoke(weightedSelection);
-                }
-
-                // Get the original counts.
-                string origCounts = weightedSelection.CountsToString();
-
-                // Clear the counts to keep RNG the same.
-                weightedSelection.counts.Clear();
-                var result = orig.Invoke(weightedSelection);
-
-                // Save the original counts.
-                PlayerPrefs.SetString(weightedSelection.playerPrefIdentifier, origCounts);
-                PlayerPrefs.Save();
-
-                return result;
             }
 
             /*
@@ -2283,7 +2242,7 @@ namespace MonstrumExtendedSettingsMod
                     if (ModSettings.logDebugText)
                     {
                         Debug.Log("Pre-filling fuse box in region: " + fuseBox.powerRegion);
-                    }
+                }
                     FuseBoxManager.instance.SetupFuse(fuseBox);
                 }
                 yield break;
@@ -2293,13 +2252,13 @@ namespace MonstrumExtendedSettingsMod
             /// Supports dark ship.
             /// </summary>
             private static void HookFuseBoxManagerSetupFuse(On.FuseBoxManager.orig_SetupFuse orig, FuseBoxManager fuseBoxManager, FuseBox _fusebox)
-            {
-                _fusebox.AddFuse();
-                _fusebox.AddPreExistingFuse();
-                // Do not activate the fuse box if using dark ship.
-                if (!ModSettings.darkShip)
                 {
-                    _fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
+                    _fusebox.AddFuse();
+                    _fusebox.AddPreExistingFuse();
+                    // Do not activate the fuse box if using dark ship.
+                    if (!ModSettings.darkShip)
+                    {
+                        _fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
                 }
             }
 
@@ -2839,17 +2798,6 @@ namespace MonstrumExtendedSettingsMod
                 {
                     randomSeed = ModSettings.seed;
                     levelGeneration.levelSeed = ModSettings.seed;
-
-                    var audioLibs = FindObjectsOfType<AudioLibrary>();
-                    foreach (AudioLibrary lib in audioLibs)
-                    {
-                        lib.startGranular = 0f;
-                        lib.startPitch = 0f;
-                        lib.startVolume = 0f;
-                        lib.granularRandomness = 0f;
-                        lib.volumeRandomness = 0f;
-                        lib.pitchRandomness = 0f;
-                    }
                 }
                 Debug.Log("Test Seed: " + randomSeed);
                 if (levelGeneration.levelSeed != 0)

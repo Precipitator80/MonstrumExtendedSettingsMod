@@ -1,22 +1,19 @@
 Name|Hard Fiend
 Author|Ink
 Difficulty|4
-Description|A challenge with a more difficult version of the Fiend, while maintaining the vanilla style of the game. A little more stealth and a greater threat from mind attacks.
-Version|6.1 Indev
+Description|This challenge pits you up against a harder version of the Fiend, with a stronger aura to take you down at range and keep you near when close.
+Version|6.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1
-Maximum Monster Spawntime (seconds)|60
-Monster Animation Speed Multiplier|1.25
-Monster Movement Speed Multiplier|1.25
-Monster Rotation Speed Multiplier|1.25
-Fiend Flicker Minimum Range|2
-Fiend Flicker Medium Range|3
-Fiend Flicker Maximum Range|4
-Fiend Mind Attack Damage Multiplier|2
-Fiend Mind Attack Attack Timer Charge Rate|2.5
+Monster Animation Speed Multiplier|1.2
+Monster Movement Speed Multiplier|1.2
+Monster Rotation Speed Multiplier|1.2
+Fiend Mind Attack Damage Multiplier|1.5
+Fiend Mind Attack Attack Timer Charge Rate|2
 Fiend Mind Attack Attack Timer Decay Rate|0.5
-Fiend Mind Attack Delay Timer Rate|5
+Fiend Mind Attack Delay Timer Rate|0.75
+Give Fiend A Slow Aura|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

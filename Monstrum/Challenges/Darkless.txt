@@ -1,22 +1,27 @@
 Name|Darkless
 Author|Ink
 Difficulty|7
-Description|Welcome to the darkness. Light up 12 glowsticks and hope you can do it before the monster arrives. Who knows when this will happen? SET 10% OF THE GAMMA after leaving the starting room so that the challenge runs according to the original idea. For lighting use a flaregun, which will appear under your feet as soon as you spawn..
+Description|Welcome to the darkness. Light up 12 glowsticks and hope you can do it before the monster awakens. SET 10% OF THE GAMMA after leaving the starting room so that the challenge runs according to the original idea. For lighting use a flaregun, which will appear under your feet as soon as you spawn.
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
 Minimum Monster Spawntime (seconds)|18
 Maximum Monster Spawntime (seconds)|1800
-Monster Animation Speed Multiplier|1.65
-Monster Movement Speed Multiplier|1.65
-Monster Rotation Speed Multiplier|1.65
+Monster Animation Speed Multiplier|2
+Monster Movement Speed Multiplier|2
+Monster Rotation Speed Multiplier|2
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|3.3
-Brute Chase Speed Buff Rate|1.65
+Brute Chase Speed Buff Multiplier|2
+Brute Chase Speed Buff Rate|2
 Dark Ship|True
-Helicopter Fuel Time|9
-Submersible Charge Time|12
+Glowstick Hunt|True
+No Glowstick Hunt Finale|True
+Special Glowsticks Required|12
+Special Glowsticks To Create|100
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
 Flare Lifetime|15
 Spawn With Flare Gun|True
 Overpowered Flare Gun|True
