@@ -94,7 +94,7 @@ namespace MonstrumExtendedSettingsMod
                 On.FiendMindAttack.Update += new On.FiendMindAttack.hook_Update(HookFiendMindAttackUpdate);
                 if (!ModSettings.startedWithMMM)
                 {
-                    On.GlobalMusic.CheckMusicState += new On.GlobalMusic.hook_CheckMusicState(HookGlobalMusic);
+                    On.GlobalMusic.CheckMusicState += new On.GlobalMusic.hook_CheckMusicState(HookGlobalMusicCheckMusicState);
                 }
                 On.MChasingState.StateChanges += new On.MChasingState.hook_StateChanges(HookMChasingStateStateChanges);
                 HookNoClipFixes();
@@ -335,6 +335,9 @@ namespace MonstrumExtendedSettingsMod
 
                 // Custom Music Packs
                 On.GlobalMusic.ChangeVariables += new On.GlobalMusic.hook_ChangeVariables(HookGlobalMusicChangeVariables);
+
+                // Use Wander Theme From Start
+                On.GlobalMusic.Start += new On.GlobalMusic.hook_Start(HookGlobalMusicStart);
             }
 
             /*
@@ -2371,7 +2374,7 @@ namespace MonstrumExtendedSettingsMod
             /// Supports spawn protection. Plays NoAlert music when a player has spawn protection.
             /// This code is only run when MMM is not enabled.
             /// </summary>
-            private static void HookGlobalMusic(On.GlobalMusic.orig_CheckMusicState orig, GlobalMusic globalMusic)
+            private static void HookGlobalMusicCheckMusicState(On.GlobalMusic.orig_CheckMusicState orig, GlobalMusic globalMusic)
             {
                 bool doesAPlayerHaveSpawnProtection = false;
                 for (int i = 0; i < ModSettings.spawnProtection.Count; i++)
@@ -2398,6 +2401,18 @@ namespace MonstrumExtendedSettingsMod
                 if (globalMusic.currentlyPlaying != globalMusic.song)
                 {
                     globalMusic.ChangeVariables(false, true, true, false, 0f);
+                }
+            }
+
+            /// <summary>
+            /// Plays a monster's wander theme from the start of the game rather than hiding it until seeing the monster.
+            /// </summary>
+            private static void HookGlobalMusicStart(On.GlobalMusic.orig_Start orig, GlobalMusic globalMusic)
+            {
+                orig.Invoke(globalMusic);
+                if (ModSettings.useWanderThemeFromStart)
+                {
+                    globalMusic.monsterBeenEncountered = true;
                 }
             }
 

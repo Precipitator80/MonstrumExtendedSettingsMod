@@ -1302,6 +1302,7 @@ namespace MonstrumExtendedSettingsMod
                     disableCustomLoadingText = new MESMSetting<bool>("Disable Custom Loading Screen Text", "The game will not tell you whether the mod is installed correctly during the loading screen. Not recommended", false).userValue;
                     timeScaleMultiplier = new MESMSetting<float>("Timescale", "Can make the game run slower or faster", 1).userValue;
                     musicPack = new MESMSettingMultipleChoice("Custom Music Pack", "Replaces the default game's soundtrack with music from Monstrum 2. Pack 1: Main Menu. Pack 2: Helipad. Pack 3: Moon Pool. Pack 4: Hisa Maru. Random: Randomly choose one custom pack to use. All: Switch the pack used after each chase", "Default", new string[] { "Default", "1", "2", "3", "4", "Random", "All" }).userValue;
+useWanderThemeFromStart = new MESMSetting<bool>("Use Wander Theme From Start", "Uses the monster's wander theme from the very start of the game. This lets a music pack's theme be used from the start of the game without revealing the monster", false).userValue;
                     useMonsterUpdateGroups = new MESMSetting<bool>("Use Monster Update Groups", "Divide multiple monster AIs up into several update groups, where only one group of monster AIs is updated fully per frame. Can significantly decrease CPU usage at the cost of reducing how often monster AIs update. Maximum number of groups is equal to the number of monsters being used. Very high values may actually decrease performance", false).userValue;
                     NumberOfMonsterUpdateGroups = new MESMSetting<int>("Number Of Monster Update Groups", "The number of monster update groups to use", 10, true, true).userValue;
                     doNotPreRenderMonsters = new MESMSetting<bool>("Do Not Pre-Render Monsters", "Can increase performance but can also cause monsters to be invisible for a short time when first coming into view of the player", false).userValue;
@@ -3883,6 +3884,7 @@ namespace MonstrumExtendedSettingsMod
             public static float timeScaleMultiplier;
             public static string musicPack;
             public static List<AudioClip> customAudioClips;
+            public static bool useWanderThemeFromStart;
             public static bool useMonsterUpdateGroups;
             private static int numberOfMonsterUpdateGroups;
             public static bool doNotPreRenderMonsters;
