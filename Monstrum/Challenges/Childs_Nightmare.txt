@@ -1,62 +1,66 @@
 Name|Child's Nightmare
 Author|Ink
-Difficulty|8
+Difficulty|9
 Description|Welcome to the Child's Nightmare.\nLess than 40% gamma is highly recommended.
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
-Maximum Monster Spawntime (seconds)|45
-Monster Animation Speed Multiplier|1.425
-Monster Movement Speed Multiplier|1.425
-Monster Rotation Speed Multiplier|1.425
+Maximum Monster Spawntime (seconds)|5
+Monster Animation Speed Multiplier|1.666
+Monster Movement Speed Multiplier|1.666
+Monster Rotation Speed Multiplier|1.666
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|2.85
-Brute Chase Speed Buff Rate|1.425
-Fiend Flicker Minimum Range|0.3
-Fiend Flicker Medium Range|1.5
-Fiend Flicker Maximum Range|7.5
+Brute Chase Speed Buff Multiplier|1.666
+Brute Chase Speed Buff Rate|1.666
+Brute Long Range Wander Speed Buff|True
+Brute Long Range Wander Speed Buff Multiplier|1.666
+Fiend Flicker Minimum Range|0.09
+Fiend Flicker Medium Range|0.9
+Fiend Flicker Maximum Range|9
+Fiend Door Teleportation|True
+Apply Door Teleportation To All Monsters|True
 Give All Monsters A Fiend Aura|True
+Give All Monsters A Smoke Shroud|True
+Smoke Shroud Radius|6
+Smoke Shroud Radius Danger Factor|0.125
 Dark Ship|True
 Powerable Lights|True
 Foggy Ship|True
-Fog Near Distance|5
-Fog Far Distance|50
-Fog Density|1.875
-No Time Freeze In Pause Menu|True
-Hide Task Notifications|True
-Overpowered Hiding Spots|True
-Helicopter Fuel Time|9
-Submersible Charge Time|12
+Fog Near Distance|10
+Fog Far Distance|300
+Fog Density|0.25
+Smoky Ship|True
+Breath Recovery|0.5
+Smoke Shroud Breath Drain|1.25
+Smoke Corridor Breath Drain|0.5
+Helicopter Fuel Time|2
+Submersible Charge Time|3
 Escape Conditions|1
-Inventory Size|4
-Player Movement Speed Multiplier|1.5
+Inventory Size|3
+Player Movement Speed Multiplier|1.35
 Custom Player Scale|0.8
+Extended Jump Cooldown|True
 Disable Running|True
+Infinite Flashlight Power|True
 Pre-fill Start Region Fuse Box|False
 Pre-fill Liferaft Fuse Box|False
 Use Deck Four On Submersible Side|True
 Spawn Additional Engine Room Workshops|True
-Aggressive Workshop Spawning|True
 Number Of Corridors To Cargo Hold From Deck Three|2
 Lengthened Cargo Hold Corridors|True
+Add Lower Deck Next To Engine Room|True
 Diverse Item Spawns|True
-Brute Light Colour Red Component|255
-Brute Light Colour Green Component|0
-Brute Light Colour Blue Component|0
-Brute Light Intensity Multiplier|2.75
-Brute Light Range Multiplier|1.25
-Flashlight Intensity Multiplier|1.75
-Flashlight Range Multiplier|3.5
-Glowstick Colour Red Component|125
-Glowstick Colour Green Component|75
-Glowstick Colour Blue Component|0
-Glowstick Range Multiplier|2.75
-Ship Generic Lights Colour Red Component|50
-Ship Generic Lights Colour Green Component|0
-Ship Generic Lights Colour Blue Component|0
-Ship Generic Lights Intensity Multiplier|1.15
-Ship Generic Lights Range Multiplier|1.15
-Fog Colour Red Component|0
+Brute Light Colour Red Component|225
+Brute Light Colour Green Component|75
+Brute Light Colour Blue Component|125
+Brute Light Range Multiplier|1.75
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|3
+Glowstick Range Multiplier|4
+Ship Generic Lights Intensity Multiplier|2
+Fog Colour Red Component|15
 Fog Colour Green Component|0
-Fog Colour Blue Component|0
+Fog Colour Blue Component|10
+Custom Music Pack|1
+Use Wander Theme From Start|True

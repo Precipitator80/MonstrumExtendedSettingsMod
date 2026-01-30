@@ -25,7 +25,7 @@ Disable Liferaft|True
 Disable Helicopter|True
 Disable Submersible|True
 Extra Lives|2
-Inventory Size|2
+Inventory Size|3
 Player Movement Speed Multiplier|1.125
 Infinite Flashlight Power|True
 Use Deck Four On Submersible Side|True

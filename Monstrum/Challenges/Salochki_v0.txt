@@ -1,7 +1,7 @@
-Name|Salochki v4
+Name|Salochki v0
 Author|Ink
-Difficulty|6
-Description|There's no time to explain!\nLight up 14 special glowsticks to escape from 1 stealthy Brute!
+Difficulty|3
+Description|There's no time to explain!\nLight up 14 special glowsticks to escape from 1 Brute!
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
@@ -9,10 +9,6 @@ Number of Brutes|1
 Maximum Monster Spawntime (seconds)|1
 Persistent Monster|True
 Seer Monster|True
-Silent Monster|True
-Monster Animation Speed Multiplier|1.2
-Monster Movement Speed Multiplier|1.2
-Monster Rotation Speed Multiplier|2.4
 Glowstick Hunt|True
 Special Glowsticks Required|14
 Special Glowsticks To Create|24
@@ -35,6 +31,4 @@ Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2
 Glowstick Range Multiplier|2
-Do Not Pre-Render Monsters|True
-Do Not Render Brute's Light|True
 Custom Music Pack|3

@@ -1,15 +1,15 @@
-Name|Blind Beast+
+Name|Blind Beast Prime
 Author|Ink
-Difficulty|8
-Description|Enraged by your previous escape, the blind beast has tuned its senses, drawing power from the darkness and hunting with much more speed than before.
+Difficulty|10
+Description|The Blind Beast is back, and it's more eager to tear you apart than ever. Good luck.
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
-Maximum Monster Spawntime (seconds)|60
-Monster Animation Speed Multiplier|2
-Monster Movement Speed Multiplier|1.5
-Monster Rotation Speed Multiplier|2
+Maximum Monster Spawntime (seconds)|30
+Monster Animation Speed Multiplier|2.5
+Monster Movement Speed Multiplier|2
+Monster Rotation Speed Multiplier|2.5
 Brute Chase Speed Buff|True
 Brute Chase Speed Buff Multiplier|3
 Brute Chase Speed Buff Rate|1.5
@@ -24,6 +24,8 @@ Monster Vision Affected By Fog|True
 Disable Liferaft|True
 Disable Helicopter|True
 Disable Submersible|True
+Escape Conditions|1
+Gravity Y Acceleration|-14.715
 Player Stamina Mode|True
 Player Stamina Mode Stamina Duration|5
 Player Stamina Mode Stamina Penalty|100
@@ -33,8 +35,10 @@ Player Movement Speed Multiplier|1.25
 Extended Jump Cooldown|True
 Infinite Flashlight Power|True
 Starter Room Region|Upper Deck
+Pre-fill Start Region Fuse Box|False
+Pre-fill Liferaft Fuse Box|False
 Flashlight Intensity Multiplier|2
 Glowstick Intensity Multiplier|0.25
-Do Not Render Brute's Light|True
 Custom Music Pack|1
 Use Wander Theme From Start|True
+Do Not Render Brute's Light|True

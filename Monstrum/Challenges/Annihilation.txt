@@ -15,7 +15,7 @@ Apply Chase Speed Buff To All Monsters|True
 Helicopter Fuel Time|2
 Submersible Charge Time|3
 Escape Conditions|1
-Gravity Y Acceleration|-15
+Gravity Y Acceleration|-14.715
 Extended Jump Cooldown|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2

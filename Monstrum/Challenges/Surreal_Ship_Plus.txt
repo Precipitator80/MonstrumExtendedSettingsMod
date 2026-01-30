@@ -1,24 +1,25 @@
 Name|Surreal Ship+
 Author|Ink
 Difficulty|10
-Description|Welcome to the Surreal Ship, the most accurate embodiment of Hisa Maru from dreams. Follow one single rule and maybe you can escape:\n1. DONT RISK
+Description|Welcome to the Surreal Ship, the most accurate embodiment of Hisa Maru from dreams. Follow one single rule and maybe you can escape: DONT RISK
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
-Number of Brutes|1
+Number of Brutes|3
 Force Many Monsters Mode|True
-Maximum Monster Spawntime (seconds)|15
+Maximum Monster Spawntime (seconds)|1
 No Monster Stun Immunity|True
-Monster Animation Speed Multiplier|1.7
-Monster Movement Speed Multiplier|1.7
-Monster Rotation Speed Multiplier|1.7
+Monster Animation Speed Multiplier|1.75
+Monster Movement Speed Multiplier|1.75
+Monster Rotation Speed Multiplier|1.75
 Varying Monster Sizes|True
 Brute Long Range Wander Speed Buff|True
-Brute Long Range Wander Speed Buff Multiplier|1.7
+Brute Long Range Wander Speed Buff Multiplier|1.75
 Fiend Door Teleportation|True
 Apply Door Teleportation To All Monsters|True
 Item Monster Frenzy|True
-Monster Spawning Limit|4
+Monster Spawn Speedrun|180
+Monster Spawning Limit|3
 Foggy Ship|True
 Fog Near Distance|125
 Fog Far Distance|250
@@ -28,7 +29,7 @@ Hide Task Notifications|True
 Helicopter Fuel Time|9
 Submersible Charge Time|12
 Escape Conditions|1
-Gravity Y Acceleration|-15
+Gravity Y Acceleration|-14.715
 Unlock Player Head|True
 Extended Jump Cooldown|True
 Flares Teleport Monsters|True
@@ -53,11 +54,10 @@ Number Of Corridors To Cargo Hold From Deck Three|1
 Lengthened Cargo Hold Corridors|True
 Add Lower Deck Next To Engine Room|True
 Add Deck Zero|True
-Shuffled Regions|True
-Number Of Shuffles|2
 Extend Map|True
 Extend Map Additively|True
 Diverse Item Spawns|True
+Brute Light Intensity Multiplier|2
 Random Brute Light Colours|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
@@ -69,6 +69,6 @@ Random Ship Generic Light Colours|True
 Fog Colour Red Component|0
 Fog Colour Green Component|0
 Fog Colour Blue Component|0
-Disable Monster Particles|True
 Custom Music Pack|4
 Use Wander Theme From Start|True
+Disable Monster Particles|True

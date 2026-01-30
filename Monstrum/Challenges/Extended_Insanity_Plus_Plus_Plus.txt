@@ -29,7 +29,7 @@ Fiend Flicker Minimum Range|2
 Fiend Flicker Medium Range|2.025
 Fiend Flicker Maximum Range|2.05
 Fiend Mind Attack Damage Multiplier|100
-Fiend Mind Attack Attack Timer Charge Rate|10
+Fiend Mind Attack Attack Timer Charge Rate|12.5
 Fiend Mind Attack Attack Timer Decay Rate|0
 Fiend Door Teleportation|True
 Sparky Max Movement Speed Factor Increase From Buff|0.5

@@ -1,0 +1,27 @@
+Name|Extinguished Ship
+Author|Ink
+Difficulty|10
+Description|The game against 5 Insane Fiends.
+Version|6.1 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Fiends|5
+Maximum Monster Spawntime (seconds)|30
+Monster Animation Speed Multiplier|1.5
+Monster Movement Speed Multiplier|1.5
+Monster Rotation Speed Multiplier|1.5
+Fiend Flicker Minimum Range|1.5
+Fiend Flicker Medium Range|2.25
+Fiend Flicker Maximum Range|3
+Fiend Mind Attack Damage Multiplier|3
+Fiend Mind Attack Attack Timer Charge Rate|5
+Fiend Mind Attack Attack Timer Decay Rate|0.25
+Fiend Mind Attack Delay Timer Rate|5
+Helicopter Fuel Time|2
+Submersible Charge Time|3
+Escape Conditions|1
+Camera Timer|1
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

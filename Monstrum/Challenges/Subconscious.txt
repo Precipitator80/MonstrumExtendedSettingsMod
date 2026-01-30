@@ -1,7 +1,7 @@
 Name|Subconscious
 Author|Ink
 Difficulty|10
-Description|The Fiend has imprisoned you in your subconscious, where a mind distorted by pain has embodied an image of the Hisa Maru, while a familiar image of a mysterious beast longs to drag you into the abyss.\n\nThe flashlight is located under the bed.\nMake sure that low gamma and fog are enabled in the settings.
+Description|The Fiend has imprisoned you in your subconscious, where a mind distorted by pain has embodied an image of the Hisa Maru, while a familiar image of a mysterious beast longs to drag you into the abyss.\n\nThe flashlight is located under the bed (by the way, don't try to hide under the bed).\nMake sure that low gamma and fog are enabled in the settings.
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
@@ -20,8 +20,8 @@ Apply Door Teleportation To All Monsters|True
 Dark Ship|True
 Glowstick Hunt|True
 No Glowstick Hunt Finale|True
-Special Glowsticks Required|1
-Special Glowsticks To Create|1
+Special Glowsticks Required|10
+Special Glowsticks To Create|20
 Foggy Ship|True
 Fog Near Distance|0.25
 Fog Far Distance|75
@@ -29,11 +29,12 @@ Fog Density|0.75
 Hide Reticule|True
 Hide Inventory|True
 Hide Task Notifications|True
-Helicopter Fuel Time|2
-Submersible Charge Time|3
-Escape Conditions|1
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
+Escape Conditions|3
 Gravity X Acceleration|20
-Gravity Y Acceleration|-5
+Gravity Y Acceleration|-10
 Inventory Size|15
 Extended Jump Cooldown|True
 Infinite Flashlight Power|True
@@ -44,16 +45,17 @@ Add Smoke Grenade|True
 Starter Room Region|Upper Deck
 No Cameras|True
 No Steam|True
+Pre-fill Liferaft Fuse Box|False
 Pre-fill Engine Room Fuse Box|True
-Pre-fill Liferaft Fuse Box|false
 Use Deck Four On Submersible Side|True
 Lengthened Cargo Hold Corridors|True
 Add Lower Deck Next To Engine Room|True
-Number Of Corridors To Cargo Hold From New Lower Deck|2
+Diverse Item Spawns|True
+Spawn Items Anywhere|True
 No Pit Traps|True
-Brute Light Colour Red Component|200
-Brute Light Colour Green Component|200
-Brute Light Colour Blue Component|200
+Brute Light Colour Red Component|250
+Brute Light Colour Green Component|250
+Brute Light Colour Blue Component|250
 Brute Light Intensity Multiplier|25
 Brute Light Range Multiplier|25
 Flashlight Colour Red Component|255
@@ -71,6 +73,6 @@ Ship Generic Lights Colour Blue Component|50
 Fog Colour Red Component|75
 Fog Colour Green Component|75
 Fog Colour Blue Component|75
-Disable Monster Particles|True
 Custom Music Pack|1
 Use Wander Theme From Start|True
+Disable Monster Particles|True
