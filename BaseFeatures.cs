@@ -47,6 +47,9 @@ namespace MonstrumExtendedSettingsMod
 
                 // Monster Selection, Seed, Starter Room Location & Wallhacks Mode
                 HookLevelGeneration();
+                On.AudioLibrary.GetNext += new On.AudioLibrary.hook_GetNext(HookAudioLibraryGetNext);
+                On.WeightedSelection.LoadCounts += new On.WeightedSelection.hook_LoadCounts(HookWeightedSelectionLoadCounts);
+                On.WeightedSelection.SaveCounts += new On.WeightedSelection.hook_SaveCounts(HookWeightedSelectionSaveCounts);
 
                 // Monster Animation Speed Multiplier
                 On.AnimationControl.Start += new On.AnimationControl.hook_Start(HookAnimationControlStart);
@@ -1089,6 +1092,19 @@ namespace MonstrumExtendedSettingsMod
             {
                 orig.Invoke(animationControl);
                 animationControl.monsterAnimation.speed = ModSettings.monsterAnimationSpeedMultiplier;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @AudioLibrary
+
+            private static AudioClip HookAudioLibraryGetNext(On.AudioLibrary.orig_GetNext orig, AudioLibrary audioLibrary)
+            {
+                // Do not play any more audio during level generation as RNG is used to randomise granularity and clip selection.
+                if ((ModSettings.useCustomSeed || ModSettings.consistentLevelGeneration) && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainSecondary" && (LevelGeneration.Instance == null || !LevelGeneration.Instance.finishedGenerating))
+                {
+                    return null;
+                }
+                return orig.Invoke(audioLibrary);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -2248,7 +2264,7 @@ namespace MonstrumExtendedSettingsMod
                     if (ModSettings.logDebugText)
                     {
                         Debug.Log("Pre-filling fuse box in region: " + fuseBox.powerRegion);
-                }
+                    }
                     FuseBoxManager.instance.SetupFuse(fuseBox);
                 }
                 yield break;
@@ -2258,13 +2274,13 @@ namespace MonstrumExtendedSettingsMod
             /// Supports dark ship.
             /// </summary>
             private static void HookFuseBoxManagerSetupFuse(On.FuseBoxManager.orig_SetupFuse orig, FuseBoxManager fuseBoxManager, FuseBox _fusebox)
+            {
+                _fusebox.AddFuse();
+                _fusebox.AddPreExistingFuse();
+                // Do not activate the fuse box if using dark ship.
+                if (!ModSettings.darkShip)
                 {
-                    _fusebox.AddFuse();
-                    _fusebox.AddPreExistingFuse();
-                    // Do not activate the fuse box if using dark ship.
-                    if (!ModSettings.darkShip)
-                    {
-                        _fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
+                    _fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
                 }
             }
 
@@ -8687,6 +8703,25 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /*----------------------------------------------------------------------------------------------------*/
+            // @WeightedSelection
+
+            private static string HookWeightedSelectionLoadCounts(On.WeightedSelection.orig_LoadCounts orig, WeightedSelection weightedSelection)
+            {
+                if (!ModSettings.useCustomSeed && !ModSettings.consistentLevelGeneration)
+                {
+                    orig.Invoke(weightedSelection);
+                }
+                return string.Empty;
+            }
+
+            private static void HookWeightedSelectionSaveCounts(On.WeightedSelection.orig_SaveCounts orig, WeightedSelection weightedSelection)
+            {
+                if (!ModSettings.useCustomSeed && !ModSettings.consistentLevelGeneration)
+                {
+                    orig.Invoke(weightedSelection);
+                }
+            }
         }
     }
 }
