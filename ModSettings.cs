@@ -1301,6 +1301,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                     disableCustomLoadingText = new MESMSetting<bool>("Disable Custom Loading Screen Text", "The game will not tell you whether the mod is installed correctly during the loading screen. Not recommended", false).userValue;
                     timeScaleMultiplier = new MESMSetting<float>("Timescale", "Can make the game run slower or faster", 1).userValue;
+                    musicPack = new MESMSettingMultipleChoice("Custom Music Pack", "Replaces the default game's soundtrack with music from Monstrum 2. Pack 1: Main Menu. Pack 2: Helipad. Pack 3: Moon Pool. Pack 4: Hisa Maru. Random: Randomly choose one custom pack to use. All: Switch the pack used after each chase", "Default", new string[] { "Default", "1", "2", "3", "4", "Random", "All" }).userValue;
                     useMonsterUpdateGroups = new MESMSetting<bool>("Use Monster Update Groups", "Divide multiple monster AIs up into several update groups, where only one group of monster AIs is updated fully per frame. Can significantly decrease CPU usage at the cost of reducing how often monster AIs update. Maximum number of groups is equal to the number of monsters being used. Very high values may actually decrease performance", false).userValue;
                     NumberOfMonsterUpdateGroups = new MESMSetting<int>("Number Of Monster Update Groups", "The number of monster update groups to use", 10, true, true).userValue;
                     doNotPreRenderMonsters = new MESMSetting<bool>("Do Not Pre-Render Monsters", "Can increase performance but can also cause monsters to be invisible for a short time when first coming into view of the player", false).userValue;
@@ -2271,6 +2272,8 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
+                AssignCustomMusic();
+
                 Physics.gravity = new Vector3(gravityXComponent, gravityYComponent, gravityZComponent);
 
                 // Track the number of fuses added for escape conditions.
@@ -2281,6 +2284,127 @@ namespace MonstrumExtendedSettingsMod
 
                 Debug.Log("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
+            }
+
+            public static void AssignCustomMusic()
+            {
+                try
+                {
+                    if (customAudioClips == null)
+                    {
+                        UnityEngine.Object[] assetBundleObjects = Utilities.LoadAssetBundle("monstrumtwomusicpack");
+                        try
+                        {
+                            foreach (UnityEngine.Object audioClip in assetBundleObjects)
+                            {
+                                Debug.Log("Audio clip object from asset bundle is called " + audioClip.name + " and has type " + audioClip.GetType());
+
+                                try
+                                {
+                                    if (customAudioClips == null)
+                                    {
+                                        customAudioClips = new List<AudioClip>();
+                                    }
+                                    customAudioClips.Add((AudioClip)audioClip);
+                                }
+                                catch (Exception e)
+                                {
+                                    Debug.Log("Error while loading Audio clips:\n" + e.ToString());
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            Debug.Log("Error when trying to analyse objects from Custom Music Asset Bundle");
+                        }
+                    }
+                }
+                catch
+                {
+                    Debug.Log("Error assigning Custom Music Asset Bundle");
+                }
+
+                if (customAudioClips != null && !musicPack.Equals("Default"))
+                {
+                    int musicPackNumber = 1;
+                    switch (musicPack)
+                    {
+                        case "Random":
+                        case "All":
+                            musicPackNumber = UnityEngine.Random.Range(1, 5);
+                            break;
+                        default:
+                            if (int.TryParse(musicPack, out int parsed))
+                            {
+                                musicPackNumber = parsed;
+                            }
+                            break;
+                    }
+
+                    Debug.Log($"Assigning custom music to be from music pack {musicPackNumber}.");
+
+                    List<string> monsterNames = new List<string> { "Brute", "Hunter", "Fiend" };
+                    if (customSparkyMusic)
+                    {
+                        monsterNames.Add("Sparky");
+                    }
+
+                    foreach (AudioClip audioClip in customAudioClips)
+                    {
+                        Debug.Log("Processing audio clip: " + audioClip.name);
+
+                        string path = "Music/";
+                        if (audioClip.name.Equals($"Ost{musicPackNumber}_ChaseCool"))
+                        {
+                            path += "Cooldown";
+                        }
+                        else if (audioClip.name.Equals($"Ost{musicPackNumber}_ChaseLoop"))
+                        {
+                            path += "HighAlert";
+                        }
+                        else if (audioClip.name.Equals($"Ost{musicPackNumber}_HideCool"))
+                        {
+                            path += "Cooldown/AfterHide";
+                        }
+                        else if (audioClip.name.Equals($"Ost{musicPackNumber}_HideLoop"))
+                        {
+                            path += "Hiding";
+                        }
+                        else if (audioClip.name.Equals($"Ost{musicPackNumber}_WanderLoop"))
+                        {
+                            path += "NoAlert";
+                        }
+                        else
+                        {
+                            continue;
+                        }
+
+                        Debug.Log($"Setting {path} music to be custom music from pack {musicPackNumber}.");
+
+                        foreach (string monsterName in monsterNames)
+                        {
+                            OverrideLibrary($"{path}/{monsterName}", audioClip);
+
+                            // Also make a sub theme for the high alert theme.
+                            if (path.Contains("HighAlert"))
+                            {
+                                OverrideLibrary($"Music/SubEvent/{monsterName}", audioClip);
+                            }
+                        }
+                    }
+                }
+            }
+
+            private static void OverrideLibrary(string path, AudioClip audioClip)
+            {
+                var library = AudioSystem.GetLibraryFromName(path);
+                if (library == null)
+                {
+                    Debug.Log("Failed to find library by name: " + path);
+                    return;
+                }
+                library.clips.Clear();
+                library.clips.Add(audioClip);
             }
 
             static bool StandardRoom(Room room)
@@ -3757,6 +3881,8 @@ namespace MonstrumExtendedSettingsMod
             public static bool skippedMenuScreen; // Variable to stop the game from skipping the menu screen after initial loadup.
             public static bool disableCustomLoadingText;
             public static float timeScaleMultiplier;
+            public static string musicPack;
+            public static List<AudioClip> customAudioClips;
             public static bool useMonsterUpdateGroups;
             private static int numberOfMonsterUpdateGroups;
             public static bool doNotPreRenderMonsters;

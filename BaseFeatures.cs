@@ -332,6 +332,9 @@ namespace MonstrumExtendedSettingsMod
 
                 // Fuse Box Pre-fill Settings
                 Utilities.HookIterator<FuseBoxManager>("<OnGenerationComplete>c__Iterator0", HookFuseBoxManagerOnGenerationComplete);
+
+                // Custom Music Packs
+                On.GlobalMusic.ChangeVariables += new On.GlobalMusic.hook_ChangeVariables(HookGlobalMusicChangeVariables);
             }
 
             /*
@@ -2350,6 +2353,19 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @GlobalMusic
+
+            /// <summary>
+            /// Supports the custom music pack "All" setting that switches between packs after each chase.
+            /// </summary>
+            private static void HookGlobalMusicChangeVariables(On.GlobalMusic.orig_ChangeVariables orig, GlobalMusic globalMusic, bool _cooldown, bool _hasCooled, bool _loop, bool _changesong, float _lerp)
+            {
+                // Only switch music pack when using all music packs and the music track is being changed to NoAlert.
+                if (ModSettings.musicPack.Equals("All") && globalMusic.song.Contains("NoAlert"))
+                {
+                    ModSettings.AssignCustomMusic();
+                }
+                orig.Invoke(globalMusic, _cooldown, _hasCooled, _loop, _changesong, _lerp);
+            }
 
             /// <summary>
             /// Supports spawn protection. Plays NoAlert music when a player has spawn protection.
