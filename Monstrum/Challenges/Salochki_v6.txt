@@ -1,28 +1,30 @@
-Name|Salochki v3
+Name|Salochki v6
 Author|Ink
 Difficulty|6
-Description|There's no time to explain!\nLight up 14 special glowsticks to escape from a horde of small Brutes!
+Description|There's no time to explain!\nLight up 14 special glowsticks to escape from 1 overpowered, but gracious Brute.
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
-Force Many Monsters Mode|True
-Maximum Monster Spawntime (seconds)|1
+Disable Random Hunter|True
+Disable Random Fiend|True
+Minimum Monster Spawntime (seconds)|14
+Maximum Monster Spawntime (seconds)|15
 Persistent Monster|True
 Seer Monster|True
-Monster Animation Speed Multiplier|0.75
-Monster Rotation Speed Multiplier|1.5
-Custom Monster Scale|0.85
+Monster Animation Speed Multiplier|1.8
+Monster Movement Speed Multiplier|1.8
+Monster Rotation Speed Multiplier|3.6
+Alternating Monsters Mode|True
 Glowstick Hunt|True
 Special Glowsticks Required|14
 Special Glowsticks To Create|24
-Monster Spawn Speedrun|45
-Monster Spawning Limit|9
 No Time Freeze In Pause Menu|True
 No Hiding|True
 Disable Liferaft|True
 Disable Helicopter|True
 Disable Submersible|True
+Extra Lives|2
 Inventory Size|2
 Player Movement Speed Multiplier|1.125
 Infinite Flashlight Power|True
@@ -33,7 +35,10 @@ Number Of Corridors To Cargo Hold From New Lower Deck|2
 Diverse Item Spawns|True
 Spawn Items Anywhere|True
 No Doors|True
-Random Brute Light Colours|True
+Brute Light Colour Red Component|200
+Brute Light Colour Green Component|100
+Brute Light Colour Blue Component|0
+Brute Light Intensity Multiplier|1.75
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

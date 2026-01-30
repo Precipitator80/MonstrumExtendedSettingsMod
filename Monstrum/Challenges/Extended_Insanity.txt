@@ -1,0 +1,29 @@
+Name|Extended Insanity
+Author|Ink
+Difficulty|6
+Description|A complete trio of monsters with classic difficulty variant, including Sparky. Additionally, there are a large number of settings such as new items, updated generation, escape conditions and other features to improve the enjoyment of the gameplay. High degree of replayability.
+Version|6.1 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Number of Hunters|1
+Number of Fiends|1
+Number of Sparkies|1
+Add Sparky To The Game|True
+Use Indev Sparky Model|True
+Escape Conditions|1
+Unlock Player Head|True
+Extended Jump Cooldown|True
+Better Smashables|True
+Add Smoke Grenade|True
+Add Molotov|True
+Spawn Deactivated Items|True
+Helicopter Fuel Time|2
+Submersible Charge Time|3
+Use Deck Four On Submersible Side|True
+Spawn Additional Engine Room Workshops|True
+Add Lower Deck Next To Engine Room|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

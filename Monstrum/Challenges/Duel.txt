@@ -26,9 +26,9 @@ Overpowered Flare Gun|True
 Flares Teleport Monsters|True
 Infinite Flashlight Power|True
 Add Smoke Grenade|True
-Pre-fill Start Region Fuse Box|False
-Pre-fill Liferaft Fuse Box|False
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|4
 Glowstick Intensity Multiplier|2
 Glowstick Range Multiplier|3.5
+Custom Music Pack|2
+Use Wander Theme From Start|True

@@ -1,0 +1,11 @@
+Name|The Most Random Challenge
+Author|Ink
+Difficulty|7
+Description|Yea this is definitely the Most Random Challenge
+Version|6.1 Indev
+Setting|Custom Value
+Force Many Monsters Mode|True
+Randomiser Mode|True
+Chaos Multiplier|5
+Use Custom Doors Mode|True
+Custom Music Pack|All

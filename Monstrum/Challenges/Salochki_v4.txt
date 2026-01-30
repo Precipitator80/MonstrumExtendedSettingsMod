@@ -1,23 +1,22 @@
-Name|Salochki v3
+Name|Salochki v4
 Author|Ink
 Difficulty|6
-Description|There's no time to explain!\nLight up 14 special glowsticks to escape from a horde of small Brutes!
+Description|There's no time to explain!\nLight up 14 special glowsticks to escape from 2 fire Brutes!
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
-Number of Brutes|1
-Force Many Monsters Mode|True
+Number of Brutes|2
 Maximum Monster Spawntime (seconds)|1
+No Monster Stun Immunity|True
 Persistent Monster|True
 Seer Monster|True
-Monster Animation Speed Multiplier|0.75
-Monster Rotation Speed Multiplier|1.5
-Custom Monster Scale|0.85
+Brute Fire Shroud|True
+Give All Monsters A Fire Shroud|True
+Fire Shroud Radius|1.25
+Fire Blast Radius|125
 Glowstick Hunt|True
 Special Glowsticks Required|14
 Special Glowsticks To Create|24
-Monster Spawn Speedrun|45
-Monster Spawning Limit|9
 No Time Freeze In Pause Menu|True
 No Hiding|True
 Disable Liferaft|True
@@ -33,7 +32,6 @@ Number Of Corridors To Cargo Hold From New Lower Deck|2
 Diverse Item Spawns|True
 Spawn Items Anywhere|True
 No Doors|True
-Random Brute Light Colours|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

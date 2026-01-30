@@ -1,0 +1,57 @@
+Name|Monstrum Extended+
+Author|Ink
+Difficulty|5
+Description|A random monster of the "Hard" difficulty variant, including Sparky. Additionally, there are a large number of settings such as new items, updated generation, escape conditions and other features to improve the enjoyment of the gameplay. High degree of replayability.
+Version|6.1 Indev
+Setting|Custom Value
+Add Sparky To The Game|True
+Use Indev Sparky Model|True
+Maximum Monster Spawntime (seconds)|60
+Monster Animation Speed Multiplier|1.25
+Monster Movement Speed Multiplier|1.25
+Monster Rotation Speed Multiplier|1.25
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|1.25
+Brute Chase Speed Buff Rate|1.25
+Brute Fire Shroud|True
+Fire Shroud Radius|0
+Fire Blast Radius|12.5
+Hunter Maximum Cooldown Time Multiplier|0.125
+Fiend Flicker Minimum Range|2
+Fiend Flicker Medium Range|3
+Fiend Flicker Maximum Range|4
+Fiend Mind Attack Damage Multiplier|2
+Fiend Mind Attack Attack Timer Charge Rate|2.5
+Fiend Mind Attack Attack Timer Decay Rate|0.5
+Fiend Mind Attack Delay Timer Rate|5
+Sparky Max Movement Speed Factor Increase From Buff|0.25
+Sparky Minimum Lurk Distance|1.6
+Sparky Maximum Super EMP Distance|24
+Sparky Super EMP Charge Time|1.5
+Sparky Maximum Aggro|1.25
+Sparky EMP Minimum Charge Time|25
+Sparky EMP Maximum Charge Time|75
+Sparky EMP Range|10
+Sparky Distant EMP Switch Fail Chance Addition|25
+Region Electric Trap Spawn Chance|50
+Region Electric Trap Slow Factor|0.75
+Region Electric Trap Life Time|5
+Sparky Electric Trap Base Slow Factor|0.75
+Max Trap Slow Factor Decrease From Buff|0.15
+Sparky Electric Trap Base Scale Multiplier|1.125
+Escape Conditions|1
+Unlock Player Head|True
+Extended Jump Cooldown|True
+Better Smashables|True
+Add Smoke Grenade|True
+Add Molotov|True
+Spawn Deactivated Items|True
+Helicopter Fuel Time|8
+Submersible Charge Time|12
+Use Deck Four On Submersible Side|True
+Spawn Additional Engine Room Workshops|True
+Add Lower Deck Next To Engine Room|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

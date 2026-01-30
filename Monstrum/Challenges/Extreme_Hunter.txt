@@ -1,0 +1,30 @@
+Name|Extreme Hunter
+Author|Ink
+Difficulty|8
+Description|An overpowered version of the Hunter. "The behavior pattern of this specimen was modified to a peak level of irritability and aggression, demonstrating extreme persistence in its hunting state."
+Version|6.1 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Hunters|1
+Maximum Monster Spawntime (seconds)|15
+Monster Animation Speed Multiplier|1.75
+Monster Movement Speed Multiplier|1.75
+Monster Rotation Speed Multiplier|1.75
+Hunter Maximum Cooldown Time Multiplier|0.125
+Quiet Hunter|True
+Overpowered Hunter|True
+Aggressive Hunter|True
+Helicopter Fuel Time|9
+Submersible Charge Time|12
+Camera Timer|0
+Pre-fill Liferaft Fuse Box|False
+No Starter Fuse|True
+Brute Light Colour Red Component|250
+Brute Light Colour Green Component|175
+Brute Light Colour Blue Component|50
+Brute Light Intensity Multiplier|2.25
+Brute Light Range Multiplier|1.5
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2
