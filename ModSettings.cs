@@ -6,6 +6,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using System.Text;
+using System.Linq;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -2162,7 +2163,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                     if (smokyShip)
                     {
-                        foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
+                        foreach (PrimaryRegionType primaryRegionType in System.Enum.GetValues(typeof(PrimaryRegionType)))
                         {
                             if (FuseBoxManager.Instance.rooms.ContainsKey(primaryRegionType))
                             {
@@ -2273,7 +2274,27 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                AssignCustomMusic();
+                if (!ModSettings.musicPack.Equals("Default"))
+                {
+                    AssignCustomMusic();
+                }
+
+                // Bodge to remove awkard corner pieces spawned inside SpawnCargoHoldLG.SpawnCargoArea (num5 == 2). 2 => corner.
+                if (ModSettings.experimentalShipExtension)
+                {
+                    foreach (Transform child in SpawnCargoHoldLG.shellParent.transform)
+                    {
+                        Vector3 node = RegionManager.Instance.ConvertPointToRegionNode(child.transform.position);
+                        if (
+                            node.y == 5 &&
+                            (node.x >= 24 && node.x <= 25 || node.x >= 35 && node.x <= 36) &&
+                            (node.z >= 2 && node.z <= 3 || node.z >= 13 && node.z <= 14)
+                        )
+                        {
+                            Destroy(child.gameObject);
+                        }
+                    }
+                }
 
                 Physics.gravity = new Vector3(gravityXComponent, gravityYComponent, gravityZComponent);
 
@@ -3850,7 +3871,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool randomStartRoom;
             public static bool noPitTraps;
             public static bool noDoors;
-            public static bool experimentalShipExtension = false;
+            public static bool experimentalShipExtension = true;
 
 
             // Colour & Light Settings

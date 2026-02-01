@@ -1246,7 +1246,7 @@ namespace MonstrumExtendedSettingsMod
             public void CreateElectricTrapPrefab()
             {
                 regionsElectrified = new Dictionary<PrimaryRegionType, bool>();
-                foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
+                foreach (PrimaryRegionType primaryRegionType in System.Enum.GetValues(typeof(PrimaryRegionType)))
                 {
                     regionsElectrified.Add(primaryRegionType, false);
                 }

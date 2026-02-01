@@ -13,6 +13,7 @@ using SRF;
 
 namespace MonstrumExtendedSettingsMod
 {
+    using Enum;
 
     public partial class ExtendedSettingsModScript
     {
@@ -341,6 +342,1464 @@ namespace MonstrumExtendedSettingsMod
 
                 // Use Wander Theme From Start
                 On.GlobalMusic.Start += new On.GlobalMusic.hook_Start(HookGlobalMusicStart);
+
+                On.SpawnCargoHoldLG.HorizontalOrVerticalWall += new On.SpawnCargoHoldLG.hook_HorizontalOrVerticalWall(HookSpawnCargoHoldLGHorizontalOrVerticalWall);
+
+                // On.SpawnDeckCargoWalls.GenerateDeckCargoBase += new On.SpawnDeckCargoWalls.hook_GenerateDeckCargoBase(HookSpawnDeckCargoWallsGenerateDeckCargoBase);
+
+                On.SpawnDeckCargoWalls.CreateWallPiece += new On.SpawnDeckCargoWalls.hook_CreateWallPiece(HookSpawnDeckCargoWallsCreateWallPiece);
+
+                On.SpawnDeckCargoWalls.GenerateDeckCargoWall += new On.SpawnDeckCargoWalls.hook_GenerateDeckCargoWall(HookSpawnDeckCargoWallsGenerateDeckCargoWall);
+
+                // On.VisibilityData.NearbyRenderer += new On.VisibilityData.hook_NearbyRenderer(HookVisibilityDataNearbyRenderer);
+
+                // On.RenderCuller.OnCulled += new On.RenderCuller.hook_OnCulled(HookRenderCullerOnCulled);
+
+                // On.CullBox.Update += new On.CullBox.hook_Update(HookCullBoxUpdate);
+
+                // On.RealtimeOcclusion2.AllowExpansion += new On.RealtimeOcclusion2.hook_AllowExpansion(HookRealtimeOcclusion2AllowExpansion);
+
+                // On.RealtimeOcclusion2.AllowNewPoint += new On.RealtimeOcclusion2.hook_AllowNewPoint(HookRealtimeOcclusion2AllowNewPoint);
+
+                // //On.BakedOcclusion.LateUpdate += new On.BakedOcclusion.hook_LateUpdate(HookBakedOcclusionLateUpdate);
+
+                // Somewhere in here is culling engine room.
+                // On.RenderCuller.Hide += new On.RenderCuller.hook_Hide(HookRenderCullerHide);
+                // On.RenderCuller.Show += new On.RenderCuller.hook_Show(HookRenderCullerShow);
+
+                // On.RealtimeOcclusion2.Find += new On.RealtimeOcclusion2.hook_Find(HookRealtimeOcclusion2Find);
+
+
+
+                // Utilities.HookIterator<BakedOcclusion>("<Bake>c__Iterator1", HookBakedOcclusionBake);
+
+
+                // On.RealtimeOcclusion2.AddPointToExpandList += new On.RealtimeOcclusion2.hook_AddPointToExpandList(HookRealtimeOcclusion2AddPointToExpandList);
+
+                // On.SpawnCargoHoldLG.CleanFloorJoints += new On.SpawnCargoHoldLG.hook_CleanFloorJoints(HookSpawnCargoHoldLGCleanFloorJoints);
+
+                On.Room.HandleAppendageData += new On.Room.hook_HandleAppendageData(HookRoomHandleAppendageData);
+
+                // On.PositionRoomLG.SetNodeConnections += new On.PositionRoomLG.hook_SetNodeConnections(HookPositionRoomLGSetNodeConnections);
+
+                On.PositionRoomLG.CheckAdjacentNodeForConnection += new On.PositionRoomLG.hook_CheckAdjacentNodeForConnection(HookPositionRoomLGCheckAdjacentNodeForConnection);
+
+                On.Spawn1x1SegmentLG.Generate1x1Segment += new On.Spawn1x1SegmentLG.hook_Generate1x1Segment(HookSpawn1x1SegmentLGGenerate1x1Segment);
+
+            }
+
+            private static void HookSpawn1x1SegmentLGGenerate1x1Segment(On.Spawn1x1SegmentLG.orig_Generate1x1Segment orig, List<Room> _roomsInUse, List<GameObject> _roomPrefabs, RoomStructure _mainRoomType, Vector3 _regionNode, GameObject _parent, List<int> _connectionRegionIDs, List<int> _rotationRegionIDs, int _loopIndex)
+            {
+                Debug.Log("Spawning 1x1 at " + _regionNode);
+                Spawn1x1SegmentLG.roomPrefabs = _roomPrefabs;
+                Spawn1x1SegmentLG.roomsInUse = _roomsInUse;
+                Spawn1x1SegmentLG.nodeChecks = new RoomStructure[8];
+                Spawn1x1SegmentLG.connections = 0;
+                Spawn1x1SegmentLG.regionNode = _regionNode;
+                Spawn1x1SegmentLG.skipDoors = false;
+                Spawn1x1SegmentLG.roomType = _mainRoomType;
+                Spawn1x1SegmentLG.diagonalConnects = 0;
+                Spawn1x1SegmentLG.connectionRegionIDs = _connectionRegionIDs;
+                Spawn1x1SegmentLG.rotationRegionIDs = _rotationRegionIDs;
+                Spawn1x1SegmentLG.topNode = new Vector3(Spawn1x1SegmentLG.regionNode.x, Spawn1x1SegmentLG.regionNode.y, Spawn1x1SegmentLG.regionNode.z + 1f);
+                Spawn1x1SegmentLG.bottomNode = new Vector3(Spawn1x1SegmentLG.regionNode.x, Spawn1x1SegmentLG.regionNode.y, Spawn1x1SegmentLG.regionNode.z - 1f);
+                Spawn1x1SegmentLG.leftNode = new Vector3(Spawn1x1SegmentLG.regionNode.x - 1f, Spawn1x1SegmentLG.regionNode.y, Spawn1x1SegmentLG.regionNode.z);
+                Spawn1x1SegmentLG.rightNode = new Vector3(Spawn1x1SegmentLG.regionNode.x + 1f, Spawn1x1SegmentLG.regionNode.y, Spawn1x1SegmentLG.regionNode.z);
+                if (LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].nodeRoom == null || (LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].nodeType != _mainRoomType && LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].nodeRoom.HasTag("WalkwayConnector") && LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].nodeRoom.OpenRoom))
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        Spawn1x1SegmentLG.nodeChecks[i] = RoomStructure.None;
+                    }
+                    Spawn1x1SegmentLG.nodeChecks[0] = Spawn1x1SegmentLG.CheckSegmentConnections(Spawn1x1SegmentLG.roomType, Spawn1x1SegmentLG.connectionRegionIDs, ref Spawn1x1SegmentLG.connections, Spawn1x1SegmentLG.rightNode);
+                    Spawn1x1SegmentLG.nodeChecks[1] = Spawn1x1SegmentLG.CheckSegmentConnections(Spawn1x1SegmentLG.roomType, Spawn1x1SegmentLG.connectionRegionIDs, ref Spawn1x1SegmentLG.connections, Spawn1x1SegmentLG.leftNode);
+                    Spawn1x1SegmentLG.nodeChecks[2] = Spawn1x1SegmentLG.CheckSegmentConnections(Spawn1x1SegmentLG.roomType, Spawn1x1SegmentLG.connectionRegionIDs, ref Spawn1x1SegmentLG.connections, Spawn1x1SegmentLG.topNode);
+                    Spawn1x1SegmentLG.nodeChecks[3] = Spawn1x1SegmentLG.CheckSegmentConnections(Spawn1x1SegmentLG.roomType, Spawn1x1SegmentLG.connectionRegionIDs, ref Spawn1x1SegmentLG.connections, Spawn1x1SegmentLG.bottomNode);
+                    Spawn1x1SegmentLG.nodeChecks[4] = Spawn1x1SegmentLG.CheckSegmentConnections(Spawn1x1SegmentLG.roomType, Spawn1x1SegmentLG.connectionRegionIDs, ref Spawn1x1SegmentLG.diagonalConnects, new Vector3(Spawn1x1SegmentLG.regionNode.x + 1f, Spawn1x1SegmentLG.regionNode.y, Spawn1x1SegmentLG.regionNode.z - 1f));
+                    Spawn1x1SegmentLG.nodeChecks[5] = Spawn1x1SegmentLG.CheckSegmentConnections(Spawn1x1SegmentLG.roomType, Spawn1x1SegmentLG.connectionRegionIDs, ref Spawn1x1SegmentLG.diagonalConnects, new Vector3(Spawn1x1SegmentLG.regionNode.x - 1f, Spawn1x1SegmentLG.regionNode.y, Spawn1x1SegmentLG.regionNode.z - 1f));
+                    Spawn1x1SegmentLG.nodeChecks[6] = Spawn1x1SegmentLG.CheckSegmentConnections(Spawn1x1SegmentLG.roomType, Spawn1x1SegmentLG.connectionRegionIDs, ref Spawn1x1SegmentLG.diagonalConnects, new Vector3(Spawn1x1SegmentLG.regionNode.x - 1f, Spawn1x1SegmentLG.regionNode.y, Spawn1x1SegmentLG.regionNode.z + 1f));
+                    Spawn1x1SegmentLG.nodeChecks[7] = Spawn1x1SegmentLG.CheckSegmentConnections(Spawn1x1SegmentLG.roomType, Spawn1x1SegmentLG.connectionRegionIDs, ref Spawn1x1SegmentLG.diagonalConnects, new Vector3(Spawn1x1SegmentLG.regionNode.x + 1f, Spawn1x1SegmentLG.regionNode.y, Spawn1x1SegmentLG.regionNode.z + 1f));
+                    for (int i = 0; i < 8; i++)
+                    {
+                        Debug.Log($"Connection {i} is: {Spawn1x1SegmentLG.nodeChecks[i]}");
+                    }
+                    Spawn1x1SegmentLG.skipDoors = DoorData.ShouldSkipDoors(Spawn1x1SegmentLG.roomsInUse, 4, Spawn1x1SegmentLG.regionNode);
+                    if (RoomAppendageData.FindAppendageAtNode<DoorData>(Spawn1x1SegmentLG.regionNode, Orientation.Horizontal) != null && Spawn1x1SegmentLG.nodeChecks[3] != Spawn1x1SegmentLG.roomType)
+                    {
+                        Spawn1x1SegmentLG.nodeChecks[3] = Spawn1x1SegmentLG.roomType;
+                        Spawn1x1SegmentLG.connections++;
+                    }
+                    if (RoomAppendageData.FindAppendageAtNode<DoorData>(Spawn1x1SegmentLG.regionNode, Orientation.Vertical) != null && Spawn1x1SegmentLG.nodeChecks[1] != Spawn1x1SegmentLG.roomType)
+                    {
+                        Spawn1x1SegmentLG.nodeChecks[1] = Spawn1x1SegmentLG.roomType;
+                        Spawn1x1SegmentLG.connections++;
+                    }
+                    if (RoomAppendageData.FindAppendageAtNode<DoorData>(Spawn1x1SegmentLG.topNode, Orientation.Horizontal) != null && Spawn1x1SegmentLG.nodeChecks[2] != Spawn1x1SegmentLG.roomType)
+                    {
+                        Spawn1x1SegmentLG.nodeChecks[2] = Spawn1x1SegmentLG.roomType;
+                        Spawn1x1SegmentLG.connections++;
+                    }
+                    if (RoomAppendageData.FindAppendageAtNode<DoorData>(Spawn1x1SegmentLG.rightNode, Orientation.Vertical) != null && Spawn1x1SegmentLG.nodeChecks[0] != Spawn1x1SegmentLG.roomType)
+                    {
+                        Spawn1x1SegmentLG.nodeChecks[0] = Spawn1x1SegmentLG.roomType;
+                        Spawn1x1SegmentLG.connections++;
+                    }
+                    switch (Spawn1x1SegmentLG.connections)
+                    {
+                        case 1:
+                            Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.End);
+                            break;
+                        case 2:
+                            if ((Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType))
+                            {
+                                if (Spawn1x1SegmentLG.CheckAdjacentNodesForRotationsIDs())
+                                {
+                                    if ((!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.rightNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) && !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.leftNode, Spawn1x1SegmentLG.rotationRegionIDs, -1)) || (!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.topNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) && !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.bottomNode, Spawn1x1SegmentLG.rotationRegionIDs, -1)))
+                                    {
+                                        Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.Straight);
+                                    }
+                                    else if (!Spawn1x1SegmentLG.skipDoors)
+                                    {
+                                        Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.StraightDoor);
+                                    }
+                                    else
+                                    {
+                                        Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.StraightWall);
+                                    }
+                                }
+                                else
+                                {
+                                    Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.Straight);
+                                }
+                            }
+                            else if (!Spawn1x1SegmentLG.skipDoors)
+                            {
+                                if ((Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[4] == Spawn1x1SegmentLG.roomType && !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.leftNode, Spawn1x1SegmentLG.rotationRegionIDs, -1)) || (Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[5] == Spawn1x1SegmentLG.roomType && !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.topNode, Spawn1x1SegmentLG.rotationRegionIDs, -1)) || (Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[6] == Spawn1x1SegmentLG.roomType && !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.rightNode, Spawn1x1SegmentLG.rotationRegionIDs, -1)) || (Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[7] == Spawn1x1SegmentLG.roomType && !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.bottomNode, Spawn1x1SegmentLG.rotationRegionIDs, -1)))
+                                {
+                                    Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.ChooseSegmentBasedOnCorner(ConnectorType.CornerDoorPlatformL, ConnectorType.CornerDoorL);
+                                }
+                                else if ((Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[4] == Spawn1x1SegmentLG.roomType && !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.topNode, Spawn1x1SegmentLG.rotationRegionIDs, -1)) || (Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[5] == Spawn1x1SegmentLG.roomType && !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.rightNode, Spawn1x1SegmentLG.rotationRegionIDs, -1)) || (Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[6] == Spawn1x1SegmentLG.roomType && !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.bottomNode, Spawn1x1SegmentLG.rotationRegionIDs, -1)) || (Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[7] == Spawn1x1SegmentLG.roomType && !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.leftNode, Spawn1x1SegmentLG.rotationRegionIDs, -1)))
+                                {
+                                    Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.ChooseSegmentBasedOnCorner(ConnectorType.CornerDoorPlatformR, ConnectorType.CornerDoorR);
+                                }
+                                else
+                                {
+                                    Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.ChooseSegmentBasedOnCorner(ConnectorType.CornerPlatform, ConnectorType.Corner);
+                                }
+                            }
+                            else if (!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.leftNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) || !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.topNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) || !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.rightNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) || !RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.bottomNode, Spawn1x1SegmentLG.rotationRegionIDs, -1))
+                            {
+                                if (Spawn1x1SegmentLG.CheckAdjacentNodesForTwoRoomRegions())
+                                {
+                                    Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.ChooseSegmentBasedOnCorner(ConnectorType.FourWay, ConnectorType.LTurn);
+                                }
+                                else if ((!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.rightNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType) || (!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.leftNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) && Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType) || (!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.topNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) && Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType) || (!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.bottomNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) && Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType))
+                                {
+                                    Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.ChooseSegmentBasedOnCorner(ConnectorType.CornerWallPlatR, ConnectorType.CornerWallR);
+                                }
+                                else
+                                {
+                                    Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.ChooseSegmentBasedOnCorner(ConnectorType.CornerWallPlatL, ConnectorType.CornerWallL);
+                                }
+                            }
+                            else
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.ChooseSegmentBasedOnCorner(ConnectorType.CornerPlatform, ConnectorType.Corner);
+                            }
+                            break;
+                        case 3:
+                            if (Spawn1x1SegmentLG.CheckAdjacentNodesForRotationsIDs())
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.ChooseDoorBasedTJWalkway(ConnectorType.TJunctionDoor);
+                            }
+                            else if ((Spawn1x1SegmentLG.nodeChecks[4] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[7] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[1] != RoomStructure.Inaccessible && Spawn1x1SegmentLG.nodeChecks[5] != RoomStructure.Inaccessible && Spawn1x1SegmentLG.nodeChecks[6] != RoomStructure.Inaccessible) || (Spawn1x1SegmentLG.nodeChecks[4] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[5] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[2] != RoomStructure.Inaccessible && Spawn1x1SegmentLG.nodeChecks[7] != RoomStructure.Inaccessible && Spawn1x1SegmentLG.nodeChecks[6] != RoomStructure.Inaccessible) || (Spawn1x1SegmentLG.nodeChecks[5] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[6] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[0] != RoomStructure.Inaccessible && Spawn1x1SegmentLG.nodeChecks[7] != RoomStructure.Inaccessible && Spawn1x1SegmentLG.nodeChecks[4] != RoomStructure.Inaccessible) || (Spawn1x1SegmentLG.nodeChecks[6] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[7] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] != RoomStructure.Inaccessible && Spawn1x1SegmentLG.nodeChecks[5] != RoomStructure.Inaccessible && Spawn1x1SegmentLG.nodeChecks[3] != RoomStructure.Inaccessible))
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.TJunctionPlatform);
+                            }
+                            else if ((Spawn1x1SegmentLG.nodeChecks[4] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[5] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[6] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[7] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType))
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.TJunctionOneExitL);
+                            }
+                            else if ((Spawn1x1SegmentLG.nodeChecks[4] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[5] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[6] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[7] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType))
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.TJunctionOneExitR);
+                            }
+                            else
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.TJunction);
+                            }
+                            break;
+                        case 4:
+                            if (Spawn1x1SegmentLG.nodeChecks[4] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[5] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[6] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[7] != Spawn1x1SegmentLG.roomType)
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.FourWayCrossroad);
+                            }
+                            else if ((Spawn1x1SegmentLG.nodeChecks[4] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[5] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[6] != Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[5] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[6] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[7] != Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[6] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[7] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[4] != Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[7] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[4] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[5] != Spawn1x1SegmentLG.roomType))
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.FourWayTwoExit);
+                            }
+                            else if ((Spawn1x1SegmentLG.nodeChecks[4] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[5] != Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[5] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[6] != Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[6] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[7] != Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[7] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[4] != Spawn1x1SegmentLG.roomType))
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.FourWayOneExit);
+                            }
+                            else if ((Spawn1x1SegmentLG.nodeChecks[4] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[6] != Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[5] != Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[7] != Spawn1x1SegmentLG.roomType))
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.FourWayOppositeRails);
+                            }
+                            else if (Spawn1x1SegmentLG.nodeChecks[4] != Spawn1x1SegmentLG.roomType || Spawn1x1SegmentLG.nodeChecks[5] != Spawn1x1SegmentLG.roomType || Spawn1x1SegmentLG.nodeChecks[6] != Spawn1x1SegmentLG.roomType || Spawn1x1SegmentLG.nodeChecks[7] != Spawn1x1SegmentLG.roomType)
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.LTurn);
+                            }
+                            else
+                            {
+                                Spawn1x1SegmentLG.roomObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.FourWay);
+                            }
+                            break;
+                    }
+                    if (Spawn1x1SegmentLG.roomObject != null)
+                    {
+                        Spawn1x1SegmentLG.roomsInUse.Add(Spawn1x1SegmentLG.roomObject.GetComponent<Room>());
+                        Spawn1x1SegmentLG.currentRoom = Spawn1x1SegmentLG.roomsInUse[Spawn1x1SegmentLG.roomsInUse.Count - 1];
+                        Spawn1x1SegmentLG.currentRoom.name = string.Concat(new object[]
+                        {
+                    Spawn1x1SegmentLG.currentRoom.name.Substring(0, Spawn1x1SegmentLG.currentRoom.name.Length - 7),
+                    " (",
+                    _loopIndex,
+                    ")"
+                        });
+                        Spawn1x1SegmentLG.currentRoom.transform.position = new Vector3(Spawn1x1SegmentLG.regionNode.x * Settings.CuboidDim.x, Spawn1x1SegmentLG.regionNode.y * Settings.CuboidDim.y, Spawn1x1SegmentLG.regionNode.z * Settings.CuboidDim.z) + Settings.ShipPos;
+                        Spawn1x1SegmentLG.currentRoom.transform.parent = _parent.transform;
+                        Spawn1x1SegmentLG.currentRoom.RandomRegion();
+                        Spawn1x1SegmentLG.currentRoom.PrimaryRoomNode = Vector3.zero;
+                        Spawn1x1SegmentLG.currentRoom.RegionNode = Spawn1x1SegmentLG.regionNode;
+                        Spawn1x1SegmentLG.currentRoom.RoomFloor = (int)(Spawn1x1SegmentLG.currentRoom.RegionNode.y - Spawn1x1SegmentLG.currentRoom.PrimaryRoomNode.y);
+                        Spawn1x1SegmentLG.currentRoom.SaveDoors = false;
+                        Spawn1x1SegmentLG.DetermineSegmentRotation(Spawn1x1SegmentLG.roomType, Spawn1x1SegmentLG.connections, Spawn1x1SegmentLG.currentRoom.gameObject, Spawn1x1SegmentLG.nodeChecks, Spawn1x1SegmentLG.regionNode, Spawn1x1SegmentLG.rotationRegionIDs);
+                        LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].nodeType = Spawn1x1SegmentLG.roomType;
+                        if (!LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].occupied || LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].nodeRoom == null)
+                        {
+                            if (Spawn1x1SegmentLG.currentRoom.GridSize != Vector3.one)
+                            {
+                                Spawn1x1SegmentLG.currentRoom.MinBoundaryNode = CheckBoundariesLG.FindMinInitBounds(Spawn1x1SegmentLG.currentRoom, Vector3.zero);
+                                Spawn1x1SegmentLG.currentRoom.MaxBoundaryNode = CheckBoundariesLG.FindMaxInitBounds(Spawn1x1SegmentLG.currentRoom, Vector3.zero);
+                                if (Spawn1x1SegmentLG.currentRoom.rotationQuadrant == 1)
+                                {
+                                    Spawn1x1SegmentLG.currentRoom.MaxBoundaryNode += Vector3.forward;
+                                }
+                                if (Spawn1x1SegmentLG.currentRoom.rotationQuadrant == 2)
+                                {
+                                    Spawn1x1SegmentLG.currentRoom.MaxBoundaryNode += Vector3.forward + Vector3.right;
+                                }
+                                if (Spawn1x1SegmentLG.currentRoom.rotationQuadrant == 3)
+                                {
+                                    Spawn1x1SegmentLG.currentRoom.MaxBoundaryNode += Vector3.right;
+                                }
+                                if (Spawn1x1SegmentLG.currentRoom.rotationQuadrant == 1)
+                                {
+                                    Spawn1x1SegmentLG.currentRoom.MinBoundaryNode += Vector3.forward;
+                                }
+                                if (Spawn1x1SegmentLG.currentRoom.rotationQuadrant == 2)
+                                {
+                                    Spawn1x1SegmentLG.currentRoom.MinBoundaryNode += Vector3.forward + Vector3.right;
+                                }
+                                if (Spawn1x1SegmentLG.currentRoom.rotationQuadrant == 3)
+                                {
+                                    Spawn1x1SegmentLG.currentRoom.MinBoundaryNode += Vector3.right;
+                                }
+                            }
+                            else
+                            {
+                                Spawn1x1SegmentLG.currentRoom.MinBoundaryNode = Vector3.zero;
+                                Spawn1x1SegmentLG.currentRoom.MaxBoundaryNode = Vector3.one;
+                            }
+                            int num = (int)Spawn1x1SegmentLG.currentRoom.MaxBoundaryNode.x;
+                            int num2 = (int)Spawn1x1SegmentLG.currentRoom.MaxBoundaryNode.y;
+                            int num3 = (int)Spawn1x1SegmentLG.currentRoom.MaxBoundaryNode.z;
+                            int num4 = (int)Spawn1x1SegmentLG.currentRoom.MinBoundaryNode.x;
+                            int num5 = (int)Spawn1x1SegmentLG.currentRoom.MinBoundaryNode.y;
+                            int num6 = (int)Spawn1x1SegmentLG.currentRoom.MinBoundaryNode.z;
+                            for (int j = num4; j < num; j++)
+                            {
+                                for (int k = num5; k < num2; k++)
+                                {
+                                    for (int l = num6; l < num3; l++)
+                                    {
+                                        NodeData nodeData = LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x + j][(int)Spawn1x1SegmentLG.regionNode.y + k][(int)Spawn1x1SegmentLG.regionNode.z + l];
+                                        nodeData.occupied = true;
+                                        nodeData.nodeRoom = Spawn1x1SegmentLG.currentRoom;
+                                        nodeData.nodeType = Spawn1x1SegmentLG.roomType;
+                                    }
+                                }
+                            }
+                        }
+                        if (Spawn1x1SegmentLG.currentRoom.roomDoorData.Count > 0 && LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].nodeRoom == Spawn1x1SegmentLG.currentRoom)
+                        {
+                            if (!Spawn1x1SegmentLG.skipDoors)
+                            {
+                                for (int m = 0; m < Spawn1x1SegmentLG.currentRoom.roomDoorData.Count; m++)
+                                {
+                                    Spawn1x1SegmentLG.currentRoom.roomDoorData[m].regionNode = RoomAppendageData.ConvertAppendageToRegionSpace(Spawn1x1SegmentLG.currentRoom, Spawn1x1SegmentLG.currentRoom.roomDoorData[m]);
+                                }
+                                Spawn1x1SegmentLG.skipDoors = true;
+                                if (ConnectRoomsLG.PathBetweenRoomCorridor(Spawn1x1SegmentLG.currentRoom, null, true))
+                                {
+                                    Spawn1x1SegmentLG.currentRoom.MinBoundaryNode = Vector3.zero;
+                                    Spawn1x1SegmentLG.currentRoom.MaxBoundaryNode = Vector3.one;
+                                    Spawn1x1SegmentLG.currentRoom.SaveDoors = true;
+                                    Room.HandleAppendageData(Spawn1x1SegmentLG.currentRoom);
+                                }
+                                else
+                                {
+                                    GameObject gameObject = null;
+                                    int num7 = Spawn1x1SegmentLG.connections;
+                                    if (num7 != 2)
+                                    {
+                                        if (num7 != 3)
+                                        {
+                                            if (num7 == 4)
+                                            {
+                                                gameObject = Spawn1x1SegmentLG.ChooseDoorBasedTJWalkway(ConnectorType.FourWay);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            gameObject = Spawn1x1SegmentLG.ChooseDoorBasedTJWalkway(ConnectorType.TJunctionWall);
+                                        }
+                                    }
+                                    else if ((Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType) || (Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType))
+                                    {
+                                        gameObject = Spawn1x1SegmentLG.RoomOfConnectionType(ConnectorType.StraightWall);
+                                    }
+                                    else if (Spawn1x1SegmentLG.CheckAdjacentNodesForTwoRoomRegions())
+                                    {
+                                        gameObject = Spawn1x1SegmentLG.ChooseSegmentBasedOnCorner(ConnectorType.FourWay, ConnectorType.LTurn);
+                                    }
+                                    else if ((!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.rightNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) && Spawn1x1SegmentLG.nodeChecks[3] == Spawn1x1SegmentLG.roomType) || (!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.leftNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) && Spawn1x1SegmentLG.nodeChecks[2] == Spawn1x1SegmentLG.roomType) || (!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.topNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) && Spawn1x1SegmentLG.nodeChecks[0] == Spawn1x1SegmentLG.roomType) || (!RegionManager.Instance.CheckNodeForRegion(Spawn1x1SegmentLG.bottomNode, Spawn1x1SegmentLG.rotationRegionIDs, -1) && Spawn1x1SegmentLG.nodeChecks[1] == Spawn1x1SegmentLG.roomType))
+                                    {
+                                        gameObject = Spawn1x1SegmentLG.ChooseSegmentBasedOnCorner(ConnectorType.CornerWallPlatR, ConnectorType.TJunctionOneExitL);
+                                    }
+                                    else
+                                    {
+                                        gameObject = Spawn1x1SegmentLG.ChooseSegmentBasedOnCorner(ConnectorType.CornerWallPlatL, ConnectorType.TJunctionOneExitR);
+                                    }
+                                    Spawn1x1SegmentLG.roomsInUse.Add(gameObject.GetComponent<Room>());
+                                    Room room = Spawn1x1SegmentLG.roomsInUse[Spawn1x1SegmentLG.roomsInUse.Count - 1];
+                                    room.name = string.Concat(new object[]
+                                    {
+                                room.name.Substring(0, room.name.Length - 7),
+                                " (",
+                                _loopIndex,
+                                ")"
+                                    });
+                                    room.transform.position = Spawn1x1SegmentLG.currentRoom.transform.position;
+                                    room.transform.parent = _parent.transform;
+                                    room.regionChoice = Spawn1x1SegmentLG.currentRoom.regionChoice;
+                                    room.regionChoiceIndex = Spawn1x1SegmentLG.currentRoom.regionChoiceIndex;
+                                    room.PrimaryRoomNode = Spawn1x1SegmentLG.currentRoom.PrimaryRoomNode;
+                                    room.PrimaryRegion = Spawn1x1SegmentLG.currentRoom.PrimaryRegion;
+                                    room.RegionNode = Spawn1x1SegmentLG.regionNode;
+                                    room.RoomFloor = (int)(Spawn1x1SegmentLG.currentRoom.RegionNode.y - Spawn1x1SegmentLG.currentRoom.PrimaryRoomNode.y);
+                                    room.SaveDoors = false;
+                                    room.rotationQuadrant = Spawn1x1SegmentLG.currentRoom.rotationQuadrant;
+                                    room.transform.rotation = Spawn1x1SegmentLG.currentRoom.transform.rotation;
+                                    room.transform.localScale = Spawn1x1SegmentLG.currentRoom.transform.localScale;
+                                    room.MinBoundaryNode = Spawn1x1SegmentLG.currentRoom.MinBoundaryNode;
+                                    room.MaxBoundaryNode = Spawn1x1SegmentLG.currentRoom.MaxBoundaryNode;
+                                    RoomAppendageData.RemoveRoomAppendages(Spawn1x1SegmentLG.currentRoom);
+                                    UnityEngine.Object.DestroyImmediate(Spawn1x1SegmentLG.roomsInUse[Spawn1x1SegmentLG.roomsInUse.Count - 2].gameObject);
+                                    Spawn1x1SegmentLG.roomsInUse.RemoveAt(Spawn1x1SegmentLG.roomsInUse.Count - 2);
+                                    if (!LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].occupied || LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].nodeRoom == null || LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x][(int)Spawn1x1SegmentLG.regionNode.y][(int)Spawn1x1SegmentLG.regionNode.z].nodeRoom == Spawn1x1SegmentLG.currentRoom)
+                                    {
+                                        if (room.GridSize != Vector3.one)
+                                        {
+                                            room.MinBoundaryNode = CheckBoundariesLG.FindMinInitBounds(room, Vector3.zero);
+                                            room.MaxBoundaryNode = CheckBoundariesLG.FindMaxInitBounds(room, Vector3.zero);
+                                            if (room.rotationQuadrant == 1)
+                                            {
+                                                room.MaxBoundaryNode += Vector3.forward;
+                                            }
+                                            if (room.rotationQuadrant == 2)
+                                            {
+                                                room.MaxBoundaryNode += Vector3.forward + Vector3.right;
+                                            }
+                                            if (room.rotationQuadrant == 3)
+                                            {
+                                                room.MaxBoundaryNode += Vector3.right;
+                                            }
+                                            if (room.rotationQuadrant == 1)
+                                            {
+                                                room.MinBoundaryNode += Vector3.forward;
+                                            }
+                                            if (room.rotationQuadrant == 2)
+                                            {
+                                                room.MinBoundaryNode += Vector3.forward + Vector3.right;
+                                            }
+                                            if (room.rotationQuadrant == 3)
+                                            {
+                                                room.MinBoundaryNode += Vector3.right;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            room.MinBoundaryNode = Vector3.zero;
+                                            room.MaxBoundaryNode = Vector3.one;
+                                        }
+                                        int num8 = (int)room.MaxBoundaryNode.x;
+                                        int num9 = (int)room.MaxBoundaryNode.y;
+                                        int num10 = (int)room.MaxBoundaryNode.z;
+                                        int num11 = (int)room.MinBoundaryNode.x;
+                                        int num12 = (int)room.MinBoundaryNode.y;
+                                        int num13 = (int)room.MinBoundaryNode.z;
+                                        for (int n = num11; n < num8; n++)
+                                        {
+                                            for (int num14 = num12; num14 < num9; num14++)
+                                            {
+                                                for (int num15 = num13; num15 < num10; num15++)
+                                                {
+                                                    NodeData nodeData2 = LevelGeneration.Instance.nodeData[(int)Spawn1x1SegmentLG.regionNode.x + n][(int)Spawn1x1SegmentLG.regionNode.y + num14][(int)Spawn1x1SegmentLG.regionNode.z + num15];
+                                                    nodeData2.occupied = true;
+                                                    if (nodeData2.nodeRoom == Spawn1x1SegmentLG.currentRoom || nodeData2.nodeRoom == null)
+                                                    {
+                                                        nodeData2.nodeType = room.RoomType;
+                                                        nodeData2.nodeRoom = room;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    room.Init(room, default(Vector3));
+                                    if (room.roomDoorData.Count > 0)
+                                    {
+                                        room.roomDoorData.Clear();
+                                    }
+                                    Room.HandleAppendageData(room);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Room.HandleAppendageData(Spawn1x1SegmentLG.currentRoom);
+                        }
+                        if (Spawn1x1SegmentLG.currentRoom != null)
+                        {
+                            Spawn1x1SegmentLG.currentRoom.Init(Spawn1x1SegmentLG.currentRoom, default(Vector3));
+                        }
+                    }
+                }
+            }
+
+
+            private static void HookPositionRoomLGCheckAdjacentNodeForConnection(On.PositionRoomLG.orig_CheckAdjacentNodeForConnection orig, Room _room, Vector3 _moddedNode, Vector3 _originalNode, NodeData _activeNode, int _UDLRFBIndex)
+            {
+                if (CheckBoundariesLG.NodeWithinShipBounds(_moddedNode))
+                {
+                    NodeData nodeData = LevelGeneration.Instance.nodeData[(int)_moddedNode.x][(int)_moddedNode.y][(int)_moddedNode.z];
+                    int oppositeDirection = NodeData.GetOppositeDirection(_UDLRFBIndex);
+                    if (_UDLRFBIndex == 0 && ((nodeData.nodeType == RoomStructure.None && _room.PrimaryRegion == PrimaryRegionType.Engine) || ((nodeData.nodeType == RoomStructure.Inaccessible || nodeData.nodeType == RoomStructure.None) && (_room.PrimaryRegion == PrimaryRegionType.OuterDeck || _room.PrimaryRegion == PrimaryRegionType.OuterDeckCargo || _room.PrimaryRegion == PrimaryRegionType.CargoHold))))
+                    {
+                        if (_room.PrimaryRegion == PrimaryRegionType.Engine)
+                        {
+                            if (_room.name.Contains("LargeEngine"))
+                            {
+                                if (_activeNode.regionNode.y >= 3f)
+                                {
+                                    PositionRoomLG.mainEngineID = RegionManager.Instance.StringToRegionID("Engines_MainArea");
+                                    if (RegionManager.Instance.CheckNodeForRegionExclusive(_moddedNode, PositionRoomLG.mainEngineID, 1) || !RegionManager.Instance.CheckNodeForRegion(_moddedNode, PositionRoomLG.mainEngineID, -1))
+                                    {
+                                        PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                PositionRoomLG.mainEngineID = RegionManager.Instance.StringToRegionID("Engines_MainArea");
+                                if (RegionManager.Instance.CheckNodeForRegionExclusive(_moddedNode, PositionRoomLG.mainEngineID, 1) || !RegionManager.Instance.CheckNodeForRegion(_moddedNode, PositionRoomLG.mainEngineID, -1))
+                                {
+                                    PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (_room.PrimaryRegion == PrimaryRegionType.CargoHold && _room.RoomType == RoomStructure.Walkway && _room.WalkwayType == WalkwayStructure.Cargo && _room.RoomConnectionsType != ConnectorType.Room && _room.RegionNode.y < 4f)
+                            {
+                                return;
+                            }
+                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                        }
+                    }
+                    if (_UDLRFBIndex < 2)
+                    {
+                        if (!CheckBoundariesLG.NodeOutwithRoom(_room, _moddedNode))
+                        {
+                            if (_room.name.Contains("LargeEngine"))
+                            {
+                                if (_activeNode.regionNode.y >= 3f || _activeNode.regionNode.x == 5f)
+                                {
+                                    PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                                }
+                            }
+                            else
+                            {
+                                if (_room.PrimaryRegion == PrimaryRegionType.CargoHold && _room.RoomType == RoomStructure.Walkway && _room.WalkwayType == WalkwayStructure.Cargo && _room.RoomConnectionsType != ConnectorType.Room && _room.RegionNode.y < 4f)
+                                {
+                                    return;
+                                }
+                                PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                            }
+                        }
+                        if (_room.HasTag("Stairs") && nodeData.nodeRoom != null && nodeData.nodeRoom.HasTag("Stairs"))
+                        {
+                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                        }
+                    }
+                    else
+                    {
+                        if (_UDLRFBIndex == 2 && RoomAppendageData.CheckAppendageList<NoCullingAppendage>(_originalNode, Orientation.Vertical))
+                        {
+                            return;
+                        }
+                        if (_UDLRFBIndex == 3 && RoomAppendageData.CheckAppendageList<NoCullingAppendage>(_originalNode + Vector3.right, Orientation.Vertical))
+                        {
+                            return;
+                        }
+                        if (_UDLRFBIndex == 4 && RoomAppendageData.CheckAppendageList<NoCullingAppendage>(_originalNode + Vector3.forward, Orientation.Horizontal))
+                        {
+                            return;
+                        }
+                        if (_UDLRFBIndex == 5 && RoomAppendageData.CheckAppendageList<NoCullingAppendage>(_originalNode, Orientation.Horizontal))
+                        {
+                            return;
+                        }
+                        if (!CheckBoundariesLG.NodeOutwithRoom(_room, _moddedNode))
+                        {
+                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                        }
+                        if (_UDLRFBIndex == 2 || _UDLRFBIndex == 3)
+                        {
+                            Vector3 regionNode = Vector3.zero;
+                            if (_UDLRFBIndex == 2)
+                            {
+                                regionNode = _originalNode;
+                            }
+                            else
+                            {
+                                regionNode = _moddedNode;
+                            }
+                            if (_room.roomDoorData.Count > 0 && RoomAppendageData.CheckAppendageList<DoorData>(regionNode, Orientation.Vertical))
+                            {
+                                PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                            }
+                            if (_room.roomFloorJointData.Count > 0 && RoomAppendageData.CheckAppendageList<JoiningFloorData>(regionNode, Orientation.Vertical))
+                            {
+                                _activeNode.connectedNodesUDLRFB[_UDLRFBIndex] = true;
+                                nodeData.connectedNodesUDLRFB[oppositeDirection] = true;
+                            }
+                            if (_room.roomWindowData.Count > 0 && RoomAppendageData.CheckAppendageList<WindowData>(regionNode, Orientation.Vertical))
+                            {
+                                PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                            }
+                            if (_room.LOSJointData.Count > 0 /*&& RoomAppendageData.CheckAppendageList<LineOfSightData>(regionNode, Orientation.Vertical)*/)
+                            {
+                                var _regionNode = regionNode;
+                                var _orient = Orientation.Vertical;
+                                var check = false;
+
+                                var text = $"Checking vertical appendage data for {_regionNode}, which has orientation {_orient}.";
+                                if (CheckBoundariesLG.NodeWithinShipBounds(_regionNode))
+                                {
+                                    RoomAppendageData.appData = LevelGeneration.Instance.nodeData[(int)_regionNode.x][(int)_regionNode.y][(int)_regionNode.z].appendageData;
+
+                                    for (int i = 0; i < RoomAppendageData.appData.Count; i++)
+                                    {
+                                        if (RoomAppendageData.appData[i] is LineOfSightData)
+                                        {
+                                            text += $" Checking appendage data {i} {RoomAppendageData.appData[i].regionNode}. This has orientation {RoomAppendageData.appData[i].currentOrientation}.";
+                                            if (_orient == Orientation.None)
+                                            {
+                                                text += " Passed via orientation none.";
+                                                check = true;
+                                                break;
+                                            }
+                                            if (RoomAppendageData.appData[i].currentOrientation == _orient)
+                                            {
+                                                text += " Passed via matching orientation.";
+                                                check = true;
+                                                break;
+                                            }
+                                            if (ModSettings.experimentalShipExtension &&
+                                              (
+                                                _room.RoomType == RoomStructure.Cargo && RoomAppendageData.appData[i].joiningRoom.RoomType == RoomStructure.Deck
+                                              || _room.RoomType == RoomStructure.Deck && RoomAppendageData.appData[i].joiningRoom.RoomType == RoomStructure.Cargo
+                                              ))
+                                            {
+                                                check = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    // if (ModSettings.experimentalShipExtension && (_regionNode.x == 23 || _regionNode.x == 24 || _regionNode.x == 35 || _regionNode.x == 36) && _regionNode.y == 5 && (_room.name.Contains("CargoContainer") || _room.name.Contains("Deck_CargoWalkway")))
+                                    // {
+                                    //     Debug.Log($"Room: {_room}. Room region: {_room.PrimaryRegion}. Room coords: {_room.regionNode}. Cargo container has following appendage: {RoomAppendageData.appData.Count}");
+                                    //     foreach (RoomAppendageData data in RoomAppendageData.appData)
+                                    //     {
+                                    //         Debug.Log($"JR: {data.joiningRoom}. Join room coords: {data.joiningRoom.RegionNode}. Join room type: {data.joiningRoom.PrimaryRegion}. IR: {data.initialOrientation}. Node: {data.regionNode}. x: {data.x}. z: {data.z}. Rot: {data.rotationQuadrant}");
+                                    //     }
+                                    //     check = true;
+                                    // }
+                                }
+
+
+
+                                // THIS CHECK IS WHAT ALLOWS THEM TO JOIN
+                                // PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                                if (check)
+                                {
+
+                                    text += " Passed check.";
+                                    PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                                }
+                                else
+                                {
+                                    text += " Failed check";
+                                }
+                                // Debug.Log(text);
+                            }
+                        }
+                        else
+                        {
+                            Vector3 regionNode2 = Vector3.zero;
+                            if (_UDLRFBIndex == 5)
+                            {
+                                regionNode2 = _originalNode;
+                            }
+                            else
+                            {
+                                regionNode2 = _moddedNode;
+                            }
+                            if (_room.roomDoorData.Count > 0 && RoomAppendageData.CheckAppendageList<DoorData>(regionNode2, Orientation.Horizontal))
+                            {
+                                PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                            }
+                            if (_room.roomFloorJointData.Count > 0 && RoomAppendageData.CheckAppendageList<JoiningFloorData>(regionNode2, Orientation.Horizontal))
+                            {
+                                PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                            }
+                            if (_room.roomWindowData.Count > 0 && RoomAppendageData.CheckAppendageList<WindowData>(regionNode2, Orientation.Horizontal))
+                            {
+                                PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                            }
+                            if (_room.LOSJointData.Count > 0 /*&& RoomAppendageData.CheckAppendageList<LineOfSightData>(regionNode2, Orientation.Horizontal)*/)
+                            {
+                                var _regionNode = regionNode2;
+                                var _orient = Orientation.Horizontal;
+                                var check = false;
+
+                                var text = $"Checking horizontal appendage data for {_regionNode}, which has orientation {_orient}.";
+                                if (CheckBoundariesLG.NodeWithinShipBounds(_regionNode))
+                                {
+                                    RoomAppendageData.appData = LevelGeneration.Instance.nodeData[(int)_regionNode.x][(int)_regionNode.y][(int)_regionNode.z].appendageData;
+                                    for (int i = 0; i < RoomAppendageData.appData.Count; i++)
+                                    {
+                                        if (RoomAppendageData.appData[i] is LineOfSightData)
+                                        {
+                                            text += $" Checking appendage data {i} ({RoomAppendageData.appData[i].regionNode}). This has orientation {RoomAppendageData.appData[i].currentOrientation}.";
+                                            if (_orient == Orientation.None)
+                                            {
+                                                text += " Passed via orientation none.";
+                                                check = true;
+                                                break;
+                                            }
+                                            if (RoomAppendageData.appData[i].currentOrientation == _orient)
+                                            {
+                                                text += " Passed via matching orientation.";
+                                                check = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                                if (check)
+                                {
+                                    text += " Passed check.";
+                                    PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
+                                }
+                                else
+                                {
+                                    text += " Failed check";
+                                }
+                                // Debug.Log(text);
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            private static void HookPositionRoomLGSetNodeConnections(On.PositionRoomLG.orig_SetNodeConnections orig, NodeData _activeNode, NodeData _modNode, int _firstIndex, int _oppositeIndex)
+            {
+                _activeNode.connectedNodesUDLRFB[_firstIndex] = true;
+                // if ((_activeNode.primaryRegion != PrimaryRegionType.CargoHold && _activeNode.nodeRoom != null) || _activeNode.nodeRoom == null)
+                // {
+                //     _modNode.connectedNodesUDLRFB[_oppositeIndex] = true;
+                //     return;
+                // }
+                // if (_activeNode.primaryRegion == PrimaryRegionType.CargoHold && _activeNode.nodeRoom.RoomType == RoomStructure.Walkway && (_modNode.nodeRoom == null || _modNode.nodeRoom.Category == RoomCategory.Outside))
+                // {
+                //     _modNode.connectedNodesUDLRFB[_oppositeIndex] = true;
+                // }
+            }
+
+            private static void HookRoomHandleAppendageData(On.Room.orig_HandleAppendageData orig, Room _room)
+            {
+                var connectionsChecked = string.Empty;
+                if (_room.SaveDoors && _room.roomDoorData.Count > 0)
+                {
+                    CheckDoorConnectionsLG.SaveDoors(_room);
+                    connectionsChecked += "Doors.";
+                }
+                if (_room.roomWindowData.Count > 0)
+                {
+                    WindowData.CheckWindowSides(_room);
+                    WindowData.SaveWindows(_room);
+                    connectionsChecked += "Windows.";
+                }
+                if (_room.roomExternalEdgeData.Count > 0)
+                {
+                    ExternalEdgeData.CheckExternalEdges(_room);
+                    ExternalEdgeData.SaveExternalEdges(_room);
+                    connectionsChecked += "ExternalEdges.";
+                }
+                if (_room.wallJointData.Count > 0)
+                {
+                    WallJointData.CheckWallJoints(_room);
+                    WallJointData.SaveWallJointData(_room);
+                    connectionsChecked += "WallJoints.";
+                }
+                if (_room.roomFloorJointData.Count > 0)
+                {
+                    JoiningFloorData.CheckFloorJoints(_room, null);
+                    JoiningFloorData.SaveFloorJoints(_room);
+                    connectionsChecked += "FloorJoints.";
+                }
+                if (_room.ventJointData.Count > 0)
+                {
+                    VentJointData.CheckVentConnections(_room);
+                    VentJointData.SaveVentData(_room);
+                    connectionsChecked += "VentJoint.";
+                }
+                if (_room.LOSJointData.Count > 0)
+                {
+                    LineOfSightData.CheckLOSSides(_room);
+                    // if (_room.RegionNode.x == 24 && _room.regionNode.y == 5 && _room.regionNode.z == 10)
+                    // {
+                    //     for (int i = 0; i < _room.LOSJointData.Count; i++)
+                    //     {
+                    //         _room.LOSJointData[i].currentOrientation = Orientation.Horizontal;
+                    //     }
+                    // }
+                    LineOfSightData.SaveLOSJoints(_room);
+                    connectionsChecked += "LOSJoints.";
+                }
+                if (_room.engineNoPipeData.Count > 0)
+                {
+                    EngineNoPipeData.CheckNoPipeJoints(_room);
+                    EngineNoPipeData.SaveNoPipeData(_room);
+                    connectionsChecked += "NoPipeJoints.";
+                }
+                if (_room.noCullingData.Count > 0)
+                {
+                    NoCullingAppendage.CheckNoCullingJoints(_room);
+                    NoCullingAppendage.SaveNoCullingData(_room);
+                    connectionsChecked += "NoCullingJoints.";
+                }
+                if (ModSettings.logDebugText)
+                {
+                    Debug.Log($"{_room.name} checked the following: {connectionsChecked}");
+                }
+                PositionRoomLG.DetermineConnectedNodes(_room);
+            }
+
+            private static void HookSpawnCargoHoldLGCleanFloorJoints(On.SpawnCargoHoldLG.orig_CleanFloorJoints orig, Room currentRoom, Vector3 _regionNode, Vector3 _firstCheck, Vector3 _secondCheck, Orientation _orient)
+            {
+                Vector3 vector = _regionNode + _firstCheck;
+                var node = LevelGeneration.Instance.nodeData[(int)vector.x][(int)vector.y][(int)vector.z];
+                var nodeRegion = node.primaryRegion;
+                if (node.appendageData.Count > 0)
+                {
+                    node.appendageData[0].currentOrientation = Orientation.Horizontal;
+                }
+
+                return;
+                if (nodeRegion != PrimaryRegionType.CargoHold && (!ModSettings.experimentalShipExtension || nodeRegion != PrimaryRegionType.OuterDeckCargo))
+                {
+                    for (int i = 0; i < currentRoom.roomFloorJointData.Count; i++)
+                    {
+                        if (_firstCheck.x < 0f)
+                        {
+                            vector = new Vector3(vector.x + 1f, vector.y, vector.z);
+                        }
+                        if (_firstCheck.z < 0f)
+                        {
+                            vector = new Vector3(vector.x, vector.y, vector.z + 1f);
+                        }
+                        if (RoomAppendageData.RemoveAppendageFromList<JoiningFloorData>(vector, _orient))
+                        {
+                            i--;
+                        }
+                        else
+                        {
+                            vector = new Vector3(_regionNode.x + _secondCheck.x, _regionNode.y, _regionNode.z + _secondCheck.z);
+                            if (CheckBoundariesLG.NodeWithinShipBounds(vector) && LevelGeneration.Instance.nodeData[(int)vector.x][(int)vector.y][(int)vector.z].primaryRegion != PrimaryRegionType.CargoHold && RoomAppendageData.RemoveAppendageFromList<JoiningFloorData>(vector, (_orient != Orientation.Horizontal) ? Orientation.Horizontal : Orientation.Vertical))
+                            {
+                                i--;
+                            }
+                            else
+                            {
+                                vector = new Vector3(_regionNode.x - _secondCheck.x, _regionNode.y, _regionNode.z - _secondCheck.z);
+                                if (CheckBoundariesLG.NodeWithinShipBounds(vector) && LevelGeneration.Instance.nodeData[(int)vector.x][(int)vector.y][(int)vector.z].primaryRegion != PrimaryRegionType.CargoHold && RoomAppendageData.RemoveAppendageFromList<JoiningFloorData>(vector, (_orient != Orientation.Horizontal) ? Orientation.Horizontal : Orientation.Vertical))
+                                {
+                                    i--;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            private static void HookRealtimeOcclusion2AddPointToExpandList(On.RealtimeOcclusion2.orig_AddPointToExpandList orig, RealtimeOcclusion2 realtimeOcclusion2, VisibilityData _cameFrom, VisibilityData _newData, int _cameFromDirection)
+            {
+                if (_newData != null)
+                {
+                    Debug.Log($"[DEBUG LINCH] Adding {_newData.position} from {_cameFrom?.position} | isLinch={_newData.isLinch} | currentLinch={_newData.currentLinch} | linchDistance={_newData.linchDistance}");
+
+                    bool flag = false;
+                    if (_newData.searchID != realtimeOcclusion2.searchID)
+                    {
+                        flag = true;
+                        _newData.cameFrom = null;
+                        _newData.sideID = -1;
+                    }
+                    _newData.cameFrom = realtimeOcclusion2.GetCameFrom(_newData, _cameFrom);
+                    if (_newData.cameFrom == _cameFrom)
+                    {
+                        _newData.cameFromID = _cameFromDirection;
+                    }
+                    _newData.linchDistance = _newData.cameFrom.linchDistance + 1;
+                    if (flag)
+                    {
+                        _newData.searchID = realtimeOcclusion2.searchID;
+                        for (int i = 0; i < 6; i++)
+                        {
+                            _newData.allowedDirections[i] = _cameFrom.allowedDirections[i];
+                        }
+                        realtimeOcclusion2.expandList.Add(_newData);
+                    }
+                    if (_cameFrom != null)
+                    {
+                        _newData.allowedDirections[VisibilityData.GetOppositeDirection(_cameFromDirection)] = false;
+                    }
+                    _newData.isLinch = false;
+                    if (!_newData.canSeeUDLRFB[VisibilityData.GetOppositeDirection(realtimeOcclusion2.defaultID)])
+                    {
+                        _newData.isLinch = true;
+                    }
+                    if (_newData.cameFromID != realtimeOcclusion2.defaultID)
+                    {
+                        _newData.isLinch = true;
+                    }
+                    if ((_newData.Node.nodeType == RoomStructure.Cargo && _cameFrom.Node.nodeType == RoomStructure.Deck) ||
+    (_newData.Node.nodeType == RoomStructure.Deck && _cameFrom.Node.nodeType == RoomStructure.Cargo))
+                    {
+                        _newData.isLinch = true;
+                        _newData.currentLinch = _newData.linchDistance + 1;
+                        Debug.Log($"[FIX LINCH] Force linch: {_newData.position} from {_cameFrom.position}");
+                    }
+                    if (_newData.isLinch)
+                    {
+                        _newData.currentLinch = _newData.linchDistance;
+                        _newData.linchDistance = 0;
+                        _newData.highestLinch = Mathf.Max(_newData.cameFrom.highestLinch, _newData.currentLinch);
+                    }
+                    else
+                    {
+                        _newData.currentLinch = _newData.cameFrom.currentLinch;
+                        _newData.highestLinch = _newData.cameFrom.highestLinch;
+                    }
+                    if (_newData.cameFrom.sideID >= 0)
+                    {
+                        _newData.sideID = _newData.cameFrom.sideID;
+                    }
+                    else if (_newData.cameFromID != realtimeOcclusion2.defaultID)
+                    {
+                        _newData.sideID = _newData.cameFromID;
+                    }
+                }
+            }
+
+            private static IEnumerator HookBakedOcclusionBake(BakedOcclusion bakedOcclusion)
+            {
+                if (bakedOcclusion.enabled)
+                {
+                    if (bakedOcclusion.combineMeshes)
+                    {
+                        bakedOcclusion.Combine();
+                    }
+                    for (int i = 0; i < bakedOcclusion.dimX; i++)
+                    {
+                        for (int j = 0; j < bakedOcclusion.dimY; j++)
+                        {
+                            for (int k = 0; k < bakedOcclusion.dimZ; k++)
+                            {
+                                bakedOcclusion.DeployPoint(i, j, k);
+                            }
+                        }
+                    }
+                    for (int x = 0; x < bakedOcclusion.dimX; x++)
+                    {
+                        for (int l = 0; l < bakedOcclusion.dimY; l++)
+                        {
+                            for (int m = 0; m < bakedOcclusion.dimZ; m++)
+                            {
+                                bakedOcclusion.occlusionJagged[x][l][m].CalculateSides(x, l, m);
+                                bakedOcclusion.occlusionJagged[x][l][m].NearbyRenderer();
+                            }
+                        }
+                        yield return null;
+                    }
+                    for (int n = 0; n < bakedOcclusion.allCullers.Count; n++)
+                    {
+                        bakedOcclusion.PerformAdd(bakedOcclusion.allCullers[n]);
+                    }
+                    bakedOcclusion.forceUpdate = true;
+                    bakedOcclusion.baked = true;
+
+                    // Debug a single cell
+                    // DebugCell(bakedOcclusion.occlusionJagged, 23, 5, 7);
+                    // DebugCell(bakedOcclusion.occlusionJagged, 24, 5, 7);
+
+                    // // Debug a small region around the boundary
+                    // DebugRange(bakedOcclusion.occlusionJagged, 22, 25, 5, 5, 6, 8);
+                }
+                yield break;
+            }
+
+            /// <summary>
+            /// Debugs a specific cell and all its neighbors.
+            /// </summary>
+            /// <param name="occlusionJagged">The baked occlusion 3D array</param>
+            /// <param name="x">X index</param>
+            /// <param name="y">Y index</param>
+            /// <param name="z">Z index</param>
+            public static void DebugCell(VisibilityData[][][] occlusionJagged, int x, int y, int z)
+            {
+                if (occlusionJagged == null ||
+                    x < 0 || x >= occlusionJagged.Length ||
+                    y < 0 || y >= occlusionJagged[0].Length ||
+                    z < 0 || z >= occlusionJagged[0][0].Length)
+                {
+                    Debug.LogWarning("[OCC DEBUG] Invalid coordinates.");
+                    return;
+                }
+
+                var cell = occlusionJagged[x][y][z];
+                if (cell == null)
+                {
+                    Debug.LogWarning($"[OCC DEBUG] Cell ({x},{y},{z}) is null.");
+                    return;
+                }
+
+                Debug.Log($"[OCC DEBUG] Cell ({x},{y},{z}) pos={cell.position} currentLinch={cell.currentLinch} linchDistance={cell.linchDistance}");
+
+                string[] dirNames = { "+Y", "-Y", "-X", "+X", "+Z", "-Z" };
+
+                for (int dir = 0; dir < 6; dir++)
+                {
+                    var neighbor = cell.GetNodeSide(dir);
+                    if (neighbor != null)
+                    {
+                        Debug.Log($"   Neighbor {dirNames[dir]} -> pos={neighbor.position} currentLinch={neighbor.currentLinch} linchDistance={neighbor.linchDistance}");
+                    }
+                    else
+                    {
+                        Debug.Log($"   Neighbor {dirNames[dir]} -> null");
+                    }
+                }
+
+                // Optional: recursively log neighbors to see full propagation
+                // Uncomment if needed (can be a lot of logs!)
+                /*
+                for (int dir = 0; dir < 6; dir++)
+                {
+                    var neighbor = cell.GetNodeSide(dir);
+                    if (neighbor != null)
+                    {
+                        DebugCell(occlusionJagged, neighbor.positionInt.x, neighbor.positionInt.y, neighbor.positionInt.z);
+                    }
+                }
+                */
+            }
+
+            /// <summary>
+            /// Debugs all cells in a given range (for small areas)
+            /// </summary>
+            public static void DebugRange(VisibilityData[][][] occlusionJagged, int xStart, int xEnd, int yStart, int yEnd, int zStart, int zEnd)
+            {
+                for (int x = xStart; x <= xEnd; x++)
+                    for (int y = yStart; y <= yEnd; y++)
+                        for (int z = zStart; z <= zEnd; z++)
+                        {
+                            DebugCell(occlusionJagged, x, y, z);
+                        }
+            }
+
+            private static List<VisibilityData> HookRealtimeOcclusion2Find(On.RealtimeOcclusion2.orig_Find orig, RealtimeOcclusion2 realtimeOcclusion2, Vector3 _point, List<VisibilityData> _seenData)
+            {
+                realtimeOcclusion2.searchID++;
+                realtimeOcclusion2.seenData = _seenData;
+
+                // --- DEBUG: Find() is running ---
+                Debug.Log($"[OCC] Find() searchID={realtimeOcclusion2.searchID} camPos={_point}");
+
+                realtimeOcclusion2.saveCamData = RealtimeOcclusion2.Occlusion.CamData;
+
+                // --- DEBUG: start cell lookup ---
+                Vector3 roundedPoint = MathHelper.RoundToNearest(_point, Settings.CuboidDim);
+                realtimeOcclusion2.startData = RealtimeOcclusion2.Occlusion.GetData(roundedPoint);
+
+                if (realtimeOcclusion2.startData == null)
+                {
+                    Debug.LogError($"[OCC] startData NULL at rounded pos {roundedPoint}");
+                    RealtimeOcclusion2.Occlusion.CamData = realtimeOcclusion2.saveCamData;
+                    return realtimeOcclusion2.seenData;
+                }
+
+                // --- DEBUG: start cell confirmed ---
+                Debug.Log($"[OCC] Start cell = {realtimeOcclusion2.startData.position}");
+
+                realtimeOcclusion2.startData.reasonRays.Clear();
+                realtimeOcclusion2.startData.searchID = realtimeOcclusion2.searchID;
+                realtimeOcclusion2.startPos = realtimeOcclusion2.startData.position;
+
+                RealtimeOcclusion2.sqrFarClip =
+                    realtimeOcclusion2.playerCamera.farClipPlane * realtimeOcclusion2.playerCamera.farClipPlane;
+
+                // --- DEBUG: far clip ---
+                Debug.Log($"[OCC] sqrFarClip={RealtimeOcclusion2.sqrFarClip}");
+
+                realtimeOcclusion2.expands = 0;
+
+                // --- DEBUG: cull cam ---
+                realtimeOcclusion2.cullCam.transform.position =
+                    References.CamMiddle.position -
+                    References.CamMiddle.forward * realtimeOcclusion2.cullCamDistance;
+
+                realtimeOcclusion2.cullCam.transform.rotation = References.CamMiddle.rotation;
+
+                realtimeOcclusion2.defaultID = VisibilityData.RoundToID(realtimeOcclusion2.cullCam.transform.forward);
+
+                Debug.Log(
+                    $"[OCC] CullCam pos={realtimeOcclusion2.cullCam.transform.position} " +
+                    $"forwardID={realtimeOcclusion2.defaultID}"
+                );
+
+                realtimeOcclusion2.seenData.Add(realtimeOcclusion2.startData);
+
+                // --- DEBUG: immediate neighbours ---
+                for (int i = 0; i < 6; i++)
+                {
+                    VisibilityData nodeSide = realtimeOcclusion2.startData.GetNodeSide(i);
+                    if (nodeSide != null)
+                    {
+                        realtimeOcclusion2.seenData.Add(nodeSide);
+                        Debug.Log($"[OCC] Start neighbour dir {i} -> {nodeSide.position}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[OCC] MISSING neighbour dir {i} from start cell");
+                    }
+                }
+
+                RealtimeOcclusion2.Occlusion.CamData = realtimeOcclusion2.startData;
+
+                // --- DEBUG: init expansion ---
+                realtimeOcclusion2.expandList.Clear();
+                realtimeOcclusion2.expandList.Add(realtimeOcclusion2.startData);
+
+                realtimeOcclusion2.startData.cameFrom = null;
+                realtimeOcclusion2.startData.cameFromID = -1;
+                realtimeOcclusion2.startData.highestLinch = 0;
+                realtimeOcclusion2.startData.isLinch = true;
+                realtimeOcclusion2.startData.linchDistance = 0;
+                realtimeOcclusion2.startData.sideID = -1;
+
+                for (int j = 0; j < 6; j++)
+                {
+                    realtimeOcclusion2.startData.allowedDirections[j] = true;
+                }
+
+                realtimeOcclusion2.escape = false;
+                realtimeOcclusion2.total = 0;
+
+                // --- DEBUG: expansion loop ---
+                while (realtimeOcclusion2.expandList.Count > realtimeOcclusion2.expands && !realtimeOcclusion2.escape)
+                {
+                    realtimeOcclusion2.total++;
+
+                    // --- DEBUG: expansion step ---
+                    var current = realtimeOcclusion2.expandList[realtimeOcclusion2.expands];
+                    Debug.Log(
+                        $"[OCC] Expand step {realtimeOcclusion2.total} " +
+                        $"cell={current.position} " +
+                        $"linch={current.isLinch} " +
+                        $"linchDist={current.linchDistance}"
+                    );
+
+                    realtimeOcclusion2.Expand();
+                }
+
+                // --- DEBUG: expansion finished ---
+                Debug.Log(
+                    $"[OCC] Expansion finished. " +
+                    $"expanded={realtimeOcclusion2.expands} " +
+                    $"totalSteps={realtimeOcclusion2.total} " +
+                    $"seenCells={realtimeOcclusion2.seenData.Count}"
+                );
+
+                RealtimeOcclusion2.Occlusion.CamData = realtimeOcclusion2.saveCamData;
+                return realtimeOcclusion2.seenData;
+            }
+
+            private static bool HookRealtimeOcclusion2AllowNewPoint(On.RealtimeOcclusion2.orig_AllowNewPoint orig, RealtimeOcclusion2 realtimeOcclusion2, VisibilityData _data)
+            {
+                return true;
+            }
+
+            private static bool HookRealtimeOcclusion2AllowExpansion(On.RealtimeOcclusion2.orig_AllowExpansion orig, RealtimeOcclusion2 realtimeOcclusion2, VisibilityData _data)
+            {
+                return true;
+            }
+
+            private static void HookVisibilityDataNearbyRenderer(On.VisibilityData.orig_NearbyRenderer orig, VisibilityData visibilityData)
+            {
+                visibilityData.nearRenderers = true;
+
+            }
+            private static void HookRenderCullerOnCulled(On.RenderCuller.orig_OnCulled orig, RenderCuller renderCuller)
+            {
+                renderCuller.Show();
+            }
+
+            private static void HookRenderCullerHide(On.RenderCuller.orig_Hide orig, RenderCuller renderCuller)
+            {
+                // if (renderCuller.name.Contains("Cargo_Container"))
+                // {
+                var pos = RegionManager.Instance.ConvertPointToRegionNode(renderCuller.Bound.center);
+                if (pos.x == 25 && pos.y == 5 && pos.z == 7)
+                {
+                    Debug.Log($"Culler being hidden: {renderCuller}. Bound: {renderCuller.Bound}. World pos: {pos}. ExtraBound: {renderCuller.extraBounds}. Assigned: {renderCuller.Assigned}. Trace:\n{new StackTrace()}");
+                }
+                // }
+                // renderCuller.rend.enabled = true;
+                orig.Invoke(renderCuller);
+            }
+
+            private static void HookRenderCullerShow(On.RenderCuller.orig_Show orig, RenderCuller renderCuller)
+            {
+
+                // if (renderCuller.name.Contains("Cargo_Container"))
+                // {
+                var pos = RegionManager.Instance.ConvertPointToRegionNode(renderCuller.Bound.center);
+                if (pos.x == 25 && pos.y == 5 && pos.z == 7)
+                {
+                    Debug.Log($"Culler being shown: {renderCuller}. Bound: {renderCuller.Bound}. World pos: {pos}. ExtraBound: {renderCuller.extraBounds}. Assigned: {renderCuller.Assigned}. Trace:\n{new StackTrace()}");
+                }
+                // }
+                // renderCuller.rend.enabled = true;
+                orig.Invoke(renderCuller);
+            }
+
+            private static void HookCullBoxUpdate(On.CullBox.orig_Update orig, CullBox cullBox)
+            {
+                cullBox.drawn = true;
+            }
+
+            private static void HookSpawnDeckCargoWallsGenerateDeckCargoWall(On.SpawnDeckCargoWalls.orig_GenerateDeckCargoWall orig, GameObject _parentObj, int _deckConBaseID, Vector3 _node)
+            {
+                bool[] array = new bool[4];
+                if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, _deckConBaseID, -1))
+                {
+                    array[0] = true;
+                }
+                if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, _deckConBaseID, -1))
+                {
+                    array[1] = true;
+                }
+                if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.forward, _deckConBaseID, -1))
+                {
+                    array[2] = true;
+                }
+                if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.back, _deckConBaseID, -1))
+                {
+                    array[3] = true;
+                }
+                Debug.Log($"Adjacencies: Right {array[0]}. Left {array[1]}. Forward {array[2]}. Back {array[3]}.");
+                bool flag = false;
+                if (array[2] && array[3])
+                {
+                    var hasExtendedHoldBehindWall = RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, (int)RegionId.CargoMainHold) || RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, (int)RegionId.CargoMainHold);
+                    if (hasExtendedHoldBehindWall)
+                    {
+                        return;
+                    }
+                    GameObject gameObject;
+                    if (CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 3f) && CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.back * 3f))
+                    {
+                        Debug.Log("Front wall 1 at " + _node);
+                        gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.frontWall02, _parentObj);
+                    }
+                    else
+                    {
+                        Debug.Log("Front wall 2 at " + _node);
+                        gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.frontWall01, _parentObj);
+                        if ((!CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 3f) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, SpawnDeckCargoWalls.deckCargoWalkwaysID, -1)) || (!CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.back * 3f) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, SpawnDeckCargoWalls.deckCargoWalkwaysID, -1)))
+                        {
+                            gameObject.transform.localScale = new Vector3(-1f, 1f, 1f);
+                        }
+                    }
+                    if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, SpawnDeckCargoWalls.deckCargoWalkwaysID, -1))
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));
+                        if (gameObject.transform.localScale.x == 1f)
+                        {
+                            gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
+                        }
+                    }
+                    else
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 270f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 0f);
+                        if (gameObject.transform.localScale.x == -1f)
+                        {
+                            gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
+                        }
+                    }
+                }
+                else if ((array[0] && array[2]) || (array[1] && array[2]) || (array[1] && array[3]) || (array[0] && array[3]))
+                {
+                    Debug.Log("Corner at " + _node);
+                    GameObject gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.corner, _parentObj);
+                    if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, _deckConBaseID, -1) && RegionManager.Instance.CheckNodeForRegion(_node + Vector3.forward, _deckConBaseID, -1) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right + Vector3.forward, _deckConBaseID, -1))
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 2f);
+                        flag = true;
+                    }
+                    else if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, _deckConBaseID, -1) && RegionManager.Instance.CheckNodeForRegion(_node + Vector3.forward, _deckConBaseID, -1) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left + Vector3.forward, _deckConBaseID, -1))
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
+                    }
+                    else if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, _deckConBaseID, -1) && RegionManager.Instance.CheckNodeForRegion(_node + Vector3.back, _deckConBaseID, -1) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right + Vector3.back, _deckConBaseID, -1))
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 270f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 0f);
+                        flag = true;
+                    }
+                    if (_node.x < 37f || _node.x > 52f)
+                    {
+                        Debug.Log("Support at " + _node);
+                        gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.support01, _parentObj);
+                        if (CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 3f))
+                        {
+                            gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
+                            gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
+                        }
+                        if (flag)
+                        {
+                            gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 0f);
+                        }
+                    }
+                }
+                else
+                {
+                    bool flag2 = _node.x == 25f || _node.x == 34f || _node.x == 39f || _node.x == 48f || _node.x == 53f || _node.x == 59f;
+                    GameObject gameObject;
+                    if (flag2)
+                    {
+                        Debug.Log("Locker at " + _node);
+                        gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.locker, _parentObj);
+                        gameObject.transform.parent = LevelGeneration.Instance.nodeData[(int)_node.x][(int)_node.y][(int)_node.z].nodeRoom.transform;
+                        gameObject.transform.localPosition = Vector3.zero;
+                        gameObject.transform.localRotation = Quaternion.identity;
+                    }
+                    else
+                    {
+                        Debug.Log("Special wall 1 at " + _node);
+                        gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.sideWalls[UnityEngine.Random.Range(0, SpawnDeckCargoWalls.sideWalls.Count)], _parentObj);
+                    }
+                    if (_node.z == 1f && !flag2)
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 2f);
+                    }
+                }
+                if (_node.x % 3f == 0f && (!CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 2f) || !CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.back * 2f)) && (_node.x < 37f || _node.x > 52f))
+                {
+                    Debug.Log("Special wall 2 at " + _node);
+                    GameObject gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.support01, _parentObj);
+                    if (CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 5f))
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
+                    }
+                    if (_node.x > 37f)
+                    {
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(-2f, 0f, 0f);
+                    }
+                    if (_node.x > 52f)
+                    {
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(-2f, 0f, 0f);
+                    }
+                }
+            }
+
+            private static GameObject HookSpawnDeckCargoWallsCreateWallPiece(On.SpawnDeckCargoWalls.orig_CreateWallPiece orig, Vector3 _node, GameObject _wallPiece, GameObject _parentObj)
+            {
+                Debug.Log($"Spawning wall piece: {_node} {_wallPiece} {_parentObj}");
+                return orig.Invoke(_node, _wallPiece, _parentObj);
+            }
+
+            private static void AddStandardCrates(Vector3Int start, Vector3Int end)
+            {
+                for (int x = Mathf.Min(start.x, end.x); x <= Mathf.Max(start.x, end.x); x++)
+                {
+                    for (int y = Mathf.Min(start.y, end.y); y <= Mathf.Max(start.y, end.y); y++)
+                    {
+                        for (int z = Mathf.Min(start.z, end.z); z <= Mathf.Max(start.z, end.z); z++)
+                        {
+                            SpawnCargoContainersLG.stdCrateNodes.Add(new Vector3(x, y, z));
+                        }
+                    }
+                }
+            }
+
+            private static void HookSpawnCargoContainersLGSpawnCrateBlockPaths(On.SpawnCargoContainersLG.orig_SpawnCrateBlockPaths orig, float _leftSideX, float _rightSideX, List<int> _nodeFrontIndices, List<int> _nodeBackIndices, int _catWalkID, bool _altPathLeft)
+            {
+                List<Vector3> leftPoints = new List<Vector3>();
+                List<Vector3> rightPoints = new List<Vector3>();
+                int numberOfPaths = 2;
+                int numberOfAltPaths = 1;
+                int cratesToSpawn = 4;
+                int maxY = 4;
+                if (ModSettings.experimentalShipExtension && _leftSideX == 24f) // ONLY IF OUTER DECK CARGO EXT
+                {
+                    maxY = 5;
+                    // Add crates to fill in the walls on deck 5 (with support below).
+                    AddStandardCrates(new Vector3Int(24, 1, 2), new Vector3Int(24, 5, 13));
+                    AddStandardCrates(new Vector3Int(33, 1, 2), new Vector3Int(33, 5, 13));
+                    numberOfPaths += 2;
+                }
+                if (_rightSideX == 44f)
+                {
+                    maxY = 3;
+                }
+                for (int y = 1; y <= maxY; y++)
+                {
+                    for (int z = 0; z < 4; z++)
+                    {
+                        leftPoints.Add(new Vector3(_leftSideX, y, z * 3 + 2));
+                        rightPoints.Add(new Vector3(_rightSideX, y, z * 3 + 2));
+                    }
+                }
+                for (int pathsSpawned = 0; pathsSpawned < numberOfPaths; pathsSpawned++)
+                {
+                    // Guarantee that there is at least one path at max height when using exterior cargo holds.
+                    var leftList = ModSettings.experimentalShipExtension && pathsSpawned == 0 && maxY == 5 ? leftPoints.FindAll(point => point.y == maxY) : leftPoints;
+                    SpawnCargoContainersLG.pointOne = leftList.Random();
+                    leftPoints.Remove(SpawnCargoContainersLG.pointOne);
+                    var rightList = ModSettings.experimentalShipExtension && pathsSpawned == 1 && maxY == 5 ? rightPoints.FindAll(point => point.y == maxY) : rightPoints;
+                    SpawnCargoContainersLG.pointTwo = rightList.Random();
+                    rightPoints.Remove(SpawnCargoContainersLG.pointTwo);
+                    SpawnCargoContainersLG.SpawnMainPath(SpawnCargoContainersLG.pointOne, SpawnCargoContainersLG.pointTwo, _nodeBackIndices, _nodeFrontIndices, ref SpawnCargoContainersLG.prePathCount, ref SpawnCargoContainersLG.postPathCount);
+                }
+                for (int altPathsSpawned = 0; altPathsSpawned < numberOfAltPaths; altPathsSpawned++)
+                {
+                    SpawnCargoContainersLG.pointOne = SpawnCargoContainersLG.cargoNodes[UnityEngine.Random.Range(SpawnCargoContainersLG.prePathCount, SpawnCargoContainersLG.postPathCount)].node;
+                    if (_altPathLeft)
+                    {
+                        SpawnCargoContainersLG.pointTwo = leftPoints[UnityEngine.Random.Range(0, leftPoints.Count)];
+                        leftPoints.Remove(SpawnCargoContainersLG.pointTwo);
+                    }
+                    else
+                    {
+                        SpawnCargoContainersLG.pointTwo = rightPoints[UnityEngine.Random.Range(0, rightPoints.Count)];
+                        rightPoints.Remove(SpawnCargoContainersLG.pointTwo);
+                    }
+                    SpawnCargoContainersLG.SpawnAlternatePath(SpawnCargoContainersLG.pointOne, SpawnCargoContainersLG.pointTwo, _nodeBackIndices, _nodeFrontIndices, ref SpawnCargoContainersLG.prePathCount, ref SpawnCargoContainersLG.postPathCount, _catWalkID);
+                }
+                if (LevelGeneration.Instance.GetMonster.name.Contains("Hunter"))
+                {
+                    SpawnCargoContainersLG.SpawnSideCrates(cratesToSpawn, SpawnCargoContainersLG.totalCratesPrePaths, SpawnCargoContainersLG.postPathCount);
+                }
+                SpawnCargoContainersLG.totalCratesPrePaths = SpawnCargoContainersLG.cargoNodes.Count;
+            }
+
+            private static void HookSpawnCargoContainersLGSpawnBrokenRails(On.SpawnCargoContainersLG.orig_SpawnBrokenRails orig, Vector3 _regionNode, List<Room> _roomsInUse, GameObject _cargoParent, GameObject _railing)
+            {
+                if (_regionNode.y < 5)
+                {
+                    orig.Invoke(_regionNode, _roomsInUse, _cargoParent, _railing);
+                }
+                // else
+                // {
+                //     Debug.Log("Not spawning rail at " + _regionNode);
+                //     _regionNode += new Vector3(-1f, 0f, 1f);
+
+                //     var appendages = LevelGeneration.Instance.nodeData[(int)_regionNode.x][(int)_regionNode.y][(int)_regionNode.z].appendageData;
+                //     Debug.Log(appendages.Count);
+                //     if (appendages.FindAll(d => d is LineOfSightData).Count > 0)
+                //     {
+                //         foreach (RoomAppendageData data in appendages)
+                //         {
+                //             if (data is LineOfSightData losdata)
+                //             {
+                //                 Debug.Log(data.initialOrientation);
+                //                 Debug.Log("Adding LineOfSightData to " + _regionNode);
+
+                //                 LineOfSightData lineOfSightData = new LineOfSightData();
+                //                 LineOfSightData lineOfSightData2 = losdata;
+                //                 Vector3 vector = RoomAppendageData.ConvertLocalAppendageToWorldSpace(lineOfSightData2.joiningRoom, lineOfSightData2);
+                //                 lineOfSightData.x = (int)vector.x;
+                //                 lineOfSightData.z = (int)vector.z;
+                //                 lineOfSightData.floor = (int)vector.y;
+                //                 lineOfSightData.joiningRoom = lineOfSightData2.joiningRoom;
+                //                 lineOfSightData.regionNode = lineOfSightData2.regionNode;
+                //                 lineOfSightData.rotationQuadrant = lineOfSightData2.rotationQuadrant;
+                //                 lineOfSightData.initialOrientation = Orientation.Vertical; //lineOfSightData2.initialOrientation;
+                //                 lineOfSightData.currentOrientation = lineOfSightData2.currentOrientation;
+                //                 lineOfSightData.finalRotationQuadrant = lineOfSightData2.finalRotationQuadrant;
+                //                 appendages.Add(lineOfSightData);
+                //                 break;
+                //             }
+                //         }
+                //     }
+
+                // }
+            }
+
+
+            private static GameObject HookSpawnCargoHoldLGHorizontalOrVerticalWall(On.SpawnCargoHoldLG.orig_HorizontalOrVerticalWall orig, int _horIndex, int _vertIndex, Vector3 _regionNode, int _cargoID, RoomStructure[] _nodeChecks)
+            {
+                if (ModSettings.experimentalShipExtension && _regionNode.y == 5f)
+                {
+                    return null;
+                }
+                return orig.Invoke(_horIndex, _vertIndex, _regionNode, _cargoID, _nodeChecks);
             }
 
             /*
@@ -520,9 +1979,42 @@ namespace MonstrumExtendedSettingsMod
                             // Record information on the player's region.
                             StringBuilder stringBuilder = new StringBuilder();
                             NodeData playerRegionNodeData = LevelGeneration.GetNodeDataAtPosition(References.Player.transform.position);
-                            if (playerRegionNodeData != null && playerRegionNodeData.nodeRoom != null)
+                            if (playerRegionNodeData != null)
                             {
-                                stringBuilder.Append(playerRegionNodeData.nodeRoom.PrimaryRegion.ToString());
+                                if (playerRegionNodeData.nodeRoom != null)
+                                {
+                                    stringBuilder.Append("RR: ");
+                                    stringBuilder.Append(playerRegionNodeData.nodeRoom.PrimaryRegion.ToString());
+                                    stringBuilder.Append(" - RS: ");
+                                    stringBuilder.Append(playerRegionNodeData.nodeRoom.RoomType.ToString());
+                                    stringBuilder.Append(" - RN: ");
+                                    stringBuilder.Append(playerRegionNodeData.nodeRoom.name);
+                                }
+
+                                var appendageData = LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].appendageData;
+                                stringBuilder.Append(" - AD: ");
+                                if (appendageData.Count > 0)
+                                {
+                                    foreach (RoomAppendageData data in appendageData)
+                                    {
+                                        stringBuilder.Append(data.currentOrientation);
+                                    }
+                                }
+                                else
+                                {
+                                    stringBuilder.Append("N/A");
+                                }
+
+                                stringBuilder.Append(" - PR: ");
+                                stringBuilder.Append(playerRegionNodeData.primaryRegion.ToString());
+                                stringBuilder.Append(" - PO: ");
+                                stringBuilder.Append(playerRegionNodeData.occupied);
+                                // stringBuilder.Append(" - NS: ");
+                                // stringBuilder.Append(LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].nodeType);
+                                // stringBuilder.Append(" - NR: ");
+                                // stringBuilder.Append(LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].primaryRegion);
+                                // stringBuilder.Append(" - NO: ");
+                                // stringBuilder.Append(LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].occupied);
                             }
 
                             // Append additional information on the player's region.
@@ -1102,6 +2594,10 @@ namespace MonstrumExtendedSettingsMod
                 // Do not play any more audio during level generation as RNG is used to randomise granularity and clip selection.
                 if ((ModSettings.useCustomSeed || ModSettings.consistentLevelGeneration) && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainSecondary" && (LevelGeneration.Instance == null || !LevelGeneration.Instance.finishedGenerating))
                 {
+                    if (audioLibrary.clips != null && audioLibrary.clips.Count > 0)
+                    {
+                        return audioLibrary.clips[0];
+                    }
                     return null;
                 }
                 return orig.Invoke(audioLibrary);
@@ -1249,7 +2745,7 @@ namespace MonstrumExtendedSettingsMod
                         Sprite loadingScreenSprite = Sprite.Create(deathScreenTexture, referenceSprite.rect, referenceSprite.pivot, referenceSprite.pixelsPerUnit);
 
                         // Check whether the image is a region background.
-                        foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
+                        foreach (PrimaryRegionType primaryRegionType in System.Enum.GetValues(typeof(PrimaryRegionType)))
                         {
                             // Check the name of the image against the region enum.
                             if (deathScreenTexture.name.Contains(primaryRegionType.ToString()))
@@ -1283,7 +2779,7 @@ namespace MonstrumExtendedSettingsMod
                         }
 
                         // Check whether the image is a death type frame.
-                        foreach (ChooseAttack.PlayerDeath playerDeath in Enum.GetValues(typeof(ChooseAttack.PlayerDeath)))
+                        foreach (ChooseAttack.PlayerDeath playerDeath in System.Enum.GetValues(typeof(ChooseAttack.PlayerDeath)))
                         {
                             // Check the name of the image against the playerDeath enum.
                             if (deathScreenTexture.name.Contains(playerDeath.ToString()))
@@ -3910,18 +5406,46 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            private static bool hookedCrateBlockPaths = false;
+
             // ~ Main menu skip menu screen text not working anymore...? (Maybe only when dnSpy compiled the main dll) Does doing multiple rounds not work anymore in MMM?
             private static void HelicopterCargoExtension()
             {
+                foreach (RegionEntry entry in RegionManager.Instance.regions)
+                {
+                    Debug.Log($"Primary region: {entry.primaryRegion}. ID: {entry.regionID}. Name: {entry.regionName}. Colour: {entry.regionColour}. OldColour: {entry.oldRegionColour}");
+                }
+
+                if (!hookedCrateBlockPaths)
+                {
+                    On.SpawnCargoContainersLG.SpawnCrateBlockPaths += new On.SpawnCargoContainersLG.hook_SpawnCrateBlockPaths(HookSpawnCargoContainersLGSpawnCrateBlockPaths);
+                    On.SpawnCargoContainersLG.SpawnBrokenRails += new On.SpawnCargoContainersLG.hook_SpawnBrokenRails(HookSpawnCargoContainersLGSpawnBrokenRails);
+
+                    hookedCrateBlockPaths = true;
+                }
+
+                // Set the cargo hold entrances. No need to change the internal nodes of the cargo hold directly as these are added via generation when specifying maxY.
+                // int leftX = 23, rightX = 36, nearZ = 2, farZ = 13;
+                // CustomLevelGeneration.SetNodes(new Vector3Int(leftX, 5, nearZ + 1), new Vector3Int(leftX, 5, farZ - 1), RegionId.DeckCargoWalkways, RegionId.DeckMainCargoArea, RegionId.DeckContainerBase, RegionId.CargoCatwalks);
+                // CustomLevelGeneration.SetNodes(new Vector3Int(rightX, 5, nearZ + 1), new Vector3Int(rightX, 5, farZ - 1), RegionId.DeckCargoWalkways, RegionId.DeckMainCargoArea, RegionId.DeckContainerBase, RegionId.CargoCatwalks);
+
+
+                // CustomLevelGeneration.SetNodes(new Vector3Int(leftX + 1, 5, nearZ + 1), new Vector3Int(rightX - 1, 5, farZ - 1), RegionId.Deck, RegionId.DeckMainCargoArea, RegionId.CargoMainHold);
+
+
+
+                // var deckWallNodes = RegionManager.Instance.regions[RegionManager.Instance.IDToIndex((int)RegionId.DeckContainerBase)].associatedNodes;
+                // var firstNode = deckWallNodes[0];
+                // var secondNode = deckWallNodes[1];
+                // deckWallNodes.RemoveRange(0, 2);
+                // deckWallNodes.Add(firstNode);
+                // deckWallNodes.Add(secondNode);
+
                 //CopyRegionOverYUsingReferenceNode(24, 4, 2, 24, 35, 4, 7, 2, 13);
-                CopyRegionOverYUsingReferenceNode(24, 4, 2, 27, 35, 5, 5, 3, 12);
+                // CopyRegionOverYUsingReferenceNode(24, 4, 2, 27, 35, 5, 5, 3, 12);
                 //CopyRegionOverYUsingReferenceNode(23, 4, 2, 36, 36, 6, 6, 4, 11);
 
                 // Edit SpawnCargoContainersLG (Currently edited in dnSpy)
-
-
-                //SetRegionInRange("Cargo_Catwalks", 36, 36, 5, 5, 3, 12, true);
-                //SetRegionInRange("Cargo_MainHold", 36, 36, 5, 5, 3, 12);
             }
 
             private static void LevelGenerationChanges()
@@ -3933,10 +5457,10 @@ namespace MonstrumExtendedSettingsMod
                 string[] coreRegions = { "Crew Deck", "Upper Deck", "Lower Deck" };
                 string[] convertibleRegions = { "Inaccessible"/*, "Deck_CargoContainers", "Deck_CargoWalkways", "Deck_MainCargoArea", "Deck_SingleContainers", "Deck_Bow", "Deck_ContainerBase", "Deck_HoldCover", "Deck_Stern", "Deck_BridgeWalkways", "Engines_MainArea", "Engines_Catwalks", "Engines_MainEngine", "Engines_SingleFloorMachines", "Engines_MultiFloorMachines", "Engines_WalledRooms", "Engines_Stairs", "Engines_ControlRoom", "Shell", "Deck", "Bridge", "Walkways"*/ };
 
-                if (ModSettings.experimentalShipExtension && ModSettings.increaseMapSizeVector.z < 16f)
-                {
-                    ModSettings.increaseMapSizeVector = new Vector3(ModSettings.increaseMapSizeVector.x, ModSettings.increaseMapSizeVector.y, 32f);
-                }
+                // if (ModSettings.experimentalShipExtension && ModSettings.increaseMapSizeVector.z < 16f)
+                // {
+                //     ModSettings.increaseMapSizeVector = new Vector3(ModSettings.increaseMapSizeVector.x, ModSettings.increaseMapSizeVector.y, 32f);
+                // }
 
                 if (ModSettings.useDeckFourOnSubmersibleSide)
                 {
@@ -4172,18 +5696,22 @@ namespace MonstrumExtendedSettingsMod
 
                 if (ModSettings.addAdditionalCrewDeckBuilding)
                 {
-                    CopyRegionOverYUsingReferenceNode(21, 5, 2, 30, 31, 5, 5, 2, 13); // Copy Cargo To Crew Deck Separation Part 1
-                    CopyRegionOverYUsingReferenceNode(23, 5, 2, 32, 32, 5, 5, 2, 13); // Copy Cargo To Crew Deck Separation Part 2
-                    CopyRegionOverYUsingReferenceNode(0, 0, 0, 23, 32, 6, 7, 0, 15); // Clear Air
-
-                    CopyRegionOverYUsingReferenceNode(21, 5, 1, 23, 31, 5, 5, 1, 1); // Set Walkway Near
-                    CopyRegionOverYUsingReferenceNode(21, 5, 1, 23, 31, 5, 5, 14, 14); // Set Walkway Far
-                    CopyRegionOverYUsingReferenceNode(21, 5, 2, 23, 31, 5, 5, 2, 13); // Set Walkway Centre
-
                     int crewDeckExtensionLeftPoint = 23;
                     int crewDeckExtensionRightPoint = 30;
                     int crewDeckExtensionNearPoint = 3;
                     int crewDeckExtensionFarPoint = 12;
+
+                    int cargoOppositePoint = crewDeckExtensionLeftPoint;
+                    int cargoSidePoint = crewDeckExtensionRightPoint;
+                    int cargoSideMultiplier = cargoSidePoint == crewDeckExtensionRightPoint ? 1 : -1;
+
+                    CopyRegionOverYUsingReferenceNode(21, 5, 2, cargoSidePoint, cargoSidePoint + 1 * cargoSideMultiplier, 5, 5, 2, 13); // Copy Cargo To Crew Deck Separation Part 1
+                    CopyRegionOverYUsingReferenceNode(23, 5, 2, cargoSidePoint + 2 * cargoSideMultiplier, cargoSidePoint + 2 * cargoSideMultiplier, 5, 5, 2, 13); // Copy Cargo To Crew Deck Separation Part 2
+                    CopyRegionOverYUsingReferenceNode(0, 0, 0, cargoOppositePoint, cargoSidePoint + 2 * cargoSideMultiplier, 6, 7, 0, 15); // Clear Air
+
+                    CopyRegionOverYUsingReferenceNode(21, 5, 1, cargoOppositePoint, cargoSidePoint + 1 * cargoSideMultiplier, 5, 5, 1, 1); // Set Walkway Near
+                    CopyRegionOverYUsingReferenceNode(21, 5, 1, cargoOppositePoint, cargoSidePoint + 1 * cargoSideMultiplier, 5, 5, 14, 14); // Set Walkway Far
+                    CopyRegionOverYUsingReferenceNode(21, 5, 2, cargoOppositePoint, cargoSidePoint + 1 * cargoSideMultiplier, 5, 5, 2, 13); // Set Walkway Centre
 
                     CopyRegionOverYUsingReferenceNode(16, 5, 4, crewDeckExtensionLeftPoint + 1, crewDeckExtensionRightPoint - 1, 5, 6, crewDeckExtensionNearPoint + 1, crewDeckExtensionFarPoint - 1); // Crew Deck Extension
                     CopyRegionOverYUsingReferenceNode(16, 5, 3, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 5, 6, crewDeckExtensionNearPoint, crewDeckExtensionNearPoint); // Crew Deck Shell Extension Near
@@ -4356,48 +5884,70 @@ namespace MonstrumExtendedSettingsMod
                     // CopyRegionOverYUsingReferenceNode(23, 4, 2, 23, 23, 5, 5, 2, 2); // Cargo Hold Ceiling Cover Test
                 }
 
-                /*
-                if (ModSettings.addAdditionalCrewDeckBuilding)
-                {
-                    // Failed as stairs cannot spawn here for some reason.
-                    int crewDeckExtensionLeftPoint = 57;
-                    int crewDeckExtensionRightPoint = 61;
-                    int crewDeckExtensionNearPoint = 3;
-                    int crewDeckExtensionFarPoint = 12;
+                // if (ModSettings.experimentalShipExtension)
+                // {
+                //     // Failed as stairs cannot spawn here for some reason.
+                //     int crewDeckExtensionLeftPoint = 57;
+                //     int crewDeckExtensionRightPoint = 61;
+                //     int crewDeckExtensionNearPoint = 3;
+                //     int crewDeckExtensionFarPoint = 12;
 
-                    CopyRegionOverYUsingReferenceNode(21, 5, 2, 56, 57, 5, 5, 2, 13); // Copy Cargo To Crew Deck Separation Part 1
-                    CopyRegionOverYUsingReferenceNode(23, 5, 2, 55, 55, 5, 5, 2, 13); // Copy Cargo To Crew Deck Separation Part 2
-                    CopyRegionOverYUsingReferenceNode(0, 0, 0, 55, 60, 6, 7, 0, 15); // Clear Air
+                //     CopyRegionOverYUsingReferenceNode(21, 5, 2, 56, 57, 5, 5, 2, 13); // Copy Cargo To Crew Deck Separation Part 1
+                //     CopyRegionOverYUsingReferenceNode(23, 5, 2, 55, 55, 5, 5, 2, 13); // Copy Cargo To Crew Deck Separation Part 2
+                //     CopyRegionOverYUsingReferenceNode(0, 0, 0, 55, 60, 6, 7, 0, 15); // Clear Air
 
-                    CopyRegionOverYUsingReferenceNode(21, 5, 1, 56, 61, 5, 5, 1, 1); // Set Walkway Near
-                    CopyRegionOverYUsingReferenceNode(21, 5, 1, 56, 61, 5, 5, 14, 14); // Set Walkway Far
-                    CopyRegionOverYUsingReferenceNode(21, 5, 2, 56, 61, 5, 5, 2, 13); // Set Walkway Centre
+                //     CopyRegionOverYUsingReferenceNode(21, 5, 1, 56, 61, 5, 5, 1, 1); // Set Walkway Near
+                //     CopyRegionOverYUsingReferenceNode(21, 5, 1, 56, 61, 5, 5, 14, 14); // Set Walkway Far
+                //     CopyRegionOverYUsingReferenceNode(21, 5, 2, 56, 61, 5, 5, 2, 13); // Set Walkway Centre
+
+                //     int crewDeckExtensionLeftPoint = 57;
+                //     int crewDeckExtensionRightPoint = 61;
+                //     int crewDeckExtensionNearPoint = 3;
+                //     int crewDeckExtensionFarPoint = 12;
+
+                //     int cargoOppositePoint = crewDeckExtensionRightPoint;
+                //     int cargoSidePoint = crewDeckExtensionRightPoint;
+                //     int cargoSideMultiplier = cargoSidePoint == crewDeckExtensionRightPoint ? 1 : -1;
+
+                //     CopyRegionOverYUsingReferenceNode(21, 5, 2, cargoSidePoint, cargoSidePoint + 1 * cargoSideMultiplier, 5, 5, 2, 13); // Copy Cargo To Crew Deck Separation Part 1
+                //     CopyRegionOverYUsingReferenceNode(23, 5, 2, cargoSidePoint + 2 * cargoSideMultiplier, cargoSidePoint + 2 * cargoSideMultiplier, 5, 5, 2, 13); // Copy Cargo To Crew Deck Separation Part 2
+                //     CopyRegionOverYUsingReferenceNode(0, 0, 0, cargoOppositePoint, cargoSidePoint + 2 * cargoSideMultiplier, 6, 7, 0, 15); // Clear Air
+
+                //     CopyRegionOverYUsingReferenceNode(21, 5, 1, cargoOppositePoint, cargoSidePoint + 1 * cargoSideMultiplier, 5, 5, 1, 1); // Set Walkway Near
+                //     CopyRegionOverYUsingReferenceNode(21, 5, 1, cargoOppositePoint, cargoSidePoint + 1 * cargoSideMultiplier, 5, 5, 14, 14); // Set Walkway Far
+                //     CopyRegionOverYUsingReferenceNode(21, 5, 2, cargoOppositePoint, cargoSidePoint + 1 * cargoSideMultiplier, 5, 5, 2, 13); // Set Walkway Centre
+
+                //     CopyRegionOverYUsingReferenceNode(16, 5, 4, crewDeckExtensionLeftPoint + 1, crewDeckExtensionRightPoint - 1, 5, 6, crewDeckExtensionNearPoint + 1, crewDeckExtensionFarPoint - 1); // Crew Deck Extension
+                //     CopyRegionOverYUsingReferenceNode(16, 5, 3, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 5, 6, crewDeckExtensionNearPoint, crewDeckExtensionNearPoint); // Crew Deck Shell Extension Near
+                //     CopyRegionOverYUsingReferenceNode(16, 5, 3, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 5, 6, crewDeckExtensionFarPoint, crewDeckExtensionFarPoint); // Crew Deck Shell Extension Far
+                //     CopyRegionOverYUsingReferenceNode(16, 5, 3, crewDeckExtensionLeftPoint, crewDeckExtensionLeftPoint, 5, 6, crewDeckExtensionNearPoint, crewDeckExtensionFarPoint); // Crew Deck Shell Extension Across Left
+                //     CopyRegionOverYUsingReferenceNode(16, 5, 3, crewDeckExtensionRightPoint, crewDeckExtensionRightPoint, 5, 6, crewDeckExtensionNearPoint, crewDeckExtensionFarPoint); // Crew Deck Shell Extension Across Right
 
 
-                    //int bottomStairLevel2 = 5;
-                    //int topStairLevel2 = 5;
+                //     CopyRegionOverYUsingReferenceNode(16, 7, 10, crewDeckExtensionLeftPoint + 1, crewDeckExtensionRightPoint - 1, 7, 7, crewDeckExtensionNearPoint + 2, crewDeckExtensionFarPoint - 1); // Upper Deck Extension
+                //     CopyRegionOverYUsingReferenceNode(16, 7, 11, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 7, 7, crewDeckExtensionNearPoint + 1, crewDeckExtensionNearPoint + 1); // Upper Deck Shell Extension Near
+                //     CopyRegionOverYUsingReferenceNode(16, 7, 11, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 7, 7, crewDeckExtensionFarPoint, crewDeckExtensionFarPoint); // Upper Deck Shell Extension Far
+                //     CopyRegionOverYUsingReferenceNode(16, 7, 11, crewDeckExtensionLeftPoint, crewDeckExtensionLeftPoint, 7, 7, 4, crewDeckExtensionFarPoint); // Upper Deck Shell Extension Across Left
+                //     CopyRegionOverYUsingReferenceNode(16, 7, 11, crewDeckExtensionRightPoint, crewDeckExtensionRightPoint, 7, 7, 4, crewDeckExtensionFarPoint); // Upper Deck Shell Extension Across Right
+                //     CopyRegionOverYUsingReferenceNode(16, 7, 12, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 7, 7, crewDeckExtensionNearPoint, crewDeckExtensionNearPoint); // Outer Deck Walkway Near
 
-                    CopyRegionOverYUsingReferenceNode(16, 5, 4, crewDeckExtensionLeftPoint + 1, crewDeckExtensionRightPoint - 1, 5, 6, crewDeckExtensionNearPoint + 1, crewDeckExtensionFarPoint - 1); // Crew Deck Extension
-                    CopyRegionOverYUsingReferenceNode(16, 5, 3, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 5, 6, crewDeckExtensionNearPoint, crewDeckExtensionNearPoint); // Crew Deck Shell Extension Near
-                    CopyRegionOverYUsingReferenceNode(16, 5, 3, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 5, 6, crewDeckExtensionFarPoint, crewDeckExtensionFarPoint); // Crew Deck Shell Extension Far
-                    CopyRegionOverYUsingReferenceNode(16, 5, 3, crewDeckExtensionLeftPoint, crewDeckExtensionLeftPoint, 5, 6, crewDeckExtensionNearPoint, crewDeckExtensionFarPoint); // Crew Deck Shell Extension Across Left
-                    CopyRegionOverYUsingReferenceNode(16, 5, 3, crewDeckExtensionRightPoint, crewDeckExtensionRightPoint, 5, 6, crewDeckExtensionNearPoint, crewDeckExtensionFarPoint); // Crew Deck Shell Extension Across Right
+                //     CopyRegionOverYUsingReferenceNode(12, 7, 3, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 8, 8, crewDeckExtensionNearPoint + 1, crewDeckExtensionFarPoint); // Outer Deck To Cover Upper Deck Extension
 
+                //     CopyRegionOverYUsingReferenceNode(6, 7, 11, crewDeckExtensionRightPoint - 6, crewDeckExtensionRightPoint, 8, 8, crewDeckExtensionFarPoint - 2, crewDeckExtensionFarPoint); // Life Raft Area Duplicate
+                //     CopyRegionOverYUsingReferenceNode(9, 5, 14, crewDeckExtensionRightPoint - 3, crewDeckExtensionRightPoint - 1, 5, 5, 14, 14); // Life Raft Escape Area Duplicate Near
+                //     CopyRegionOverYUsingReferenceNode(9, 5, 15, crewDeckExtensionRightPoint - 3, crewDeckExtensionRightPoint - 1, 5, 5, 15, 15); // Life Raft Escape Area Duplicate Far
 
-                    CopyRegionOverYUsingReferenceNode(16, 7, 10, crewDeckExtensionLeftPoint + 1, crewDeckExtensionRightPoint - 1, 7, topStairLevel2, crewDeckExtensionNearPoint + 1, crewDeckExtensionFarPoint - 1); // Upper Deck Extension
-                    CopyRegionOverYUsingReferenceNode(16, 7, 11, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 7, topStairLevel2, crewDeckExtensionNearPoint, crewDeckExtensionNearPoint); // Upper Deck Shell Extension Near
-                    CopyRegionOverYUsingReferenceNode(16, 7, 11, crewDeckExtensionLeftPoint, crewDeckExtensionRightPoint, 7, topStairLevel2, crewDeckExtensionFarPoint, crewDeckExtensionFarPoint); // Upper Deck Shell Extension Far
-                    CopyRegionOverYUsingReferenceNode(16, 7, 11, crewDeckExtensionLeftPoint, crewDeckExtensionLeftPoint, 7, topStairLevel2, crewDeckExtensionNearPoint, crewDeckExtensionFarPoint); // Upper Deck Shell Extension Across Left
-                    CopyRegionOverYUsingReferenceNode(16, 7, 11, crewDeckExtensionRightPoint, crewDeckExtensionRightPoint, 7, topStairLevel2, crewDeckExtensionNearPoint, crewDeckExtensionFarPoint); // Upper Deck Shell Extension Across Right
+                //     // Stairs - Sadly using only one set does not work.
+                //     int bottomStairLevel2 = 5;
+                //     int topStairLevel2 = 7;
+                //     CopyRegionOverYUsingReferenceNode(13, 5, 4, crewDeckExtensionLeftPoint + 1, crewDeckExtensionLeftPoint + 3, bottomStairLevel2, topStairLevel2, crewDeckExtensionNearPoint + 2, crewDeckExtensionNearPoint + 3);
+                //     CopyRegionOverYUsingReferenceNode(13, 5, 4, crewDeckExtensionLeftPoint + 1, crewDeckExtensionLeftPoint + 3, bottomStairLevel2, topStairLevel2, crewDeckExtensionFarPoint - 2, crewDeckExtensionFarPoint - 1);
 
-                    //CopyRegionOverYUsingReferenceNode(13, 5, 4, crewDeckExtensionLeftPoint + 1, crewDeckExtensionLeftPoint + 3, bottomStairLevel2, topStairLevel2, crewDeckExtensionNearPoint + 1, crewDeckExtensionNearPoint + 2);
-                    //CopyRegionOverYUsingReferenceNode(13, 5, 4, crewDeckExtensionLeftPoint + 1, crewDeckExtensionLeftPoint + 3, bottomStairLevel2, topStairLevel2, crewDeckExtensionFarPoint - 2, crewDeckExtensionFarPoint - 1);
-
-
-                    //CopyRegionOverYUsingReferenceNode(16, 5, 3, 62, 62, 5, 5, 2, 2); // Crew Deck Shell Extension Near
-                    //CopyRegionOverYUsingReferenceNode(16, 5, 3, 62, 62, 5, 5, 14, 14); // Crew Deck Shell Extension Far
-                }
-                */
+                //     customBottomStairLevelList.Add(bottomStairLevel2);
+                //     Settings.stairsPerLevel++;
+                //     customBottomStairLevelList.Add(bottomStairLevel2);
+                //     Settings.stairsPerLevel++;
+                // }
 
                 if (ModSettings.spawnAdditionalEngineRoomWorkshops)
                 {
@@ -4472,6 +6022,8 @@ namespace MonstrumExtendedSettingsMod
 
                 if (ModSettings.experimentalShipExtension)
                 {
+                    HelicopterCargoExtension();
+
                     /*
                     CopyRegionOverYUsingReferenceNode(3, 5, 1, 4, 4, 5, 5, (int)Settings.ShipCubesCount.z / 2 - 1, (int)Settings.ShipCubesCount.z - 2); // Set Walkway
                     CopyRegionOverYUsingReferenceNode(3, 5, 0, 3, 3, 5, 5, (int)Settings.ShipCubesCount.z / 2 - 1, (int)Settings.ShipCubesCount.z - 2); // Set Outer Deck Cargo Left
@@ -4479,18 +6031,18 @@ namespace MonstrumExtendedSettingsMod
                     CopyRegionOverYUsingReferenceNode(3, 5, 0, 3, 5, 5, 5, (int)Settings.ShipCubesCount.z - 1, (int)Settings.ShipCubesCount.z - 1); // Set Outer Deck Cargo Far
                     */
 
-                    CopyRegionOverYUsingReferenceNode(60, 1, 3, 14, 65, 1, 4, (int)Settings.ShipCubesCount.z / 2 + 1, (int)Settings.ShipCubesCount.z - 1); // Lower deck rooms to fill the new space.
+                    // CopyRegionOverYUsingReferenceNode(60, 1, 3, 14, 65, 1, 4, (int)Settings.ShipCubesCount.z / 2 + 1, (int)Settings.ShipCubesCount.z - 1); // Lower deck rooms to fill the new space.
 
-                    int bottomStairLevel = 0;
-                    int topStairLevel = 4;
-                    // Set 1 (Traditional Lineup)
-                    CopyRegionOverYUsingReferenceNode(13, 3, 4, 61, 63, bottomStairLevel, topStairLevel, 16, 17);
-                    CopyRegionOverYUsingReferenceNode(13, 3, 4, 61, 63, bottomStairLevel, topStairLevel, 30, 31);
+                    // int bottomStairLevel = 0;
+                    // int topStairLevel = 4;
+                    // // Set 1 (Traditional Lineup)
+                    // CopyRegionOverYUsingReferenceNode(13, 3, 4, 61, 63, bottomStairLevel, topStairLevel, 16, 17);
+                    // CopyRegionOverYUsingReferenceNode(13, 3, 4, 61, 63, bottomStairLevel, topStairLevel, 30, 31);
 
-                    customBottomStairLevelList.Add(bottomStairLevel);
-                    Settings.stairsPerLevel++;
-                    customBottomStairLevelList.Add(bottomStairLevel);
-                    Settings.stairsPerLevel++;
+                    // customBottomStairLevelList.Add(bottomStairLevel);
+                    // Settings.stairsPerLevel++;
+                    // customBottomStairLevelList.Add(bottomStairLevel);
+                    // Settings.stairsPerLevel++;
                 }
 
                 if (ModSettings.increaseRoomMinimumCount != 0 || ModSettings.increaseRoomMaximumCount != 0)
