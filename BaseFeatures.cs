@@ -523,9 +523,50 @@ namespace MonstrumExtendedSettingsMod
                             // Record information on the player's region.
                             StringBuilder stringBuilder = new StringBuilder();
                             NodeData playerRegionNodeData = LevelGeneration.GetNodeDataAtPosition(References.Player.transform.position);
-                            if (playerRegionNodeData != null && playerRegionNodeData.nodeRoom != null)
+                            if (playerRegionNodeData != null)
                             {
-                                stringBuilder.Append(playerRegionNodeData.nodeRoom.PrimaryRegion.ToString());
+                                if (playerRegionNodeData.nodeRoom != null)
+                                {
+                                    stringBuilder.Append("RR: ");
+                                    stringBuilder.Append(playerRegionNodeData.nodeRoom.PrimaryRegion.ToString());
+                                    stringBuilder.Append(" - RS: ");
+                                    stringBuilder.Append(playerRegionNodeData.nodeRoom.RoomType.ToString());
+                                    stringBuilder.Append(" - RN: ");
+                                    stringBuilder.Append(playerRegionNodeData.nodeRoom.name);
+                                }
+
+                                /// Some of the below data can help give additional information.
+                                /// Unfortunately, the text on screen can only be so long, so showing all is too much.
+                                /// Furthermore, some of the different accessors just give the same information, so not all added statements are useful.
+
+                                // Appendage data.
+                                // var appendageData = LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].appendageData;
+                                // stringBuilder.Append(" - AD: ");
+                                // if (appendageData.Count > 0)
+                                // {
+                                //     foreach (RoomAppendageData data in appendageData)
+                                //     {
+                                //         stringBuilder.Append(data.currentOrientation);
+                                //     }
+                                // }
+                                // else
+                                // {
+                                //     stringBuilder.Append("N/A");
+                                // }
+
+                                // Player region node data (not nodeRoom)
+                                // stringBuilder.Append(" - PR: ");
+                                // stringBuilder.Append(playerRegionNodeData.primaryRegion.ToString());
+                                // stringBuilder.Append(" - PO: ");
+                                // stringBuilder.Append(playerRegionNodeData.occupied);
+
+                                // Node data
+                                // stringBuilder.Append(" - NS: ");
+                                // stringBuilder.Append(LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].nodeType);
+                                // stringBuilder.Append(" - NR: ");
+                                // stringBuilder.Append(LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].primaryRegion);
+                                // stringBuilder.Append(" - NO: ");
+                                // stringBuilder.Append(LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].occupied);
                             }
 
                             // Append additional information on the player's region.
