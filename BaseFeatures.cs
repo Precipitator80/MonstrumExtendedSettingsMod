@@ -1099,9 +1099,13 @@ namespace MonstrumExtendedSettingsMod
 
             private static AudioClip HookAudioLibraryGetNext(On.AudioLibrary.orig_GetNext orig, AudioLibrary audioLibrary)
             {
-                // Do not play any more audio during level generation as RNG is used to randomise granularity and clip selection.
+                // Return the first audio clip without modifications during level generation as RNG is used to randomise granularity and clip selection.
                 if ((ModSettings.useCustomSeed || ModSettings.consistentLevelGeneration) && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainSecondary" && (LevelGeneration.Instance == null || !LevelGeneration.Instance.finishedGenerating))
                 {
+                    if (audioLibrary.clips != null && audioLibrary.clips.Count > 0)
+                    {
+                        return audioLibrary.clips[0];
+                    }
                     return null;
                 }
                 return orig.Invoke(audioLibrary);
