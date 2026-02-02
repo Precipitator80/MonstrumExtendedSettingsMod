@@ -59,7 +59,7 @@
     <Compile Include="VirtualAudioListener.cs" />
     <Compile Include="VirtualAudioSource.cs" />
     <Compile Include="VirtualAudioSource_ClosestListenerOnly.cs" />
-    <Compile Include="Components\*.*" />
+    <Compile Include="src\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">

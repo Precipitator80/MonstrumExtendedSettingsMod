@@ -517,7 +517,7 @@ namespace MonstrumExtendedSettingsMod
         /*----------------------------------------------------------------------------------------------------*/
         // ~ModSettings
 
-        private static class ModSettings
+        public static class ModSettings
         {
             public static List<MESMSetting> allSettings;
 
@@ -2162,7 +2162,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                     if (smokyShip)
                     {
-                        foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
+                        foreach (PrimaryRegionType primaryRegionType in System.Enum.GetValues(typeof(PrimaryRegionType)))
                         {
                             if (FuseBoxManager.Instance.rooms.ContainsKey(primaryRegionType))
                             {

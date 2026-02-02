@@ -1253,7 +1253,7 @@ namespace MonstrumExtendedSettingsMod
                         Sprite loadingScreenSprite = Sprite.Create(deathScreenTexture, referenceSprite.rect, referenceSprite.pivot, referenceSprite.pixelsPerUnit);
 
                         // Check whether the image is a region background.
-                        foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
+                        foreach (PrimaryRegionType primaryRegionType in System.Enum.GetValues(typeof(PrimaryRegionType)))
                         {
                             // Check the name of the image against the region enum.
                             if (deathScreenTexture.name.Contains(primaryRegionType.ToString()))
@@ -1287,7 +1287,7 @@ namespace MonstrumExtendedSettingsMod
                         }
 
                         // Check whether the image is a death type frame.
-                        foreach (ChooseAttack.PlayerDeath playerDeath in Enum.GetValues(typeof(ChooseAttack.PlayerDeath)))
+                        foreach (ChooseAttack.PlayerDeath playerDeath in System.Enum.GetValues(typeof(ChooseAttack.PlayerDeath)))
                         {
                             // Check the name of the image against the playerDeath enum.
                             if (deathScreenTexture.name.Contains(playerDeath.ToString()))
