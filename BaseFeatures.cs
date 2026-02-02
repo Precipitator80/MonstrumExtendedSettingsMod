@@ -10,6 +10,7 @@ using System.Linq;
 using System.IO;
 using UnityEngine.UI;
 using SRF;
+using MonstrumExtendedSettingsMod.Setting;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -341,6 +342,8 @@ namespace MonstrumExtendedSettingsMod
 
                 // Use Wander Theme From Start
                 On.GlobalMusic.Start += new On.GlobalMusic.hook_Start(HookGlobalMusicStart);
+
+                SettingManager.Register(new DeckCargoHolds());
             }
 
             /*

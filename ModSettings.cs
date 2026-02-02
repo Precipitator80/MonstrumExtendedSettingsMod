@@ -1150,6 +1150,7 @@ namespace MonstrumExtendedSettingsMod
                     overpoweredSteamVents = new MESMSetting<bool>("Overpowered Steam Vents", "Lets steam be expelled from each possible point on a steam vent. This means every vent will have three steam spawn points and handles. Two handles will be clipped in each other, making it harder to turn off both", false).userValue;
                     unbreakablePitTraps = new MESMSetting<bool>("Unbreakable Pit Traps", "Pit traps are not destroyed when the player or monster runs over them", false).userValue;
                     addAdditionalCrewDeckBuilding = new MESMSetting<bool>("Add Additional Crew Deck Building", "Removes some of the cargo containers in front of the bridge and replaces them with a small crew deck building with another life raft on top of it", false).userValue;
+                    deckCargoHolds = new MESMSetting<bool>("Add Deck Cargo Holds", "Lets the cargo holds expand to the deck of the ship rather than being limited to the lower decks", false).userValue;
                     useDeckFourOnSubmersibleSide = new MESMSetting<bool>("Use Deck Four On Submersible Side", "Allows deck 4 to spawn rooms like deck 3 on the submersible side. Also increases the spawn count of lower deck rooms a bit to help fill the additional space", false).userValue;
                     extendLowerDecks = new MESMSetting<bool>("Extend Lower Decks", "A setting that has a similar effect to the extend map one, but only affects the lower decks and has much faster loading times. Also increases the spawn count of lower deck rooms a tiny bit to help fill the additional space", false).userValue;
                     spawnAdditionalEngineRoomWorkshops = new MESMSetting<bool>("Spawn Additional Engine Room Workshops", "Spawns some more engine room workshops with phones", false).userValue;
@@ -3830,6 +3831,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool overpoweredSteamVents;
             public static bool unbreakablePitTraps;
             public static bool addAdditionalCrewDeckBuilding;
+            public static bool deckCargoHolds;
             public static bool useDeckFourOnSubmersibleSide;
             public static bool extendLowerDecks;
             public static bool spawnAdditionalEngineRoomWorkshops;
