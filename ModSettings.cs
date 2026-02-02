@@ -2273,7 +2273,10 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                AssignCustomMusic();
+                if (!ModSettings.musicPack.Equals("Default"))
+                {
+                    AssignCustomMusic();
+                }
 
                 Physics.gravity = new Vector3(gravityXComponent, gravityYComponent, gravityZComponent);
 
