@@ -6,6 +6,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using System.Text;
+using MonstrumExtendedSettingsMod.Setting;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -1638,6 +1639,7 @@ namespace MonstrumExtendedSettingsMod
             // #ReadBeforeGeneration
             public static void ReadBeforeGeneration()
             {
+                SettingManager.EarlyInitialisation();
                 if (enableMultiplayer)
                 {
                     MultiplayerMode.MultiplayerModeVariableInitialisation();
@@ -1649,6 +1651,8 @@ namespace MonstrumExtendedSettingsMod
             {
                 Debug.Log("READING LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READING LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
+
+                SettingManager.LateInitialisation();
 
                 if (!ModSettings.alwaysSkipMenuScreen)
                 {
