@@ -52,20 +52,54 @@ namespace MonstrumExtendedSettingsMod.Setting
         public override void LateInitialisation()
         {
             // Bodge to remove awkard corner pieces spawned inside SpawnCargoHoldLG.SpawnCargoArea (num5 == 2). 2 => corner.
+            // The left corner depends on whether an additional crew deck building is being added.
+            List<int> boundaryNodeXCoords = GetBoundaryNodeXCoords();
+
+            // Destroy all the children of the shell parent game object at the expected coordinates, which should only include the corners.
             foreach (Transform child in SpawnCargoHoldLG.shellParent.transform)
             {
                 Vector3 node = RegionManager.Instance.ConvertPointToRegionNode(child.transform.position);
-                if (
-                    node.y == 5 &&
-                    (node.x >= 24 && node.x <= 25 || node.x >= 35 && node.x <= 36) &&
-                    (node.z >= 2 && node.z <= 3 || node.z >= 13 && node.z <= 14)
-                )
+                if (boundaryNodeXCoords.Contains((int)node.x) && node.y == 5 && (node.z >= 2 && node.z <= 3 || node.z >= 13 && node.z <= 14))
                 {
                     Object.Destroy(child.gameObject);
                 }
             }
         }
 
+        /// <summary>
+        /// Adds standard crates to the given range of nodes.
+        /// Standard crates are guaranteed to spawn, making them useful for filling space.
+        /// </summary>
+        private static void AddStandardCrates(Vector3Int start, Vector3Int end)
+        {
+            for (int x = Mathf.Min(start.x, end.x); x <= Mathf.Max(start.x, end.x); x++)
+            {
+                for (int y = Mathf.Min(start.y, end.y); y <= Mathf.Max(start.y, end.y); y++)
+                {
+                    for (int z = Mathf.Min(start.z, end.z); z <= Mathf.Max(start.z, end.z); z++)
+                    {
+                        SpawnCargoContainersLG.stdCrateNodes.Add(new Vector3(x, y, z));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of x coordinates of nodes on the deck cargo hold boundary.
+        /// </summary>
+        private static List<int> GetBoundaryNodeXCoords()
+        {
+            List<int> nodes = new List<int>() { 35, 36 };
+            nodes.AddRange(
+                !ExtendedSettingsModScript.ModSettings.addAdditionalCrewDeckBuilding ?
+                new[] { 23, 24 } : new[] { 32, 33 }
+            );
+            return nodes;
+        }
+
+        /// <summary>
+        /// Connects any nodes on the deck cargo hold boundary via line of sight data.
+        /// </summary>
         private static void HookPositionRoomLGCheckAdjacentNodeForConnection(On.PositionRoomLG.orig_CheckAdjacentNodeForConnection orig, Room _room, Vector3 _moddedNode, Vector3 _originalNode, NodeData _activeNode, int _UDLRFBIndex)
         {
             if (CheckBoundariesLG.NodeWithinShipBounds(_moddedNode))
@@ -154,163 +188,173 @@ namespace MonstrumExtendedSettingsMod.Setting
                     }
                     if (_UDLRFBIndex == 2 || _UDLRFBIndex == 3)
                     {
-                        Vector3 regionNode = Vector3.zero;
+                        Vector3 vector;
                         if (_UDLRFBIndex == 2)
                         {
-                            regionNode = _originalNode;
+                            vector = _originalNode;
                         }
                         else
                         {
-                            regionNode = _moddedNode;
+                            vector = _moddedNode;
                         }
-                        if (_room.roomDoorData.Count > 0 && RoomAppendageData.CheckAppendageList<DoorData>(regionNode, Orientation.Vertical))
+                        if (_room.roomDoorData.Count > 0 && RoomAppendageData.CheckAppendageList<DoorData>(vector, Orientation.Vertical))
                         {
                             PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
                         }
-                        if (_room.roomFloorJointData.Count > 0 && RoomAppendageData.CheckAppendageList<JoiningFloorData>(regionNode, Orientation.Vertical))
+                        if (_room.roomFloorJointData.Count > 0 && RoomAppendageData.CheckAppendageList<JoiningFloorData>(vector, Orientation.Vertical))
                         {
                             _activeNode.connectedNodesUDLRFB[_UDLRFBIndex] = true;
                             nodeData.connectedNodesUDLRFB[oppositeDirection] = true;
                         }
-                        if (_room.roomWindowData.Count > 0 && RoomAppendageData.CheckAppendageList<WindowData>(regionNode, Orientation.Vertical))
+                        if (_room.roomWindowData.Count > 0 && RoomAppendageData.CheckAppendageList<WindowData>(vector, Orientation.Vertical))
                         {
                             PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
                         }
-                        if (_room.LOSJointData.Count > 0 /*&& RoomAppendageData.CheckAppendageList<LineOfSightData>(regionNode, Orientation.Vertical)*/)
+                        if (_room.LOSJointData.Count > 0)
                         {
-                            var _regionNode = regionNode;
-                            var _orient = Orientation.Vertical;
-                            var check = false;
-
-                            var text = $"Checking vertical appendage data for {_regionNode}, which has orientation {_orient}.";
-                            if (CheckBoundariesLG.NodeWithinShipBounds(_regionNode))
+                            // Allow any nodes on the deck cargo hold boundary to connect via line of sight data.
+                            List<int> boundaryNodeXCoords = GetBoundaryNodeXCoords();
+                            if (boundaryNodeXCoords.Contains((int)vector.x) && vector.y == 5 && (_room.name.Contains("CargoContainer") || _room.name.Contains("Deck_CargoWalkway_TJPlatform"))
+                            || RoomAppendageData.CheckAppendageList<LineOfSightData>(vector, Orientation.Vertical))
                             {
-                                RoomAppendageData.appData = LevelGeneration.Instance.nodeData[(int)_regionNode.x][(int)_regionNode.y][(int)_regionNode.z].appendageData;
-
-                                for (int i = 0; i < RoomAppendageData.appData.Count; i++)
-                                {
-                                    if (RoomAppendageData.appData[i] is LineOfSightData)
-                                    {
-                                        text += $" Checking appendage data {i} {RoomAppendageData.appData[i].regionNode}. This has orientation {RoomAppendageData.appData[i].currentOrientation}.";
-                                        if (_orient == Orientation.None)
-                                        {
-                                            text += " Passed via orientation none.";
-                                            check = true;
-                                            break;
-                                        }
-                                        if (RoomAppendageData.appData[i].currentOrientation == _orient)
-                                        {
-                                            text += " Passed via matching orientation.";
-                                            check = true;
-                                            break;
-                                        }
-                                        if (_room.RoomType == RoomStructure.Cargo && RoomAppendageData.appData[i].joiningRoom.RoomType == RoomStructure.Deck || _room.RoomType == RoomStructure.Deck && RoomAppendageData.appData[i].joiningRoom.RoomType == RoomStructure.Cargo)
-                                        {
-                                            check = true;
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                // if ((_regionNode.x == 23 || _regionNode.x == 24 || _regionNode.x == 35 || _regionNode.x == 36) && _regionNode.y == 5 && (_room.name.Contains("CargoContainer") || _room.name.Contains("Deck_CargoWalkway")))
-                                // {
-                                //     Debug.Log($"Room: {_room}. Room region: {_room.PrimaryRegion}. Room coords: {_room.regionNode}. Cargo container has following appendage: {RoomAppendageData.appData.Count}");
-                                //     foreach (RoomAppendageData data in RoomAppendageData.appData)
-                                //     {
-                                //         Debug.Log($"JR: {data.joiningRoom}. Join room coords: {data.joiningRoom.RegionNode}. Join room type: {data.joiningRoom.PrimaryRegion}. IR: {data.initialOrientation}. Node: {data.regionNode}. x: {data.x}. z: {data.z}. Rot: {data.rotationQuadrant}");
-                                //     }
-                                //     check = true;
-                                // }
-                            }
-
-
-
-                            // THIS CHECK IS WHAT ALLOWS THEM TO JOIN
-                            // PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                            if (check)
-                            {
-
-                                text += " Passed check.";
                                 PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
                             }
-                            else
-                            {
-                                text += " Failed check";
-                            }
-                            // Debug.Log(text);
                         }
                     }
                     else
                     {
-                        Vector3 regionNode2 = Vector3.zero;
+                        Vector3 vector2 = Vector3.zero;
                         if (_UDLRFBIndex == 5)
                         {
-                            regionNode2 = _originalNode;
+                            vector2 = _originalNode;
                         }
                         else
                         {
-                            regionNode2 = _moddedNode;
+                            vector2 = _moddedNode;
                         }
-                        if (_room.roomDoorData.Count > 0 && RoomAppendageData.CheckAppendageList<DoorData>(regionNode2, Orientation.Horizontal))
+                        if (_room.roomDoorData.Count > 0 && RoomAppendageData.CheckAppendageList<DoorData>(vector2, Orientation.Horizontal))
                         {
                             PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
                         }
-                        if (_room.roomFloorJointData.Count > 0 && RoomAppendageData.CheckAppendageList<JoiningFloorData>(regionNode2, Orientation.Horizontal))
+                        if (_room.roomFloorJointData.Count > 0 && RoomAppendageData.CheckAppendageList<JoiningFloorData>(vector2, Orientation.Horizontal))
                         {
                             PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
                         }
-                        if (_room.roomWindowData.Count > 0 && RoomAppendageData.CheckAppendageList<WindowData>(regionNode2, Orientation.Horizontal))
+                        if (_room.roomWindowData.Count > 0 && RoomAppendageData.CheckAppendageList<WindowData>(vector2, Orientation.Horizontal))
                         {
                             PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
                         }
-                        if (_room.LOSJointData.Count > 0 /*&& RoomAppendageData.CheckAppendageList<LineOfSightData>(regionNode2, Orientation.Horizontal)*/)
+                        if (_room.LOSJointData.Count > 0 && RoomAppendageData.CheckAppendageList<LineOfSightData>(vector2, Orientation.Horizontal))
                         {
-                            var _regionNode = regionNode2;
-                            var _orient = Orientation.Horizontal;
-                            var check = false;
-
-                            var text = $"Checking horizontal appendage data for {_regionNode}, which has orientation {_orient}.";
-                            if (CheckBoundariesLG.NodeWithinShipBounds(_regionNode))
-                            {
-                                RoomAppendageData.appData = LevelGeneration.Instance.nodeData[(int)_regionNode.x][(int)_regionNode.y][(int)_regionNode.z].appendageData;
-                                for (int i = 0; i < RoomAppendageData.appData.Count; i++)
-                                {
-                                    if (RoomAppendageData.appData[i] is LineOfSightData)
-                                    {
-                                        text += $" Checking appendage data {i} ({RoomAppendageData.appData[i].regionNode}). This has orientation {RoomAppendageData.appData[i].currentOrientation}.";
-                                        if (_orient == Orientation.None)
-                                        {
-                                            text += " Passed via orientation none.";
-                                            check = true;
-                                            break;
-                                        }
-                                        if (RoomAppendageData.appData[i].currentOrientation == _orient)
-                                        {
-                                            text += " Passed via matching orientation.";
-                                            check = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-
-                            // PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                            if (check)
-                            {
-                                text += " Passed check.";
-                                PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                            }
-                            else
-                            {
-                                text += " Failed check";
-                            }
-                            // Debug.Log(text);
+                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
                         }
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Do not spawn rails at the edges of containers above deck 4 so that the connection to the exterior is clean.
+        /// </summary>
+        private static void HookSpawnCargoContainersLGSpawnBrokenRails(On.SpawnCargoContainersLG.orig_SpawnBrokenRails orig, Vector3 _regionNode, List<Room> _roomsInUse, GameObject _cargoParent, GameObject _railing)
+        {
+            if (_regionNode.y < 5)
+            {
+                orig.Invoke(_regionNode, _roomsInUse, _cargoParent, _railing);
+            }
+        }
+
+        /// <summary>
+        /// Allows cargo containers to spawn higher up than before.
+        /// </summary>
+        private static void HookSpawnCargoContainersLGSpawnCrateBlockPaths(On.SpawnCargoContainersLG.orig_SpawnCrateBlockPaths orig, float _leftSideX, float _rightSideX, List<int> _nodeFrontIndices, List<int> _nodeBackIndices, int _catWalkID, bool _altPathLeft)
+        {
+            List<Vector3> leftPoints = new List<Vector3>();
+            List<Vector3> rightPoints = new List<Vector3>();
+            int numberOfPaths = 2;
+            int numberOfAltPaths = 1;
+            int cratesToSpawn = 4;
+            int maxY = 4;
+            if (_rightSideX == 44f)
+            {
+                maxY = 3;
+            }
+            int maxLeftY = maxY;
+            int maxRightY = maxY;
+
+            // Raise the max height of the cargo hold on the left side of the ship.
+            if (_leftSideX == 24f)
+            {
+                // Do not raise the left side if an extra crew deck is being spawned.
+                if (!ExtendedSettingsModScript.ModSettings.addAdditionalCrewDeckBuilding)
+                {
+                    // Add standard crates to fill in the walls on deck 5 (with support below).
+                    AddStandardCrates(new Vector3Int(24, 1, 2), new Vector3Int(24, 5, 13));
+                    maxLeftY = 5;
+                }
+                AddStandardCrates(new Vector3Int(33, 1, 2), new Vector3Int(33, 5, 13));
+                maxRightY = 5;
+                numberOfPaths += 2;
+            }
+            for (int z = 0; z < 4; z++)
+            {
+                for (int y = 1; y <= maxLeftY; y++)
+                {
+                    leftPoints.Add(new Vector3(_leftSideX, y, z * 3 + 2));
+                }
+                for (int y = 1; y <= maxRightY; y++)
+                {
+                    rightPoints.Add(new Vector3(_rightSideX, y, z * 3 + 2));
+                }
+            }
+            for (int pathsSpawned = 0; pathsSpawned < numberOfPaths; pathsSpawned++)
+            {
+                // Guarantee that there is at least one path at max height when using exterior cargo holds.
+                var leftList = pathsSpawned == 0 && maxLeftY == 5 ? leftPoints.FindAll(point => point.y == maxLeftY) : leftPoints;
+                SpawnCargoContainersLG.pointOne = leftList.Random();
+                leftPoints.Remove(SpawnCargoContainersLG.pointOne);
+                var rightList = pathsSpawned == 1 && maxRightY == 5 ? rightPoints.FindAll(point => point.y == maxRightY) : rightPoints;
+                SpawnCargoContainersLG.pointTwo = rightList.Random();
+                rightPoints.Remove(SpawnCargoContainersLG.pointTwo);
+                SpawnCargoContainersLG.SpawnMainPath(SpawnCargoContainersLG.pointOne, SpawnCargoContainersLG.pointTwo, _nodeBackIndices, _nodeFrontIndices, ref SpawnCargoContainersLG.prePathCount, ref SpawnCargoContainersLG.postPathCount);
+            }
+            for (int altPathsSpawned = 0; altPathsSpawned < numberOfAltPaths; altPathsSpawned++)
+            {
+                SpawnCargoContainersLG.pointOne = SpawnCargoContainersLG.cargoNodes[UnityEngine.Random.Range(SpawnCargoContainersLG.prePathCount, SpawnCargoContainersLG.postPathCount)].node;
+                if (_altPathLeft)
+                {
+                    SpawnCargoContainersLG.pointTwo = leftPoints[UnityEngine.Random.Range(0, leftPoints.Count)];
+                    leftPoints.Remove(SpawnCargoContainersLG.pointTwo);
+                }
+                else
+                {
+                    SpawnCargoContainersLG.pointTwo = rightPoints[UnityEngine.Random.Range(0, rightPoints.Count)];
+                    rightPoints.Remove(SpawnCargoContainersLG.pointTwo);
+                }
+                SpawnCargoContainersLG.SpawnAlternatePath(SpawnCargoContainersLG.pointOne, SpawnCargoContainersLG.pointTwo, _nodeBackIndices, _nodeFrontIndices, ref SpawnCargoContainersLG.prePathCount, ref SpawnCargoContainersLG.postPathCount, _catWalkID);
+            }
+            if (LevelGeneration.Instance.GetMonster.name.Contains("Hunter"))
+            {
+                SpawnCargoContainersLG.SpawnSideCrates(cratesToSpawn, SpawnCargoContainersLG.totalCratesPrePaths, SpawnCargoContainersLG.postPathCount);
+            }
+            SpawnCargoContainersLG.totalCratesPrePaths = SpawnCargoContainersLG.cargoNodes.Count;
+        }
+
+        /// <summary>
+        /// Do not spawn walls above deck 4 so that exterior access to the cargo holds is not blocked.
+        /// </summary>
+        private static GameObject HookSpawnCargoHoldLGHorizontalOrVerticalWall(On.SpawnCargoHoldLG.orig_HorizontalOrVerticalWall orig, int _horIndex, int _vertIndex, Vector3 _regionNode, int _cargoID, RoomStructure[] _nodeChecks)
+        {
+            if (_regionNode.y < 5)
+            {
+                return orig.Invoke(_horIndex, _vertIndex, _regionNode, _cargoID, _nodeChecks);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Do not spawn deck cargo walls that would cover up the cargo containers.
+        /// </summary>
         private static void HookSpawnDeckCargoWallsGenerateDeckCargoWall(On.SpawnDeckCargoWalls.orig_GenerateDeckCargoWall orig, GameObject _parentObj, int _deckConBaseID, Vector3 _node)
         {
             bool[] array = new bool[4];
@@ -334,7 +378,7 @@ namespace MonstrumExtendedSettingsMod.Setting
             bool flag = false;
             if (array[2] && array[3])
             {
-                var hasExtendedHoldBehindWall = RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, (int)RegionId.CargoMainHold) || RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, (int)RegionId.CargoMainHold);
+                var hasExtendedHoldBehindWall = _node.x < 37f && (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, (int)RegionId.CargoMainHold) || RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, (int)RegionId.CargoMainHold));
                 if (hasExtendedHoldBehindWall)
                 {
                     return;
@@ -449,98 +493,6 @@ namespace MonstrumExtendedSettingsMod.Setting
                     gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(-2f, 0f, 0f);
                 }
             }
-        }
-
-        private static void AddStandardCrates(Vector3Int start, Vector3Int end)
-        {
-            for (int x = Mathf.Min(start.x, end.x); x <= Mathf.Max(start.x, end.x); x++)
-            {
-                for (int y = Mathf.Min(start.y, end.y); y <= Mathf.Max(start.y, end.y); y++)
-                {
-                    for (int z = Mathf.Min(start.z, end.z); z <= Mathf.Max(start.z, end.z); z++)
-                    {
-                        SpawnCargoContainersLG.stdCrateNodes.Add(new Vector3(x, y, z));
-                    }
-                }
-            }
-        }
-
-        private static void HookSpawnCargoContainersLGSpawnCrateBlockPaths(On.SpawnCargoContainersLG.orig_SpawnCrateBlockPaths orig, float _leftSideX, float _rightSideX, List<int> _nodeFrontIndices, List<int> _nodeBackIndices, int _catWalkID, bool _altPathLeft)
-        {
-            List<Vector3> leftPoints = new List<Vector3>();
-            List<Vector3> rightPoints = new List<Vector3>();
-            int numberOfPaths = 2;
-            int numberOfAltPaths = 1;
-            int cratesToSpawn = 4;
-            int maxY = 4;
-            if (_leftSideX == 24f) // ONLY IF OUTER DECK CARGO EXT
-            {
-                maxY = 5;
-                // Add crates to fill in the walls on deck 5 (with support below).
-                AddStandardCrates(new Vector3Int(24, 1, 2), new Vector3Int(24, 5, 13));
-                AddStandardCrates(new Vector3Int(33, 1, 2), new Vector3Int(33, 5, 13));
-                numberOfPaths += 2;
-            }
-            if (_rightSideX == 44f)
-            {
-                maxY = 3;
-            }
-            for (int y = 1; y <= maxY; y++)
-            {
-                for (int z = 0; z < 4; z++)
-                {
-                    leftPoints.Add(new Vector3(_leftSideX, y, z * 3 + 2));
-                    rightPoints.Add(new Vector3(_rightSideX, y, z * 3 + 2));
-                }
-            }
-            for (int pathsSpawned = 0; pathsSpawned < numberOfPaths; pathsSpawned++)
-            {
-                // Guarantee that there is at least one path at max height when using exterior cargo holds.
-                var leftList = pathsSpawned == 0 && maxY == 5 ? leftPoints.FindAll(point => point.y == maxY) : leftPoints;
-                SpawnCargoContainersLG.pointOne = leftList.Random();
-                leftPoints.Remove(SpawnCargoContainersLG.pointOne);
-                var rightList = pathsSpawned == 1 && maxY == 5 ? rightPoints.FindAll(point => point.y == maxY) : rightPoints;
-                SpawnCargoContainersLG.pointTwo = rightList.Random();
-                rightPoints.Remove(SpawnCargoContainersLG.pointTwo);
-                SpawnCargoContainersLG.SpawnMainPath(SpawnCargoContainersLG.pointOne, SpawnCargoContainersLG.pointTwo, _nodeBackIndices, _nodeFrontIndices, ref SpawnCargoContainersLG.prePathCount, ref SpawnCargoContainersLG.postPathCount);
-            }
-            for (int altPathsSpawned = 0; altPathsSpawned < numberOfAltPaths; altPathsSpawned++)
-            {
-                SpawnCargoContainersLG.pointOne = SpawnCargoContainersLG.cargoNodes[UnityEngine.Random.Range(SpawnCargoContainersLG.prePathCount, SpawnCargoContainersLG.postPathCount)].node;
-                if (_altPathLeft)
-                {
-                    SpawnCargoContainersLG.pointTwo = leftPoints[UnityEngine.Random.Range(0, leftPoints.Count)];
-                    leftPoints.Remove(SpawnCargoContainersLG.pointTwo);
-                }
-                else
-                {
-                    SpawnCargoContainersLG.pointTwo = rightPoints[UnityEngine.Random.Range(0, rightPoints.Count)];
-                    rightPoints.Remove(SpawnCargoContainersLG.pointTwo);
-                }
-                SpawnCargoContainersLG.SpawnAlternatePath(SpawnCargoContainersLG.pointOne, SpawnCargoContainersLG.pointTwo, _nodeBackIndices, _nodeFrontIndices, ref SpawnCargoContainersLG.prePathCount, ref SpawnCargoContainersLG.postPathCount, _catWalkID);
-            }
-            if (LevelGeneration.Instance.GetMonster.name.Contains("Hunter"))
-            {
-                SpawnCargoContainersLG.SpawnSideCrates(cratesToSpawn, SpawnCargoContainersLG.totalCratesPrePaths, SpawnCargoContainersLG.postPathCount);
-            }
-            SpawnCargoContainersLG.totalCratesPrePaths = SpawnCargoContainersLG.cargoNodes.Count;
-        }
-
-        private static void HookSpawnCargoContainersLGSpawnBrokenRails(On.SpawnCargoContainersLG.orig_SpawnBrokenRails orig, Vector3 _regionNode, List<Room> _roomsInUse, GameObject _cargoParent, GameObject _railing)
-        {
-            if (_regionNode.y < 5)
-            {
-                orig.Invoke(_regionNode, _roomsInUse, _cargoParent, _railing);
-            }
-        }
-
-        private static GameObject HookSpawnCargoHoldLGHorizontalOrVerticalWall(On.SpawnCargoHoldLG.orig_HorizontalOrVerticalWall orig, int _horIndex, int _vertIndex, Vector3 _regionNode, int _cargoID, RoomStructure[] _nodeChecks)
-        {
-            if (_regionNode.y == 5f)
-            {
-                return null;
-            }
-            return orig.Invoke(_horIndex, _vertIndex, _regionNode, _cargoID, _nodeChecks);
         }
     }
 }
