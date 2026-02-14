@@ -22,7 +22,7 @@ namespace MonstrumExtendedSettingsMod
             private static Dictionary<int, int> monsterInstanceIDtoMonsterNumberDict;
             private static List<MState> monsterListStates;
 
-            public static List<GameObject> brutes;
+            public static List<GameObject> brutes; // Also includes Sparkies!
             public static List<Monster> brutesMonsterComponents;
             private static Dictionary<int, int> brutesInstanceIDs;
 

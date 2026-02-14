@@ -2204,7 +2204,10 @@ namespace MonstrumExtendedSettingsMod
                     {
                         foreach (GameObject bruteGameObject in ManyMonstersMode.brutes)
                         {
-                            bruteGameObject.AddComponent<FireShroud>();
+                            if (!bruteGameObject.name.Equals("Sparky"))
+                            {
+                                bruteGameObject.AddComponent<FireShroud>();
+                            }
                         }
                     }
                     else if (References.Monster.GetComponent<Monster>().MonsterType == Monster.MonsterTypeEnum.Brute)
