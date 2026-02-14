@@ -2790,13 +2790,30 @@ namespace MonstrumExtendedSettingsMod
                         keyItemSystem.maxes[PrimaryRegionType.CrewDeck]["WalkieTalkie"] = 10;
                     }
 
-                    // Adjust item counts if desired.
-                    if (ModSettings.changeKeyItemSpawnNumbers != 0)
+                    /// Item spawn count changes.
+                    if (ModSettings.originalMins == null)
                     {
-                        // Define a minimum based on whether items should be allowed to not spawn at all.
-                        // Calculate a second min for each item and region to ensure item counts are not increased when they should not be.
-                        var minGlobal = ModSettings.allowKeyItemsToNotSpawnAtAll ? 0 : 1;
-                        foreach (KeyItem keyItem in keyItemSystem.keyItems)
+                        ModSettings.originalMins = new Dictionary<string, int>();
+                        ModSettings.originalMaxes = new Dictionary<string, int>();
+                    }
+                    // Define a minimum based on whether items should be allowed to not spawn at all.
+                    // Calculate a second min for each item and region to ensure item counts are not increased when they should not be.
+                    var minGlobal = ModSettings.allowKeyItemsToNotSpawnAtAll ? 0 : 1;
+                    foreach (KeyItem keyItem in keyItemSystem.keyItems)
+                    {
+                        if (ModSettings.originalMins.ContainsKey(keyItem.name))
+                        {
+                            keyItem.minCount = ModSettings.originalMins[keyItem.name];
+                            keyItem.maxCount = ModSettings.originalMaxes[keyItem.name];
+                        }
+                        else
+                        {
+                            ModSettings.originalMins[keyItem.name] = keyItem.minCount;
+                            ModSettings.originalMaxes[keyItem.name] = keyItem.maxCount;
+                        }
+
+                        // Adjust item counts if desired.
+                        if (ModSettings.changeKeyItemSpawnNumbers != 0)
                         {
                             // Ensure the minimum amount of fuel cans is enough to fuel the helicopter.
                             if (keyItem.name.Equals("FuelCan") && !ModSettings.disableHelicopter)
@@ -2816,12 +2833,9 @@ namespace MonstrumExtendedSettingsMod
                                 keyItemSystem.maxes[primaryRegionType][keyItem.name] = Mathf.Max(minInRegion, keyItemSystem.maxes[primaryRegionType][keyItem.name] + ModSettings.changeKeyItemSpawnNumbers);
                             }
                         }
-                    }
-                    else
-                    {
-                        // Ensure the minimum amount of fuel cans is enough to fuel the helicopter.
-                        foreach (KeyItem keyItem in keyItemSystem.keyItems)
+                        else
                         {
+                            // Ensure the minimum amount of fuel cans is enough to fuel the helicopter.
                             if (keyItem.name.Equals("FuelCan"))
                             {
                                 keyItem.minCount = Mathf.Max(keyItem.minCount, ModSettings.helicopterFuelAmount);
@@ -2830,7 +2844,6 @@ namespace MonstrumExtendedSettingsMod
                             }
                         }
                     }
-
 
                     // If using diverse spawns, ensure at least 1 of the item can spawn in each region.
                     if (ModSettings.diverseItemSpawns)
