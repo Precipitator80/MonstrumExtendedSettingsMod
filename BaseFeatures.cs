@@ -1951,26 +1951,27 @@ namespace MonstrumExtendedSettingsMod
                     {
                         flareObject.monster.gameObject.SetActive(false);
                     }
-                    // Try to teleport monsters if desired.
-                    if (ModSettings.flaresTeleportMonsters)
-                    {
-                        // Pick spawn points near the player. Try several times to pick a spawn point that is far enough away from the player.
-                        for (int i = 0, maxAttempts = 5; i < maxAttempts; i++)
-                        {
-                            Vector3 spawnPosition = LevelGeneration.Instance.MonsterSpawnPoints[UnityEngine.Random.Range(0, LevelGeneration.Instance.MonsterSpawnPoints.Count)].transform.position;
-                            Vector3 closestPlayerPosition = ModSettings.enableMultiplayer ? MultiplayerMode.newPlayerClasses[MultiplayerMode.ClosestPlayerToThis(spawnPosition)].transform.position : References.Player.transform.position;
-                            if (Vector3.Distance(closestPlayerPosition, spawnPosition) > 16f || i == maxAttempts - 1)
-                            {
-                                flareObject.monster.gameObject.transform.position = spawnPosition;
-                                ModSettings.ForceStopChase(flareObject.monster);
-                                break;
-                            }
-                        }
-                    }
                 }
                 else
                 {
                     Achievements.Instance.CompleteAchievement("FLAREGUN_BRUTE");
+                }
+
+                // Try to teleport monsters if desired.
+                if (ModSettings.flaresTeleportMonsters)
+                {
+                    // Pick spawn points near the player. Try several times to pick a spawn point that is far enough away from the player.
+                    for (int i = 0, maxAttempts = 5; i < maxAttempts; i++)
+                    {
+                        Vector3 spawnPosition = LevelGeneration.Instance.MonsterSpawnPoints[UnityEngine.Random.Range(0, LevelGeneration.Instance.MonsterSpawnPoints.Count)].transform.position;
+                        Vector3 closestPlayerPosition = ModSettings.enableMultiplayer ? MultiplayerMode.newPlayerClasses[MultiplayerMode.ClosestPlayerToThis(spawnPosition)].transform.position : References.Player.transform.position;
+                        if (Vector3.Distance(closestPlayerPosition, spawnPosition) > 16f || i == maxAttempts - 1)
+                        {
+                            flareObject.monster.gameObject.transform.position = spawnPosition;
+                            ModSettings.ForceStopChase(flareObject.monster);
+                            break;
+                        }
+                    }
                 }
             }
 
