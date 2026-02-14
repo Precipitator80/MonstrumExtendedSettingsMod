@@ -1952,7 +1952,13 @@ namespace MonstrumExtendedSettingsMod
                                 NodeData nodeDataAtGlowstickPosition = LevelGeneration.GetNodeDataAtPosition(allGlowsticks[randomIndex].transform.position);
                                 if (nodeDataAtGlowstickPosition != null && nodeDataAtGlowstickPosition.nodeRoom != null && !(nodeDataAtGlowstickPosition.nodeRoom.roomDoorData != null && nodeDataAtGlowstickPosition.nodeRoom.roomDoorData.Count == 1 && (nodeDataAtGlowstickPosition.nodeRoom.roomDoorData[0].connection == ConnectionType.Powered || nodeDataAtGlowstickPosition.nodeRoom.roomDoorData[0].connection == ConnectionType.Barricade)))
                                 {
-                                    BaseFeatures.AssignCustomGlowstickColour(allGlowsticks[randomIndex], glowstickHuntColours[glowsticksEdited % glowstickHuntColours.Count], true);
+                                    var glowstick = allGlowsticks[randomIndex];
+
+                                    // Rename the glowstick for accessibility.
+                                    glowstick.GetComponentInParent<InventoryItem>().itemName = "Rainbow Glowstick";
+
+                                    // Assign the glowstick a rainbow colour and mark it as used.
+                                    BaseFeatures.AssignCustomGlowstickColour(glowstick, glowstickHuntColours[glowsticksEdited % glowstickHuntColours.Count], true);
                                     usedGlowstickIndices.Add(randomIndex);
                                     glowsticksEdited++;
                                 }

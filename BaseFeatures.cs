@@ -2492,8 +2492,6 @@ namespace MonstrumExtendedSettingsMod
                 orig.Invoke(glowStick);
                 if (ModSettings.glowstickHunt && ModSettings.glowstickHuntColours.Contains(glowStick.glowLight.color))
                 {
-                    // Rename the glowstick for accessibility.
-                    glowStick.GetComponentInParent<InventoryItem>().itemName = "Rainbow Glowstick";
                     ModSettings.glowstickHuntCounter++;
                     if (ModSettings.glowstickHuntCounter >= ModSettings.specialGlowsticksRequired)
                     {
