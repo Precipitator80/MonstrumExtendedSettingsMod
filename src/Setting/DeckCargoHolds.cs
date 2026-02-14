@@ -16,19 +16,19 @@ namespace MonstrumExtendedSettingsMod.Setting
 
         protected override void OnEnable()
         {
+            // Adds connections between the deck and cargo containers for culling and pathfinding.
+            On.Spawn1x1SegmentLG.CheckSegmentConnections += HookSpawn1x1SegmentLGCheckSegmentConnections;
             // Removes cargo walls from deck 5.
             On.SpawnCargoHoldLG.HorizontalOrVerticalWall += HookSpawnCargoHoldLGHorizontalOrVerticalWall;
             // Stops deck walls from spawning in front of cargo containers.
             On.SpawnDeckCargoWalls.GenerateDeckCargoWall += HookSpawnDeckCargoWallsGenerateDeckCargoWall;
-            // Fakes the connection between the deck and the cargo containers to stop culling.
-            On.PositionRoomLG.CheckAdjacentNodeForConnection += HookPositionRoomLGCheckAdjacentNodeForConnection;
         }
 
         protected override void OnDisable()
         {
+            On.Spawn1x1SegmentLG.CheckSegmentConnections -= HookSpawn1x1SegmentLGCheckSegmentConnections;
             On.SpawnCargoHoldLG.HorizontalOrVerticalWall -= HookSpawnCargoHoldLGHorizontalOrVerticalWall;
             On.SpawnDeckCargoWalls.GenerateDeckCargoWall -= HookSpawnDeckCargoWallsGenerateDeckCargoWall;
-            On.PositionRoomLG.CheckAdjacentNodeForConnection -= HookPositionRoomLGCheckAdjacentNodeForConnection;
 
             if (hookedCrateBlockPaths)
             {
@@ -53,7 +53,7 @@ namespace MonstrumExtendedSettingsMod.Setting
         {
             // Bodge to remove awkard corner pieces spawned inside SpawnCargoHoldLG.SpawnCargoArea (num5 == 2). 2 => corner.
             // The left corner depends on whether an additional crew deck building is being added.
-            List<int> boundaryNodeXCoords = GetBoundaryNodeXCoords();
+            List<int> boundaryNodeXCoords = GetBoundaryNodeXCoords(true);
 
             // Destroy all the children of the shell parent game object at the expected coordinates, which should only include the corners.
             foreach (Transform child in SpawnCargoHoldLG.shellParent.transform)
@@ -87,170 +87,47 @@ namespace MonstrumExtendedSettingsMod.Setting
         /// <summary>
         /// Gets a list of x coordinates of nodes on the deck cargo hold boundary.
         /// </summary>
-        private static List<int> GetBoundaryNodeXCoords()
+        /// <param name="leftSideFallback">Whether to include the left side boundary even if the additional crew deck building is enabled.
+        /// Including the left side lets cargo corner walls be deleted even when the left side is not used for traversal.</param>
+        /// <returns>A list of x coordinates of nodes on the deck cargo hold boundary.</returns>
+        private static List<int> GetBoundaryNodeXCoords(bool leftSideFallback = false)
         {
             List<int> nodes = new List<int>() { 35, 36 };
-            nodes.AddRange(
-                !ExtendedSettingsModScript.ModSettings.addAdditionalCrewDeckBuilding ?
-                new[] { 23, 24 } : new[] { 32, 33 }
-            );
+            if (!ExtendedSettingsModScript.ModSettings.addAdditionalCrewDeckBuilding)
+            {
+                nodes.AddRange(new[] { 23, 24 });
+            }
+            else if (leftSideFallback)
+            {
+                nodes.AddRange(new[] { 32, 33 });
+            }
             return nodes;
         }
 
         /// <summary>
-        /// Connects any nodes on the deck cargo hold boundary via line of sight data.
+        /// Adds connections between the deck and cargo containers for culling and pathfinding.
+        /// This is done by altering connection data when the node to connect to matches expected coordinates and structure data.
         /// </summary>
-        private static void HookPositionRoomLGCheckAdjacentNodeForConnection(On.PositionRoomLG.orig_CheckAdjacentNodeForConnection orig, Room _room, Vector3 _moddedNode, Vector3 _originalNode, NodeData _activeNode, int _UDLRFBIndex)
+        private static RoomStructure HookSpawn1x1SegmentLGCheckSegmentConnections(On.Spawn1x1SegmentLG.orig_CheckSegmentConnections orig, RoomStructure _mainRoomType, List<int> _externalIDs, ref int _connections, Vector3 _node)
         {
-            if (CheckBoundariesLG.NodeWithinShipBounds(_moddedNode))
+            var adjacentRoomType = orig.Invoke(_mainRoomType, _externalIDs, ref _connections, _node);
+            if (
+                // Check that the node to connect to is on the deck to cargo hold boundary.
+                GetBoundaryNodeXCoords().Contains((int)_node.x) && _node.y == 5 && _node.z > 1 && _node.z < 14
+                // Do not add connections across z.
+                && _node != Spawn1x1SegmentLG.topNode && _node != Spawn1x1SegmentLG.bottomNode
+                // Ensure this is a deck to cargo connection.
+                // As the cargo hold has not spawned in at the time the deck is spawned, the adjacent room will be marked as none.
+                && _mainRoomType == RoomStructure.Deck && adjacentRoomType == RoomStructure.None
+            )
             {
-                NodeData nodeData = LevelGeneration.Instance.nodeData[(int)_moddedNode.x][(int)_moddedNode.y][(int)_moddedNode.z];
-                int oppositeDirection = NodeData.GetOppositeDirection(_UDLRFBIndex);
-                if (_UDLRFBIndex == 0 && ((nodeData.nodeType == RoomStructure.None && _room.PrimaryRegion == PrimaryRegionType.Engine) || ((nodeData.nodeType == RoomStructure.Inaccessible || nodeData.nodeType == RoomStructure.None) && (_room.PrimaryRegion == PrimaryRegionType.OuterDeck || _room.PrimaryRegion == PrimaryRegionType.OuterDeckCargo || _room.PrimaryRegion == PrimaryRegionType.CargoHold))))
-                {
-                    if (_room.PrimaryRegion == PrimaryRegionType.Engine)
-                    {
-                        if (_room.name.Contains("LargeEngine"))
-                        {
-                            if (_activeNode.regionNode.y >= 3f)
-                            {
-                                PositionRoomLG.mainEngineID = RegionManager.Instance.StringToRegionID("Engines_MainArea");
-                                if (RegionManager.Instance.CheckNodeForRegionExclusive(_moddedNode, PositionRoomLG.mainEngineID, 1) || !RegionManager.Instance.CheckNodeForRegion(_moddedNode, PositionRoomLG.mainEngineID, -1))
-                                {
-                                    PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            PositionRoomLG.mainEngineID = RegionManager.Instance.StringToRegionID("Engines_MainArea");
-                            if (RegionManager.Instance.CheckNodeForRegionExclusive(_moddedNode, PositionRoomLG.mainEngineID, 1) || !RegionManager.Instance.CheckNodeForRegion(_moddedNode, PositionRoomLG.mainEngineID, -1))
-                            {
-                                PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (_room.PrimaryRegion == PrimaryRegionType.CargoHold && _room.RoomType == RoomStructure.Walkway && _room.WalkwayType == WalkwayStructure.Cargo && _room.RoomConnectionsType != ConnectorType.Room && _room.RegionNode.y < 4f)
-                        {
-                            return;
-                        }
-                        PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                    }
-                }
-                if (_UDLRFBIndex < 2)
-                {
-                    if (!CheckBoundariesLG.NodeOutwithRoom(_room, _moddedNode))
-                    {
-                        if (_room.name.Contains("LargeEngine"))
-                        {
-                            if (_activeNode.regionNode.y >= 3f || _activeNode.regionNode.x == 5f)
-                            {
-                                PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                            }
-                        }
-                        else
-                        {
-                            if (_room.PrimaryRegion == PrimaryRegionType.CargoHold && _room.RoomType == RoomStructure.Walkway && _room.WalkwayType == WalkwayStructure.Cargo && _room.RoomConnectionsType != ConnectorType.Room && _room.RegionNode.y < 4f)
-                            {
-                                return;
-                            }
-                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                        }
-                    }
-                    if (_room.HasTag("Stairs") && nodeData.nodeRoom != null && nodeData.nodeRoom.HasTag("Stairs"))
-                    {
-                        PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                    }
-                }
-                else
-                {
-                    if (_UDLRFBIndex == 2 && RoomAppendageData.CheckAppendageList<NoCullingAppendage>(_originalNode, Orientation.Vertical))
-                    {
-                        return;
-                    }
-                    if (_UDLRFBIndex == 3 && RoomAppendageData.CheckAppendageList<NoCullingAppendage>(_originalNode + Vector3.right, Orientation.Vertical))
-                    {
-                        return;
-                    }
-                    if (_UDLRFBIndex == 4 && RoomAppendageData.CheckAppendageList<NoCullingAppendage>(_originalNode + Vector3.forward, Orientation.Horizontal))
-                    {
-                        return;
-                    }
-                    if (_UDLRFBIndex == 5 && RoomAppendageData.CheckAppendageList<NoCullingAppendage>(_originalNode, Orientation.Horizontal))
-                    {
-                        return;
-                    }
-                    if (!CheckBoundariesLG.NodeOutwithRoom(_room, _moddedNode))
-                    {
-                        PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                    }
-                    if (_UDLRFBIndex == 2 || _UDLRFBIndex == 3)
-                    {
-                        Vector3 vector;
-                        if (_UDLRFBIndex == 2)
-                        {
-                            vector = _originalNode;
-                        }
-                        else
-                        {
-                            vector = _moddedNode;
-                        }
-                        if (_room.roomDoorData.Count > 0 && RoomAppendageData.CheckAppendageList<DoorData>(vector, Orientation.Vertical))
-                        {
-                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                        }
-                        if (_room.roomFloorJointData.Count > 0 && RoomAppendageData.CheckAppendageList<JoiningFloorData>(vector, Orientation.Vertical))
-                        {
-                            _activeNode.connectedNodesUDLRFB[_UDLRFBIndex] = true;
-                            nodeData.connectedNodesUDLRFB[oppositeDirection] = true;
-                        }
-                        if (_room.roomWindowData.Count > 0 && RoomAppendageData.CheckAppendageList<WindowData>(vector, Orientation.Vertical))
-                        {
-                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                        }
-                        if (_room.LOSJointData.Count > 0)
-                        {
-                            // Allow any nodes on the deck cargo hold boundary to connect via line of sight data.
-                            List<int> boundaryNodeXCoords = GetBoundaryNodeXCoords();
-                            if (boundaryNodeXCoords.Contains((int)vector.x) && vector.y == 5 && (_room.name.Contains("CargoContainer") || _room.name.Contains("Deck_CargoWalkway_TJPlatform"))
-                            || RoomAppendageData.CheckAppendageList<LineOfSightData>(vector, Orientation.Vertical))
-                            {
-                                PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Vector3 vector2 = Vector3.zero;
-                        if (_UDLRFBIndex == 5)
-                        {
-                            vector2 = _originalNode;
-                        }
-                        else
-                        {
-                            vector2 = _moddedNode;
-                        }
-                        if (_room.roomDoorData.Count > 0 && RoomAppendageData.CheckAppendageList<DoorData>(vector2, Orientation.Horizontal))
-                        {
-                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                        }
-                        if (_room.roomFloorJointData.Count > 0 && RoomAppendageData.CheckAppendageList<JoiningFloorData>(vector2, Orientation.Horizontal))
-                        {
-                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                        }
-                        if (_room.roomWindowData.Count > 0 && RoomAppendageData.CheckAppendageList<WindowData>(vector2, Orientation.Horizontal))
-                        {
-                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                        }
-                        if (_room.LOSJointData.Count > 0 && RoomAppendageData.CheckAppendageList<LineOfSightData>(vector2, Orientation.Horizontal))
-                        {
-                            PositionRoomLG.SetNodeConnections(_activeNode, nodeData, _UDLRFBIndex, oppositeDirection);
-                        }
-                    }
-                }
+                // Pretend that the cargo container is a deck piece so that the adjacent piece spawns as a 4-way with a ceiling for the cargo hold underneath.
+                // If the room type were something else, then the deck piece would spawn as a 4-way with exit, which does not have a ceiling underneath.
+                adjacentRoomType = _mainRoomType;
+                // Add the connection to the container itself for culling and pathfinding..
+                _connections++;
             }
+            return adjacentRoomType;
         }
 
         /// <summary>
@@ -357,141 +234,162 @@ namespace MonstrumExtendedSettingsMod.Setting
         /// </summary>
         private static void HookSpawnDeckCargoWallsGenerateDeckCargoWall(On.SpawnDeckCargoWalls.orig_GenerateDeckCargoWall orig, GameObject _parentObj, int _deckConBaseID, Vector3 _node)
         {
-            bool[] array = new bool[4];
+            bool[] connections = new bool[4];
             if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, _deckConBaseID, -1))
             {
-                array[0] = true;
+                connections[0] = true;
             }
             if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, _deckConBaseID, -1))
             {
-                array[1] = true;
+                connections[1] = true;
             }
             if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.forward, _deckConBaseID, -1))
             {
-                array[2] = true;
+                connections[2] = true;
             }
             if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.back, _deckConBaseID, -1))
             {
-                array[3] = true;
+                connections[3] = true;
             }
-            Debug.Log($"Adjacencies: Right {array[0]}. Left {array[1]}. Forward {array[2]}. Back {array[3]}.");
             bool flag = false;
-            if (array[2] && array[3])
+            var isOnExtendedHoldBoundary = _node.x < 37f && (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, (int)RegionId.CargoMainHold) || RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, (int)RegionId.CargoMainHold));
+            var isOnCornerOfExtendedHold = isOnExtendedHoldBoundary && (_node.z == 2f || _node.z == 13f);
+            if (!isOnExtendedHoldBoundary)
             {
-                var hasExtendedHoldBehindWall = _node.x < 37f && (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, (int)RegionId.CargoMainHold) || RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, (int)RegionId.CargoMainHold));
-                if (hasExtendedHoldBehindWall)
+                if (connections[2] && connections[3])
                 {
-                    return;
+                    GameObject gameObject;
+                    if (CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 3f) && CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.back * 3f))
+                    {
+                        gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.frontWall02, _parentObj);
+                    }
+                    else
+                    {
+                        gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.frontWall01, _parentObj);
+                        if ((!CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 3f) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, SpawnDeckCargoWalls.deckCargoWalkwaysID, -1)) || (!CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.back * 3f) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, SpawnDeckCargoWalls.deckCargoWalkwaysID, -1)))
+                        {
+                            gameObject.transform.localScale = new Vector3(-1f, 1f, 1f);
+                        }
+                    }
+                    if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, SpawnDeckCargoWalls.deckCargoWalkwaysID, -1))
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));
+                        if (gameObject.transform.localScale.x == 1f)
+                        {
+                            gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
+                        }
+                    }
+                    else
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 270f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 0f);
+                        if (gameObject.transform.localScale.x == -1f)
+                        {
+                            gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
+                        }
+                    }
                 }
-                GameObject gameObject;
-                if (CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 3f) && CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.back * 3f))
+                else if ((connections[0] && connections[2]) || (connections[1] && connections[2]) || (connections[1] && connections[3]) || (connections[0] && connections[3]))
                 {
-                    Debug.Log("Front wall 1 at " + _node);
-                    gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.frontWall02, _parentObj);
+                    GameObject gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.corner, _parentObj);
+                    if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, _deckConBaseID, -1) && RegionManager.Instance.CheckNodeForRegion(_node + Vector3.forward, _deckConBaseID, -1) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right + Vector3.forward, _deckConBaseID, -1))
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 2f);
+                        flag = true;
+                    }
+                    else if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, _deckConBaseID, -1) && RegionManager.Instance.CheckNodeForRegion(_node + Vector3.forward, _deckConBaseID, -1) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left + Vector3.forward, _deckConBaseID, -1))
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
+                    }
+                    else if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, _deckConBaseID, -1) && RegionManager.Instance.CheckNodeForRegion(_node + Vector3.back, _deckConBaseID, -1) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right + Vector3.back, _deckConBaseID, -1))
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 270f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 0f);
+                        flag = true;
+                    }
+                    if (_node.x < 37f || _node.x > 52f)
+                    {
+                        gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.support01, _parentObj);
+                        if (CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 3f))
+                        {
+                            gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
+                            gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
+                        }
+                        if (flag)
+                        {
+                            gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 0f);
+                        }
+                    }
                 }
                 else
                 {
-                    Debug.Log("Front wall 2 at " + _node);
-                    gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.frontWall01, _parentObj);
-                    if ((!CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 3f) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, SpawnDeckCargoWalls.deckCargoWalkwaysID, -1)) || (!CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.back * 3f) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, SpawnDeckCargoWalls.deckCargoWalkwaysID, -1)))
+                    bool flag2 = _node.x == 25f || _node.x == 34f || _node.x == 39f || _node.x == 48f || _node.x == 53f || _node.x == 59f;
+                    GameObject gameObject;
+                    if (flag2)
                     {
-                        gameObject.transform.localScale = new Vector3(-1f, 1f, 1f);
+                        gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.locker, _parentObj);
+                        gameObject.transform.parent = LevelGeneration.Instance.nodeData[(int)_node.x][(int)_node.y][(int)_node.z].nodeRoom.transform;
+                        gameObject.transform.localPosition = Vector3.zero;
+                        gameObject.transform.localRotation = Quaternion.identity;
+                    }
+                    else
+                    {
+                        gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.sideWalls[UnityEngine.Random.Range(0, SpawnDeckCargoWalls.sideWalls.Count)], _parentObj);
+                    }
+                    if (_node.z == 1f && !flag2)
+                    {
+                        gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 2f);
                     }
                 }
-                if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, SpawnDeckCargoWalls.deckCargoWalkwaysID, -1))
+                if (_node.x % 3f == 0f && (!CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 2f) || !CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.back * 2f)) && (_node.x < 37f || _node.x > 52f))
                 {
-                    gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));
-                    if (gameObject.transform.localScale.x == 1f)
-                    {
-                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
-                    }
-                }
-                else
-                {
-                    gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 270f, 0f));
-                    gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 0f);
-                    if (gameObject.transform.localScale.x == -1f)
-                    {
-                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
-                    }
-                }
-            }
-            else if ((array[0] && array[2]) || (array[1] && array[2]) || (array[1] && array[3]) || (array[0] && array[3]))
-            {
-                Debug.Log("Corner at " + _node);
-                GameObject gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.corner, _parentObj);
-                if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, _deckConBaseID, -1) && RegionManager.Instance.CheckNodeForRegion(_node + Vector3.forward, _deckConBaseID, -1) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right + Vector3.forward, _deckConBaseID, -1))
-                {
-                    gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
-                    gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 2f);
-                    flag = true;
-                }
-                else if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left, _deckConBaseID, -1) && RegionManager.Instance.CheckNodeForRegion(_node + Vector3.forward, _deckConBaseID, -1) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.left + Vector3.forward, _deckConBaseID, -1))
-                {
-                    gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));
-                    gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
-                }
-                else if (RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, _deckConBaseID, -1) && RegionManager.Instance.CheckNodeForRegion(_node + Vector3.back, _deckConBaseID, -1) && !RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right + Vector3.back, _deckConBaseID, -1))
-                {
-                    gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 270f, 0f));
-                    gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 0f);
-                    flag = true;
-                }
-                if (_node.x < 37f || _node.x > 52f)
-                {
-                    Debug.Log("Support at " + _node);
-                    gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.support01, _parentObj);
-                    if (CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 3f))
+                    GameObject gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.support01, _parentObj);
+                    if (CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 5f))
                     {
                         gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
                         gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
                     }
-                    if (flag)
+                    if (_node.x > 37f)
                     {
-                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 0f);
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(-2f, 0f, 0f);
+                    }
+                    if (_node.x > 52f)
+                    {
+                        gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(-2f, 0f, 0f);
                     }
                 }
             }
-            else
+            else if (isOnCornerOfExtendedHold)
             {
-                bool flag2 = _node.x == 25f || _node.x == 34f || _node.x == 39f || _node.x == 48f || _node.x == 53f || _node.x == 59f;
-                GameObject gameObject;
-                if (flag2)
+                var rotationFactor = 0;
+                var translation = Vector3.zero;
+                var cargoOnRight = RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right, (int)RegionId.CargoMainHold);
+                if (cargoOnRight)
                 {
-                    Debug.Log("Locker at " + _node);
-                    gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.locker, _parentObj);
-                    gameObject.transform.parent = LevelGeneration.Instance.nodeData[(int)_node.x][(int)_node.y][(int)_node.z].nodeRoom.transform;
-                    gameObject.transform.localPosition = Vector3.zero;
-                    gameObject.transform.localRotation = Quaternion.identity;
+                    var cargoOnDiagonalRight = RegionManager.Instance.CheckNodeForRegion(_node + Vector3.right + Vector3.forward, (int)RegionId.CargoMainHold);
+                    if (cargoOnDiagonalRight)
+                    {
+                        rotationFactor = 270;
+                        translation = new Vector3(2f, 0f, 0f);
+                    }
+                    else
+                    {
+                        rotationFactor = 180;
+                        translation = new Vector3(2f, 0f, 2f);
+                    }
                 }
-                else
+                else if (_node.z == 13)
                 {
-                    Debug.Log("Special wall 1 at " + _node);
-                    gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.sideWalls[UnityEngine.Random.Range(0, SpawnDeckCargoWalls.sideWalls.Count)], _parentObj);
+                    rotationFactor = 90;
+                    translation = new Vector3(0f, 0f, 2f);
                 }
-                if (_node.z == 1f && !flag2)
-                {
-                    gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
-                    gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(2f, 0f, 2f);
-                }
-            }
-            if (_node.x % 3f == 0f && (!CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 2f) || !CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.back * 2f)) && (_node.x < 37f || _node.x > 52f))
-            {
-                Debug.Log("Special wall 2 at " + _node);
-                GameObject gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.support01, _parentObj);
-                if (CheckBoundariesLG.NodeWithinShipBounds(_node + Vector3.forward * 5f))
-                {
-                    gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
-                    gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(0f, 0f, 2f);
-                }
-                if (_node.x > 37f)
-                {
-                    gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(-2f, 0f, 0f);
-                }
-                if (_node.x > 52f)
-                {
-                    gameObject.transform.localPosition = gameObject.transform.localPosition + new Vector3(-2f, 0f, 0f);
-                }
+
+                GameObject gameObject = SpawnDeckCargoWalls.CreateWallPiece(_node, SpawnDeckCargoWalls.corner, _parentObj);
+                gameObject.transform.localRotation = Quaternion.Euler(new Vector3(0f, rotationFactor, 0f));
+                gameObject.transform.localPosition = gameObject.transform.localPosition + translation;
             }
         }
     }
