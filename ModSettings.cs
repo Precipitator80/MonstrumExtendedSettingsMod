@@ -2685,7 +2685,6 @@ namespace MonstrumExtendedSettingsMod
             public static void TakeLife(PlayerHealth playerHealth)
             {
                 extraLives--;
-                DropPlayerItems();
                 if (temporaryPlayerPosition != null)
                 {
                     playerHealth.NPC.transform.position = temporaryPlayerPosition;
@@ -2769,18 +2768,6 @@ namespace MonstrumExtendedSettingsMod
                     SetInvincibilityMode(false, crewPlayerIndex);
                 }
                 yield break;
-            }
-
-            // @DropPlayerItems
-            private static void DropPlayerItems()
-            {
-                foreach (InventorySlot inventorySlot in References.Inventory.inventorySlots)
-                {
-                    if (inventorySlot.Item != null)
-                    {
-                        References.Inventory.DropItem(inventorySlot);
-                    }
-                }
             }
 
             // @ClearObjectiveTextAfterTime
