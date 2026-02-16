@@ -1955,7 +1955,7 @@ namespace MonstrumExtendedSettingsMod
                                     var glowstick = allGlowsticks[randomIndex];
 
                                     // Rename the glowstick for accessibility.
-                                    glowstick.GetComponentInParent<InventoryItem>().itemName = "Rainbow Glowstick";
+                                    glowstick.GetComponentInParent<InventoryItem>().itemName = "Rainbow glowstick";
 
                                     // Assign the glowstick a rainbow colour and mark it as used.
                                     BaseFeatures.AssignCustomGlowstickColour(glowstick, glowstickHuntColours[glowsticksEdited % glowstickHuntColours.Count], true);
