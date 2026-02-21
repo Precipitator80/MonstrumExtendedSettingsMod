@@ -2721,21 +2721,61 @@ namespace MonstrumExtendedSettingsMod
             {
                 try
                 {
+                    /// Item count references
+                    // keyItemSystem.keyItems cannot be relied upon for future rounds as it is not consistent across rounds.
+                    // Use reference lists to reset keyItemSystem.keyItems and its counts at the start of later rounds.
+                    // Items not active by default are added as normal each round, with the code adding them specifying counts.
+                    if (ModSettings.persistentKeyItems == null)
+                    {
+                        // In the first round, use the full system list to make references of all active items and their counts.
+                        ModSettings.persistentKeyItems = keyItemSystem.keyItems.ToList();
+                        foreach (KeyItem keyItem in keyItemSystem.keyItems)
+                        {
+                            if (ModSettings.logDebugText)
+                            {
+                                Debug.Log("Key item in KeyItemSystem is " + keyItem.name + ". It is set to spawn a minimum of " + keyItem.minCount + " times and a maximum of " + keyItem.maxCount + " times. Its priority is " + keyItem.priority + " and its category is " + keyItem.category + ".");
+                            }
+                            ModSettings.originalMins[keyItem.name] = keyItem.minCount;
+                            ModSettings.originalMaxes[keyItem.name] = keyItem.maxCount;
+                            if (ModSettings.logDebugText)
+                            {
+                                Debug.Log($"Added original count for key item {keyItem.name}. Min: {ModSettings.originalMins[keyItem.name]}. Max: {ModSettings.originalMaxes[keyItem.name]}.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // On subsequent rounds, copy references from the persistent list and reset counts.
+                        keyItemSystem.keyItems = ModSettings.persistentKeyItems.ToList();
+                        foreach (KeyItem keyItem in keyItemSystem.keyItems)
+                        {
+                            if (ModSettings.logDebugText)
+                            {
+                                Debug.Log($"Resetting count for key item {keyItem.name}. Current values: Min = {keyItem.minCount}, Max = {keyItem.maxCount}.");
+                            }
+                            keyItem.minCount = ModSettings.originalMins[keyItem.name];
+                            keyItem.maxCount = ModSettings.originalMaxes[keyItem.name];
+                            if (ModSettings.logDebugText)
+                            {
+                                Debug.Log($"Finished resetting count for key item {keyItem.name}. New values: Min = {keyItem.minCount}, Max = {keyItem.maxCount}.");
+                            }
+                        }
+                    }
+
                     // Ensure the walkie talkie and flare gun spawn when using relevant settings.
                     if (ModSettings.spawnDeactivatedItems || ModSettings.spawnWithFlareGun)
                     {
-                        KeyItem[] keyItems = Resources.FindObjectsOfTypeAll<KeyItem>();
-
-                        if (keyItems != null)
+                        foreach (KeyItem keyItem in Resources.FindObjectsOfTypeAll<KeyItem>())
                         {
-                            foreach (KeyItem keyItem in keyItems)
+                            if (ModSettings.logDebugText)
                             {
-                                if (ModSettings.logDebugText)
-                                {
-                                    Debug.Log("Key item found via FindObjectsOfTypeAll is " + keyItem.name + ". It is set to spawn a minimum of " + keyItem.minCount + " times and a maximum of " + keyItem.maxCount + " times. Its priority is " + keyItem.priority + " and its category is " + keyItem.category + ".");
-                                }
-                                // Re-enable the walkie talkie.
-                                if (ModSettings.spawnDeactivatedItems && keyItem.name.Equals("WalkieTalkie"))
+                                Debug.Log("Key item found via FindObjectsOfTypeAll is " + keyItem.name + ". It is set to spawn a minimum of " + keyItem.minCount + " times and a maximum of " + keyItem.maxCount + " times. Its priority is " + keyItem.priority + " and its category is " + keyItem.category + ".");
+                            }
+
+                            // Re-enable the walkie talkie and compass.
+                            if (ModSettings.spawnDeactivatedItems)
+                            {
+                                if (keyItem.name.Equals("WalkieTalkie"))
                                 {
                                     keyItem.gameObject.SetActive(true);
                                     keyItem.minCount = 4;
@@ -2744,40 +2784,24 @@ namespace MonstrumExtendedSettingsMod
                                     keyItemSystem.keyItems.Add(keyItem);
                                     Debug.Log("Walkie talkie added successfully via FindObjectsOfTypeAll.");
                                 }
-                                // Ensure a flare gun is always spawned when using the spawn with flare gun or escape conditions setting.
-                                else if ((ModSettings.spawnWithFlareGun || ModSettings.escapeConditionsToWin > 0) && keyItem.name.Equals("FlareGunNew") && !keyItemSystem.keyItems.Contains(keyItem))
+                                else if (keyItem.name.Equals("Compass"))
                                 {
-                                    keyItem.gameObject.SetActive(true);
-                                    keyItem.minCount = 1;
-                                    keyItem.maxCount = 1;
-                                    keyItemSystem.keyItems.Add(keyItem);
-                                    Debug.Log("Flare Gun added successfully via FindObjectsOfTypeAll when it wasn't added normally.");
+                                    keyItem.minCount = 2;
+                                    keyItem.maxCount = 3;
+                                    keyItem.priority = 1;
+                                    // No need to activate and add the compass to key items as it is already in the list by default.
                                 }
                             }
-                        }
-                        else
-                        {
-                            Debug.Log("Could not find key items.");
-                        }
-                    }
 
-                    // Re-enable the compass.
-                    foreach (KeyItem keyItem in keyItemSystem.keyItems)
-                    {
-                        if (ModSettings.spawnDeactivatedItems && keyItem.name.Equals("Compass"))
-                        {
-                            keyItem.minCount = 2;
-                            keyItem.maxCount = 3;
-                            keyItem.priority = 1;
-                            if (!ModSettings.logDebugText)
+                            // Ensure a flare gun is always spawned when using the spawn with flare gun or escape conditions setting.
+                            if ((ModSettings.spawnWithFlareGun || ModSettings.escapeConditionsToWin > 0) && keyItem.name.Equals("FlareGunNew") && !keyItemSystem.keyItems.Contains(keyItem))
                             {
-                                break;
+                                keyItem.gameObject.SetActive(true);
+                                keyItem.minCount = 1;
+                                keyItem.maxCount = 1;
+                                keyItemSystem.keyItems.Add(keyItem);
+                                Debug.Log("Flare Gun added successfully via FindObjectsOfTypeAll when it wasn't added normally.");
                             }
-                        }
-
-                        if (ModSettings.logDebugText)
-                        {
-                            Debug.Log("Key item in KeyItemSystem is " + keyItem.name + ". It is set to spawn a minimum of " + keyItem.minCount + " times and a maximum of " + keyItem.maxCount + " times. Its priority is " + keyItem.priority + " and its category is " + keyItem.category + ".");
                         }
                     }
 
@@ -2790,28 +2814,12 @@ namespace MonstrumExtendedSettingsMod
                         keyItemSystem.maxes[PrimaryRegionType.CrewDeck]["WalkieTalkie"] = 10;
                     }
 
-                    /// Item spawn count changes.
-                    if (ModSettings.originalMins == null)
-                    {
-                        ModSettings.originalMins = new Dictionary<string, int>();
-                        ModSettings.originalMaxes = new Dictionary<string, int>();
-                    }
+                    /// Item spawn count changes
                     // Define a minimum based on whether items should be allowed to not spawn at all.
                     // Calculate a second min for each item and region to ensure item counts are not increased when they should not be.
                     var minGlobal = ModSettings.allowKeyItemsToNotSpawnAtAll ? 0 : 1;
                     foreach (KeyItem keyItem in keyItemSystem.keyItems)
                     {
-                        if (ModSettings.originalMins.ContainsKey(keyItem.name))
-                        {
-                            keyItem.minCount = ModSettings.originalMins[keyItem.name];
-                            keyItem.maxCount = ModSettings.originalMaxes[keyItem.name];
-                        }
-                        else
-                        {
-                            ModSettings.originalMins[keyItem.name] = keyItem.minCount;
-                            ModSettings.originalMaxes[keyItem.name] = keyItem.maxCount;
-                        }
-
                         // Adjust item counts if desired.
                         if (ModSettings.changeKeyItemSpawnNumbers != 0)
                         {

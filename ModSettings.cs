@@ -3850,8 +3850,9 @@ namespace MonstrumExtendedSettingsMod
             public static bool includeUniqueRoomsInCountChange;
             public static int changeKeyItemSpawnNumbers;
             public static bool allowKeyItemsToNotSpawnAtAll;
-            public static Dictionary<string, int> originalMins;
-            public static Dictionary<string, int> originalMaxes;
+            public static List<KeyItem> persistentKeyItems;
+            public static Dictionary<string, int> originalMins = new Dictionary<string, int>();
+            public static Dictionary<string, int> originalMaxes = new Dictionary<string, int>();
             public static bool diverseItemSpawns;
             public static bool spawnItemsAnywhere;
             public static bool randomStartRoom;
