@@ -1937,6 +1937,20 @@ namespace MonstrumExtendedSettingsMod
                             specialGlowsticksToCreate = specialGlowsticksRequired;
                         }
 
+                        if (rainbowGlowstickSprite == null)
+                        {
+                            try
+                            {
+                                var refInventoryItem = allGlowsticks[0].GetComponentInParent<InventoryItem>();
+                                Texture2D rainbowGlowstickTexture = (Texture2D)Utilities.LoadAssetBundle("rainbowglowstick")[0];
+                                rainbowGlowstickSprite = Sprite.Create(rainbowGlowstickTexture, refInventoryItem.inventorySlotSprite.rect, refInventoryItem.inventorySlotSprite.pivot, refInventoryItem.inventorySlotSprite.pixelsPerUnit);
+                            }
+                            catch
+                            {
+                                Debug.Log("Failed to load Rainbow glowstick sprite.");
+                            }
+                        }
+
                         while (glowsticksEdited < specialGlowsticksToCreate)
                         {
                             // Choose a random glowstick and give it one of the rainbow colours if that glowstick wasn't already chosen.
@@ -1955,7 +1969,14 @@ namespace MonstrumExtendedSettingsMod
                                     var glowstick = allGlowsticks[randomIndex];
 
                                     // Rename the glowstick for accessibility.
-                                    glowstick.GetComponentInParent<InventoryItem>().itemName = "Rainbow glowstick";
+                                    var inventoryItem = glowstick.GetComponentInParent<InventoryItem>();
+                                    inventoryItem.itemName = "Rainbow glowstick";
+
+                                    // Apply the custom sprite if loaded successfully.
+                                    if (rainbowGlowstickSprite != null)
+                                    {
+                                        inventoryItem.inventorySlotSprite = rainbowGlowstickSprite;
+                                    }
 
                                     // Assign the glowstick a rainbow colour and mark it as used.
                                     BaseFeatures.AssignCustomGlowstickColour(glowstick, glowstickHuntColours[glowsticksEdited % glowstickHuntColours.Count], true);
@@ -3719,6 +3740,7 @@ namespace MonstrumExtendedSettingsMod
             private static bool randomiserMode;
             private static float chaosMultiplier;
             public static bool glowstickHunt;
+            private static Sprite rainbowGlowstickSprite;
             public static bool noGlowstickHuntFinale;
             public static int specialGlowsticksRequired;
             private static int specialGlowsticksToCreate;
