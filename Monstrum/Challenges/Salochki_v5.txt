@@ -12,8 +12,8 @@ Persistent Monster|True
 Seer Monster|True
 Brute Fire Shroud|True
 Give All Monsters A Fire Shroud|True
-Fire Shroud Radius|2.5
-Fire Blast Radius|250
+Fire Shroud Radius|5
+Fire Blast Radius|500
 Glowstick Hunt|True
 Special Glowsticks Required|14
 Special Glowsticks To Create|24

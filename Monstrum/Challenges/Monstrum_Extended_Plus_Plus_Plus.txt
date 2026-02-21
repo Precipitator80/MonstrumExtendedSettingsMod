@@ -20,33 +20,32 @@ Hunter Maximum Cooldown Time Multiplier|0.125
 Quiet Hunter|True
 Overpowered Hunter|True
 Aggressive Hunter|True
-Fiend Flicker Minimum Range|2
-Fiend Flicker Medium Range|2.025
-Fiend Flicker Maximum Range|2.05
+Fiend Flicker Minimum Range|1
+Fiend Flicker Medium Range|1.5
+Fiend Flicker Maximum Range|2
 Fiend Mind Attack Damage Multiplier|100
 Fiend Mind Attack Attack Timer Charge Rate|12.5
 Fiend Mind Attack Attack Timer Decay Rate|0
 Fiend Door Teleportation|True
-Sparky Max Movement Speed Factor Increase From Buff|0.5
-Sparky Minimum Lurk Distance|0.2
-Sparky Maximum Super EMP Distance|320
-Sparky Super EMP Charge Time|0.25
-Sparky Maximum Aggro|0.125
-Sparky EMP Minimum Charge Time|15
-Sparky EMP Maximum Charge Time|45
+Give Fiend A Slow Aura|True
+Slow Aura Range|13.125
+Slow Aura Maximum Slow Factor|0.0001
+Sparky Chase Speed Factor|0.875
+Sparky Rotation Speed Factor|-0.25
+Sparky Minimum Lurk Distance|1
+Sparky Maximum Super EMP Distance|100
+Sparky Super EMP Charge Time|0.5
+Sparky Maximum Aggro|0.25
+Sparky EMP Minimum Charge Time|20
+Sparky EMP Maximum Charge Time|60
 Sparky EMP Range|14
-Sparky Distant EMP Switch Fail Chance Addition|25
-Region Electric Trap Spawn Chance|50
-Region Electric Trap Slow Factor|0.75
-Region Electric Trap Scale Multiplier|1.25
-Region Electric Trap Life Time|10
-Region Electric Trap Minimum Spawn Time|2.5
-Region Electric Trap Maximum Spawn Time|7.5
-Sparky Electric Trap Base Slow Factor|0.75
-Max Trap Slow Factor Decrease From Buff|0.25
-Sparky Electric Trap Base Scale Multiplier|1.25
-Sparky Electric Trap Base Life Time|7.5
+Region Electric Trap Spawn Chance|41.25
+Region Electric Trap Slow Factor|0.575
+Sparky Electric Trap Spawn Chance|68.75
+Sparky Electric Trap Base Slow Factor|0.575
+Max Trap Slow Factor Decrease From Buff|0.125
 Escape Conditions|1
+Inventory Size|7
 Unlock Player Head|True
 Extended Jump Cooldown|True
 Better Smashables|True
@@ -56,9 +55,10 @@ Spawn Deactivated Items|True
 Helicopter Fuel Time|8
 Submersible Charge Time|12
 Camera Timer|0
+Add Deck Cargo Holds|True
 Use Deck Four On Submersible Side|True
-Spawn Additional Engine Room Workshops|True
 Add Lower Deck Next To Engine Room|True
+Add Deck Zero|True
 Brute Light Colour Red Component|250
 Brute Light Colour Green Component|175
 Brute Light Colour Blue Component|50

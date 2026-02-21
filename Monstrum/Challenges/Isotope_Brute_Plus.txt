@@ -1,7 +1,7 @@
-Name|Isotope Brute
+Name|Isotope Brute+
 Author|Ink
-Difficulty|6
-Description|DO NOT under any circumstances catch his eye and DO NOT go too far away from him, otherwise this subspecies of Brute will become extremely unstable. 
+Difficulty|9
+Description|DO NOT under any circumstances catch his eye and DO NOT go too far away from him, otherwise this subspecies of Brute will become extremely unstable.\nIt looks like the radioactive core has caused a series of abnormal mutations, making it difficult to control this subspecies...
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
@@ -9,7 +9,8 @@ Number of Brutes|1
 Minimum Monster Spawntime (seconds)|4
 Maximum Monster Spawntime (seconds)|5
 Spawn Monster In Starter Room|True
-Monster Animation Speed Multiplier|0.75
+Persistent Monster|True
+Silent Monster|True
 Monster Rotation Speed Multiplier|1.5
 Brute Chase Speed Buff|True
 Brute Chase Speed Buff Multiplier|15
@@ -28,7 +29,7 @@ No Starter Fuse|True
 Brute Light Colour Red Component|200
 Brute Light Colour Green Component|250
 Brute Light Colour Blue Component|1
-Brute Light Intensity Multiplier|1.5
+Brute Light Intensity Multiplier|3
 Brute Light Range Multiplier|1.125
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2

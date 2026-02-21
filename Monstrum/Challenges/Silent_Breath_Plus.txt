@@ -6,19 +6,19 @@ Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|3
-Minimum Monster Spawntime (seconds)|4
-Maximum Monster Spawntime (seconds)|5
-Monster Always Finds You In Hiding Spot|True
+Maximum Monster Spawntime (seconds)|15
 Monster Animation Speed Multiplier|1.375
 Monster Movement Speed Multiplier|1.375
 Monster Rotation Speed Multiplier|1.375
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|2.750
+Brute Chase Speed Buff Multiplier|1.375
 Brute Chase Speed Buff Rate|1.375
+Brute Long Range Wander Speed Buff|True
+Brute Long Range Wander Speed Buff Multiplier|1.375
 No Hiding|True
-Helicopter Fuel Time|8
-Submersible Charge Time|12
-Gravity Y Acceleration|-15
+Helicopter Fuel Time|2
+Submersible Charge Time|3
+Gravity Y Acceleration|-14.715
 Player Stamina Mode|True
 Player Stamina Mode Stamina Duration|5
 Player Stamina Mode Stamina Penalty|100
@@ -26,20 +26,17 @@ Player Stamina Mode Walking Recovery Factor|0.5
 Player Stamina Mode Standing Recovery Factor|1
 Player Movement Speed Multiplier|1.45
 Extended Jump Cooldown|True
-Infinite Flashlight Power|True
-Add Smoke Grenade|True
 Starter Room Region|Upper Deck
-Camera Timer|0
+Camera Timer|1
+Pre-fill Start Region Fuse Box|False
 Pre-fill Liferaft Fuse Box|False
 No Starter Fuse|True
-Add Additional Crew Deck Building|True
-Lengthened Cargo Hold Corridors|True
-Add Lower Deck Next To Engine Room|True
-Add Deck Zero|True
+Diverse Item Spawns|True
 No Doors|True
 Brute Light Intensity Multiplier|1.5
 Brute Light Range Multiplier|1.5
 Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2
 Glowstick Range Multiplier|2
 Custom Music Pack|4

@@ -9,12 +9,12 @@ Number of Brutes|3
 Force Many Monsters Mode|True
 Maximum Monster Spawntime (seconds)|1
 No Monster Stun Immunity|True
-Monster Animation Speed Multiplier|1.75
-Monster Movement Speed Multiplier|1.75
-Monster Rotation Speed Multiplier|1.75
+Monster Animation Speed Multiplier|1.625
+Monster Movement Speed Multiplier|1.625
+Monster Rotation Speed Multiplier|1.625
 Varying Monster Sizes|True
 Brute Long Range Wander Speed Buff|True
-Brute Long Range Wander Speed Buff Multiplier|1.75
+Brute Long Range Wander Speed Buff Multiplier|1.625
 Fiend Door Teleportation|True
 Apply Door Teleportation To All Monsters|True
 Item Monster Frenzy|True
@@ -46,6 +46,7 @@ Pre-fill Liferaft Fuse Box|False
 No Starter Fuse|True
 Overpowered Steam Vents|True
 Add Additional Crew Deck Building|True
+Add Deck Cargo Holds|True
 Use Deck Four On Submersible Side|True
 Extend Lower Decks|True
 Spawn Additional Engine Room Workshops|True

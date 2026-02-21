@@ -12,6 +12,7 @@ Number of Sparkies|1
 Add Sparky To The Game|True
 Use Indev Sparky Model|True
 Escape Conditions|1
+Inventory Size|7
 Unlock Player Head|True
 Extended Jump Cooldown|True
 Better Smashables|True
@@ -20,9 +21,10 @@ Add Molotov|True
 Spawn Deactivated Items|True
 Helicopter Fuel Time|2
 Submersible Charge Time|3
+Add Deck Cargo Holds|True
 Use Deck Four On Submersible Side|True
-Spawn Additional Engine Room Workshops|True
 Add Lower Deck Next To Engine Room|True
+Add Deck Zero|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

@@ -1,32 +1,32 @@
 Name|Minotaur
 Author|Ink
-Difficulty|9
+Difficulty|10
 Description|Welcome to the Minotaur's Lair. Use his power for your own purposes to clear your way to escape from the maze ship.
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
 Maximum Monster Spawntime (seconds)|7.5
-Monster Animation Speed Multiplier|1.85
-Monster Movement Speed Multiplier|1.85
-Monster Rotation Speed Multiplier|1.85
-Custom Monster Scale|1.125
+Monster Animation Speed Multiplier|2.125
+Monster Movement Speed Multiplier|2.125
+Monster Rotation Speed Multiplier|2.125
+Custom Monster Scale|1.0625
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|1.85
-Fiend Flicker Minimum Range|2
-Fiend Flicker Medium Range|3
-Fiend Flicker Maximum Range|4
+Brute Chase Speed Buff Multiplier|2.125
 Give All Monsters A Fiend Aura|True
 Use Custom Doors Mode|True
 Custom Door Type|5
-Gravity Y Acceleration|-15
-Inventory Size|12
+Gravity Y Acceleration|-14.715
+Inventory Size|15
 Extended Jump Cooldown|True
 Infinite Flashlight Power|True
 Add Smoke Grenade|True
-Starter Room Region|Upper Deck
-Brute Light Intensity Multiplier|2
-Brute Light Range Multiplier|4
+Pre-fill Liferaft Fuse Box|False
+Brute Light Colour Red Component|250
+Brute Light Colour Green Component|25
+Brute Light Colour Blue Component|0
+Brute Light Intensity Multiplier|3
+Brute Light Range Multiplier|1.625
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

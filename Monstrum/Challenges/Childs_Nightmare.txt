@@ -1,7 +1,7 @@
 Name|Child's Nightmare
 Author|Ink
 Difficulty|9
-Description|Welcome to the Child's Nightmare.\nLess than 40% gamma is highly recommended.
+Description|Sometimes a random dream can turn into a nightmare, but I believe you can handle it. Be careful, because long, dark mazes can cause primal fear, so sometimes you should catch your breath somewhere outside the corridors (at least until they are illuminated). And don't forget that you're not the only one here.
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0

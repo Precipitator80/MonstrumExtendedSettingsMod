@@ -1,78 +1,74 @@
 Name|Subconscious
 Author|Ink
 Difficulty|10
-Description|The Fiend has imprisoned you in your subconscious, where a mind distorted by pain has embodied an image of the Hisa Maru, while a familiar image of a mysterious beast longs to drag you into the abyss.\n\nThe flashlight is located under the bed (by the way, don't try to hide under the bed).\nMake sure that low gamma and fog are enabled in the settings.
+Description|Although everything around you is unreal, you will stay here forever if you do not put together the puzzle of memories about the real Hisa Maru. And don't even think that you're safe in your Subconscious.\nYour stamina will never recover, so use it wisely. Make sure that fog, low gamma, and bloom are enabled in the settings.
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
-Maximum Monster Spawntime (seconds)|0.1
+Spawn Monster In Starter Room|True
 Persistent Monster|True
 Silent Monster|True
-Monster Animation Speed Multiplier|1.85
-Monster Movement Speed Multiplier|1.85
-Monster Rotation Speed Multiplier|1.85
+Monster Animation Speed Multiplier|2
+Monster Movement Speed Multiplier|2
+Monster Rotation Speed Multiplier|2
 Brute Chase Speed Buff|True
-Brute Chase Speed Buff Multiplier|1.85
-Brute Chase Speed Buff Rate|1.85
+Brute Chase Speed Buff Multiplier|2
+Brute Chase Speed Buff Rate|2
 Fiend Door Teleportation|True
 Apply Door Teleportation To All Monsters|True
 Dark Ship|True
-Glowstick Hunt|True
-No Glowstick Hunt Finale|True
-Special Glowsticks Required|10
-Special Glowsticks To Create|20
 Foggy Ship|True
 Fog Near Distance|0.25
 Fog Far Distance|75
-Fog Density|0.75
+Fog Density|1.5
+No Time Freeze In Pause Menu|True
 Hide Reticule|True
 Hide Inventory|True
 Hide Task Notifications|True
-Disable Liferaft|True
-Disable Helicopter|True
-Disable Submersible|True
-Escape Conditions|3
-Gravity X Acceleration|20
-Gravity Y Acceleration|-10
-Inventory Size|15
+Helicopter Fuel Time|2
+Submersible Charge Time|3
+Escape Routes To Win|3
+Gravity Y Acceleration|-14.715
+Inventory Size|13
+Player Stamina Mode|True
+Player Stamina Mode Stamina Duration|5
+Player Stamina Mode Stamina Penalty|100
+Player Stamina Mode Walking Recovery Factor|0
+Player Stamina Mode Standing Recovery Factor|0
+Player Movement Speed Multiplier|1.75
 Extended Jump Cooldown|True
 Infinite Flashlight Power|True
 Fire Duration Multiplier|0.25
-Looping Radio|False
-Unsmashables|True
 Add Smoke Grenade|True
 Starter Room Region|Upper Deck
 No Cameras|True
 No Steam|True
-Pre-fill Liferaft Fuse Box|False
-Pre-fill Engine Room Fuse Box|True
+Pre-fill Start Region Fuse Box|False
+Pre-fill Submersible Fuse Box|True
 Use Deck Four On Submersible Side|True
 Lengthened Cargo Hold Corridors|True
 Add Lower Deck Next To Engine Room|True
+Change Key Item Spawn Numbers|1
 Diverse Item Spawns|True
-Spawn Items Anywhere|True
 No Pit Traps|True
 Brute Light Colour Red Component|250
 Brute Light Colour Green Component|250
 Brute Light Colour Blue Component|250
 Brute Light Intensity Multiplier|25
 Brute Light Range Multiplier|25
-Flashlight Colour Red Component|255
-Flashlight Colour Green Component|255
-Flashlight Colour Blue Component|255
-Flashlight Intensity Multiplier|2.25
-Flashlight Range Multiplier|2.25
-Glowstick Colour Red Component|200
-Glowstick Colour Green Component|200
-Glowstick Colour Blue Component|200
-Glowstick Range Multiplier|2
-Ship Generic Lights Colour Red Component|50
-Ship Generic Lights Colour Green Component|50
-Ship Generic Lights Colour Blue Component|50
-Fog Colour Red Component|75
-Fog Colour Green Component|75
-Fog Colour Blue Component|75
+Flashlight Colour Red Component|250
+Flashlight Colour Green Component|250
+Flashlight Colour Blue Component|250
+Flashlight Intensity Multiplier|3
+Flashlight Range Multiplier|3
+Glowstick Colour Red Component|175
+Glowstick Colour Green Component|175
+Glowstick Colour Blue Component|175
+Glowstick Range Multiplier|4
+Fog Colour Red Component|100
+Fog Colour Green Component|100
+Fog Colour Blue Component|100
 Custom Music Pack|1
 Use Wander Theme From Start|True
 Disable Monster Particles|True

@@ -24,6 +24,7 @@ Monster Vision Affected By Fog|True
 Disable Liferaft|True
 Disable Helicopter|True
 Disable Submersible|True
+Gravity Y Acceleration|-14.715
 Player Stamina Mode|True
 Player Stamina Mode Stamina Duration|5
 Player Stamina Mode Stamina Penalty|100

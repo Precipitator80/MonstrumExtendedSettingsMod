@@ -22,13 +22,16 @@ Hunter Maximum Cooldown Time Multiplier|0.125
 Quiet Hunter|True
 Overpowered Hunter|True
 Aggressive Hunter|True
-Fiend Flicker Minimum Range|2
-Fiend Flicker Medium Range|2.025
-Fiend Flicker Maximum Range|2.05
+Fiend Flicker Minimum Range|1
+Fiend Flicker Medium Range|1.5
+Fiend Flicker Maximum Range|2
 Fiend Mind Attack Damage Multiplier|100
 Fiend Mind Attack Attack Timer Charge Rate|12.5
 Fiend Mind Attack Attack Timer Decay Rate|0
 Fiend Door Teleportation|True
+Give Fiend A Slow Aura|True
+Slow Aura Range|13.125
+Slow Aura Maximum Slow Factor|0.0001
 Helicopter Fuel Time|9
 Submersible Charge Time|12
 Camera Timer|0

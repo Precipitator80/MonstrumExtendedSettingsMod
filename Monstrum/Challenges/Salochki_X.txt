@@ -1,8 +1,7 @@
 Name|Salochki X
 Author|Ink
 Difficulty|10
-Description|There's no time to explain!\nLight up 14 special glowsticks to escape from a group of Brutes who partially have all the abilities of the previous monsters in this series of challenges. And don't forget to complete all 3 escape conditions. Good luck.
-\n(Btw I left you a buffed Flare Gun at spawn)
+Description|There's no time to explain!\nLight up 16 special glowsticks to escape from a group of Brutes who partially have all the abilities of the previous monsters in this series of challenges. And don't forget to complete all 3 escape conditions. Good luck.\n(Btw I left you a buffed Flare Gun at spawn)
 Version|6.1 Indev
 Setting|Custom Value
 Number of Random Monsters|0
@@ -19,7 +18,7 @@ Give All Monsters A Fire Shroud|True
 Fire Shroud Radius|2.5
 Fire Blast Radius|0
 Glowstick Hunt|True
-Special Glowsticks Required|14
+Special Glowsticks Required|16
 Special Glowsticks To Create|24
 Monster Spawn Speedrun|120
 Monster Spawning Limit|2

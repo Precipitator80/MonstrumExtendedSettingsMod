@@ -2,7 +2,7 @@ Name|Monstrum Extended
 Author|Precipitator
 Difficulty|2
 Description|Uses a variety of settings that aim to extend the base gameplay of the game without increasing the difficulty.
-Version|6.0
+Version|6.1 Indev
 Setting|Custom Value
 Add Sparky To The Game|True
 Better Smashables|True
@@ -10,6 +10,7 @@ Add Smoke Grenade|True
 Add Molotov|True
 Spawn Deactivated Items|True
 Add Additional Crew Deck Building|True
+Add Deck Cargo Holds|True
 Use Deck Four On Submersible Side|True
 Extend Lower Decks|True
 Spawn Additional Engine Room Workshops|True
