@@ -45,7 +45,9 @@ namespace MonstrumExtendedSettingsMod
                     Dictionary<string, bool> hintConditions = new Dictionary<string, bool>()
                     {
                         { "DebugMode", ModSettings.debugMode },
-                        { "EscapeConditions", ModSettings.escapeConditionsToWin > 0 },
+                        { "EscapeConditions1", ModSettings.escapeConditionsToWin == 1 },
+                        { "EscapeConditions2", ModSettings.escapeConditionsToWin == 2 },
+                        { "EscapeConditions3", ModSettings.escapeConditionsToWin == 3 },
                         { "GlowstickHunt", ModSettings.glowstickHunt && !ModSettings.noGlowstickHuntFinale },
                         { "GlowstickHuntNoFinale", ModSettings.glowstickHunt && ModSettings.noGlowstickHuntFinale}
                     };
