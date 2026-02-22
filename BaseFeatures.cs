@@ -344,6 +344,9 @@ namespace MonstrumExtendedSettingsMod
                 On.GlobalMusic.Start += new On.GlobalMusic.hook_Start(HookGlobalMusicStart);
 
                 SettingManager.Register(new DeckCargoHolds());
+
+                // Fix monsters avoiding fire even when fire shroud is on.
+                On.MonsterAvoidFire.Start += new On.MonsterAvoidFire.hook_Start(HookMonsterAvoidFireStart);
             }
 
             /*
@@ -5931,6 +5934,24 @@ namespace MonstrumExtendedSettingsMod
                     {
                         monster.audSource2.mute = true;
                     }
+                }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @MonsterAvoidFire
+
+            private static void HookMonsterAvoidFireStart(On.MonsterAvoidFire.orig_Start orig, MonsterAvoidFire monsterAvoidFire)
+            {
+                orig.Invoke(monsterAvoidFire);
+                if (ModSettings.giveAllMonstersAFireShroud)
+                {
+                    // When all monsters have a shroud, set to 0 so that pathfinding is not blocked and Hunter is not stunned.
+                    monsterAvoidFire.maxRadius = 0f;
+                }
+                else if (ModSettings.bruteFireShroud)
+                {
+                    // When only Brute has a shroud, change the layer so that pathfinding is not blocked but Hunter is still stunned.
+                    monsterAvoidFire.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
                 }
             }
 
