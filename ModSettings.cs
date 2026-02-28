@@ -1116,6 +1116,7 @@ namespace MonstrumExtendedSettingsMod
                     infiniteFuelCanFuel = new MESMSetting<bool>("Infinite Fuel Can Fuel", "Fuel cans will have infinite fuel", false).userValue;
                     fireDurationMultiplier = new MESMSetting<float>("Fire Duration Multiplier", "Changes the duration of how long fires burn", 1, true, true).userValue;
                     monsterCompass = new MESMSetting<bool>("Monster Compass", "Makes compasses point towards the nearest monster", false).userValue;
+                    walkieTalkieRange = new MESMSetting<float>("Walkie Talkie Range", "The maximum distance between two walkie talkies for them to be connected", 20f, true).userValue;
                     spawnWithLiferaftItems = new MESMSetting<bool>("Spawn With Liferaft Items", "Starts a round with the mission items required to complete the liferaft objectives in your inventory", false).userValue;
                     spawnWithHelicopterItems = new MESMSetting<bool>("Spawn With Helicopter Items", "Starts a round with the mission items required to complete the helicopter objectives in your inventory", false, false, true).userValue;
                     spawnWithSubmersibleItems = new MESMSetting<bool>("Spawn With Submersible Items", "Starts a round with the mission items required to complete the Submersible objectives in your inventory", false, false, true).userValue;
@@ -3817,6 +3818,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool infiniteFuelCanFuel;
             public static float fireDurationMultiplier;
             public static bool monsterCompass;
+            public static float walkieTalkieRange;
             private static bool spawnWithLiferaftItems;
             private static bool spawnWithHelicopterItems;
             private static bool spawnWithSubmersibleItems;

@@ -344,6 +344,7 @@ namespace MonstrumExtendedSettingsMod
                 On.GlobalMusic.Start += new On.GlobalMusic.hook_Start(HookGlobalMusicStart);
 
                 SettingManager.Register(new DeckCargoHolds());
+                SettingManager.Register(new WalkieTalkieRange());
 
                 // Fix monsters avoiding fire even when fire shroud is on.
                 On.MonsterAvoidFire.Start += new On.MonsterAvoidFire.hook_Start(HookMonsterAvoidFireStart);
