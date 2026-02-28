@@ -1,0 +1,27 @@
+Name|Brisk Brute
+Author|Mike Bone
+Difficulty|3
+Description|No, no, he's not growing in size my friend; however, he is getting closer... and fast.\n\nPart of the 4.1 MES challenge library.
+Version|6.1 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Monster Always Finds You In Hiding Spot|True
+Monster Animation Speed Multiplier|1.15
+Monster Movement Speed Multiplier|1.15
+Monster Rotation Speed Multiplier|1.15
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|1.5
+Dark Ship|True
+Powerable Lights|True
+Starter Room Region|Lower Deck
+Shortened Cargo Hold Corridors|True
+Flashlight Colour Red Component|255
+Flashlight Colour Green Component|100
+Flashlight Colour Blue Component|0
+Glowstick Colour Red Component|255
+Glowstick Colour Green Component|100
+Glowstick Colour Blue Component|0
+Ship Generic Lights Colour Red Component|255
+Ship Generic Lights Colour Green Component|100
+Ship Generic Lights Colour Blue Component|0

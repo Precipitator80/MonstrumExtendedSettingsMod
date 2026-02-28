@@ -1,0 +1,36 @@
+Name|Callous Corridors
+Author|Mike Bone
+Difficulty|5
+Description|Dead ends... dead ends everywhere. You find yourself on a ship full of locked doors hunted by two hyper-aggressive Hunters.\n\nWarning: If you hide from the Hunters they may enter a deadlock where one enters the vent while other one comes out on repeat...\n\nPart of the 4.1 MES challenge library.
+Version|6.1 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Hunters|2
+Brute Chase Speed Buff Multiplier|1.5
+Apply Chase Speed Buff To All Monsters|True
+Quiet Hunter|True
+Overpowered Hunter|True
+Aggressive Hunter|True
+Dark Ship|True
+Powerable Lights|True
+Use Custom Doors Mode|True
+Lightly Locked Doors|True
+Inventory Size|7
+Player Stamina Mode|True
+Player Stamina Mode Stamina Duration|10
+Player Stamina Mode Stamina Penalty|50
+Spawn With Flare Gun|True
+Starter Room Region|Lower Deck
+Shortened Cargo Hold Corridors|True
+Add Lower Deck Next To Engine Room|True
+Add Deck Zero|True
+Flashlight Colour Red Component|0
+Flashlight Colour Green Component|255
+Flashlight Colour Blue Component|255
+Glowstick Colour Red Component|0
+Glowstick Colour Green Component|255
+Glowstick Colour Blue Component|255
+Ship Generic Lights Colour Red Component|0
+Ship Generic Lights Colour Green Component|255
+Ship Generic Lights Colour Blue Component|255
+Player Stamina Mode Stamina Text|True

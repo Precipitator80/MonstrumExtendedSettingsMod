@@ -1,0 +1,20 @@
+Name|Triple Terror
+Author|Mike Bone
+Difficulty|5
+Description|A slightly buffed version of Three Monsters.\n\nCredit to "That J Guy" for inspiring the idea for this challenge.\n\nPart of the 4.1 MES challenge library.
+Version|6.1 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Number of Hunters|1
+Number of Fiends|1
+Monster Animation Speed Multiplier|1.25
+Monster Movement Speed Multiplier|1.25
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|1.6
+Overpowered Hunter|True
+Fiend Door Teleportation|True
+Dark Ship|True
+Powerable Lights|True
+Overpowered Steam Vents|True
+Unbreakable Pit Traps|True

@@ -1,0 +1,28 @@
+Name|Fee Fi Fo Fum+
+Author|Mike Bone
+Difficulty|4
+Description|心臓を捧げよ！\nShinzou Wo Sasageyo!\n...cough... cough. Uhhh, survive against three 1.15x chase speed Brutes.\n\nPart of the 4.1 MES challenge library.
+Version|6.1 Indev
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|3
+Monster Always Finds You In Hiding Spot|True
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|1.15
+Dark Ship|True
+Powerable Lights|True
+Player Movement Speed Multiplier|0.6
+Custom Player Scale|0.6
+Unlock Player Head|True
+Starter Room Region|Lower Deck
+Overpowered Steam Vents|True
+Unbreakable Pit Traps|True
+Flashlight Colour Red Component|255
+Flashlight Colour Green Component|255
+Flashlight Colour Blue Component|0
+Glowstick Colour Red Component|255
+Glowstick Colour Green Component|255
+Glowstick Colour Blue Component|0
+Ship Generic Lights Colour Red Component|255
+Ship Generic Lights Colour Green Component|255
+Ship Generic Lights Colour Blue Component|0
