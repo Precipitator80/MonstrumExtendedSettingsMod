@@ -444,6 +444,16 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            // private static void RecursiveTransformExploration(Transform transform, int depth = 0)
+            // {
+            //     depth++;
+            //     for (int i = 0; i < transform.childCount; i++)
+            //     {
+            //         Debug.Log($"Parent: {transform.name}. Depth: {depth}. Child: {transform.GetChild(i).name}.");
+            //         RecursiveTransformExploration(transform.GetChild(i), depth);
+            //     }
+            // }
+
             // @CopyComponent
             // public static T CopyComponent<T>(T original, GameObject destination) where T : Component // Copy a component at runtime - Shaffe - https://answers.unity.com/questions/458207/copy-a-component-at-runtime.html - Accessed 14.07.2021
             // {

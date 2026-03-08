@@ -1,4 +1,4 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -348,6 +348,13 @@ namespace MonstrumExtendedSettingsMod
 
                 // Fix monsters avoiding fire even when fire shroud is on.
                 On.MonsterAvoidFire.Start += new On.MonsterAvoidFire.hook_Start(HookMonsterAvoidFireStart);
+
+                // Player growth bugfix. Only apply here when Multiplayer Mode is disabled, as MultiplayerMode has its own hooks doing the same fix.
+                if (!ModSettings.enableMultiplayer)
+                {
+                    On.PlayerUpperBodyLock.LateUpdate += new On.PlayerUpperBodyLock.hook_LateUpdate(HookPlayerUpperBodyLockLateUpdate);
+                    On.PlayerUpperBodyLock.UpdatePositions += new On.PlayerUpperBodyLock.hook_UpdatePositions(HookPlayerUpperBodyLockUpdatePositions);
+                }
             }
 
             /*
@@ -7067,6 +7074,89 @@ namespace MonstrumExtendedSettingsMod
                 if (ModSettings.debugMode && ModSettings.noclip)
                 {
                     playerMotor.timeSinceLastJump = 2f;
+                }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @PlayerUpperBodyLock
+
+            /// <summary>
+            /// This function counters the player's bobbing animation when weighting is above 0. Weightin is above 0 while standing and holding an item or leaning, for example.
+            /// FollowTransform.DoFollow makes the camera follow the spine of the player even though it is parented to the player's GameObject at their feet.
+            /// The original Junkfish code here changed transform parents from the spine to the player and applied transform edits, but this method would result in floating point imprecision affecting the camera's position, slowly increasing the height over time.
+            /// By using InverseTransformPoint and TransformPoint instead of parent switching, these imprecisions can be avoided.
+            /// </summary>
+            private static void HookPlayerUpperBodyLockLateUpdate(On.PlayerUpperBodyLock.orig_LateUpdate orig, PlayerUpperBodyLock playerUpperBodyLock)
+            {
+                if (playerUpperBodyLock.once)
+                {
+                    playerUpperBodyLock.once = false;
+                    playerUpperBodyLock.UpdatePositions();
+                }
+                if (!(playerUpperBodyLock.weighting > 0f))
+                {
+                    return;
+                }
+                float t = Mathf.Clamp(Mathf.Min(playerUpperBodyLock.weighting, Mathf.Min(playerUpperBodyLock.weighting2, playerUpperBodyLock.weighting3)), 0f, playerUpperBodyLock.maxWeighting);
+                for (int i = 0; i < playerUpperBodyLock.keepRotation.Length; i++)
+                {
+                    playerUpperBodyLock.keepRotations[i] = playerUpperBodyLock.keepRotation[i].rotation;
+                }
+                Quaternion identity = Quaternion.identity;
+                for (int j = 0; j < playerUpperBodyLock.localFollowing.Length; j++)
+                {
+                    if (playerUpperBodyLock.localFollowing[j] != null)
+                    {
+                        playerUpperBodyLock.localFollowing[j].localPosition = Vector3.Lerp(playerUpperBodyLock.localFollowing[j].localPosition, playerUpperBodyLock.lockLocalPositions[j], t);
+                        identity = playerUpperBodyLock.localFollowingRotations[j] != Vector3.zero ? Quaternion.Euler(playerUpperBodyLock.localFollowingRotations[j]) : playerUpperBodyLock.lockLocalRotation[j];
+                        playerUpperBodyLock.localFollowing[j].localRotation = Quaternion.Lerp(playerUpperBodyLock.localFollowing[j].localRotation, identity, t);
+                    }
+                }
+                for (int k = 0; k < playerUpperBodyLock.localToPlayerFollowing.Length; k++)
+                {
+                    if (playerUpperBodyLock.localToPlayerFollowing[k] != null) // Fix typo from internal Junkfish code where localFollowing[k] was used.
+                    {
+                        // Calculate target positions relatively in the player's local space rather than re-parenting.
+                        Vector3 currentLocalPos = References.Player.transform.InverseTransformPoint(playerUpperBodyLock.localToPlayerFollowing[k].position);
+                        Quaternion currentLocalRot = Quaternion.Inverse(References.Player.transform.rotation) * playerUpperBodyLock.localToPlayerFollowing[k].rotation;
+                        
+                        // Lerp them.
+                        Vector3 targetLocalPos = Vector3.Lerp(currentLocalPos, playerUpperBodyLock.lockGlobalPositions[k], t);
+                        Quaternion targetLocalRot = Quaternion.Lerp(currentLocalRot, playerUpperBodyLock.lockGlobalRotation[k], t);
+                        
+                        // Apply back in world space.
+                        playerUpperBodyLock.localToPlayerFollowing[k].position = References.Player.transform.TransformPoint(targetLocalPos);
+                        playerUpperBodyLock.localToPlayerFollowing[k].rotation = References.Player.transform.rotation * targetLocalRot;
+                    }
+                }
+                for (int l = 0; l < playerUpperBodyLock.keepRotation.Length; l++)
+                {
+                    playerUpperBodyLock.keepRotation[l].rotation = playerUpperBodyLock.keepRotations[l];
+                }
+            }
+
+            private static void HookPlayerUpperBodyLockUpdatePositions(On.PlayerUpperBodyLock.orig_UpdatePositions orig, PlayerUpperBodyLock playerUpperBodyLock)
+            {
+                playerUpperBodyLock.lockLocalPositions = new Vector3[playerUpperBodyLock.localFollowing.Length];
+                playerUpperBodyLock.lockLocalRotation = new Quaternion[playerUpperBodyLock.localFollowing.Length];
+                playerUpperBodyLock.lockGlobalPositions = new Vector3[playerUpperBodyLock.localToPlayerFollowing.Length];
+                playerUpperBodyLock.lockGlobalRotation = new Quaternion[playerUpperBodyLock.localToPlayerFollowing.Length];
+                playerUpperBodyLock.keepRotations = new Quaternion[playerUpperBodyLock.keepRotation.Length];
+                for (int i = 0; i < playerUpperBodyLock.localFollowing.Length; i++)
+                {
+                    if (playerUpperBodyLock.localFollowing[i] != null)
+                    {
+                        playerUpperBodyLock.lockLocalPositions[i] = playerUpperBodyLock.localFollowing[i].localPosition;
+                        playerUpperBodyLock.lockLocalRotation[i] = playerUpperBodyLock.localFollowing[i].localRotation;
+                    }
+                }
+                for (int j = 0; j < playerUpperBodyLock.localToPlayerFollowing.Length; j++)
+                {
+                    if (playerUpperBodyLock.localToPlayerFollowing[j] != null)
+                    {
+                        playerUpperBodyLock.lockGlobalPositions[j] = References.Player.transform.InverseTransformPoint(playerUpperBodyLock.localToPlayerFollowing[j].position);
+                        playerUpperBodyLock.lockGlobalRotation[j] = Quaternion.Inverse(References.Player.transform.rotation) * playerUpperBodyLock.localToPlayerFollowing[j].rotation;
+                    }
                 }
             }
 

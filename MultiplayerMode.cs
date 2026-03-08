@@ -1,4 +1,4 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10699,13 +10699,19 @@ namespace MonstrumExtendedSettingsMod
                         NewPlayerClass newPlayerClass = newPlayerClasses[PlayerNumberFromPlayerUpperBodyLock(playerUpperBodyLock.GetInstanceID())];
                         for (int k = 0; k < playerUpperBodyLock.localToPlayerFollowing.Length; k++)
                         {
-                            if (playerUpperBodyLock.localFollowing[k] != null)
+                            if (playerUpperBodyLock.localToPlayerFollowing[k] != null) // Fix typo from internal Junkfish code where localFollowing[k] was used.
                             {
-                                playerUpperBodyLock.temp = playerUpperBodyLock.localToPlayerFollowing[k].parent;
-                                playerUpperBodyLock.localToPlayerFollowing[k].parent = newPlayerClass.gameObject.transform;
-                                playerUpperBodyLock.localToPlayerFollowing[k].localPosition = Vector3.Lerp(playerUpperBodyLock.localToPlayerFollowing[k].localPosition, playerUpperBodyLock.lockGlobalPositions[k], t);
-                                playerUpperBodyLock.localToPlayerFollowing[k].localRotation = Quaternion.Lerp(playerUpperBodyLock.localToPlayerFollowing[k].localRotation, playerUpperBodyLock.lockGlobalRotation[k], t);
-                                playerUpperBodyLock.localToPlayerFollowing[k].parent = playerUpperBodyLock.temp;
+                                // Calculate target positions relatively in the player's local space rather than re-parenting.
+                                Vector3 currentLocalPos = newPlayerClass.gameObject.transform.InverseTransformPoint(playerUpperBodyLock.localToPlayerFollowing[k].position);
+                                Quaternion currentLocalRot = Quaternion.Inverse(newPlayerClass.gameObject.transform.rotation) * playerUpperBodyLock.localToPlayerFollowing[k].rotation;
+
+                                // Lerp them.
+                                Vector3 targetLocalPos = Vector3.Lerp(currentLocalPos, playerUpperBodyLock.lockGlobalPositions[k], t);
+                                Quaternion targetLocalRot = Quaternion.Lerp(currentLocalRot, playerUpperBodyLock.lockGlobalRotation[k], t);
+
+                                // Apply back in world space.
+                                playerUpperBodyLock.localToPlayerFollowing[k].position = newPlayerClass.gameObject.transform.TransformPoint(targetLocalPos);
+                                playerUpperBodyLock.localToPlayerFollowing[k].rotation = newPlayerClass.gameObject.transform.rotation * targetLocalRot;
                             }
                         }
                         for (int l = 0; l < playerUpperBodyLock.keepRotation.Length; l++)
@@ -10736,11 +10742,8 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (playerUpperBodyLock.localToPlayerFollowing[j] != null)
                     {
-                        playerUpperBodyLock.temp = playerUpperBodyLock.localToPlayerFollowing[j].parent;
-                        playerUpperBodyLock.localToPlayerFollowing[j].parent = newPlayerClass.gameObject.transform;
-                        playerUpperBodyLock.lockGlobalPositions[j] = playerUpperBodyLock.localToPlayerFollowing[j].localPosition;
-                        playerUpperBodyLock.lockGlobalRotation[j] = playerUpperBodyLock.localToPlayerFollowing[j].localRotation;
-                        playerUpperBodyLock.localToPlayerFollowing[j].parent = playerUpperBodyLock.temp;
+                        playerUpperBodyLock.lockGlobalPositions[j] = newPlayerClass.gameObject.transform.InverseTransformPoint(playerUpperBodyLock.localToPlayerFollowing[j].position);
+                        playerUpperBodyLock.lockGlobalRotation[j] = Quaternion.Inverse(newPlayerClass.gameObject.transform.rotation) * playerUpperBodyLock.localToPlayerFollowing[j].rotation;
                     }
                 }
             }
