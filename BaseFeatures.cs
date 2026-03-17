@@ -355,6 +355,8 @@ namespace MonstrumExtendedSettingsMod
                     On.PlayerUpperBodyLock.LateUpdate += new On.PlayerUpperBodyLock.hook_LateUpdate(HookPlayerUpperBodyLockLateUpdate);
                     On.PlayerUpperBodyLock.UpdatePositions += new On.PlayerUpperBodyLock.hook_UpdatePositions(HookPlayerUpperBodyLockUpdatePositions);
                 }
+
+                SettingManager.Register(new MonsterVisionConeAngle());
             }
 
             /*
