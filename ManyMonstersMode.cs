@@ -3792,46 +3792,32 @@ namespace MonstrumExtendedSettingsMod
                     BaseFeatures.HookLevelGeneration(orig, levelGeneration);
                     */
 
+                    float sparkyChance = 1f / (4 - ModSettings.bannedRandomMonsters.Count);
                     for (int i = 0; i < ModSettings.numberOfMonsters; i++)
                     {
                         try
                         {
                             if (i < ModSettings.numberOfRandomMonsters)
                             {
-                                GameObject monsterGameObject = Instantiate(monsterSelection.Select());
-                                if (ModSettings.useSparky)
+                                GameObject monsterGameObject;
+                                // If the original weighted selection is used, which it only is when the player uses random monsters, then let Sparky be chosen too at a 1/4 chance.
+                                if (ModSettings.useSparky && (monsterSelection.playerPrefIdentifier == "MonsterCounts" && UnityEngine.Random.value <= sparkyChance || ModSettings.bannedRandomMonsters.Count == 3))
                                 {
-                                    // If the original weighted selection is used, which it only is when the player uses random monsters, then let Sparky be chosen too at a 1/4 chance.
-                                    if (monsterSelection.playerPrefIdentifier == "MonsterCounts")
-                                    {
-                                        int upperIndexLimit = GameObject.FindGameObjectsWithTag("Monster").Length;
-                                        int randomNumber = UnityEngine.Random.Range(0, upperIndexLimit + 1);
-                                        if (randomNumber == upperIndexLimit)
-                                        {
-                                            monsterGameObject = Sparky.CreateSparky(monsterSelection).gameObject;
-                                        }
-                                    }
+                                    monsterGameObject = Sparky.CreateSparky(monsterSelection).gameObject;
                                 }
-                                if (ModSettings.bannedRandomMonsters.Count > 0)
+                                else if (ModSettings.bannedRandomMonsters.Count > 0 && ModSettings.bannedRandomMonsters.Count < 3)
                                 {
-                                    if (ModSettings.bannedRandomMonsters.Count == 3)
+                                    do
                                     {
-                                        if (ModSettings.useSparky)
-                                        {
-                                            monsterGameObject = Sparky.CreateSparky(monsterSelection).gameObject;
-                                        }
-                                        else
-                                        {
-                                            monsterGameObject = Instantiate(monsterSelection.Select());
-                                        }
-                                    }
-                                    else
-                                    {
-                                        do
-                                        {
-                                            monsterGameObject = Instantiate(monsterSelection.Select());
-                                        } while (ModSettings.bannedRandomMonsters.Contains(monsterGameObject.GetComponent<Monster>().monsterType));
-                                    }
+                                        monsterGameObject = monsterSelection.Select();
+                                        Debug.Log("Selected " + monsterGameObject.GetComponent<Monster>().MonsterType.ToString());
+                                        // monster.monsterType is not set until Awake, so use the enum directly.
+                                    } while (ModSettings.bannedRandomMonsters.Contains(monsterGameObject.GetComponent<Monster>().MonsterType.ToString()));
+                                    monsterGameObject = Instantiate(monsterGameObject);
+                                }
+                                else
+                                {
+                                    monsterGameObject = Instantiate(monsterSelection.Select());
                                 }
                                 monsterList.Add(monsterGameObject);
                             }

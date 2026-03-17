@@ -2986,19 +2986,17 @@ namespace MonstrumExtendedSettingsMod
                     {
                         levelGeneration.selectedMonster = SmokeMonster.CreateSmokeMonster(monsterSelection);
                     }
-                    else
+                    else if (ModSettings.bannedRandomMonsters.Count > 0 && ModSettings.bannedRandomMonsters.Count < 3)
                     {
-                        if (ModSettings.bannedRandomMonsters.Count > 0 && ModSettings.bannedRandomMonsters.Count < 3)
-                        {
-                            do
-                            {
-                                levelGeneration.selectedMonster = monsterSelection.Select();
-                            } while (ModSettings.bannedRandomMonsters.Contains(levelGeneration.selectedMonster.GetComponent<Monster>().monsterType));
-                        }
-                        else
+                        do
                         {
                             levelGeneration.selectedMonster = monsterSelection.Select();
-                        }
+                            // monster.monsterType is not set until Awake, so use the enum directly.
+                        } while (ModSettings.bannedRandomMonsters.Contains(levelGeneration.selectedMonster.GetComponent<Monster>().MonsterType.ToString()));
+                    }
+                    else
+                    {
+                        levelGeneration.selectedMonster = monsterSelection.Select();
                     }
                     levelGeneration.chosenMonstType = levelGeneration.selectedMonster.GetComponent<Monster>().MonsterType;
                 }
@@ -7119,11 +7117,11 @@ namespace MonstrumExtendedSettingsMod
                         // Calculate target positions relatively in the player's local space rather than re-parenting.
                         Vector3 currentLocalPos = References.Player.transform.InverseTransformPoint(playerUpperBodyLock.localToPlayerFollowing[k].position);
                         Quaternion currentLocalRot = Quaternion.Inverse(References.Player.transform.rotation) * playerUpperBodyLock.localToPlayerFollowing[k].rotation;
-                        
+
                         // Lerp them.
                         Vector3 targetLocalPos = Vector3.Lerp(currentLocalPos, playerUpperBodyLock.lockGlobalPositions[k], t);
                         Quaternion targetLocalRot = Quaternion.Lerp(currentLocalRot, playerUpperBodyLock.lockGlobalRotation[k], t);
-                        
+
                         // Apply back in world space.
                         playerUpperBodyLock.localToPlayerFollowing[k].position = References.Player.transform.TransformPoint(targetLocalPos);
                         playerUpperBodyLock.localToPlayerFollowing[k].rotation = References.Player.transform.rotation * targetLocalRot;
