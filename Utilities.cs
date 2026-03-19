@@ -15,7 +15,7 @@ namespace MonstrumExtendedSettingsMod
         // ~Utilities
         // Class for utilities not commonly used as well as unused but potentially useful utilities. More commonly used utilities can be found in ModSettings.
 
-        private static class Utilities
+        public static class Utilities
         {
             /// <summary>
             /// Maps original iterator nested types to a lambda function that acts as an intermediate hook to handle iterator instances.

@@ -23,6 +23,17 @@ namespace MonstrumExtendedSettingsMod.Setting
             return setting;
         }
 
+        /// <summary>
+        /// Syncs all settings to enable or disable hooks. Useful to run at startup for any pre-round features like loading screens.
+        /// </summary>
+        public static void SyncAllSettings()
+        {
+            foreach (var setting in settings.Values)
+            {
+                setting.SyncSettingState();
+            }
+        }
+
         public static void EarlyInitialisation()
         {
             foreach (var setting in settings.Values)
