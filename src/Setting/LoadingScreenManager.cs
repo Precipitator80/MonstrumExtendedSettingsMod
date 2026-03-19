@@ -287,7 +287,6 @@ namespace MonstrumExtendedSettingsMod.Setting
                         autoSwitchTimer -= Time.deltaTime;
                         if (autoSwitchTimer <= 0f)
                         {
-                            autoSwitchTimer = 10f;
                             ChangeScreen(1);
                         }
                     }
@@ -295,12 +294,10 @@ namespace MonstrumExtendedSettingsMod.Setting
                     // Manual Screen Navigation
                     if (KeyBinds.RightKeyBind.JustPressed() || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetMouseButtonDown(0))
                     {
-                        autoSwitchTimer = 10f;
                         ChangeScreen(1);
                     }
                     else if (KeyBinds.LeftKeyBind.JustPressed() || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetMouseButtonDown(1))
                     {
-                        autoSwitchTimer = 10f;
                         ChangeScreen(-1);
                     }
 
@@ -374,6 +371,7 @@ namespace MonstrumExtendedSettingsMod.Setting
 
             private void UpdateLoadingScreen()
             {
+                autoSwitchTimer = 10f;
                 LoadingBackground.loadingSprite = extendedLoadingScreenArray[currentScreenIndex].texture;
                 if (currentTextIndex >= 0 && currentTextIndex < extendedLoadingScreenArray[currentScreenIndex].hints.Length)
                 {
