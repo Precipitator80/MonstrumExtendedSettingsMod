@@ -1018,7 +1018,7 @@ MonsterVisionConeAngle.fiendVisionConeAngle = new MESMSetting<int>("Fiend Vision
                         numberOfRandomMonsters += numbersOfMonsterPlayers.Count - numberOfMonsters;
                         numberOfMonsters += numbersOfMonsterPlayers.Count - numberOfMonsters;
                     }
-                    MultiplayerMode.useLegacyAudio = new MESMSetting<bool>("Use Legacy Audio In Multiplayer", "Does not make adjustments to the audio for multiplayer and instead only gives the first player audio. The custom multiplayer audio system is quite performance heavy and can cause lag spikes and audio issues in certain situations but plays the audio of all players instead of just player 1. Requires a restart to change and multiplayer to be enabled", false, false, true).userValue;
+                    MultiplayerMode.useLegacyAudio = new MESMSetting<bool>("Use Legacy Audio In Multiplayer", "Does not make adjustments to the audio for multiplayer and instead only gives the first player audio. The custom multiplayer audio system is quite performance heavy and can cause lag spikes and audio issues in certain situations but plays the audio of all players instead of just player 1. Requires a restart to change and multiplayer to be enabled", true, false, true).userValue;
                     CrewVsMonsterMode.letAIControlMonster = new MESMSetting<bool>("Start With AI Having Control", "Starts Crew VS Monsters rounds with the AI having control over the monster. Useful if you simply want to use the mode for spectating the monster without having to press the control transfer button", false, false, true).userValue;
                     /*
                     ------------------------------
