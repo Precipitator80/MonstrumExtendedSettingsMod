@@ -3191,142 +3191,7 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 orig.Invoke(levelGeneration);
-
-                /*
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Initial Rooms";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(levelGeneration);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-                */
             }
-
-            /*
-            private static void HookSpawnDeckLGSpawnDeckPieces(On.SpawnDeckLG.orig_SpawnDeckPieces orig, List<Room> _deckPrefabs, List<Room> _deckInUse, GameObject _deckParent)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Deck Pieces";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_deckPrefabs, _deckInUse, _deckParent);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-            }
-
-            private static void HookSpawnDeckCargoAreaGenerateCargoArea(On.SpawnDeckCargoArea.orig_GenerateCargoArea orig, List<GameObject> _onDeckCargoPrefabs, GameObject _parentObj, List<Room> _roomsInUse, List<Room> _cargoContainerRooms)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Deck Cargo Containers";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_onDeckCargoPrefabs, _parentObj, _roomsInUse, _cargoContainerRooms);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-            }
-
-            private static void HookSpawnWalkwaysLGSpawnWalkways(On.SpawnWalkwaysLG.orig_SpawnWalkways orig, List<Room> _rooms, List<Room> _walkwaysList, GameObject _roomsParent)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Walkways";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_rooms, _walkwaysList, _roomsParent);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-                loadingProgressText = "Spawning Engine Room [No Error Notifications]";
-                SetLoadingText(loadingBackground, loadingProgressText);
-            }
-
-            private static void HookSpawnEnginesLGSpawnEngineArea(On.SpawnEnginesLG.orig_SpawnEngineArea orig, List<Room> _enginesInUse, GameObject _engineParent)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Engine Room";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_enginesInUse, _engineParent);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-            }
-
-
-            private static void HookSpawnCargoHoldLGSpawnCargoArea(On.SpawnCargoHoldLG.orig_SpawnCargoArea orig, List<GameObject> _cargoWalkwayPrefabs, List<Room> _cargoRoomPrefabs, List<Room> _cargoRoomsInUse, GameObject _cargoParent)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Cargo Hold";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_cargoWalkwayPrefabs, _cargoRoomPrefabs, _cargoRoomsInUse, _cargoParent);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-                loadingProgressText = "Spawning Random Rooms [No Error Notifications]";
-                SetLoadingText(loadingBackground, loadingProgressText);
-            }
-
-
-            private static void HookSpawnShellLGGenerateShell(On.SpawnShellLG.orig_GenerateShell orig, List<GameObject> _shellPrefabs, List<GameObject> _shellsInUse, GameObject _shellsParent)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Shell";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_shellPrefabs, _shellsInUse, _shellsParent);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-                loadingProgressText = "Spawning Corridors, Joints And Doors & Handling Post Processing [No Error Notifications]";
-                SetLoadingText(loadingBackground, loadingProgressText);
-            }
-            */
 
             private static bool busyWithCoroutine;
 
@@ -3458,7 +3323,7 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 Loading.UpdateLoading(loadIncrement);
-                loadingProgressText = "Spawning Random Rooms [No Error Notifications]";
+                loadingProgressText = "Spawning Random Rooms [No Error Notifications - Restart if Stuck]";
                 Debug.Log(loadingProgressText);
                 LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
@@ -3487,7 +3352,7 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 Loading.UpdateLoading(loadIncrement);
-                loadingProgressText = "Spawning Corridors [No Error Notifications]";
+                loadingProgressText = "Spawning Corridors [No Error Notifications - Restart if Stuck]";
                 Debug.Log(loadingProgressText);
                 LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
@@ -3499,7 +3364,7 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 Loading.UpdateLoading(loadIncrement);
-                loadingProgressText = "Spawning Joints And Doors [No Error Notifications]";
+                loadingProgressText = "Spawning Joints And Doors [No Error Notifications - Restart if Stuck]";
                 Debug.Log(loadingProgressText);
                 LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
@@ -8225,7 +8090,7 @@ namespace MonstrumExtendedSettingsMod
 
             private static void ProcessLoadingError(string loadingProgressText, LoadingBackground loadingBackground, Exception exception)
             {
-                string loadingProgressTextError = "Error While " + loadingProgressText;
+                string loadingProgressTextError = $"Error While {loadingProgressText} (Please Restart, Check Settings or Contact the Developer)";
                 Debug.Log(loadingProgressTextError + "\n" + exception.ToString());
                 LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressTextError);
                 ModSettings.errorDuringLevelGeneration = true;

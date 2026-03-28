@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace MonstrumExtendedSettingsMod.Setting
@@ -81,6 +82,11 @@ namespace MonstrumExtendedSettingsMod.Setting
                 { "49SparkyEasterEgg2",       new string[]{"Don't let Sparky catch you in the dark...", "It is unwise to let Sparky drain all the ship's power..." }},
                 { "50SparkyEasterEgg3",       new string[]{"Implementing a new monster takes a lot of time and dedication, but opens up the possibility for many new experiences."}},
             };
+
+        /// <summary>
+        /// Text appended to the end of other loading screen text to indicate loading progress.
+        /// </summary>
+        private static string loadingProgressText;
 
         /// <summary>
         /// Supports custom loading screens including an option to disable them.
@@ -201,6 +207,7 @@ namespace MonstrumExtendedSettingsMod.Setting
             }
 
             // Set the loading background without any progress text.
+            loadingProgressText = string.Empty;
             SetLoadingText(loadingBackground);
         }
 
@@ -209,55 +216,65 @@ namespace MonstrumExtendedSettingsMod.Setting
         /// Shows custom hints, the mod version, active challenge and any error.
         /// </summary>
         /// <param name="loadingBackground">The loading background to use.</param>
-        /// <param name="loadingProgressText">Additional text to indicate loading progress.</param>
-        public static void SetLoadingText(LoadingBackground loadingBackground, string loadingProgressText = "")
+        /// <param name="newLoadingProgressText">Additional text to indicate loading progress.</param>
+        public static void SetLoadingText(LoadingBackground loadingBackground, string newLoadingProgressText = "")
         {
+            // Only update the loading progress text if some was actually passed.
+            // This check prevents loading progress text being removed when switching loading hints.
+            // Depends on the Awake function resetting to empty string at the start of each round.
+            if (newLoadingProgressText != string.Empty)
+            {
+                loadingProgressText = newLoadingProgressText;
+            }
+
             if (!ExtendedSettingsModScript.ModSettings.errorDuringLevelGeneration && !ExtendedSettingsModScript.ModSettings.disableCustomLoadingText) // Don't update the text if an error has occurred during level generation.
             {
-                loadingBackground.text.text = string.Empty;
+                StringBuilder stringBuilder = new StringBuilder();
 
                 if (LoadingBackground.loadingSprite != null)
                 {
+                    var loadingImage = ((MonoBehaviour)loadingBackground).GetComponent<UnityEngine.UI.Image>();
                     if (!OculusManager.oculusEnabledOnStart)
                     {
-                        ((MonoBehaviour)loadingBackground).GetComponent<UnityEngine.UI.Image>().sprite = LoadingBackground.loadingSprite;
-                        loadingBackground.text.text = LoadingBackground.hintText;
+                        loadingImage.sprite = LoadingBackground.loadingSprite;
+                        stringBuilder.Append(LoadingBackground.hintText);
                     }
                     else
                     {
-                        ((MonoBehaviour)loadingBackground).GetComponent<UnityEngine.UI.Image>().sprite = loadingBackground.blackSprite;
-                        loadingBackground.text.text = string.Empty;
+                        loadingImage.sprite = loadingBackground.blackSprite;
                     }
-                }
 
-                if (LoadingBackground.loadingSprite != null && !ExtendedSettingsModScript.ModSettings.disableCustomLoadingText)
-                {
-                    if (!ExtendedSettingsModScript.ModSettings.errorWhileReadingModSettings)
+                    if (!ExtendedSettingsModScript.ModSettings.disableCustomLoadingText)
                     {
-                        if (ExtendedSettingsModScript.ModSettings.currentChallenge == null)
+                        if (!ExtendedSettingsModScript.ModSettings.errorWhileReadingModSettings)
                         {
-                            loadingBackground.text.text += "\n\nMonstrum Extended Settings Mod Version " + ExtendedSettingsModScript.VERSION_WITH_TEXT + " Active";
+                            if (ExtendedSettingsModScript.ModSettings.currentChallenge == null)
+                            {
+                                stringBuilder.Append($"\n\nMonstrum Extended Settings Mod Version {ExtendedSettingsModScript.VERSION_WITH_TEXT} Active");
+                            }
+                            else
+                            {
+                                stringBuilder.Append($"\n\nMESM Version {ExtendedSettingsModScript.VERSION_WITH_TEXT} Active With Challenge: {ExtendedSettingsModScript.ModSettings.currentChallenge.name}");
+                            }
                         }
                         else
                         {
-                            loadingBackground.text.text += "\n\nMESM Version " + ExtendedSettingsModScript.VERSION_WITH_TEXT + " Active With Challenge: " + ExtendedSettingsModScript.ModSettings.currentChallenge.name;
+                            stringBuilder.Append($"\n\nError While Reading {ExtendedSettingsModScript.ModSettings.modSettingsErrorString} Mod Settings - Fix Required");
+                        }
+
+                        if (!ExtendedSettingsModScript.ModSettings.skippedMenuScreen)
+                        {
+                            stringBuilder.Append(" [Skipped Menu Screen]");
+                        }
+
+                        if (loadingProgressText != string.Empty)
+                        {
+                            stringBuilder.Append("\n" + loadingProgressText);
                         }
                     }
-                    else
-                    {
-                        loadingBackground.text.text += "\n\nError While Reading " + ExtendedSettingsModScript.ModSettings.modSettingsErrorString + " Mod Settings - Fix Required";
-                    }
-
-                    if (!ExtendedSettingsModScript.ModSettings.skippedMenuScreen)
-                    {
-                        loadingBackground.text.text += " [Skipped Menu Screen]";
-                    }
-
-                    if (!loadingProgressText.Equals(""))
-                    {
-                        loadingBackground.text.text += "\n" + loadingProgressText;
-                    }
                 }
+
+                loadingBackground.text.text = stringBuilder.ToString();
             }
         }
 
