@@ -101,6 +101,8 @@ Monstrum Extended Settings Mod V7.0 (Partiality) — xx.xx.2026
 Added Settings:
 * Monster Settings
 - Silent Monster
+- Fiend Vision Cone Angle
+- Apply Fiend Vision Cone Angle To All Monsters
 
 * Gamemode Settings
 - No Glowstick Hunt Finale
@@ -120,14 +122,19 @@ Added Settings:
 - Use Wander Theme From Start
 -----
 Changes:
-- Added 47 new challenges by Ink. 
+- Added 48 new challenges by Ink. 
 - Added 15 challenges adapted from the 4.1 MES challenge library by Mike Bone.
+- Improved 25 existing challenges.
+- Added full directional movement for monster players in Crew VS Monster mode (PvP).
+- Added the ability to scroll between loading screens and their text. Screens are switched automatically every 10 seconds.
+- Polished existing loading screens and added several more. Also improved loading error guidance.
 - Replaced "All Pre-filled Fuse Boxes" and "No Pre-filled Fuse Boxes" with more granular Start Region, Liferaft, Engine Room, Submersible, Light and Power Lock settings.
 - Added icons for the molotov, smoke grenade and rainbow glowsticks.
 - Rainbow glowsticks now stack separately to normal glowsticks with their own name.
 - Added hint images that show on round start for Debug Mode, Escape Conditions and Glowstick Hunt.
 - Improved the look of purple smoke with custom materials by Ink and randomised particle size.
 - Player no longer drops their items when losing a life in Extra Lives mode.
+- Changed default multiplayer audio mode to legacy audio (no player 2 audio) to avoid lag.
 - Improved monster teleportation in Debug Mode.
 - Backpacks are now included in the teleport all items debug keybind.
 - Expanded player region node data text.
@@ -137,6 +144,8 @@ Changes:
 Bug Fixes:
 - Fixed player growth bug.
 - Fixed consistent level generation not ignoring monster and region spawn count history and some audio clips potentially affecting RNG while generating.
+- Fixed random monster selection when using Sparky or banned monsters.
+- Fixed monster AI not seeing crew player in Crew VS Monster mode (PvP) when the monster player used mouse and keyboard.
 - Fixed item spawn count changes via the "Change Key Item Spawn Numbers" setting persisting across rounds and the setting increasing counts when it should not.
 - Fixed No Barricade Doors search not finding some barricaded doors like the door for the engine room steam control room.
 - Fixed Sparky getting a Fire Shroud when only brute should have one.
