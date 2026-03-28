@@ -1,4 +1,4 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7865,8 +7865,8 @@ namespace MonstrumExtendedSettingsMod
                                                             if (gameObject.layer == vision.playerLayerInt)
                                                             {
                                                                 NewPlayerClass npcFromCollider = collider.GetComponentInParent<NewPlayerClass>();
-                                                                int playerNumber = MultiplayerMode.PlayerNumber(npcFromCollider.GetInstanceID());
-                                                                if (npcFromCollider != null && playerNumber == i)
+                                                                int crewPlayerNumber = MultiplayerMode.crewPlayers.IndexOf(npcFromCollider);
+                                                                if (npcFromCollider != null && crewPlayerNumber == i)
                                                                 {
                                                                     vision.monster.player = MultiplayerMode.crewPlayers[i].gameObject;
                                                                     vision.monster.playerRoomDetect = vision.monster.player.GetComponentInChildren<DetectRoom>();
