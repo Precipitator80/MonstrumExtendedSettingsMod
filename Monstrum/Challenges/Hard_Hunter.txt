@@ -2,7 +2,7 @@ Name|Hard Hunter
 Author|Ink
 Difficulty|4
 Description|A more difficult version of the Hunter. The monster's activity has been significantly increased.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1

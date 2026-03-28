@@ -2,7 +2,7 @@ Name|Underwater+
 Author|Ink
 Difficulty|6
 Description|Your ship continues to sink, the oxygen supply getting smaller. Be careful, because there is something even more dangerous on the ship with you than pressure and lack of oxygen.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|3

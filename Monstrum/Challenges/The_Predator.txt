@@ -2,7 +2,7 @@ Name|The Predator
 Author|Mike Bone
 Difficulty|4
 Description|Get to the choppa! Survive against a hyper aggressive Hunter. With the Hunter constantly ducking in and out of vents, you must move quickly and be sure not to wander into any dead ends.\n\nLow gamma recommended.\n\nPart of the 4.1 MES challenge library.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1

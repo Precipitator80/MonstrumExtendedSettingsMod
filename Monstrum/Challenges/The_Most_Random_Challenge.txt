@@ -2,7 +2,7 @@ Name|The Most Random Challenge
 Author|Ink
 Difficulty|7
 Description|Yea this is definitely the Most Random Challenge
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Force Many Monsters Mode|True
 Randomiser Mode|True

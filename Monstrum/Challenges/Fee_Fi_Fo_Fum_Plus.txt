@@ -2,7 +2,7 @@ Name|Fee Fi Fo Fum+
 Author|Mike Bone
 Difficulty|4
 Description|心臓を捧げよ！\nShinzou Wo Sasageyo!\n...cough... cough. Uhhh, survive against three 1.15x chase speed Brutes.\n\nPart of the 4.1 MES challenge library.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|3

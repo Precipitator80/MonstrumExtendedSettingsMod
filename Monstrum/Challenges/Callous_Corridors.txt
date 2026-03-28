@@ -2,7 +2,7 @@ Name|Callous Corridors
 Author|Mike Bone
 Difficulty|5
 Description|Dead ends... dead ends everywhere. You find yourself on a ship full of locked doors hunted by two hyper-aggressive Hunters.\n\nWarning: If you hide from the Hunters they may enter a deadlock where one enters the vent while other one comes out on repeat...\n\nPart of the 4.1 MES challenge library.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|2

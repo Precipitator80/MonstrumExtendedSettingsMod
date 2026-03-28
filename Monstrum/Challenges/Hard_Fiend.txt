@@ -2,7 +2,7 @@ Name|Hard Fiend
 Author|Ink
 Difficulty|4
 Description|A more difficult version of the Fiend. A little more stealth and a greater threat from mind attacks.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1

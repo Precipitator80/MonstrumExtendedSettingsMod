@@ -2,7 +2,7 @@ Name|Insane Hunter
 Author|Ink
 Difficulty|6
 Description|A much stronger version of the Hunter. Insane persistence in an endless attempt to catch the player off guard.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1

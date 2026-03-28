@@ -2,7 +2,7 @@ Name|Duel+
 Author|Ink
 Difficulty|8
 Description|It looks like the duel with the devil has become less fair. Anyway, good luck.\n\nYour only weapon will be the Flare Gun, which will spawn in the start room. Keep in mind that you can see through dense fog only with the help of portable lighting sources.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|3

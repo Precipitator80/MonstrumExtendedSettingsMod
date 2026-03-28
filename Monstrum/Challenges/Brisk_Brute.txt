@@ -2,7 +2,7 @@ Name|Brisk Brute
 Author|Mike Bone
 Difficulty|3
 Description|No, no, he's not growing in size my friend; however, he is getting closer... and fast.\n\nPart of the 4.1 MES challenge library.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1

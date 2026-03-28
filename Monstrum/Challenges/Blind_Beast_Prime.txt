@@ -2,7 +2,7 @@ Name|Blind Beast Prime
 Author|Ink
 Difficulty|10
 Description|The Blind Beast is back, and it's more eager to tear you apart than ever. Good luck.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1

@@ -2,7 +2,7 @@ Name|Fearsome Fiend
 Author|Mike Bone
 Difficulty|3
 Description|You oughta treasure that Fiend Detector 9000 (a.k.a. flashlight), It'll be one of your only life lines during this challenge.\n\nPart of the 4.1 MES challenge library.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1

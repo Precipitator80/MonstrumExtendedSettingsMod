@@ -2,7 +2,7 @@ Name|Child's Nightmare
 Author|Ink
 Difficulty|9
 Description|Sometimes a random dream can turn into a nightmare, but I believe you can handle it. Be careful, because long, dark mazes can cause primal fear, so sometimes you should catch your breath somewhere outside the corridors (at least until they are illuminated). And don't forget that you're not the only one here.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1

@@ -2,7 +2,7 @@ Name|Ancient Evil
 Author|Ink
 Difficulty|6
 Description|There is an ancient evil lurking somewhere on the ship. It cannot be eradicated, but you have a small chance of postponing your death. Be vigilant, save bullets and remember that there is no hiding from it.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1

@@ -2,7 +2,7 @@ Name|Hungry Hunter
 Author|Mike Bone
 Difficulty|3
 Description|You know, dinner isn't so fun when you're on the menu.\n\nPart of the 4.1 MES challenge library.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1

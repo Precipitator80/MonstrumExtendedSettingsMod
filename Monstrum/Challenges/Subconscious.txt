@@ -2,7 +2,7 @@ Name|Subconscious
 Author|Ink
 Difficulty|10
 Description|Although everything around you is unreal, you will stay here forever if you do not put together the puzzle of memories about the real Hisa Maru. And don't even think that you're safe in your Subconscious.\nYour stamina will never recover, so use it wisely. Make sure that fog, low gamma, and bloom are enabled in the settings.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1

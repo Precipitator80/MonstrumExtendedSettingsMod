@@ -2,7 +2,7 @@ Name|Breach I
 Author|Ink
 Difficulty|6
 Description|Welcome to the most secure marine prison. Collect 4 energy keys and sabotage the prison to escape before you get caught. Your main enemies are 1 armed guard and 5 security robots.\n"It looks like the door system is completely out of order..."
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|5

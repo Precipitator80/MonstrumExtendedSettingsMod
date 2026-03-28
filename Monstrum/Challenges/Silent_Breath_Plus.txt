@@ -2,7 +2,7 @@ Name|Silent Breath+
 Author|Ink
 Difficulty|9
 Description|You have to be as quiet and careful as possible if you want to escape. There is nowhere to run and nowhere to hide. Good luck.\nYour stamina is limited to 5 seconds of running, but your speed will be enough to quickly change position in case of danger.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|3

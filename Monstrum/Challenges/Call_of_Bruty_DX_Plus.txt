@@ -2,7 +2,7 @@ Name|Call of Bruty DX+
 Author|Mike Bone
 Difficulty|5
 Description|Do not pray for easy lives my friends---pray to be, uhh, stronger crewmates.\n\nHigher difficulty variant of Call of Bruty DX, part of the 4.1 MES challenge library.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|3

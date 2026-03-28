@@ -2,7 +2,7 @@ Name|Duel
 Author|Ink
 Difficulty|5
 Description|A real bloody duel against the devil himself in the flesh. Unfortunately, you won't be able to kill him, so you'll have to escape. Good luck.\n\nYour only weapon will be the Flare Gun, which will spawn in the start room. Keep in mind that you can see through dense fog only with the help of portable light sources.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1

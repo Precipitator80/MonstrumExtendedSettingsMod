@@ -2,7 +2,7 @@ Name|Insane Sparky
 Author|Ink
 Difficulty|7
 Description|Insane version of Sparky, also titled 'Sparky in the Dark'. Don't linger, otherwise the white eyes in the pitch darkness will be the last thing you see.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Sparkies|1

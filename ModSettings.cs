@@ -28,8 +28,8 @@ namespace MonstrumExtendedSettingsMod
 
     public partial class ExtendedSettingsModScript
     {
-        public const string VERSION = "6.1";
-        public const string VERSION_WITH_TEXT = VERSION + " Indev";
+        public const string VERSION = "7.0";
+        public const string VERSION_WITH_TEXT = VERSION + " Prerelease";
 
         public abstract class MESMSetting
         {
@@ -614,7 +614,7 @@ namespace MonstrumExtendedSettingsMod
                     seerMonster = new MESMSetting<bool>("Seer Monster", "After a monster spawns or you respawn, it will start chasing you", false).userValue;
                     silentMonster = new MESMSetting<bool>("Silent Monster", "The monster will not make any noise", false).userValue;
                     monsterAlwaysFindsYou = new MESMSetting<bool>("Monster Always Finds You In Hiding Spot", "Only guarantees the monster will pull you out if it checks your hiding spot", false).userValue;
-MonsterVisionConeAngle.fiendVisionConeAngle = new MESMSetting<int>("Fiend Vision Cone Angle", "Monster vision uses a cone in front of the monster to detect a player. This setting changes the cone angle of Fiend's vision. The game uses 70 by default", 70, true, false, 0, 360).userValue;
+                    MonsterVisionConeAngle.fiendVisionConeAngle = new MESMSetting<int>("Fiend Vision Cone Angle", "Monster vision uses a cone in front of the monster to detect a player. This setting changes the cone angle of Fiend's vision. The game uses 70 by default", 70, true, false, 0, 360).userValue;
                     MonsterVisionConeAngle.applyFiendVisionConeAngleToAllMonsters = new MESMSetting<bool>("Apply Fiend Vision Cone Angle To All Monsters", "Applies the custom angle used for Fiend to all monsters", false).userValue;
                     monsterAnimationSpeedMultiplier = new MESMSetting<float>("Monster Animation Speed Multiplier", "Changes the speed of all the animations of a monster. Movement is bound to animations", 1).userValue;
                     monsterMovementSpeedMultiplier = new MESMSetting<float>("Monster Movement Speed Multiplier", "Decreases a monster's speed without decreasing the speed of its animations. Values above 1 will make the monster move closer to full running speed during other states, such as while wandering about or at the sub doors", 1).userValue;

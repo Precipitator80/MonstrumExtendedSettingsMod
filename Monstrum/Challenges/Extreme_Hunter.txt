@@ -2,7 +2,7 @@ Name|Extreme Hunter
 Author|Ink
 Difficulty|8
 Description|An overpowered version of the Hunter. "The behavior pattern of this specimen was modified to a peak level of irritability and aggression, demonstrating extreme persistence in its hunting state."
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|1

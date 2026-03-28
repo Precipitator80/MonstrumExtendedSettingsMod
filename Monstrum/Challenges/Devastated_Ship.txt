@@ -2,7 +2,7 @@ Name|Devastated Ship
 Author|Ink
 Difficulty|10
 Description|The game against 5 random Insane monsters.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|5
 Maximum Monster Spawntime (seconds)|30

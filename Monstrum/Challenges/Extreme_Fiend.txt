@@ -2,7 +2,7 @@ Name|Extreme Fiend
 Author|Ink
 Difficulty|8
 Description|An overpowered version of the Fiend. "The IQ of this specimen was significantly increased, resulting in an extreme enhancement of its abilities, making further research of the specimen impossible using current methods and means."
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1

@@ -2,7 +2,7 @@ Name|Double Rush
 Author|Ink
 Difficulty|9
 Description|Let's guess who's faster.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|2
 Disable Random Hunter|True

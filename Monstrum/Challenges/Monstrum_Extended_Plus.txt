@@ -2,7 +2,7 @@ Name|Monstrum Extended+
 Author|Ink
 Difficulty|5
 Description|A random monster of the "Hard" difficulty variant, including Sparky. Additionally, there are a large number of settings such as new items, updated generation, escape conditions and other features to improve the enjoyment of the gameplay. High degree of replayability.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Add Sparky To The Game|True
 Use Indev Sparky Model|True

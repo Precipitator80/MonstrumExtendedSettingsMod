@@ -2,7 +2,7 @@ Name|Underwater
 Author|Ink
 Difficulty|4
 Description|It looks like your ship has started to sink along with you and one of the monsters. Fortunately, you have enough oxygen to last for a while, so you may be able to escape, although one of your escape routes has now been cut off.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1

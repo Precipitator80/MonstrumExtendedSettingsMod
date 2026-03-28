@@ -2,7 +2,7 @@ Name|Twilight Witch
 Author|Mike Bone
 Difficulty|4
 Description|"Must've been the wind" the naïve survivor thought to himself... It was in fact, not the wind. Your greatest enemy will be your fear and lack of knowledge as the ship bolsters a tremendous fog that limits your vision greatly.\n\nLow gamma recommended.\n\nPart of the 4.1 MES challenge library.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1

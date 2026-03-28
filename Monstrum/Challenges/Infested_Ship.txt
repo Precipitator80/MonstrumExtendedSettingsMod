@@ -2,7 +2,7 @@ Name|Infested Ship
 Author|Ink
 Difficulty|10
 Description|The game against 5 Insane Hunters.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Hunters|5

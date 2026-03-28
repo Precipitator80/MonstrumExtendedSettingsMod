@@ -2,7 +2,7 @@ Name|Insane Fiend
 Author|Ink
 Difficulty|6
 Description|A much stronger version of the Fiend. Insanely dangerous mind attack and significantly reduced interference radius.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1

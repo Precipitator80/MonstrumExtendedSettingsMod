@@ -2,7 +2,7 @@ Name|Surreal Ship
 Author|Ink
 Difficulty|6
 Description|Welcome to the Surreal Ship, the most accurate embodiment of Hisa Maru from dreams. Follow certain rules and maybe you can escape:\n\n1. Do not attempt to go beyond the bow or stern of the ship.\n2. Avoid spatial anomalies.\n3. Don't try to jump on the ceiling of any rooms.\n4. Don't fall into the ocean.
-Version|6.1 Indev
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|2
