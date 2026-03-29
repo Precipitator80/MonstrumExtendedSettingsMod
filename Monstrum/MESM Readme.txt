@@ -122,9 +122,9 @@ Added Settings:
 - Use Wander Theme From Start
 -----
 Changes:
-- Added 48 new challenges by Ink. 
+- Added over 50 new challenges by Ink. 
 - Added 15 challenges adapted from the 4.1 MES challenge library by Mike Bone.
-- Improved 25 existing challenges.
+- Improved over 20 existing challenges.
 - Added full directional movement for monster players in Crew VS Monster mode (PvP).
 - Added the ability to scroll between loading screens and their text. Screens are switched automatically every 10 seconds.
 - Polished existing loading screens and added several more. Also improved loading error guidance.
@@ -147,6 +147,7 @@ Bug Fixes:
 - Fixed random monster selection when using Sparky or banned monsters.
 - Fixed monster AI not seeing crew player in Crew VS Monster mode (PvP) when the monster player used mouse and keyboard.
 - Fixed item spawn count changes via the "Change Key Item Spawn Numbers" setting persisting across rounds and the setting increasing counts when it should not.
+- Fixed life raft gates being mismatched to their rafts when using two life rafts.
 - Fixed No Barricade Doors search not finding some barricaded doors like the door for the engine room steam control room.
 - Fixed Sparky getting a Fire Shroud when only brute should have one.
 - Fixed fire shroud still having visual effects when shroud size is 0.
