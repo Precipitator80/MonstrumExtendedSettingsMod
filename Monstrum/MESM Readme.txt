@@ -96,7 +96,7 @@ Public assets used:
 ----------------------------------------------------------------------------------------------------
 Changelog:
 ------------------------------------------------------------
-Monstrum Extended Settings Mod V7.0 (Partiality) — xx.xx.2026
+Monstrum Extended Settings Mod V7.0 (Partiality) — 29.03.2026
 -----
 Added Settings:
 * Monster Settings

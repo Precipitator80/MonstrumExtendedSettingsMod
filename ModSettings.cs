@@ -1,4 +1,4 @@
-// ~Beginning Of File
+﻿// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +30,7 @@ namespace MonstrumExtendedSettingsMod
     public partial class ExtendedSettingsModScript
     {
         public const string VERSION = "7.0";
-        public const string VERSION_WITH_TEXT = VERSION + " Prerelease";
+        public const string VERSION_WITH_TEXT = VERSION;
 
         public abstract class MESMSetting
         {
