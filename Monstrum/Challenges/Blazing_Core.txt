@@ -1,11 +1,14 @@
 Name|Blazing Core
 Author|Ink
 Difficulty|10
-Description|Let's see if you can handle a threat so incandescent that its heat covers entire decks.
+Description|Let's see if you can handle a threat so incandescent that its heat covers entire decks.\nYou will have to fix everything to avoid critical damage to the ship.
 Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
+Spawn Monster In Starter Room|True
+Fiend Vision Cone Angle|0
+Apply Fiend Vision Cone Angle To All Monsters|True
 Give All Monsters A Fire Shroud|True
 Fire Shroud Radius|25
 Fire Blast Radius|25
@@ -15,15 +18,24 @@ Fiend Flicker Minimum Range|1.25
 Fiend Flicker Medium Range|12.5
 Fiend Flicker Maximum Range|125
 Give All Monsters A Fiend Aura|True
-Breath Recovery|1
+Foggy Ship|True
+Fog Near Distance|5
+Fog Far Distance|50
+Fog Density|2.5
+Helicopter Fuel Amount|3
 Helicopter Fuel Time|2
 Submersible Charge Time|3
+Escape Routes To Win|3
+Escape Conditions|3
 Gravity Y Acceleration|-14.715
 Extended Jump Cooldown|True
+Camera Timer|1
 Pre-fill Liferaft Fuse Box|False
 Overpowered Steam Vents|True
+Change Key Item Spawn Numbers|2
+Diverse Item Spawns|True
 Brute Light Colour Red Component|250
-Brute Light Colour Green Component|100
+Brute Light Colour Green Component|150
 Brute Light Colour Blue Component|25
 Brute Light Intensity Multiplier|125
 Brute Light Range Multiplier|1.25
@@ -31,7 +43,10 @@ Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2
 Glowstick Range Multiplier|2
-Fog Colour Red Component|25
-Fog Colour Green Component|25
-Fog Colour Blue Component|25
+Ship Generic Lights Colour Red Component|225
+Ship Generic Lights Colour Green Component|125
+Ship Generic Lights Colour Blue Component|0
+Fog Colour Red Component|35
+Fog Colour Green Component|20
+Fog Colour Blue Component|10
 Use Wander Theme From Start|True

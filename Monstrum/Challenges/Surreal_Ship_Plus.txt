@@ -25,6 +25,7 @@ Fog Near Distance|125
 Fog Far Distance|250
 No Time Freeze In Pause Menu|True
 Hide Reticule|True
+Hide Inventory|True
 Hide Task Notifications|True
 Helicopter Fuel Time|9
 Submersible Charge Time|12

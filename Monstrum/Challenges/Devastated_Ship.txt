@@ -6,6 +6,7 @@ Version|7.0
 Setting|Custom Value
 Number of Random Monsters|5
 Maximum Monster Spawntime (seconds)|30
+Fiend Vision Cone Angle|180
 Monster Animation Speed Multiplier|1.5
 Monster Movement Speed Multiplier|1.5
 Monster Rotation Speed Multiplier|1.5
@@ -17,9 +18,9 @@ Fire Shroud Radius|1.5
 Fire Blast Radius|0
 Hunter Maximum Cooldown Time Multiplier|0.25
 Overpowered Hunter|True
-Fiend Flicker Minimum Range|1.5
-Fiend Flicker Medium Range|2.25
-Fiend Flicker Maximum Range|3
+Fiend Flicker Minimum Range|2
+Fiend Flicker Medium Range|3
+Fiend Flicker Maximum Range|4
 Fiend Mind Attack Damage Multiplier|3
 Fiend Mind Attack Attack Timer Charge Rate|5
 Fiend Mind Attack Attack Timer Decay Rate|0.25

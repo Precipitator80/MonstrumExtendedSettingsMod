@@ -6,6 +6,7 @@ Version|7.0
 Setting|Custom Value
 Number of Random Monsters|1
 Maximum Monster Spawntime (seconds)|30
+Fiend Vision Cone Angle|180
 Monster Animation Speed Multiplier|1.5
 Monster Movement Speed Multiplier|1.5
 Monster Rotation Speed Multiplier|1.5

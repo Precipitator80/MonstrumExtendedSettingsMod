@@ -1,7 +1,7 @@
 Name|Insane Trio
 Author|Ink
 Difficulty|9
-Description|The game against a full trio of monsters of the "Insane" difficulty variant.
+Description|The game against a full trio of monsters of the "Insane" difficulty variant. Slightly increased liferaft escape sequence complexity.
 Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
@@ -9,6 +9,7 @@ Number of Brutes|1
 Number of Hunters|1
 Number of Fiends|1
 Maximum Monster Spawntime (seconds)|30
+Fiend Vision Cone Angle|180
 Monster Animation Speed Multiplier|1.5
 Monster Movement Speed Multiplier|1.5
 Monster Rotation Speed Multiplier|1.5
@@ -27,11 +28,10 @@ Fiend Mind Attack Damage Multiplier|3
 Fiend Mind Attack Attack Timer Charge Rate|5
 Fiend Mind Attack Attack Timer Decay Rate|0.25
 Fiend Mind Attack Delay Timer Rate|5
-Helicopter Fuel Time|9
+Helicopter Fuel Time|8
 Submersible Charge Time|12
 Camera Timer|1
 Pre-fill Liferaft Fuse Box|False
-No Starter Fuse|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

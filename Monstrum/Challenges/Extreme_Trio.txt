@@ -1,7 +1,7 @@
 Name|Extreme Trio
 Author|Ink
 Difficulty|10
-Description|The game against a full trio of monsters of the "Extreme" difficulty variant. Extremely difficult.
+Description|The game against a full trio of monsters of the "Extreme" difficulty variant. Extremely difficult. Increased escape sequence complexity.
 Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
@@ -9,6 +9,7 @@ Number of Brutes|1
 Number of Hunters|1
 Number of Fiends|1
 Maximum Monster Spawntime (seconds)|15
+Fiend Vision Cone Angle|270
 Monster Animation Speed Multiplier|1.75
 Monster Movement Speed Multiplier|1.75
 Monster Rotation Speed Multiplier|1.75
@@ -16,8 +17,8 @@ Brute Chase Speed Buff|True
 Brute Chase Speed Buff Multiplier|1.75
 Brute Chase Speed Buff Rate|1.75
 Brute Fire Shroud|True
-Fire Shroud Radius|1.75
-Fire Blast Radius|175
+Fire Shroud Radius|3
+Fire Blast Radius|300
 Hunter Maximum Cooldown Time Multiplier|0.125
 Quiet Hunter|True
 Overpowered Hunter|True

@@ -9,6 +9,7 @@ Number of Brutes|1
 Number of Hunters|1
 Number of Fiends|1
 Maximum Monster Spawntime (seconds)|60
+Fiend Vision Cone Angle|90
 Monster Animation Speed Multiplier|1.25
 Monster Movement Speed Multiplier|1.25
 Monster Rotation Speed Multiplier|1.25
@@ -26,7 +27,7 @@ Fiend Mind Attack Damage Multiplier|2
 Fiend Mind Attack Attack Timer Charge Rate|3.75
 Fiend Mind Attack Attack Timer Decay Rate|0.5
 Fiend Mind Attack Delay Timer Rate|1.875
-Helicopter Fuel Time|9
+Helicopter Fuel Time|8
 Submersible Charge Time|12
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2

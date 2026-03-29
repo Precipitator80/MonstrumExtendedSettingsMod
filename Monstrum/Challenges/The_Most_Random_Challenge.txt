@@ -9,3 +9,4 @@ Randomiser Mode|True
 Chaos Multiplier|5
 Use Custom Doors Mode|True
 Custom Music Pack|All
+Random Start Room|True

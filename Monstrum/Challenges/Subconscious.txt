@@ -6,6 +6,8 @@ Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
+Fiend Vision Cone Angle|90
+Apply Fiend Vision Cone Angle To All Monsters|True
 Spawn Monster In Starter Room|True
 Persistent Monster|True
 Silent Monster|True

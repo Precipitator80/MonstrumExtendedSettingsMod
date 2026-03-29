@@ -7,6 +7,7 @@ Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1
 Maximum Monster Spawntime (seconds)|15
+Fiend Vision Cone Angle|270
 Monster Animation Speed Multiplier|1.75
 Monster Movement Speed Multiplier|1.75
 Monster Rotation Speed Multiplier|1.75
