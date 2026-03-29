@@ -953,49 +953,65 @@ namespace MonstrumExtendedSettingsMod
                 Liferaft[] liferafts = FindObjectsOfType<Liferaft>();
                 Crane[] cranes = FindObjectsOfType<Crane>();
                 LiferaftHook[] liferaftHooks = FindObjectsOfType<LiferaftHook>();
-                bool[] liferaftsFixedBools = new bool[liferafts.Length];
+
+                // Pre-match components to ensure they are related correctly.
+                var matchedLiferafts = new Liferaft[cranes.Length];
+                var matchedHooks = new LiferaftHook[cranes.Length];
+                for (int i = 0; i < cranes.Length; i++)
+                {
+                    matchedLiferafts[i] = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(cranes[i], liferafts, "ReadyLiferaft");
+                    matchedHooks[i] = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(cranes[i], liferaftHooks, "ReadyLiferaft");
+                }
+
+                bool[] liferaftsFixedBools = new bool[cranes.Length];
                 while (fixingLiferafts)
                 {
-                    for (int i = 0; i < liferafts.Length && i < cranes.Length; i++)
+                    for (int i = 0; i < cranes.Length; i++)
                     {
+                        var crane = cranes[i];
+                        var raft = matchedLiferafts[i];
+                        var hook = matchedHooks[i];
+
+                        if (crane == null || raft == null || hook == null) continue;
+
                         // Pull, tape, inflate and connect the raft.
-                        if (liferafts[i].state != Liferaft.LifeRaftState.Inflated)
+                        if (raft.state != Liferaft.LifeRaftState.Inflated)
                         {
-                            switch (liferafts[i].state)
+                            switch (raft.state)
                             {
                                 case Liferaft.LifeRaftState.OffEdge:
-                                    liferafts[i].OnStartFixedAnimation();
+                                    raft.OnStartFixedAnimation();
                                     break;
                                 case Liferaft.LifeRaftState.Dragging:
-                                    liferafts[i].AdvanceState();
+                                    raft.AdvanceState();
                                     break;
                                 case Liferaft.LifeRaftState.Torn:
-                                    liferafts[i].OnFinishFixedAnimation();
+                                    raft.OnFinishFixedAnimation();
                                     break;
                                 default:
-                                    liferafts[i].OnStartLoopAnimation();
+                                    raft.OnStartLoopAnimation();
                                     break;
                             }
                         }
 
                         // Move the raft using the crane.
-                        if (!cranes[i].chain.hook.IsConnected)
+                        if (!crane.chain.hook.IsConnected)
                         {
-                            MoveCrane(cranes[i], "Left");
-                            MoveCrane(cranes[i], "Down");
-                            if (liferafts[i].state == Liferaft.LifeRaftState.Inflated && cranes[i].angle == cranes[i].minAngle && cranes[i].chain.IsFullyExtended)
+                            MoveCrane(crane, "Left");
+                            MoveCrane(crane, "Down");
+                            if (raft.state == Liferaft.LifeRaftState.Inflated && crane.angle == crane.minAngle && crane.chain.IsFullyExtended)
                             {
-                                cranes[i].chain.hook.transform.position = liferaftHooks[i].transform.position;
-                                cranes[i].chain.hook.hook = liferaftHooks[i];
+                                crane.chain.hook.transform.position = hook.transform.position;
+                                crane.chain.hook.hook = hook;
                             }
                         }
                         else
                         {
-                            MoveCrane(cranes[i], "Right");
-                            if (cranes[i].angle == cranes[i].maxAngle)
+                            MoveCrane(crane, "Right");
+                            if (crane.angle == crane.maxAngle)
                             {
-                                MoveCrane(cranes[i], "Down");
-                                if (cranes[i].chain.IsFullyExtended)
+                                MoveCrane(crane, "Down");
+                                if (crane.chain.IsFullyExtended)
                                 {
                                     liferaftsFixedBools[i] = true;
                                 }

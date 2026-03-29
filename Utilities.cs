@@ -6,6 +6,7 @@ using System.Reflection;
 using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -487,6 +488,52 @@ namespace MonstrumExtendedSettingsMod
                     prop.SetValue(dst, prop.GetValue(original, null), null);
                 }
                 return dst as T;
+            }
+
+            /// <summary>
+            /// Returns the full hierarchy path of a transform (e.g., "Parent/Child/Object").
+            /// </summary>
+            public static string GetHierarchyPath(Transform t)
+            {
+                if (t == null) return "";
+                string path = t.name;
+                while (t.parent != null)
+                {
+                    t = t.parent;
+                    path = t.name + "/" + path;
+                }
+                return path;
+            }
+
+            public static T MatchByHierarchyOrDistance<T>(Component source, T[] targets, string context = "") where T : Component
+            {
+                if (targets == null || targets.Length == 0) return null;
+
+                // 1. Deep Structural Match (Preferred)
+                // Search up to 10 layers for a shard parent (handles deep nesting like UltimateChain at Lvl 5).
+                Transform current = source.transform.parent;
+                for (int i = 0; i < 10 && current != null; i++)
+                {
+                    // Stop searching once we hit the ship root or level containers
+                    if (current.name == "LevelGeneration" || current.name == "LevelRooms" || current.name == "Deck") break;
+
+                    T match = targets.FirstOrDefault(t => t.transform.IsChildOf(current));
+                    if (match != null)
+                    {
+                        Debug.Log($"[MESM] {context} linked {source.name} to {match.name} via Structure ({current.name})");
+                        return match;
+                    }
+                    current = current.parent;
+                }
+
+                // 2. Proximity Match (Fallback for components on separate structural branches)
+                T closest = targets.OrderBy(t => Vector3.Distance(t.transform.position, source.transform.position)).FirstOrDefault();
+                if (closest != null)
+                {
+                    Debug.Log($"[MESM] {context} linked {source.name} to {closest.name} via Proximity");
+                }
+
+                return closest;
             }
 
             /* Not currently used utilities.

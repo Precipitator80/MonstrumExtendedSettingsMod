@@ -1,4 +1,4 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +6,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using System.Text;
+using System.Linq;
 using MonstrumExtendedSettingsMod.Setting;
 
 namespace MonstrumExtendedSettingsMod
@@ -2090,22 +2091,29 @@ namespace MonstrumExtendedSettingsMod
                     HookCondition[] hookConditions = FindObjectsOfType<HookCondition>();
                     CraneChain[] craneChains = FindObjectsOfType<CraneChain>();
                     CraneHook[] craneHooks = FindObjectsOfType<CraneHook>();
-                    for (int i = 0; i < hookConditions.Length; i++)
+
+                    foreach (var chain in craneChains)
                     {
-                        craneChains[i].hookCondition = hookConditions[i];
-                        craneHooks[i].hookCondition = hookConditions[i];
+                        chain.hookCondition = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(chain, hookConditions, "ModSettings");
                     }
 
+                    foreach (var hook in craneHooks)
+                    {
+                        hook.hookCondition = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(hook, hookConditions, "ModSettings");
+                    }
 
                     liferafts = FindObjectsOfType<Liferaft>();
                     cranes = FindObjectsOfType<Crane>();
                     EscapeLifeRaft[] escapeLifeRafts = FindObjectsOfType<EscapeLifeRaft>();
-                    for (int i = 0; i < liferafts.Length && i < cranes.Length && i < escapeLifeRafts.Length; i++)
+
+                    foreach (var crane in cranes)
                     {
-                        //Debug.Log("Setting up liferaft set " + (i + 1));
-                        cranes[i].lifeRaft = liferafts[i];
-                        cranes[i].escapeLifeRaft = escapeLifeRafts[i];
-                        cranes[i].escapeLifeRaft.liferaft = liferafts[i];
+                        crane.lifeRaft = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(crane, liferafts, "ModSettings");
+                        crane.escapeLifeRaft = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(crane, escapeLifeRafts, "ModSettings");
+                        if (crane.escapeLifeRaft != null)
+                        {
+                            crane.escapeLifeRaft.liferaft = crane.lifeRaft;
+                        }
                     }
                 }
 
