@@ -1,0 +1,25 @@
+Name|TimeTrap v2+
+Author|Ink
+Difficulty|8
+Description|Time around you is slowed down by 50%, but not the monsters. Think, act!
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Number of Hunters|1
+Number of Fiends|1
+Maximum Monster Spawntime (seconds)|60
+Monster Animation Speed Multiplier|2
+Monster Rotation Speed Multiplier|2
+Hunter Maximum Cooldown Time Multiplier|0.5
+Fiend Mind Attack Attack Timer Charge Rate|2
+Helicopter Fuel Time|9
+Submersible Charge Time|12
+Infinite Flashlight Power|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2
+Timescale|0.5
+Speedrun Timer|True
+Show Speedrun Timer On Screen|True

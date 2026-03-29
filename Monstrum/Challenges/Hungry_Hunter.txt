@@ -1,0 +1,25 @@
+Name|Hungry Hunter
+Author|Mike Bone
+Difficulty|3
+Description|You know, dinner isn't so fun when you're on the menu.\n\nPart of the 4.1 MES challenge library.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Hunters|1
+Monster Animation Speed Multiplier|1.25
+Monster Movement Speed Multiplier|1.25
+Overpowered Hunter|True
+Dark Ship|True
+Powerable Lights|True
+Starter Room Region|Lower Deck
+Unbreakable Pit Traps|True
+Shortened Cargo Hold Corridors|True
+Flashlight Colour Red Component|0
+Flashlight Colour Green Component|255
+Flashlight Colour Blue Component|125
+Glowstick Colour Red Component|0
+Glowstick Colour Green Component|255
+Glowstick Colour Blue Component|125
+Ship Generic Lights Colour Red Component|0
+Ship Generic Lights Colour Green Component|255
+Ship Generic Lights Colour Blue Component|125

@@ -1,0 +1,51 @@
+Name|Bulldozer+
+Author|Ink
+Difficulty|10
+Description|Just be careful, otherwise you'll get run over by a bulldozer. It's pretty blind...\nYou have very limited, but quickly recovering stamina. It should be enough for maneuvering.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Maximum Monster Spawntime (seconds)|30
+Spawn Monster In Starter Room|True
+Fiend Vision Cone Angle|0
+Apply Fiend Vision Cone Angle To All Monsters|True
+Monster Animation Speed Multiplier|5
+Monster Movement Speed Multiplier|5
+Monster Rotation Speed Multiplier|5
+Apply Chase Speed Buff To All Monsters|True
+Brute Long Range Wander Speed Buff|True
+Brute Long Range Wander Speed Buff Multiplier|5
+Fiend Flicker Minimum Range|1
+Fiend Flicker Medium Range|1.5
+Fiend Flicker Maximum Range|2
+Give All Monsters A Fiend Aura|True
+Glowstick Hunt|True
+No Glowstick Hunt Finale|True
+Special Glowsticks Required|1
+Special Glowsticks To Create|24
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
+Escape Conditions|3
+Gravity Y Acceleration|-14.715
+Player Stamina Mode|True
+Player Stamina Mode Stamina Duration|1.125
+Player Stamina Mode Stamina Penalty|100
+Player Stamina Mode Walking Recovery Factor|5
+Player Stamina Mode Standing Recovery Factor|15
+Player Movement Speed Multiplier|1.5
+Extended Jump Cooldown|True
+Infinite Flashlight Power|True
+Monster Compass|True
+Spawn Deactivated Items|True
+Diverse Item Spawns|True
+Brute Light Colour Red Component|250
+Brute Light Colour Green Component|200
+Brute Light Colour Blue Component|0
+Brute Light Range Multiplier|2
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|0.75
+Custom Music Pack|2
+Use Wander Theme From Start|True

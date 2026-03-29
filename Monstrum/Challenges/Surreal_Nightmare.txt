@@ -1,27 +1,107 @@
 Name|Surreal Nightmare
 Author|Ink
-Difficulty|7
-Description|When the surreal ship appears before you in a dream, the dream stops simply being a dream. It becomes a nightmare.
-Version|6.0
+Difficulty|10
+Description|There is no limit to the horrors and images that your brain can embody in dreams. Welcome to the Surreal Nightmare.
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
-Number of Brutes|3
-Number of Hunters|1
-Monster Animation Speed Multiplier|1.33
-Monster Movement Speed Multiplier|1.33
-Monster Rotation Speed Multiplier|1.33
+Number of Sparkies|1
+Add Sparky To The Game|True
+Maximum Monster Spawntime (seconds)|10
+Spawn Monster In Starter Room|True
+Silent Monster|True
+Fiend Vision Cone Angle|0
+Apply Fiend Vision Cone Angle To All Monsters|True
+Monster Animation Speed Multiplier|1.999
+Monster Movement Speed Multiplier|1.999
+Monster Rotation Speed Multiplier|1.999
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|1.999
+Brute Chase Speed Buff Rate|1.999
+Brute Long Range Wander Speed Buff|True
+Brute Long Range Wander Speed Buff Multiplier|1.999
+Fiend Flicker Minimum Range|0.09
+Fiend Flicker Medium Range|0.9
+Fiend Flicker Maximum Range|9
+Fiend Door Teleportation|True
+Apply Door Teleportation To All Monsters|True
+Give All Monsters A Fiend Aura|True
+Give All Monsters A Smoke Shroud|True
+Smoke Shroud Radius|6
+Smoke Shroud Radius Danger Factor|0.125
+Sparky Chase Speed Factor|0
+Sparky Max Chase Speed Factor Increase From Buff|0
+Sparky Max Movement Speed Factor Increase From Buff|0
+Sparky Rotation Speed Factor|0
+Sparky Minimum Lurk Distance|0.8
+Sparky Maximum Super EMP Distance|0
+Sparky Super EMP Charge Time|999999
+Sparky Maximum Aggro|3
+Sparky EMP Minimum Charge Time|999999
+Sparky EMP Maximum Charge Time|999999
+Sparky Maximum Buff Percentage From Rooms|0
+Sparky EMP Range|0
+Sparky Distant EMP Switch Chance|0
+Sparky Distant EMP Switch Fail Chance Addition|0
+Sparky Region EMP Room Threshold|999999
+Region Electric Trap Spawn Chance|0
+Region Electric Trap Slow Factor|1
+Region Electric Trap Scale Multiplier|0
+Region Electric Trap Life Time|0
+Region Electric Trap Minimum Spawn Time|9999990
+Region Electric Trap Maximum Spawn Time|999999
+Region Electrification Room Recovery Percentage|0
+Sparky Electric Trap Spawn Chance|0
+Sparky Electric Trap Base Slow Factor|1
+Max Trap Slow Factor Decrease From Buff|1
+Sparky Electric Trap Base Scale Multiplier|0
+Max Trap Scale Multiplier Increase From Buff|0
+Sparky Electric Trap Base Life Time|0
+Max Trap Life Time Increase From Buff|0
+Dark Ship|True
+Powerable Lights|True
 Foggy Ship|True
-Fog Far Distance|50
+Fog Near Distance|10
+Fog Far Distance|300
+Fog Density|0.25
+Smoky Ship|True
+Breath Recovery|0.75
+Smoke Shroud Breath Drain|1.25
+Smoke Corridor Breath Drain|0.5
+Helicopter Fuel Time|2
+Submersible Charge Time|3
+Inventory Size|3
+Player Movement Speed Multiplier|1.35
+Custom Player Scale|0.8
+Extended Jump Cooldown|True
+Disable Running|True
+Infinite Flashlight Power|True
+Camera Timer|1
+Pre-fill Start Region Fuse Box|False
+Pre-fill Liferaft Fuse Box|False
+No Starter Fuse|True
 Overpowered Steam Vents|True
 Add Additional Crew Deck Building|True
+Add Deck Cargo Holds|True
+Use Deck Four On Submersible Side|True
+Extend Lower Decks|True
+Spawn Additional Engine Room Workshops|True
+Aggressive Workshop Spawning|True
+Number Of Corridors To Cargo Hold From Deck Three|2
+Lengthened Cargo Hold Corridors|True
+Add Lower Deck Next To Engine Room|True
 Add Deck Zero|True
 Extend Map|True
 Extend Map Additively|True
+Diverse Item Spawns|True
 Flashlight Intensity Multiplier|2
-Flashlight Range Multiplier|2
-Glowstick Intensity Multiplier|2
-Glowstick Range Multiplier|2
-Random Ship Generic Light Colours|True
-Do Not Pre-Render Monsters|True
+Flashlight Range Multiplier|3
+Glowstick Range Multiplier|3.75
+Ship Generic Lights Intensity Multiplier|2
+Fog Colour Red Component|10
+Fog Colour Green Component|0
+Fog Colour Blue Component|10
+Custom Music Pack|1
+Use Wander Theme From Start|True
 Do Not Render Brute's Light|True
 Disable Monster Particles|True

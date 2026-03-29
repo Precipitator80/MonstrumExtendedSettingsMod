@@ -1,0 +1,26 @@
+Name|Usain Brute
+Author|Mike Bone
+Difficulty|4
+Description|You are probably the most unlucky person alive. I mean, seriously, of all the people the molten sludge could've possessed, it chose him. Your only line of defence will be the zero stun immunity on the Brute, meaning you can continually stun him over and over again\n\nPart of the 4.1 MES challenge library.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+No Monster Stun Immunity|True
+Monster Animation Speed Multiplier|2.5
+Monster Movement Speed Multiplier|2.5
+Custom Monster Scale|0.9
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|3.25
+Dark Ship|True
+Powerable Lights|True
+Starter Room Region|Lower Deck
+Flashlight Colour Red Component|255
+Flashlight Colour Green Component|0
+Flashlight Colour Blue Component|0
+Glowstick Colour Red Component|255
+Glowstick Colour Green Component|0
+Glowstick Colour Blue Component|0
+Ship Generic Lights Colour Red Component|255
+Ship Generic Lights Colour Green Component|0
+Ship Generic Lights Colour Blue Component|0

@@ -1,0 +1,30 @@
+Name|Extendium
+Author|Ink
+Difficulty|4
+Description|2 random monsters of the classic difficulty variant, including Sparky. Additionally, there are a large number of settings such as new items, updated generation, escape conditions, random start room and other features to improve the enjoyment of the gameplay. High degree of replayability.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|2
+Add Sparky To The Game|True
+Use Indev Sparky Model|True
+Helicopter Fuel Time|2
+Submersible Charge Time|3
+Escape Conditions|1
+Inventory Size|7
+Unlock Player Head|True
+Extended Jump Cooldown|True
+Monster Compass|True
+Walkie Talkie Range|25
+Better Smashables|True
+Add Smoke Grenade|True
+Add Molotov|True
+Spawn Deactivated Items|True
+Pre-fill Liferaft Fuse Box|False
+Add Deck Cargo Holds|True
+Use Deck Four On Submersible Side|True
+Add Lower Deck Next To Engine Room|True
+Random Start Room|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

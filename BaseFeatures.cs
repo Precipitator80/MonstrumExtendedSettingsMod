@@ -1,4 +1,4 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +9,8 @@ using System.Text;
 using System.Linq;
 using System.IO;
 using UnityEngine.UI;
+using SRF;
+using MonstrumExtendedSettingsMod.Setting;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -46,6 +48,9 @@ namespace MonstrumExtendedSettingsMod
 
                 // Monster Selection, Seed, Starter Room Location & Wallhacks Mode
                 HookLevelGeneration();
+                On.AudioLibrary.GetNext += new On.AudioLibrary.hook_GetNext(HookAudioLibraryGetNext);
+                On.WeightedSelection.LoadCounts += new On.WeightedSelection.hook_LoadCounts(HookWeightedSelectionLoadCounts);
+                On.WeightedSelection.SaveCounts += new On.WeightedSelection.hook_SaveCounts(HookWeightedSelectionSaveCounts);
 
                 // Monster Animation Speed Multiplier
                 On.AnimationControl.Start += new On.AnimationControl.hook_Start(HookAnimationControlStart);
@@ -73,12 +78,13 @@ namespace MonstrumExtendedSettingsMod
 
                 // Dark Ship Mode, Powerable Lights & Ship Generic Lights Colour, Intensity Multiplier & Range Multiplier
                 HookGenericLight();
-
-                // No Pre-filled Fuse Boxes
                 On.FuseBoxManager.SetupFuse += new On.FuseBoxManager.hook_SetupFuse(HookFuseBoxManagerSetupFuse);
 
                 // No Cameras
                 On.SecurityCamera.Start += new On.SecurityCamera.hook_Start(HookSecurityCamera);
+
+                //Cameras Timer
+                On.AmberState.ctor += new On.AmberState.hook_ctor(HookAmberStateCtor);
 
                 // No Steam
                 On.SteamVentManager.Awake += new On.SteamVentManager.hook_Awake(HookSteamVentManager);
@@ -92,7 +98,7 @@ namespace MonstrumExtendedSettingsMod
                 On.FiendMindAttack.Update += new On.FiendMindAttack.hook_Update(HookFiendMindAttackUpdate);
                 if (!ModSettings.startedWithMMM)
                 {
-                    On.GlobalMusic.CheckMusicState += new On.GlobalMusic.hook_CheckMusicState(HookGlobalMusic);
+                    On.GlobalMusic.CheckMusicState += new On.GlobalMusic.hook_CheckMusicState(HookGlobalMusicCheckMusicState);
                 }
                 On.MChasingState.StateChanges += new On.MChasingState.hook_StateChanges(HookMChasingStateStateChanges);
                 HookNoClipFixes();
@@ -100,8 +106,6 @@ namespace MonstrumExtendedSettingsMod
                 On.PlayerMotor.HandleFallDamage += new On.PlayerMotor.hook_HandleFallDamage(HookPlayerMotorHandleFallDamage);
                 //On.TutorialLockerModelSwap.Update += new On.TutorialLockerModelSwap.hook_Update(HookTutorialLockerModelSwap); // Debug text & Death countdown were moved to MonsterStarter.
 
-                // Loading Background
-                On.LoadingBackground.Awake += new On.LoadingBackground.hook_Awake(HookLoadingBackground);
                 Debug.Log("INITIALISED BASE FEATURES");
 
                 // No Brute Light & Brute Light Colour
@@ -127,11 +131,8 @@ namespace MonstrumExtendedSettingsMod
                 On.MouseLock.LateUpdate += new On.MouseLock.hook_LateUpdate(HookMouseLockLateUpdate); // Stop the mouse lock from updating until the level has finished generating if the menu has been skipped.
                 On.MenusEventSystemManager.Delay += new On.MenusEventSystemManager.hook_Delay(HookMenusEventSystemManagerDelay);
 
-                // Disable Monster Particle Systems
+                // Disable Monster Particle Systems & Part 1 of Silent Monster
                 HookMonster();
-
-                // Increase Key Items
-                // On.KeyItem.RandomizeCount += new On.KeyItem.hook_RandomizeCount(HookKeyItemRandomizeCount); // Integrated into Spawn Deactivated Items.
 
                 // No Player Jump Cooldown In Debug Mode (Integrated Into Debug Mode)
                 On.PlayerMotor.PerformJump += new On.PlayerMotor.hook_PerformJump(HookPlayerMotorPerformJump);
@@ -156,12 +157,12 @@ namespace MonstrumExtendedSettingsMod
                 On.FlareObject.HitMonster += new On.FlareObject.hook_HitMonster(HookFlareObjectHitMonster);
                 On.FlareObject.Start += new On.FlareObject.hook_Start(HookFlareObjectStart);
 
-                // Spawn Deactivated Items, Change Key Item Spawn Numbers & Diverse Spawns
+                // Spawn Deactivated Items, Change Key Item Spawn Numbers, Spawn Anywhere & Diverse Spawns
                 On.KeyItemSystem.SetUpLists += new On.KeyItemSystem.hook_SetUpLists(HookKeyItemSystemSetUpLists);
                 On.KeyItemPlaceholder.CalculateSuitability += new On.KeyItemPlaceholder.hook_CalculateSuitability(HookKeyItemPlaceholderCalculateSuitability);
 
                 // Infinite Flashlight Power
-                HookFlashlight();
+                On.Flashlight.Update += new On.Flashlight.hook_Update(HookFlashlightUpdate);
 
                 // Teleport Through Door
                 On.MDestroyState.OnEnter += new On.MDestroyState.hook_OnEnter(HookMDestroyStateOnEnter);
@@ -287,7 +288,6 @@ namespace MonstrumExtendedSettingsMod
                 // Fiend Mind Attack Customisation
                 if (!ModSettings.startedWithMMM)
                 {
-                    On.FiendMindAttack.AttackCheck += new On.FiendMindAttack.hook_AttackCheck(HookFiendMindAttackAttackCheck);
                     On.FiendMindAttack.ChangeTimers += new On.FiendMindAttack.hook_ChangeTimers(HookFiendMindAttackChangeTimers);
                 }
 
@@ -298,7 +298,7 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 // Overpowered Hiding Spots
-                new Hook(typeof(Hiding).GetProperty("IsHiding", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetGetMethod(), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookHidingget_IsHiding"), null);
+                Utilities.HookGetter<Hiding, bool>(nameof(Hiding.IsHiding), HookHidingget_IsHiding);
 
                 // No Hiding
                 if (!ModSettings.startedWithMMM)
@@ -312,6 +312,50 @@ namespace MonstrumExtendedSettingsMod
                 // Quiet Hunter
                 On.HunterAnimationsScript.SpawnHunter += new On.HunterAnimationsScript.hook_SpawnHunter(HookHunterAnimationsScriptSpawnHunter);
                 On.MSearchingState.MakeSound += new On.MSearchingState.hook_MakeSound(HookMSearchingStateMakeSound);
+
+                // Part 2 of Silent Monster
+                On.FloatHum.Start += new On.FloatHum.hook_Start(HookFloatHumStart);
+                On.FootStepManager.Start += new On.FootStepManager.hook_Start(HookFootStepManagerStart);
+                On.MHuntingState.InitalSetups += new On.MHuntingState.hook_InitalSetups(HookMHuntingStateInitalSetups);
+
+                // Helicopter Fuel Amount and Helicopter Fuel Time
+                On.FuelScaleBar.Start += new On.FuelScaleBar.hook_Start(HookFuelScaleBarStart);
+                On.HelicopterEscape.Start += new On.HelicopterEscape.hook_Start(HookHelicopterEscapeStart);
+
+                // Submersible Charge Timer
+                On.SubAlarm.ctor += new On.SubAlarm.hook_ctor(HookSubAlarmctor);
+                On.VoiceoverSequence.Start += new On.VoiceoverSequence.hook_Start(HookVoiceoverSequenceStart);
+
+                // Escape Conditions
+                On.FuseBox.OnFuseReachedBox += new On.FuseBox.hook_OnFuseReachedBox(HookFuseBoxOnFuseReachedBox);
+
+                // No Starter Fuse
+                On.TutorialFuse.Start += new On.TutorialFuse.hook_Start(HookTutorialFuseStart);
+
+                // Fuse Box Pre-fill Settings
+                Utilities.HookIterator<FuseBoxManager>("<OnGenerationComplete>c__Iterator0", HookFuseBoxManagerOnGenerationComplete);
+
+                // Custom Music Packs
+                On.GlobalMusic.ChangeVariables += new On.GlobalMusic.hook_ChangeVariables(HookGlobalMusicChangeVariables);
+
+                // Use Wander Theme From Start
+                On.GlobalMusic.Start += new On.GlobalMusic.hook_Start(HookGlobalMusicStart);
+
+                SettingManager.Register(new DeckCargoHolds());
+                SettingManager.Register(new WalkieTalkieRange());
+
+                // Fix monsters avoiding fire even when fire shroud is on.
+                On.MonsterAvoidFire.Start += new On.MonsterAvoidFire.hook_Start(HookMonsterAvoidFireStart);
+
+                // Player growth bugfix. Only apply here when Multiplayer Mode is disabled, as MultiplayerMode has its own hooks doing the same fix.
+                if (!ModSettings.enableMultiplayer)
+                {
+                    On.PlayerUpperBodyLock.LateUpdate += new On.PlayerUpperBodyLock.hook_LateUpdate(HookPlayerUpperBodyLockLateUpdate);
+                    On.PlayerUpperBodyLock.UpdatePositions += new On.PlayerUpperBodyLock.hook_UpdatePositions(HookPlayerUpperBodyLockUpdatePositions);
+                }
+
+                SettingManager.Register(new MonsterVisionConeAngle());
+                SettingManager.Register(new LoadingScreenManager());
             }
 
             /*
@@ -324,9 +368,13 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @Achievements
 
+            /// <summary>
+            /// Prevents achievements from being completed multiple times.
+            /// This prevents lag in situations like spraying the Monster.
+            /// </summary>
             private static void HookAchievements(On.Achievements.orig_CompleteAchievement orig, Achievements achievements, string _identifier)
             {
-                if (achievements.achievements[_identifier].completed == false)
+                if (!achievements.achievements[_identifier].completed)
                 {
                     orig.Invoke(achievements, _identifier);
                 }
@@ -335,18 +383,24 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @Active Features
 
+            private static InventoryItem nearbyInventoryItem;
+            private static int nearbyInventoryItemDeck;
+
+            /// <summary>
+            /// Holds custom code for any features that may be updated each frame.
+            /// </summary>
             private static void ActiveFeatures()
             {
-                if (LevelGeneration.Instance.finishedGenerating)
+                if (LevelGeneration.Instance.finishedGenerating) // Run features once the level has finished loading.
                 {
                     // Debug & 0 Monsters Mode Monster Disabler
                     if ((ModSettings.debugMode && Input.GetKeyDown(KeyCode.Period)) || (ModSettings.numberOfMonsters == 0 && References.Monster.activeInHierarchy))
                     {
                         if (ModSettings.numberOfMonsters > 1 && ManyMonstersMode.monsterList != null)
                         {
-                            for (int i = 0; i < ManyMonstersMode.monsterList.Count; i++)
+                            foreach (GameObject monster in ManyMonstersMode.monsterList)
                             {
-                                ManyMonstersMode.monsterList[i].SetActive(false);
+                                monster.SetActive(false);
                             }
                         }
                         else
@@ -354,25 +408,19 @@ namespace MonstrumExtendedSettingsMod
                             References.Monster.SetActive(false);
                         }
 
-                        if ((ModSettings.debugMode && Input.GetKeyDown(KeyCode.Period)))
+                        if (ModSettings.debugMode && Input.GetKeyDown(KeyCode.Period))
                         {
                             ModSettings.ShowTextOnScreen("Disabled Monster(s)");
                         }
                     }
 
-                    // Grouping Feature Frame Update
+                    // Grouping Feature Frame Update. Update the group counter to let the next group of monsters update.
                     if (ModSettings.useMonsterUpdateGroups && ModSettings.numberOfMonsters > 1)
                     {
-                        if (ManyMonstersMode.groupCounter < ModSettings.NumberOfMonsterUpdateGroups)
-                        {
-                            ManyMonstersMode.groupCounter++;
-                        }
-                        else
-                        {
-                            ManyMonstersMode.groupCounter = 1;
-                        }
+                        ManyMonstersMode.groupCounter = (ManyMonstersMode.groupCounter + 1) % ModSettings.NumberOfMonsterUpdateGroups;
                     }
 
+                    // Show the speedrun timer. Show the current time if the player has not escaped. Else, show the final time.
                     if (ModSettings.showSpeedrunTimerOnScreen)
                     {
                         if (ModSettings.finalTime.Equals(string.Empty))
@@ -386,11 +434,12 @@ namespace MonstrumExtendedSettingsMod
                     }
                     else if (ModSettings.scavengerMode)
                     {
+                        // Try to find an item to show on the radar.
                         if (nearbyInventoryItem == null || nearbyInventoryItem.inInventory)
                         {
                             bool validItem = false;
                             InventoryItem[] inventoryItems = FindObjectsOfType<InventoryItem>();
-                            while (!validItem)
+                            for (int i = 0; i < inventoryItems.Length && !validItem; i++) // Better than a while loop, but still not ideal.
                             {
                                 int randomIndex = UnityEngine.Random.Range(0, inventoryItems.Length);
                                 nearbyInventoryItem = inventoryItems[randomIndex];
@@ -403,12 +452,16 @@ namespace MonstrumExtendedSettingsMod
                             float itemHeight = RegionManager.Instance.ConvertPointToRegionNode(nearbyInventoryItem.transform.position).y; //nearbyInventoryItem.transform.position.y;
                             nearbyInventoryItemDeck = (int)itemHeight;
                         }
-                        int distanceToItem = Mathf.RoundToInt(Vector3.Distance(nearbyInventoryItem.transform.position, References.player.transform.position)); // (int)Math.Round((nearbyInventoryItem.transform.position - References.player.transform.position).magnitude); // Can use Vector3.Distance instead.
+                        else // Show the item.
+                        {
+                            int distanceToItem = Mathf.RoundToInt(Vector3.Distance(nearbyInventoryItem.transform.position, References.player.transform.position)); // (int)Math.Round((nearbyInventoryItem.transform.position - References.player.transform.position).magnitude); // Can use Vector3.Distance instead.
 
-                        ModSettings.ShowTextOnScreen("You are " + distanceToItem + "m away from the item " + nearbyInventoryItem.itemName + ", which is on deck " + nearbyInventoryItemDeck + ".");
+                            ModSettings.ShowTextOnScreen("You are " + distanceToItem + "m away from the item " + nearbyInventoryItem.itemName + ", which is on deck " + nearbyInventoryItemDeck + ".");
+                        }
                     }
                     else if (ModSettings.monsterRadar && ModSettings.numberOfMonsters > 0)
                     {
+                        // Find the closest monster to the player and calculate the distance to it.
                         Monster closestMonster;
                         if (ModSettings.numberOfMonsters == 1)
                         {
@@ -418,8 +471,8 @@ namespace MonstrumExtendedSettingsMod
                         {
                             closestMonster = ManyMonstersMode.monsterListMonsterComponents[ManyMonstersMode.ClosestMonsterToPlayer()];
                         }
-                        int distanceToMonster = Mathf.RoundToInt(Vector3.Distance(closestMonster.transform.position, References.player.transform.position)); // (int)Math.Round((closestMonster.transform.position - References.player.transform.position).magnitude); // Can use Vector3.Distance instead.
-                        int distanceToRoot = Mathf.RoundToInt(Vector3.Distance(closestMonster.monsterMesh[0].rootBone.transform.position, References.player.transform.position)); // (int)Math.Round((closestMonster.monsterMesh[0].rootBone.transform.position - References.player.transform.position).magnitude); // Can use Vector3.Distance instead.
+                        int distanceToMonster = Mathf.RoundToInt(Vector3.Distance(closestMonster.transform.position, References.player.transform.position));
+                        int distanceToRoot = Mathf.RoundToInt(Vector3.Distance(closestMonster.monsterMesh[0].rootBone.transform.position, References.player.transform.position));
 
                         // If the monster is out of ship bounds, use its height instead.
                         float closestMonsterDeck;
@@ -433,60 +486,102 @@ namespace MonstrumExtendedSettingsMod
                             Debug.Log("Closest monster to player, " + closestMonster.monsterType + ", does not seem to be in bounds.");
                         }
 
+                        // Show information on the monster on-screen.
                         ModSettings.ShowTextOnScreen("You are " + distanceToMonster + "m away from the monster " + closestMonster.monsterType + ", which is on deck " + closestMonsterDeck + ". Is the monster visible? " + closestMonster.monsterMesh[0].isVisible + ". Root is " + distanceToRoot + "m away.");
                     }
                     else if (ModSettings.glowstickRadar)
                     {
-                        // # Optimise this using a pre-declared list that is checked where glowsticks are removed when they are used. Could also let the user press a key to update the item. Might also be good for scavenger mode.
-                        GlowStick[] allGlowsticks = FindObjectsOfType<GlowStick>();
-                        List<GlowStick> unusedGlowsticks = new List<GlowStick>();
+                        // # Could optimise this using a pre-declared list that is checked where glowsticks are removed when they are used. Could also let the user press a key to update the item. Might also be good for scavenger mode.
+                        // Find all unused glowsticks.
+                        List<GlowStick> unusedGlowsticks = FindObjectsOfType<GlowStick>().Where(glowStick => !glowStick.used).ToList();
 
-                        foreach (GlowStick glowStick in allGlowsticks)
+                        if (unusedGlowsticks.Count > 0)
                         {
-                            if (!glowStick.used)
+                            // Find the closest unused glowstick and calculate its distance to the player.
+                            GlowStick closestUnusedGlowstick = unusedGlowsticks[0];
+                            for (int glowstickNumber = 0; glowstickNumber < unusedGlowsticks.Count; glowstickNumber++)
                             {
-                                unusedGlowsticks.Add(glowStick);
+                                if (Vector3.Distance(unusedGlowsticks[glowstickNumber].transform.position, References.Player.transform.position) < Vector3.Distance(closestUnusedGlowstick.transform.position, References.Player.transform.position))
+                                {
+                                    closestUnusedGlowstick = unusedGlowsticks[glowstickNumber];
+                                }
                             }
-                        }
+                            int distanceToClosestUnusedGlowstick = Mathf.RoundToInt(Vector3.Distance(closestUnusedGlowstick.transform.position, References.Player.transform.position));
 
-                        GlowStick closestUnusedGlowstick = unusedGlowsticks[0];
-
-                        for (int glowstickNumber = 0; glowstickNumber < unusedGlowsticks.Count; glowstickNumber++)
-                        {
-                            if (Vector3.Distance(unusedGlowsticks[glowstickNumber].transform.position, References.Player.transform.position) < Vector3.Distance(closestUnusedGlowstick.transform.position, References.Player.transform.position))
+                            // If the closest unused glowstick is out of ship bounds, use its height instead.
+                            float closestUnusedGlowstickDeck;
+                            try
                             {
-                                closestUnusedGlowstick = unusedGlowsticks[glowstickNumber];
+                                closestUnusedGlowstickDeck = (int)RegionManager.Instance.ConvertPointToRegionNode(closestUnusedGlowstick.transform.position).y;
                             }
-                        }
+                            catch
+                            {
+                                closestUnusedGlowstickDeck = (int)closestUnusedGlowstick.transform.position.y;
+                                Debug.Log("Closest glowstick to player does not seem to be in bounds.");
+                            }
 
-                        int distanceToClosestUnusedGlowstick = Mathf.RoundToInt(Vector3.Distance(closestUnusedGlowstick.transform.position, References.Player.transform.position));
-
-                        // If the closest unused glowstick is out of ship bounds, use its height instead.
-                        float closestUnusedGlowstickDeck;
-                        try
-                        {
-                            closestUnusedGlowstickDeck = (int)RegionManager.Instance.ConvertPointToRegionNode(closestUnusedGlowstick.transform.position).y;
+                            // Show info on the glowstick.
+                            ModSettings.ShowTextOnScreen("You are " + distanceToClosestUnusedGlowstick + "m away from a glowstick on deck " + closestUnusedGlowstickDeck + ".");
                         }
-                        catch
-                        {
-                            closestUnusedGlowstickDeck = (int)closestUnusedGlowstick.transform.position.y;
-                            Debug.Log("Closest glowstick to player does not seem to be in bounds.");
-                        }
-
-                        ModSettings.ShowTextOnScreen("You are " + distanceToClosestUnusedGlowstick + "m away from a glowstick on deck " + closestUnusedGlowstickDeck + ".");
                     }
                     else if (ModSettings.playerRegionNodeText)
                     {
+                        // Try to get the player's current region node.
                         Vector3 playerRegionNode = RegionManager.Instance.ConvertPointToRegionNode(References.Player.transform.position);
+
+                        // Check whether the player's node is within bounds.
                         if (CheckBoundariesLG.NodeWithinShipBounds(playerRegionNode))
                         {
+                            // Record information on the player's region.
                             StringBuilder stringBuilder = new StringBuilder();
                             NodeData playerRegionNodeData = LevelGeneration.GetNodeDataAtPosition(References.Player.transform.position);
-                            if (playerRegionNodeData != null && playerRegionNodeData.nodeRoom != null)
+                            if (playerRegionNodeData != null)
                             {
-                                stringBuilder.Append(playerRegionNodeData.nodeRoom.PrimaryRegion.ToString());
+                                if (playerRegionNodeData.nodeRoom != null)
+                                {
+                                    stringBuilder.Append("RR: ");
+                                    stringBuilder.Append(playerRegionNodeData.nodeRoom.PrimaryRegion.ToString());
+                                    stringBuilder.Append(" - RS: ");
+                                    stringBuilder.Append(playerRegionNodeData.nodeRoom.RoomType.ToString());
+                                    stringBuilder.Append(" - RN: ");
+                                    stringBuilder.Append(playerRegionNodeData.nodeRoom.name);
+                                }
+
+                                /// Some of the below data can help give additional information.
+                                /// Unfortunately, the text on screen can only be so long, so showing all is too much.
+                                /// Furthermore, some of the different accessors just give the same information, so not all added statements are useful.
+
+                                // Appendage data.
+                                // var appendageData = LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].appendageData;
+                                // stringBuilder.Append(" - AD: ");
+                                // if (appendageData.Count > 0)
+                                // {
+                                //     foreach (RoomAppendageData data in appendageData)
+                                //     {
+                                //         stringBuilder.Append(data.currentOrientation);
+                                //     }
+                                // }
+                                // else
+                                // {
+                                //     stringBuilder.Append("N/A");
+                                // }
+
+                                // Player region node data (not nodeRoom)
+                                // stringBuilder.Append(" - PR: ");
+                                // stringBuilder.Append(playerRegionNodeData.primaryRegion.ToString());
+                                // stringBuilder.Append(" - PO: ");
+                                // stringBuilder.Append(playerRegionNodeData.occupied);
+
+                                // Node data
+                                // stringBuilder.Append(" - NS: ");
+                                // stringBuilder.Append(LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].nodeType);
+                                // stringBuilder.Append(" - NR: ");
+                                // stringBuilder.Append(LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].primaryRegion);
+                                // stringBuilder.Append(" - NO: ");
+                                // stringBuilder.Append(LevelGeneration.Instance.nodeData[(int)playerRegionNode.x][(int)playerRegionNode.y][(int)playerRegionNode.z].occupied);
                             }
 
+                            // Append additional information on the player's region.
                             for (int i = 0; i < RegionManager.Instance.regionData[(int)playerRegionNode.x].regionDataY[(int)playerRegionNode.y].regionDataZ[(int)playerRegionNode.z].regionID.Count; i++)
                             {
                                 string regionString = RegionManager.Instance.IDToName(RegionManager.Instance.regionData[(int)playerRegionNode.x].regionDataY[(int)playerRegionNode.y].regionDataZ[(int)playerRegionNode.z].regionID[i]);
@@ -508,20 +603,11 @@ namespace MonstrumExtendedSettingsMod
                     // Debug Features
                     if (ModSettings.debugMode)
                     {
-                        if (ModSettings.BreakTheGameLight)
-                        {
-                            if (LevelGeneration.Instance.finishedGenerating || ModSettings.BreakTheGameHeavy)
-                            {
-                                LevelGeneration.Instance.selectedMonster = null;
-                                References.monster = null;
-                            }
-                        }
-
+                        // Noclip mode switch.
                         if (Input.GetKeyDown(KeyCode.V))
                         {
                             ModSettings.noclip = !ModSettings.noclip;
                             NewPlayerClass.Instance.playerMotor.allowFallDamage = !NewPlayerClass.Instance.playerMotor.allowFallDamage;
-
 
                             if (ModSettings.noclip)
                             {
@@ -531,43 +617,12 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 ModSettings.ShowTextOnScreen("Turned Off Noclip");
                             }
-                            /*
-                            if (!ModSettings.noclip)
-                            {
-                                // Set default keys.
-                                KeyCode forwardKey = KeyCode.W;
-                                KeyCode backKey = KeyCode.S;
-                                KeyCode leftKey = KeyCode.A;
-                                KeyCode rightKey = KeyCode.D;
-
-                                // Get player preference keys if available.
-                                if (PlayerPrefs.HasKey("SavedForwardKey"))
-                                {
-                                   forwardKey = GetKeyPrefCopy("SavedForwardKey", forwardKey);
-                                }
-                                if (PlayerPrefs.HasKey("SavedBackKey"))
-                                {
-                                    backKey = GetKeyPrefCopy("SavedBackKey", backKey);
-                                }
-                                if (PlayerPrefs.HasKey("SavedLeftKey"))
-                                {
-                                    leftKey = GetKeyPrefCopy("SavedLeftKey", leftKey);
-                                }
-                                if (PlayerPrefs.HasKey("SavedRightKey"))
-                                {
-                                    rightKey = GetKeyPrefCopy("SavedRightKey", rightKey);
-                                }
-
-                                // Set keys.
-                                PlayerPrefs.SetInt("SavedForwardKey", (int)forwardKey);
-                                PlayerPrefs.SetInt("SavedBackKey", (int)backKey);
-                                PlayerPrefs.SetInt("SavedLeftKey", (int)leftKey);
-                                PlayerPrefs.SetInt("SavedRightKey", (int)rightKey);
-                            }*/
                         }
 
+                        // Let the player noclip by checking the UHJK keys.
                         if (ModSettings.noclip)
                         {
+                            // Check whether to noclip the monster or the player.
                             if (ModSettings.enableCrewVSMonsterMode && ModSettings.numbersOfMonsterPlayers.Contains(0) && MonsterStarter.spawned)
                             {
                                 if (Input.GetKey(KeyCode.U))
@@ -608,15 +663,15 @@ namespace MonstrumExtendedSettingsMod
                             }
                         }
 
+                        // Set monsters to active.
                         if (Input.GetKeyDown(KeyCode.Comma))
                         {
                             if (ModSettings.numberOfMonsters > 1 && ManyMonstersMode.monsterList != null)
                             {
-                                for (int i = 0; i < ManyMonstersMode.monsterList.Count; i++)
+                                foreach (GameObject monster in ManyMonstersMode.monsterList)
                                 {
-                                    ManyMonstersMode.monsterList[i].SetActive(true);
+                                    monster.SetActive(true);
                                 }
-
                             }
                             else
                             {
@@ -626,88 +681,64 @@ namespace MonstrumExtendedSettingsMod
                             ModSettings.ShowTextOnScreen("Enabled Monster(s)");
                         }
 
+                        // Ready the helicopter.
                         if (Input.GetKeyDown(KeyCode.O))
                         {
                             ModSettings.ShowTextOnScreen("Started Helicopter Escape Sequence");
 
-                            HelicopterEscape helicopterEscape = (UnityEngine.Object.FindObjectOfType(typeof(HelicopterEscape)) as HelicopterEscape);
-                            foreach (HelicopterChain chain in helicopterEscape.chains)
-                            {
-                                chain.Break();
-                            }
+                            foreach (HelicopterChain chain in (FindObjectOfType(typeof(HelicopterEscape)) as HelicopterEscape).chains) { chain.Break(); }
+                            (FindObjectOfType(typeof(HeliLock)) as HeliLock).OnFinishFixedAnimation();
+                            (FindObjectOfType(typeof(HeliLockStatus)) as HeliLockStatus).OnStartFixedAnimation();
+                            (FindObjectOfType(typeof(HeliDoor)) as HeliDoor).OnHandGrab();
+                            (FindObjectOfType(typeof(SlerpFuelTrolley)) as SlerpFuelTrolley).StartTrolleySlerp();
 
-                            HeliLock heliLock = (UnityEngine.Object.FindObjectOfType(typeof(HeliLock)) as HeliLock);
-                            heliLock.OnFinishFixedAnimation();
-
-                            HeliLockStatus heliLockStatus = (UnityEngine.Object.FindObjectOfType(typeof(HeliLockStatus)) as HeliLockStatus);
-                            heliLockStatus.OnStartFixedAnimation();
-
-                            HeliDoor heliDoor = (UnityEngine.Object.FindObjectOfType(typeof(HeliDoor)) as HeliDoor);
-                            heliDoor.OnHandGrab();
-
-                            SlerpFuelTrolley slerpFuelTrolley = (UnityEngine.Object.FindObjectOfType(typeof(SlerpFuelTrolley)) as SlerpFuelTrolley);
-                            slerpFuelTrolley.StartTrolleySlerp();
-
-                            FuelPump fuelPump = (UnityEngine.Object.FindObjectOfType(typeof(FuelPump)) as FuelPump);
+                            FuelPump fuelPump = FindObjectOfType(typeof(FuelPump)) as FuelPump;
                             fuelPump.AddFuel(fuelPump.maxFuel);
 
-                            FuelConnection fuelConnection = (UnityEngine.Object.FindObjectOfType(typeof(FuelConnection)) as FuelConnection);
-                            FuelPipeEnd fuelPipeEnd = (UnityEngine.Object.FindObjectOfType(typeof(FuelPipeEnd)) as FuelPipeEnd);
-                            FuelPumpLever fuelPumpLever = (UnityEngine.Object.FindObjectOfType(typeof(FuelPumpLever)) as FuelPumpLever);
+                            FuelConnection fuelConnection = FindObjectOfType(typeof(FuelConnection)) as FuelConnection;
+                            FuelPipeEnd fuelPipeEnd = FindObjectOfType(typeof(FuelPipeEnd)) as FuelPipeEnd;
+                            FuelPumpLever fuelPumpLever = FindObjectOfType(typeof(FuelPumpLever)) as FuelPumpLever;
                             fuelConnection.StartCoroutine(ConnectHelicopterHoseWhenReady(fuelConnection, fuelPipeEnd, fuelPumpLever));
                         }
 
+                        // Ready the sub.
                         if (Input.GetKeyDown(KeyCode.P))
                         {
                             ModSettings.ShowTextOnScreen("Started Submersible Escape Sequence");
 
-                            SubAlarm subAlarm = (UnityEngine.Object.FindObjectOfType(typeof(SubAlarm)) as SubAlarm);
+                            SubAlarm subAlarm = FindObjectOfType(typeof(SubAlarm)) as SubAlarm;
                             subAlarm.forGary = true;
                             subAlarm.StartTheEvent();
                         }
 
+                        // Ready the liferaft.
                         if (Input.GetKeyDown(KeyCode.I))
                         {
                             TimeScaleManager.Instance.StartCoroutine(ReadyLiferaft(true));
                         }
 
+                        // Spawn useful items.
                         if (Input.GetKeyDown(KeyCode.L))
                         {
-                            UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<Radio>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
+                            Instantiate(FindObjectOfType<Radio>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
                             if (ModSettings.spawnDeactivatedItems)
                             {
-                                UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<WalkieTalkie>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
-                                UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<WalkieTalkie>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
-                                UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<CompassScript>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
+                                Instantiate(FindObjectOfType<WalkieTalkie>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
+                                Instantiate(FindObjectOfType<WalkieTalkie>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
+                                Instantiate(FindObjectOfType<CompassScript>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
                             }
-                            /*
-                            foreach (InventorySlot inventorySlot in References.Inventory.inventorySlots)
-                            {
-                                if (inventorySlot == null)
-                                {
-                                    WalkieTalkie walkieTalkie = References.PlayerClass.gameObject.AddComponent<WalkieTalkie>();
-                                    if (walkieTalkie != null)
-                                    {
-                                        inventorySlot.AddItem(walkieTalkie.item);
-                                    }
-                                    else
-                                    {
-                                        Debug.Log("Walkie Talkie is null");
-                                    }
-                                    break;
-                                }
-                            }
-                            */
                         }
 
+                        // Spawn fuses.
                         if (Input.GetKeyDown(KeyCode.Semicolon))
                         {
                             for (int i = 0; i < 10; i++)
                             {
-                                UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<Fuse>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
+                                Instantiate(FindObjectOfType<Fuse>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
                             }
                         }
 
+                        // Spawn a Brute.
                         if (Input.GetKeyDown(KeyCode.R) && ModSettings.startedWithMMM)
                         {
                             if (ModSettings.numberOfBrutes > 0)
@@ -721,6 +752,7 @@ namespace MonstrumExtendedSettingsMod
                             }
                         }
 
+                        // Spawn a Hunter.
                         if (Input.GetKeyDown(KeyCode.T) && ModSettings.startedWithMMM)
                         {
                             if (ModSettings.numberOfHunters > 0)
@@ -734,6 +766,7 @@ namespace MonstrumExtendedSettingsMod
                             }
                         }
 
+                        // Spawn a Fiend.
                         if ((Input.GetKeyDown(KeyCode.Y) || Input.GetKeyDown(KeyCode.Z)) && ModSettings.startedWithMMM)
                         {
                             if (ModSettings.numberOfFiends > 0)
@@ -747,18 +780,7 @@ namespace MonstrumExtendedSettingsMod
                             }
                         }
 
-                        /* Attempt at letting the user reverse the effects of debug mode on the walls. This seems to be more complicated than at first glance. The "wallhacks" seem to occur due to a lack of room collision of some kind.
-                        if (Input.GetKeyDown(KeyCode.L))
-                        {
-                            Room[] rooms = Resources.FindObjectsOfTypeAll(typeof(Room)) as Room[];
-
-                            foreach(Room room in rooms)
-                            {
-
-                            }
-                        }
-                        */
-
+                        // Teleport all items to the player.
                         if (Input.GetKeyDown(KeyCode.Quote))
                         {
                             InventoryItem[] inventoryItems = FindObjectsOfType<InventoryItem>();
@@ -769,15 +791,14 @@ namespace MonstrumExtendedSettingsMod
                                     inventoryItem.gameObject.transform.position = References.Player.transform.position + new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(0.5f, 1f), UnityEngine.Random.Range(-1f, 1f));
                                 }
                             }
-                            /*
-                            GlowStick[] allGlowsticks = FindObjectsOfType<GlowStick>();
-                            foreach (GlowStick glowStick in allGlowsticks)
+                            Backpack[] backpacks = FindObjectsOfType<Backpack>();
+                            foreach (Backpack backpack in backpacks)
                             {
-                                glowStick.transform.position = References.Player.transform.position;
+                                backpack.gameObject.transform.position = References.Player.transform.position + new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(0.5f, 1f), UnityEngine.Random.Range(-1f, 1f));
                             }
-                            */
                         }
 
+                        // Control godmode and invisibility.
                         if (Input.GetKeyDown(KeyCode.G))
                         {
                             // Numbers from 1 = (false, false).
@@ -785,107 +806,63 @@ namespace MonstrumExtendedSettingsMod
                             // 2 -> 3 | (true, false) -> (true, true) | Switch on invisibility.
                             // 3 -> 4 | (true, true) -> (false, turn) | Switch off godmode.
                             // 4 -> 1 | (false, true) -> (false, false) | Switch off invisibility.
-                            if ((ModSettings.invincibilityMode[0] && ModSettings.InvisibleMode) || (!ModSettings.invincibilityMode[0] && !ModSettings.InvisibleMode))
+                            if (ModSettings.invincibilityMode[0] == ModSettings.InvisibleMode)
                             {
                                 ModSettings.startedWithInvincibilityMode = !ModSettings.startedWithInvincibilityMode;
-                                ModSettings.SetInvincibilityMode(!ModSettings.invincibilityMode[0], true);
+                                ModSettings.SetInvincibilityMode(!ModSettings.invincibilityMode[0]);
                             }
                             else
                             {
                                 ModSettings.InvisibleMode = !ModSettings.InvisibleMode;
                             }
 
-                            /*
-                            if (ModSettings.invincibilityMode[0])
-                            {
-                                if (ModSettings.InvisibleMode)
-                                {
-                                    ModSettings.SetInvincibilityMode(false, true);
-                                }
-                                else
-                                {
-                                    ModSettings.InvisibleMode = true;
-                                }
-                            }
-                            else
-                            {
-                                if (ModSettings.InvisibleMode)
-                                {
-                                    ModSettings.InvisibleMode = false;
-                                }
-                                else
-                                {
-                                    ModSettings.SetInvincibilityMode(true, true);
-                                }
-                            }
-                            */
-
                             ModSettings.ShowTextOnScreen("Godmode " + (ModSettings.invincibilityMode[0] ? "✓" : "×") + " | Invisibility " + (ModSettings.InvisibleMode ? "✓" : "×"));
                         }
 
+                        // Force monsters to chase.
                         if (Input.GetKeyDown(KeyCode.B))
                         {
                             ModSettings.ForceChase();
                         }
 
+                        // Force monsters to stop chasing.
                         if (Input.GetKeyDown(KeyCode.N))
                         {
                             ModSettings.ForceStopChase();
                         }
 
+                        // Burn any hunters in the game.
                         if (Input.GetKeyDown(KeyCode.M))
                         {
                             ModSettings.BurnHunter();
                         }
 
+                        // Teleport the monster to the player.
                         if (Input.GetKeyDown(KeyCode.Backspace))
                         {
-                            References.Monster.transform.position = References.Player.transform.position;
-                            References.Monster.transform.rotation = References.Player.transform.rotation;
-
-                            //if(ModSettings.simpleSparkyTest /* && ModSettings.finishedCreatingSimpleSparky*/)
-                            //SparkyMode.SimpleSparkyModelTest();
-
-                            /*
-                            SkinnedMeshRenderer sparkySMR = SparkyMode.simpleSparkyGO.GetComponentInChildren<SkinnedMeshRenderer>();
-                            if (sparkySMR == null)
+                            if (ModSettings.startedWithMMM)
                             {
-                                Debug.Log("Sparky SMR is null in ActiveFeatures!");
+                                foreach (GameObject monsterGO in ManyMonstersMode.monsterList)
+                                {
+                                    monsterGO.transform.position = References.Player.transform.position;
+                                    monsterGO.transform.rotation = References.Player.transform.rotation;
+                                }
                             }
                             else
                             {
-                                if (sparkySMR.rootBone == null)
-                                {
-                                    Debug.Log("Sparky root bone is null in ActiveFeatures!");
-                                }
-                                else
-                                {
-                                    int distanceToMonster = Mathf.RoundToInt(Vector3.Distance(SparkyMode.simpleSparkyGO.transform.position, References.Player.transform.position)); // (int)Math.Round((closestMonster.transform.position - References.player.transform.position).magnitude); // Can use Vector3.Distance instead.
-                                    int distanceToRoot = Mathf.RoundToInt(Vector3.Distance(sparkySMR.rootBone.position, References.Player.transform.position)); // (int)Math.Round((closestMonster.monsterMesh[0].rootBone.transform.position - References.player.transform.position).magnitude); // Can use Vector3.Distance instead.
-
-                                    // If the monster is out of ship bounds, use its height instead.
-                                    float closestMonsterDeck;
-                                    try
-                                    {
-                                        closestMonsterDeck = (int)RegionManager.Instance.ConvertPointToRegionNode(SparkyMode.simpleSparkyGO.transform.position).y;
-                                    }
-                                    catch
-                                    {
-                                        closestMonsterDeck = (int)SparkyMode.simpleSparkyGO.transform.position.y;
-                                        Debug.Log("Simple Sparky GO does not seem to be in bounds.");
-                                    }
-
-                                    ModSettings.ShowTextOnScreen("You are " + distanceToMonster + "m away from simple sparky, which is on deck " + closestMonsterDeck + ". Is the SMR visible? " + sparkySMR.isVisible + ". Root is " + distanceToRoot + "m away.");
-                                }
+                                References.Monster.transform.position = References.Player.transform.position;
+                                References.Monster.transform.rotation = References.Player.transform.rotation;
                             }
-                            */
                         }
                     }
 
+                    // Stamina mode.
                     if (ModSettings.playerStaminaMode)
                     {
+                        // Set for every player separately.
                         for (int i = 0; i < ModSettings.staminaTimer.Count; i++)
                         {
+                            // Get the player to set stamina effects for.
                             NewPlayerClass newPlayerClass;
                             if (!ModSettings.enableMultiplayer)
                             {
@@ -895,110 +872,51 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 newPlayerClass = MultiplayerMode.crewPlayers[i];
                             }
-                            /*
-                            float staminaModeExponential = Mathf.Exp(ModSettings.staminaModeHorizontalShiftConstant - ModSettings.staminaModeTimeCoefficient * ModSettings.staminaTimer);
-                            ModSettings.playerMovementSpeedDynamicMultiplier = ModSettings.staminaModeVerticalShiftConstant + ModSettings.staminaModeVerticalScalingCoefficient * (staminaModeExponential / (ModSettings.playerMovementSpeedEndMultiplier + ModSettings.staminaModeMaximumMultiplierChange * staminaModeExponential));
-                            */
+
+                            // Use a logistic equation to determine the player's speed.
                             ModSettings.playerMovementSpeedDynamicMultiplier[i] = ModSettings.playerMovementSpeedEndMultiplier + ModSettings.staminaModeMaximumMultiplierChange / (1f + Mathf.Exp(ModSettings.staminaModeTimeCoefficient * ModSettings.staminaTimer[i] - 5));
 
-                            if (References.PlayerClass.IsRunning())
+
+
+                            if (References.PlayerClass.IsRunning()) // Increase the stamina timer if the player is running and limit their speed by the logistic equation.
                             {
                                 ModSettings.staminaTimer[i] += Time.deltaTime;
-                                //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.SmoothDamp(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedEndMultiplier, ref staminaSpeed, 5f);
-                                //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.Lerp(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedEndMultiplier, (ModSettings.playerMovementSpeedEndMultiplier - ModSettings.playerMovementSpeedDynamicMultiplier) / 2);
                                 ModSettings.playerMovementSpeedMultiplier[i] = ModSettings.playerMovementSpeedDynamicMultiplier[i];
                             }
-                            else if (ModSettings.staminaTimer[i] > 0f)
-                            {
-                                if (!References.PlayerClass.Motor.Moving)
-                                {
-                                    ModSettings.staminaTimer[i] -= ModSettings.playerStaminaModeStandingRecoveryFactor * Time.deltaTime;
-                                }
-                                else
-                                {
-                                    ModSettings.staminaTimer[i] -= ModSettings.playerStaminaModeWalkingRecoveryFactor * Time.deltaTime;
-                                }
-                                //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.SmoothDamp(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedStartMultiplier, ref staminaSpeed, 3f);
-                                //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.Lerp(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedStartMultiplier, (ModSettings.playerMovementSpeedStartMultiplier - ModSettings.playerMovementSpeedDynamicMultiplier) / 2);
-                                ModSettings.playerMovementSpeedMultiplier[i] = ModSettings.playerMovementSpeedStartMultiplier;
-                            }
                             else
                             {
-                                ModSettings.staminaTimer[i] = 0f;
-                                ModSettings.playerMovementSpeedDynamicMultiplier[i] = ModSettings.playerMovementSpeedStartMultiplier;
-                                ModSettings.playerMovementSpeedMultiplier[i] = ModSettings.playerMovementSpeedStartMultiplier;
-                            }
+                                if (ModSettings.staminaTimer[i] > 0f) // Recover with a rate depending on whether the player is moving or standing still.
+                                {
 
-                            /*
-                            if (References.PlayerClass.IsRunning())
-                            {
-                                if (!startedRunning)
-                                {
-                                    ModSettings.playerMovementSpeedDynamicMultiplier -= 0.001f * ModSettings.playerMovementSpeedStartMultiplier;
-                                    startedRunning = true;
-                                }
-                                else
-                                {
-                                    //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.MoveTowards(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedEndMultiplier, (ModSettings.playerMovementSpeedStartMultiplier - ModSettings.playerMovementSpeedDynamicMultiplier) / ModSettings.playerMovementSpeedEndMultiplier);
-                                    ModSettings.playerMovementSpeedDynamicMultiplier -= (Time.deltaTime) * (ModSettings.playerMovementSpeedStartMultiplier - ModSettings.playerMovementSpeedDynamicMultiplier) / ModSettings.playerMovementSpeedEndMultiplier;
-                                    if (ModSettings.playerMovementSpeedDynamicMultiplier < ModSettings.playerMovementSpeedEndMultiplier)
+                                    if (!References.PlayerClass.Motor.Moving)
                                     {
-                                        ModSettings.playerMovementSpeedDynamicMultiplier = ModSettings.playerMovementSpeedEndMultiplier;
+                                        ModSettings.staminaTimer[i] -= ModSettings.playerStaminaModeStandingRecoveryFactor * Time.deltaTime;
                                     }
-                                }
-                                ModSettings.playerMovementSpeedMultiplier = ModSettings.playerMovementSpeedDynamicMultiplier;
-                            }
-                            else
-                            {
-                                //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.MoveTowards(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedStartMultiplier, (ModSettings.playerMovementSpeedStartMultiplier - ModSettings.playerMovementSpeedDynamicMultiplier) / ModSettings.playerMovementSpeedEndMultiplier);
-                                ModSettings.playerMovementSpeedDynamicMultiplier += (Time.deltaTime) * (ModSettings.playerMovementSpeedStartMultiplier - ModSettings.playerMovementSpeedDynamicMultiplier) / ModSettings.playerMovementSpeedEndMultiplier;
-                                if (ModSettings.playerMovementSpeedDynamicMultiplier > ModSettings.playerMovementSpeedStartMultiplier)
-                                {
-                                    ModSettings.playerMovementSpeedDynamicMultiplier = ModSettings.playerMovementSpeedStartMultiplier;
-                                }
-                                ModSettings.playerMovementSpeedMultiplier = ModSettings.playerMovementSpeedStartMultiplier;
-                                startedRunning = false;
-                            }
-                            */
+                                    else
+                                    {
+                                        ModSettings.staminaTimer[i] -= ModSettings.playerStaminaModeWalkingRecoveryFactor * Time.deltaTime;
+                                    }
 
-                            /*
-                            ModSettings.playerMovementSpeedDynamicMultiplier = ModSettings.playerMovementSpeedEndMultiplier + (ModSettings.playerMovementSpeedStartMultiplier - ModSettings.playerMovementSpeedEndMultiplier) * (1 / (ModSettings.playerMovementSpeedEndMultiplier + (ModSettings.playerMovementSpeedStartMultiplier - ModSettings.playerMovementSpeedEndMultiplier) * Mathf.Exp(ModSettings.playerStaminaModeStaminaDecayRate * ModSettings.staminaTimer)));
+                                }
+                                else // Clamp the stamina timer and speed multipliers when fully recovered.
+                                {
+                                    ModSettings.staminaTimer[i] = 0f;
+                                    ModSettings.playerMovementSpeedDynamicMultiplier[i] = ModSettings.playerMovementSpeedStartMultiplier;
+                                }
 
-                            if (References.PlayerClass.IsRunning())
-                            {
-                                ModSettings.staminaTimer += Time.deltaTime;
-                                //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.SmoothDamp(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedEndMultiplier, ref staminaSpeed, 5f);
-                                //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.Lerp(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedEndMultiplier, (ModSettings.playerMovementSpeedEndMultiplier - ModSettings.playerMovementSpeedDynamicMultiplier) / 2);
-                                ModSettings.playerMovementSpeedMultiplier = ModSettings.playerMovementSpeedDynamicMultiplier;
+                                // If recovering, let the player use their base walking speed.
+                                ModSettings.playerMovementSpeedMultiplier[i] = ModSettings.playerMovementSpeedStartMultiplier;
                             }
-                            else if (ModSettings.staminaTimer > 0f)
-                            {
-                                if (!References.PlayerClass.Motor.Moving)
-                                {
-                                    ModSettings.staminaTimer -= 3 * Time.deltaTime;
-                                }
-                                else
-                                {
-                                    ModSettings.staminaTimer -= Time.deltaTime;
-                                }
-                                //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.SmoothDamp(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedStartMultiplier, ref staminaSpeed, 3f);
-                                //ModSettings.playerMovementSpeedDynamicMultiplier = Mathf.Lerp(ModSettings.playerMovementSpeedDynamicMultiplier, ModSettings.playerMovementSpeedStartMultiplier, (ModSettings.playerMovementSpeedStartMultiplier - ModSettings.playerMovementSpeedDynamicMultiplier) / 2);
-                                ModSettings.playerMovementSpeedMultiplier = ModSettings.playerMovementSpeedStartMultiplier;
-                            }
-                            else
-                            {
-                                ModSettings.staminaTimer = 0f;
-                                ModSettings.playerMovementSpeedMultiplier = ModSettings.playerMovementSpeedStartMultiplier;
-                            }
-                            */
                         }
 
+                        // Display the current dynamic speed multiplier if desired.
                         if (ModSettings.playerStaminaModeStaminaText)
                         {
                             ModSettings.ShowTextOnScreen("Current dynamic speed multiplier: " + ModSettings.playerMovementSpeedDynamicMultiplier[0]);
                         }
                     }
 
+                    // Active Features for multiplayer and crew vs monster mode.
                     if (ModSettings.enableMultiplayer)
                     {
                         //MultiplayerMode.MultiplayerModeActiveFeatures();
@@ -1008,41 +926,25 @@ namespace MonstrumExtendedSettingsMod
                             CrewVsMonsterMode.CrewVSMonsterModeActiveFeatures();
                         }
                     }
-
-                    if (ModSettings.useSmokeMonster)
-                    {
-                        SmokeMonster.SmokeMonsterActiveFeatures();
-                    }
                 }
             }
 
+            /// <summary>
+            /// Readies the liferaft automatically.
+            /// Handles multiple liferafts as needed in the case of when the Add Additional Crew Deck Building setting is enabled.
+            /// </summary>
+            /// <param name="startedViaDebug">Whether the function was called via debug mode.</param>
+            /// <returns>>An IEnumerator representing the liferaft preparation process.</returns>
             private static IEnumerator ReadyLiferaft(bool startedViaDebug = false)
             {
-                // The code has been adapted to handle multiple liferafts as needed in the case of when the Add Additional Crew Deck Building setting is enabled.
                 if (startedViaDebug)
                 {
                     ModSettings.ShowTextOnScreen("Started Liferaft Escape Sequence");
                 }
 
-                CraneSpoolBox[] craneSpoolBoxes = FindObjectsOfType<CraneSpoolBox>();
-                Spool[] spools = FindObjectsOfType<Spool>();
-                List<CraneSpoolBox> emptyCraneSpoolBoxes = new List<CraneSpoolBox>();
-                List<Spool> usableSpools = new List<Spool>();
-                for (int i = 0; i < craneSpoolBoxes.Length; i++)
-                {
-                    if (craneSpoolBoxes[i].spool == null)
-                    {
-                        emptyCraneSpoolBoxes.Add(craneSpoolBoxes[i]);
-                    }
-                }
-                for (int i = 0; i < spools.Length; i++)
-                {
-                    if (spools[i].spoolBox == null)
-                    {
-                        usableSpools.Add(spools[i]);
-                    }
-                }
-                for (int i = 0; i < Math.Min(emptyCraneSpoolBoxes.Count, usableSpools.Count); i++)
+                List<CraneSpoolBox> emptyCraneSpoolBoxes = FindObjectsOfType<CraneSpoolBox>().Where(box => box.spool == null).ToList(); // Find spool boxes that have no spool
+                List<Spool> usableSpools = FindObjectsOfType<Spool>().Where(spool => spool.spoolBox == null).ToList(); // Find spools that are not in a box.
+                for (int i = 0; i < Math.Min(emptyCraneSpoolBoxes.Count, usableSpools.Count); i++) // Add as many spools to empty boxes as possible.
                 {
                     usableSpools[i].AddToSpoolBox(emptyCraneSpoolBoxes[i]);
                 }
@@ -1051,50 +953,65 @@ namespace MonstrumExtendedSettingsMod
                 Liferaft[] liferafts = FindObjectsOfType<Liferaft>();
                 Crane[] cranes = FindObjectsOfType<Crane>();
                 LiferaftHook[] liferaftHooks = FindObjectsOfType<LiferaftHook>();
-                bool[] liferaftsFixedBools = new bool[liferafts.Length];
+
+                // Pre-match components to ensure they are related correctly.
+                var matchedLiferafts = new Liferaft[cranes.Length];
+                var matchedHooks = new LiferaftHook[cranes.Length];
+                for (int i = 0; i < cranes.Length; i++)
+                {
+                    matchedLiferafts[i] = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(cranes[i], liferafts, "ReadyLiferaft");
+                    matchedHooks[i] = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(cranes[i], liferaftHooks, "ReadyLiferaft");
+                }
+
+                bool[] liferaftsFixedBools = new bool[cranes.Length];
                 while (fixingLiferafts)
                 {
-                    for (int i = 0; i < liferafts.Length && i < cranes.Length; i++)
+                    for (int i = 0; i < cranes.Length; i++)
                     {
-                        if (liferafts[i].state != Liferaft.LifeRaftState.Inflated)
+                        var crane = cranes[i];
+                        var raft = matchedLiferafts[i];
+                        var hook = matchedHooks[i];
+
+                        if (crane == null || raft == null || hook == null) continue;
+
+                        // Pull, tape, inflate and connect the raft.
+                        if (raft.state != Liferaft.LifeRaftState.Inflated)
                         {
-                            switch (liferafts[i].state)
+                            switch (raft.state)
                             {
                                 case Liferaft.LifeRaftState.OffEdge:
-                                    liferafts[i].OnStartFixedAnimation();
+                                    raft.OnStartFixedAnimation();
                                     break;
-
                                 case Liferaft.LifeRaftState.Dragging:
-                                    liferafts[i].AdvanceState();
+                                    raft.AdvanceState();
                                     break;
-
                                 case Liferaft.LifeRaftState.Torn:
-                                    liferafts[i].OnFinishFixedAnimation();
+                                    raft.OnFinishFixedAnimation();
                                     break;
-
                                 default:
-                                    liferafts[i].OnStartLoopAnimation();
+                                    raft.OnStartLoopAnimation();
                                     break;
                             }
                         }
 
-                        if (!cranes[i].chain.hook.IsConnected)
+                        // Move the raft using the crane.
+                        if (!crane.chain.hook.IsConnected)
                         {
-                            MoveCrane(cranes[i], "Left");
-                            MoveCrane(cranes[i], "Down");
-                            if (liferafts[i].state == Liferaft.LifeRaftState.Inflated && cranes[i].angle == cranes[i].minAngle && cranes[i].chain.IsFullyExtended)
+                            MoveCrane(crane, "Left");
+                            MoveCrane(crane, "Down");
+                            if (raft.state == Liferaft.LifeRaftState.Inflated && crane.angle == crane.minAngle && crane.chain.IsFullyExtended)
                             {
-                                cranes[i].chain.hook.transform.position = liferaftHooks[i].transform.position;
-                                cranes[i].chain.hook.hook = liferaftHooks[i];
+                                crane.chain.hook.transform.position = hook.transform.position;
+                                crane.chain.hook.hook = hook;
                             }
                         }
                         else
                         {
-                            MoveCrane(cranes[i], "Right");
-                            if (cranes[i].angle == cranes[i].maxAngle)
+                            MoveCrane(crane, "Right");
+                            if (crane.angle == crane.maxAngle)
                             {
-                                MoveCrane(cranes[i], "Down");
-                                if (cranes[i].chain.IsFullyExtended)
+                                MoveCrane(crane, "Down");
+                                if (crane.chain.IsFullyExtended)
                                 {
                                     liferaftsFixedBools[i] = true;
                                 }
@@ -1102,24 +1019,16 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
 
-                    fixingLiferafts = false;
-                    foreach (bool isLiferaftFixed in liferaftsFixedBools)
-                    {
-                        if (isLiferaftFixed == false)
-                        {
-                            fixingLiferafts = true;
-                            break;
-                        }
-                    }
-
+                    // Keep fixing liferafts until all are fixed. Set fixingLiferafts to true if any are not fixed yet.
+                    fixingLiferafts = liferaftsFixedBools.Any(isLiferaftFixed => !isLiferaftFixed);
                     yield return null;
                 }
                 yield break;
             }
 
-            private static InventoryItem nearbyInventoryItem;
-            private static int nearbyInventoryItemDeck;
-
+            /// <summary>
+            /// Tried to connect the fuel cart's hose to the helicopter after a short delay.
+            /// </summary>
             private static IEnumerator ConnectHelicopterHoseWhenReady(FuelConnection fuelConnection, FuelPipeEnd fuelPipeEnd, FuelPumpLever fuelPumpLever)
             {
                 yield return new WaitForSeconds(2.5f);
@@ -1128,6 +1037,11 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
+            /// <summary>
+            /// Moves the crane automatically given a direction to move it in.
+            /// </summary>
+            /// <param name="crane">The crane to move.</param>
+            /// <param name="direction">A string denoting the direction to move the crane in.</param>
             private static void MoveCrane(Crane crane, String direction)
             {
                 switch (direction)
@@ -1178,16 +1092,9 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
-            // Copy of KeyControl's GetKeyPref
-            private static KeyCode GetKeyPrefCopy(string _savedKey, KeyCode _defaultKey)
-            {
-                if (PlayerPrefs.HasKey(_savedKey))
-                {
-                    return (KeyCode)PlayerPrefs.GetInt(_savedKey, 0);
-                }
-                return _defaultKey;
-            }
-
+            /// <summary>
+            /// Contains several hooks that prevent errors when in noclip mode.
+            /// </summary>
             private static void HookNoClipFixes()
             {
                 On.AmbienceRaycasting.IsOutside += new On.AmbienceRaycasting.hook_IsOutside(HookAmbienceRaycastingNoClipFix);
@@ -1195,30 +1102,33 @@ namespace MonstrumExtendedSettingsMod
                 //On.DetectRoom.PlayerHidingSpot += new On.DetectRoom.hook_PlayerHidingSpot(HookDetectRoomNoClipFix); // While this gets rid of the null reference exception when the player is out of bounds, it also affects normal gameplay when the player is in bounds.
             }
 
+            /// <summary>
+            /// Return true when noclipping to prevent null reference from playerRoom.
+            /// </summary>
             private static bool HookAmbienceRaycastingNoClipFix(On.AmbienceRaycasting.orig_IsOutside orig, AmbienceRaycasting ambienceRaycasting)
             {
                 if (ModSettings.noclip)
                 {
                     return true;
                 }
-                else
-                {
-                    return orig.Invoke(ambienceRaycasting);
-                }
+                return orig.Invoke(ambienceRaycasting);
             }
 
+            /// <summary>
+            /// Return false when noclipping to prevent null reference from PlayerDetectRoom.
+            /// </summary>
             private static bool HookMonsterNoClipFix(On.Monster.orig_BothInEngineRoom orig, Monster monster)
             {
                 if (ModSettings.noclip)
                 {
                     return false;
                 }
-                else
-                {
-                    return orig.Invoke(monster);
-                }
+                return orig.Invoke(monster);
             }
 
+            /// <summary>
+            /// Return null when nullclipping to prevent null reference from HidingSpotPoint (?).
+            /// </summary>
             private static HidingSpot HookDetectRoomNoClipFix(On.DetectRoom.orig_PlayerHidingSpot orig, DetectRoom detectRoom, HidingSpot[] _spots)
             {
                 if (ModSettings.noclip)
@@ -1231,11 +1141,15 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @AnimationControl
 
+            /// <summary>
+            /// Checks whether to disable monster stun immunity. Disabled with the no monster stun immunity setting and for monster players in PvP.
+            /// </summary>
             private static void HookAnimationControlCheckIfStunned(On.AnimationControl.orig_CheckIfStunned orig, AnimationControl animationControl)
             {
                 orig.Invoke(animationControl);
                 if (ModSettings.noMonsterStunImmunity || (ModSettings.enableCrewVSMonsterMode && !CrewVsMonsterMode.letAIControlMonster && ManyMonstersMode.MonsterNumber(animationControl.monster.GetInstanceID()) < ModSettings.numbersOfMonsterPlayers.Count))
                 {
+                    // Leave enough time for the stun animation to play once before resetting.
                     if (animationControl.immuneTime > 1.5f)
                     {
                         animationControl.immuneToStun = false;
@@ -1243,6 +1157,9 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Applies the monster animation speed multiplier.
+            /// </summary>
             private static void HookAnimationControlStart(On.AnimationControl.orig_Start orig, AnimationControl animationControl)
             {
                 orig.Invoke(animationControl);
@@ -1250,8 +1167,28 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @AudioLibrary
+
+            private static AudioClip HookAudioLibraryGetNext(On.AudioLibrary.orig_GetNext orig, AudioLibrary audioLibrary)
+            {
+                // Return the first audio clip without modifications during level generation as RNG is used to randomise granularity and clip selection.
+                if ((ModSettings.useCustomSeed || ModSettings.consistentLevelGeneration) && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainSecondary" && (LevelGeneration.Instance == null || !LevelGeneration.Instance.finishedGenerating))
+                {
+                    if (audioLibrary.clips != null && audioLibrary.clips.Count > 0)
+                    {
+                        return audioLibrary.clips[0];
+                    }
+                    return null;
+                }
+                return orig.Invoke(audioLibrary);
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @CameraFOV
 
+            /// <summary>
+            /// Applies the player's custom FOV with range set by the settings.
+            /// </summary>
             private static void HookCameraFOV(On.CameraFOV.orig_Awake orig, CameraFOV cameraFOV)
             {
                 if (PlayerPrefs.HasKey("FOV"))
@@ -1283,6 +1220,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @ChooseAttack
 
+            /// <summary>
+            /// Notes the death type for the custom game over screens.
+            /// </summary>
             private static void HookChooseAttackWhatDeathByPlayer(On.ChooseAttack.orig_WhatDeathByPlayer orig, ChooseAttack.PlayerDeath PD)
             {
                 Room playerRoom = References.Monster.GetComponent<Monster>().PlayerDetectRoom.GetRoom;
@@ -1297,6 +1237,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @CompassScript
 
+            /// <summary>
+            /// Applies custom compass logic when using the monster compass setting.
+            /// </summary>
             private static void HookCompassScriptUpdate(On.CompassScript.orig_Update orig, CompassScript compassScript)
             {
                 if (!ModSettings.monsterCompass || !MonsterStarter.spawned)
@@ -1307,96 +1250,24 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (compassScript.equip)
                     {
-                        Transform monsterTransform;
-                        if (!ModSettings.startedWithMMM)
-                        {
-                            monsterTransform = References.Monster.transform;
-                        }
-                        else
-                        {
-                            monsterTransform = ManyMonstersMode.monsterList[ManyMonstersMode.ClosestMonsterToThis(compassScript.needleTrans.position)].transform;
-                        }
+                        // Use the reference monster when not playing MMM and the closest monster otherwise.
+                        Transform monsterTransform = !ModSettings.startedWithMMM ? References.Monster.transform : ManyMonstersMode.monsterList[ManyMonstersMode.ClosestMonsterToThis(compassScript.needleTrans.position)].transform;
 
-                        Transform playerTransform;
-                        if (!ModSettings.enableMultiplayer)
-                        {
-                            playerTransform = References.Player.transform;
-                        }
-                        else
-                        {
-                            playerTransform = MultiplayerMode.InventoryFromItemClass(compassScript.gameObject).newPlayerClass.transform;
-                        }
+                        // Use the reference player when not playing multiplayer and the inventory player otherwise.
+                        Transform playerTransform = !ModSettings.enableMultiplayer ? References.Player.transform : MultiplayerMode.InventoryFromItemClass(compassScript.gameObject).newPlayerClass.transform;
 
+                        // Reset the compass' base transform to make calculation easier.
                         Quaternion rotation = compassScript.baseTrans.rotation;
                         compassScript.baseTrans.rotation = Quaternion.identity;
+
+                        // Calculate and set the angle of the compass needle.
                         Vector3 distanceVectorToMonster = monsterTransform.position - playerTransform.position;
                         distanceVectorToMonster.y = playerTransform.forward.y;
                         float angle = MultiplayerMode.SignedAngleBetween(playerTransform.forward, distanceVectorToMonster, Vector3.up);
-                        //Debug.Log("Angle between compass and monster is " + angle);
-
                         compassScript.needleTrans.rotation = Quaternion.Euler(0, angle, 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(Vector3.forward, Vector3.up);
 
-                        //compassScript.baseTrans.rotation = Quaternion.AngleAxis(0f /*Vector3.Angle(Vector3.up, compassScript.baseTrans.up)*/, Vector3.up) * Quaternion.Euler(0, 90f, 0); //* compassScript.baseTrans.rotation;// * Quaternion.Euler(0, Vector3.Angle(compassScript.baseTrans.up, monsterTransform.up), 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(Vector3.forward, Vector3.up);
-                        //compassScript.needleTrans.rotation *= Quaternion.Euler(0, Quaternion.Angle(compassScript.needleTrans.rotation, monsterTransform.rotation), 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(/*Vector3.forward*/monsterTransform.position, Vector3.up);
-                        //compassScript.needleTrans.rotation = new Quaternion(compassScript.needleTrans.rotation.x, compassScript.needleTrans.rotation.y * Quaternion.Angle(Quaternion.LookRotation(Vector3.forward, Vector3.up), monsterTransform.rotation), compassScript.needleTrans.rotation.z, compassScript.needleTrans.rotation.w);
-
+                        // Reset the compass' base transform to the original rotation.
                         compassScript.baseTrans.rotation = rotation;
-                        //compassScript.baseTrans.rotation = Quaternion.identity;
-
-                        /*
-                        Transform monsterTransform;
-                        if (!ModSettings.startedWithMMM)
-                        {
-                            monsterTransform = References.Monster.transform;
-                        }
-                        else
-                        {
-                            monsterTransform = ManyMonstersMode.monsterList[ManyMonstersMode.ClosestMonsterToThis(compassScript.needleTrans.position)].transform;
-                        }
-                        Quaternion rotation = compassScript.baseTrans.rotation;
-                        //Vector3 axis = Vector3.Cross(compassScript.baseTrans.up, Vector3.up);
-                        compassScript.baseTrans.rotation = Quaternion.AngleAxis(0f, Vector3.up);////Quaternion.Euler(0, Quaternion.Angle(compassScript.baseTrans.rotation, monsterTransform.rotation), 0);
-
-                        Vector3 distanceVectorToMonster = monsterTransform.position - References.Player.transform.position;
-                        float angle = MultiplayerMode.SignedAngleBetween(References.Player.transform.forward, distanceVectorToMonster, Vector3.up);
-                        Debug.Log("Angle between compass and monster is " + angle);
-                        //compassScript.baseTrans.rotation *= Quaternion.Euler(0, angle, 0);
-                        compassScript.baseTrans.rotation *= Quaternion.Euler(0, 0, 0);
-
-                        compassScript.needleTrans.rotation = Quaternion.Euler(0, angle, 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(Vector3.forward, Vector3.up);
-                        */
-
-                        //compassScript.baseTrans.rotation = Quaternion.AngleAxis(0f /*Vector3.Angle(Vector3.up, compassScript.baseTrans.up)*/, Vector3.up) * Quaternion.Euler(0, 90f, 0); //* compassScript.baseTrans.rotation;// * Quaternion.Euler(0, Vector3.Angle(compassScript.baseTrans.up, monsterTransform.up), 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(Vector3.forward, Vector3.up);
-                        //compassScript.needleTrans.rotation *= Quaternion.Euler(0, Quaternion.Angle(compassScript.needleTrans.rotation, monsterTransform.rotation), 0);
-                        //compassScript.needleTrans.rotation = compassScript.rotate90AroundUp * Quaternion.LookRotation(/*Vector3.forward*/monsterTransform.position, Vector3.up);
-                        //compassScript.needleTrans.rotation = new Quaternion(compassScript.needleTrans.rotation.x, compassScript.needleTrans.rotation.y * Quaternion.Angle(Quaternion.LookRotation(Vector3.forward, Vector3.up), monsterTransform.rotation), compassScript.needleTrans.rotation.z, compassScript.needleTrans.rotation.w);
-
-                        //compassScript.baseTrans.rotation = rotation;
-                        //compassScript.baseTrans.rotation = Quaternion.identity;
-
-
-                        /*
-                        Transform monsterTransform;
-                        if (!ModSettings.startedWithMMM)
-                        {
-                            monsterTransform = References.Monster.transform;
-                        }
-                        else
-                        {
-                            monsterTransform = ManyMonstersMode.monsterList[ManyMonstersMode.ClosestMonsterToThis(compassScript.needleTrans.position)].transform;
-                        }
-                        Quaternion rotation = compassScript.baseTrans.rotation;
-                        Vector3 axis = Vector3.Cross(compassScript.baseTrans.up, Vector3.up);
-                        compassScript.baseTrans.rotation = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, compassScript.baseTrans.up), axis) * compassScript.baseTrans.rotation;
-                        compassScript.needleTrans.rotation = compassScript.rotate90AroundUp; //* Quaternion.LookRotation(Vector3.forward, Vector3.up);
-                        compassScript.needleTrans.rotation = new Quaternion(compassScript.needleTrans.rotation.x, compassScript.needleTrans.rotation.y * Quaternion.Angle(compassScript.rotate90AroundUp, monsterTransform.rotation), compassScript.needleTrans.rotation.z, compassScript.needleTrans.rotation.w);
-                        compassScript.baseTrans.rotation = rotation;
-                        */
                     }
                 }
             }
@@ -1404,16 +1275,17 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @CraneChain
 
+            /// <summary>
+            /// Changes the crane chain length based on the deck the chain is on.
+            /// </summary>
             private static void HookCraneChainStart(On.CraneChain.orig_Start orig, CraneChain craneChain)
             {
                 if (ModSettings.addAdditionalCrewDeckBuilding)
                 {
-                    //Debug.Log("Max length before is " + craneChain.maxLength + ".");
-                    //craneChain.maxLength = 7 * (RegionManager.Instance.ConvertPointToRegionNode(craneChain.transform.position).y - 1) / 7;
-                    //craneChain.maxLength = RegionManager.Instance.ConvertPointToRegionNode(craneChain.transform.position).y - 1;
-                    craneChain.maxLength = 7 * (RegionManager.Instance.ConvertPointToRegionNode(craneChain.transform.position).y - 1 - 5) / 2; // This gives the chain a maximum length as a ratio of deck difference of the corrected deck number to check and the original position times the original length. ORIGINAL: Deck 8 -> Deck 7 adjusted. Deck 7 to deck 5 is 2 decks difference. The original maximum chain length is 7 -> 7 * 2 / 2 = 7. DIFFERENT EXAMPLE: Deck 9 -> Deck 8 adjusted. Deck 8 to deck 5 is 3 decks differnce. The original maximum chain length is 7 -> 7 * 3 / 2 = 10.5.
-                    //craneChain.maxLength = 9;
-                    //Debug.Log("Using max length of " + craneChain.maxLength + " for crane chain as it is at " + RegionManager.Instance.ConvertPointToRegionNode(craneChain.transform.position) + ".");
+                    // This gives the chain a maximum length as a ratio of deck difference of the corrected deck number to check and the original position times the original length.
+                    // ORIGINAL: Deck 8 -> Deck 7 adjusted. Deck 7 to deck 5 is 2 decks difference. The original maximum chain length is 7 -> 7 * 2 / 2 = 7.
+                    // DIFFERENT EXAMPLE: Deck 9 -> Deck 8 adjusted. Deck 8 to deck 5 is 3 decks differnce. The original maximum chain length is 7 -> 7 * 3 / 2 = 10.5.
+                    craneChain.maxLength = 7 * (RegionManager.Instance.ConvertPointToRegionNode(craneChain.transform.position).y - 1 - 5) / 2;
                 }
                 orig.Invoke(craneChain);
             }
@@ -1422,32 +1294,38 @@ namespace MonstrumExtendedSettingsMod
             // @DeathMenu
 
             private static Dictionary<PrimaryRegionType, List<Sprite>> regionBackgrounds; // Death Menu Region Backgrounds.
-            private static Dictionary<String, List<Sprite>> monsterFrames; // Death Menu Monster Frames.
+            private static Dictionary<string, List<Sprite>> monsterFrames; // Death Menu Monster Frames.
             private static Dictionary<ChooseAttack.PlayerDeath, List<Sprite>> deathTypeFrames; // Death Menu Death Type Frames.
 
             private static PrimaryRegionType deathRegion; // The region the player died in.
             private static string deathMonster = string.Empty; // The monster the player died to.
             private static ChooseAttack.PlayerDeath deathType; // The death type the player had (non-direct to monster).
 
+            /// <summary>
+            /// Loads death screens from their asset bundle.
+            /// </summary>
             private static void LoadDeathScreens()
             {
+                // Create dictionaries for each sprite type.
                 regionBackgrounds = new Dictionary<PrimaryRegionType, List<Sprite>>();
                 monsterFrames = new Dictionary<string, List<Sprite>>();
                 deathTypeFrames = new Dictionary<ChooseAttack.PlayerDeath, List<Sprite>>();
 
-                UnityEngine.Object[] deathScreensUnpacked = Utilities.LoadAssetBundle("deathscreens");
-
+                // Use a vanilla sprite as reference when creating custom sprites.
                 Sprite referenceSprite = Hints.GetRandomHint().texture;
-                foreach (UnityEngine.Object deathScreenObject in deathScreensUnpacked)
+
+                // Unpack the death screens and create a sprite for each object. Finally, register each sprite under the correct dictionary and key.
+                foreach (UnityEngine.Object deathScreenObject in Utilities.LoadAssetBundle("deathscreens"))
                 {
+                    // Verify the object is a Texture2D as expected.
                     if (deathScreenObject.GetType() == typeof(Texture2D))
                     {
+                        // Use the texture to create a sprite.
                         Texture2D deathScreenTexture = (Texture2D)deathScreenObject;
                         Sprite loadingScreenSprite = Sprite.Create(deathScreenTexture, referenceSprite.rect, referenceSprite.pivot, referenceSprite.pixelsPerUnit);
 
-                        bool added = false;
                         // Check whether the image is a region background.
-                        foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
+                        foreach (PrimaryRegionType primaryRegionType in System.Enum.GetValues(typeof(PrimaryRegionType)))
                         {
                             // Check the name of the image against the region enum.
                             if (deathScreenTexture.name.Contains(primaryRegionType.ToString()))
@@ -1459,48 +1337,41 @@ namespace MonstrumExtendedSettingsMod
                                 }
                                 // Add the image to the list of sprites for the key.
                                 regionBackgrounds[primaryRegionType].Add(loadingScreenSprite);
-                                added = true;
-                                break;
+                                continue;
                             }
                         }
-                        if (!added)
+
+                        // Check whether the image is a monster frame.
+                        foreach (string monsterName in ModSettings.monsterNames)
                         {
-                            // Check whether the image is a monster frame.
-                            foreach (string monsterName in ModSettings.monsterNames)
+                            // Check the name of the image against the monster names.
+                            if (deathScreenTexture.name.Substring(0, deathScreenTexture.name.Length - 1).Equals(monsterName)) // Assumes there is a one-digit number at the end!
                             {
-                                // Check the name of the image against the monster names.
-                                if (deathScreenTexture.name.Substring(0, deathScreenTexture.name.Length - 1).Equals(monsterName)) // Assumes there is a one-digit number at the end!
+                                // Create a list of sprites if there is none for the key.
+                                if (!monsterFrames.ContainsKey(monsterName))
                                 {
-                                    // Create a list of sprites if there is none for the key.
-                                    if (!monsterFrames.ContainsKey(monsterName))
-                                    {
-                                        monsterFrames.Add(monsterName, new List<Sprite>());
-                                    }
-                                    // Add the image to the list of sprites for the key.
-                                    monsterFrames[monsterName].Add(loadingScreenSprite);
-                                    added = true;
-                                    break;
+                                    monsterFrames.Add(monsterName, new List<Sprite>());
                                 }
+                                // Add the image to the list of sprites for the key.
+                                monsterFrames[monsterName].Add(loadingScreenSprite);
+                                continue;
                             }
-                            if (!added)
+                        }
+
+                        // Check whether the image is a death type frame.
+                        foreach (ChooseAttack.PlayerDeath playerDeath in System.Enum.GetValues(typeof(ChooseAttack.PlayerDeath)))
+                        {
+                            // Check the name of the image against the playerDeath enum.
+                            if (deathScreenTexture.name.Contains(playerDeath.ToString()))
                             {
-                                // Check whether the image is a death type frame.
-                                foreach (ChooseAttack.PlayerDeath playerDeath in Enum.GetValues(typeof(ChooseAttack.PlayerDeath)))
+                                // Create a list of sprites if there is none for the key.
+                                if (!deathTypeFrames.ContainsKey(playerDeath))
                                 {
-                                    // Check the name of the image against the playerDeath enum.
-                                    if (deathScreenTexture.name.Contains(playerDeath.ToString()))
-                                    {
-                                        // Create a list of sprites if there is none for the key.
-                                        if (!deathTypeFrames.ContainsKey(playerDeath))
-                                        {
-                                            deathTypeFrames.Add(playerDeath, new List<Sprite>());
-                                        }
-                                        // Add the image to the list of sprites for the key.
-                                        deathTypeFrames[playerDeath].Add(loadingScreenSprite);
-                                        added = true;
-                                        break;
-                                    }
+                                    deathTypeFrames.Add(playerDeath, new List<Sprite>());
                                 }
+                                // Add the image to the list of sprites for the key.
+                                deathTypeFrames[playerDeath].Add(loadingScreenSprite);
+                                continue;
                             }
                         }
                     }
@@ -1509,9 +1380,12 @@ namespace MonstrumExtendedSettingsMod
                 deathTypeFrames.Add(ChooseAttack.PlayerDeath.MindAttack, monsterFrames[Monster.MonsterTypeEnum.Fiend.ToString()]);
             }
 
+            /// <summary>
+            /// Applies custom death screens.
+            /// </summary>
             private static void HookDeathMenuStart(On.DeathMenu.orig_Start orig, DeathMenu deathMenu)
             {
-                // Load custom death screens if required.
+                // Load custom death screens if not yet loaded.
                 if (regionBackgrounds == null)
                 {
                     LoadDeathScreens();
@@ -1525,21 +1399,23 @@ namespace MonstrumExtendedSettingsMod
                 Image frame = Instantiate(deathMenu.backgroundImage, deathMenu.backgroundImage.rectTransform);
                 frame.preserveAspect = true;
 
+                // Check whether the monster was a Sparky Brute (instead of just Sparky).
                 if (deathMonster.Equals("Sparky") && !ModSettings.customSparkyModel)
                 {
                     deathMonster = "SparkyBrute";
                 }
 
+                // Check whether the player died by a supported Monster.
                 if (ModSettings.monsterNames.Contains(deathMonster) && monsterFrames.ContainsKey(deathMonster) && monsterFrames[deathMonster].Count > 0)
                 {
                     Debug.Log("Setting monster frame.");
                     frame.sprite = monsterFrames[deathMonster][UnityEngine.Random.Range(0, monsterFrames[deathMonster].Count)];
-                }
+                } // Check whether the player had a supported non-monster death.
                 else if (deathTypeFrames.ContainsKey(deathType) && deathTypeFrames[deathType].Count > 0)
                 {
                     Debug.Log("Setting special death frame.");
                     frame.sprite = deathTypeFrames[deathType][UnityEngine.Random.Range(0, deathTypeFrames[deathType].Count)];
-                }
+                } // If the death type was not supported, disable the death frame.
                 else
                 {
                     Debug.Log("Disabling death frame.");
@@ -1550,11 +1426,12 @@ namespace MonstrumExtendedSettingsMod
                 deathMenu.backgrounds = new Sprite[1];
                 DeathMenu.backgroundID = 0;
 
+                // Check whether the player died in a supported region.
                 if (regionBackgrounds.ContainsKey(deathRegion) && regionBackgrounds[deathRegion].Count > 0)
                 {
                     Debug.Log("Setting death region background.");
                     deathMenu.backgrounds[0] = regionBackgrounds[deathRegion][UnityEngine.Random.Range(0, regionBackgrounds[deathRegion].Count)];
-                }
+                } // If the death region was not supported, disable the region background.
                 else
                 {
                     Debug.Log("Disabling region background.");
@@ -1564,9 +1441,9 @@ namespace MonstrumExtendedSettingsMod
                 // Reset the values for the next round after chosen.
                 // What is the default value for enum variable? - BoltClock - https://stackoverflow.com/questions/4967656/what-is-the-default-value-for-enum-variable - Accessed 30.04.2023
                 Debug.Log("Death Region: " + deathRegion + "\nDeath Monster: " + deathMonster + "\nDeath Type: " + deathType);
-                deathRegion = default(PrimaryRegionType);
+                deathRegion = default;
                 deathMonster = string.Empty;
-                deathType = default(ChooseAttack.PlayerDeath); // Default is Steam. MindAttack is also used for specific Fiend frames.
+                deathType = default; // Default is Steam. MindAttack is also used for specific Fiend frames.
 
                 // Change the render mode of the canvas to overlay the screen.
                 deathMenu.backgroundImage.canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -1592,11 +1469,10 @@ namespace MonstrumExtendedSettingsMod
                             text.transform.parent.parent.localScale = new Vector3(1.65f, 1.65f, 1.65f);
                         }
                     }
-                    // Show the frame when hiding the exit confirmation.
+                    // Show the frame when hiding the exit confirmation ("No Button").
                     if (ueObject.name.Equals("NoButton") && frame.enabled)
                     {
-                        Button noButton = ((Button)ueObject);
-                        noButton.onClick.AddListener(delegate ()
+                        ((Button)ueObject).onClick.AddListener(delegate ()
                         {
                             frame.enabled = true;
                         });
@@ -1653,6 +1529,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @DuctTape
 
+            /// <summary>
+            /// Runs the duct tape item destruction check for each life raft when more than one is spawned in.
+            /// </summary>
             private static void HookDuctTapeOnFinishItemAnimation(On.DuctTape.orig_OnFinishItemAnimation orig, DuctTape ductTape)
             {
                 if (ModSettings.addAdditionalCrewDeckBuilding)
@@ -1672,6 +1551,10 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @EscapeRoute
 
+            /// <summary>
+            /// Supports the Speedrun Timer, Escape Routes to Win and Escape Route Toggle settings.
+            /// Also has small misc features such as showing debug mode text and picking the escape scene monster in MMM.
+            /// </summary>
             private static void HookEscapeRoute(On.EscapeRoute.orig_OnInteract orig, EscapeRoute escapeRoute)
             {
                 // Record the final time when an escape attempt is made to stop lag from the checks affecting the time.
@@ -1764,8 +1647,20 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Checks whether a type of escape route is allowed when attempting to use it.
+            /// </summary>
+            /// <param name="escapeRouteType">The type of escape route attempting to be used.</param>
+            /// <returns>Whether escape via this escape route type is allowed or not.</returns>
             private static bool EscapeRouteTypeAllowed(EscapeRoute.EscapeRouteType escapeRouteType)
             {
+                // Do not allow escape if using escape conditions unless required conditions are fulfilled.
+                if (ModSettings.escapeConditionsToWin > 0 && EscapeConditionsPassed() < ModSettings.escapeConditionsToWin)
+                {
+                    ModSettings.hintImageManager.CycleHints();
+                    return false;
+                }
+
                 switch (escapeRouteType)
                 {
                     case EscapeRoute.EscapeRouteType.LifeRaft:
@@ -1784,9 +1679,37 @@ namespace MonstrumExtendedSettingsMod
                 return false;
             }
 
+            /// <summary>
+            /// Counts the number of escape conditions currently passed.
+            /// </summary>
+            /// <returns>The number of escape conditions currently passed.</returns>
+            private static int EscapeConditionsPassed()
+            {
+                int conditionsPassed = 0;
+                if (ModSettings.fusesAdded >= 3)
+                {
+                    conditionsPassed++;
+                }
+                if (!SteamVentManager.Instance.MasterControlOverride)
+                {
+                    conditionsPassed++;
+                }
+                if (
+                    References.Inventory.HasItem("FlareGun") &&
+                    References.Inventory.maxInventoryCapacity > (ModSettings.inventorySize > 0 ? ModSettings.inventorySize : 6)
+                )
+                {
+                    conditionsPassed++;
+                }
+                return conditionsPassed;
+            }
+
             /*----------------------------------------------------------------------------------------------------*/
             // @FadeScript
 
+            /// <summary>
+            /// Starts the speedrun timer and logs a message for it when the game has finished loading.
+            /// </summary>
             private static void HookFadeScriptBeginFadeIn(On.FadeScript.orig_BeginFadeIn orig)
             {
                 if (ModSettings.useSpeedrunTimer)
@@ -1802,42 +1725,28 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookFiendAura()
             {
-                On.FiendAura.ctor += new On.FiendAura.hook_ctor(HookFiendAuraCtor);
-                On.FiendAura.ResetRanges += new On.FiendAura.hook_ResetRanges(HookFiendAuraResetRanges);
                 On.FiendAura.SetRangesTo += new On.FiendAura.hook_SetRangesTo(HookFiendAuraSetRangesTo);
                 On.FiendAura.Start += new On.FiendAura.hook_Start(HookFiendAuraStart);
             }
 
-            private static void HookFiendAuraCtor(On.FiendAura.orig_ctor orig, FiendAura fiendAura)
-            {
-                if (ModSettings.fiendFlickerMin != 0f && ModSettings.fiendFlickerMed != 0f && ModSettings.fiendFlickerMax != 0f)
-                {
-                    fiendAura.largeRadius = ModSettings.fiendFlickerMax;
-                    fiendAura.mediumRadius = ModSettings.fiendFlickerMed;
-                    fiendAura.smallRadius = ModSettings.fiendFlickerMin;
-                }
-            }
-
-            private static void HookFiendAuraResetRanges(On.FiendAura.orig_ResetRanges orig, FiendAura fiendAura)
-            {
-                if (ModSettings.fiendFlickerMin != 0f && ModSettings.fiendFlickerMed != 0f && ModSettings.fiendFlickerMax != 0f)
-                {
-                    fiendAura.smallRadius = fiendAura.srt_smlRad;
-                    fiendAura.mediumRadius = fiendAura.srt_medRad;
-                    fiendAura.largeRadius = fiendAura.srt_lrgRad;
-                }
-            }
-
+            /// <summary>
+            /// Applies the custom Fiend ranges as multipliers to the new range values.
+            /// </summary>
             private static void HookFiendAuraSetRangesTo(On.FiendAura.orig_SetRangesTo orig, FiendAura fiendAura, float smallRad, float medRad, float largeRad)
             {
                 if (ModSettings.fiendFlickerMin != 0f && ModSettings.fiendFlickerMed != 0f && ModSettings.fiendFlickerMax != 0f)
                 {
-                    fiendAura.smallRadius = smallRad;
-                    fiendAura.mediumRadius = medRad;
-                    fiendAura.largeRadius = largeRad;
+                    smallRad *= ModSettings.fiendFlickerMin / 3f;
+                    medRad *= ModSettings.fiendFlickerMed / 4.5f;
+                    largeRad *= ModSettings.fiendFlickerMed / 6f;
                 }
+                orig.Invoke(fiendAura, smallRad, medRad, largeRad);
             }
 
+            /// <summary>
+            /// Only apply custom values for Fiend ranges when these are set (non-zero).
+            /// The original function sets the start values for each aura radius ("srt_"), which are used as reference when resetting the radii.
+            /// </summary>
             private static void HookFiendAuraStart(On.FiendAura.orig_Start orig, FiendAura fiendAura)
             {
                 if (ModSettings.fiendFlickerMin != 0f && ModSettings.fiendFlickerMed != 0f && ModSettings.fiendFlickerMax != 0f)
@@ -1846,84 +1755,43 @@ namespace MonstrumExtendedSettingsMod
                     fiendAura.mediumRadius = ModSettings.fiendFlickerMed;
                     fiendAura.smallRadius = ModSettings.fiendFlickerMin;
                 }
-                fiendAura.srt_lrgRad = fiendAura.largeRadius;
-                fiendAura.srt_medRad = fiendAura.mediumRadius;
-                fiendAura.srt_smlRad = fiendAura.smallRadius;
+                orig.Invoke(fiendAura);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @FiendLightController
-
             // FiendLightController is a component of Flashlight.
+
+            /// <summary>
+            /// Uses slightly different logic for allowing non-Fiend monsters to disrupt lights.
+            /// Applied separately in Many Monsters Mode.
+            /// </summary>
             private static void HookFiendLightControllerLateUpdate(On.FiendLightController.orig_LateUpdate orig, FiendLightController fiendLightController)
             {
                 if (ModSettings.giveAllMonstersAFiendAura)
                 {
-                    if (fiendLightController.aura != null)
-                    {
-                        if (fiendLightController.aura != null && fiendLightController.aura.enabled)
-                        {
-                            FiendLightDisruptor fiendLightDisruptor = fiendLightController.aura.GetComponent<FiendLightDisruptor>();
-                            if (fiendLightDisruptor.timeSinceDisrupt == 0f)
-                            {
-                                if (MathHelper.RoundToNearest(fiendLightController.aura.transform.position, Settings.CuboidDim.y).y == MathHelper.RoundToNearest(((MonoBehaviour)fiendLightController).transform.position, Settings.CuboidDim.y).y)
-                                {
-                                    float num = Vector3.Distance(fiendLightController.aura.transform.position, ((MonoBehaviour)fiendLightController).transform.position);
-                                    if (num < fiendLightController.aura.largeRadius * Settings.CuboidDim.x)
-                                    {
-                                        if (num < fiendLightController.aura.smallRadius * Settings.CuboidDim.x)
-                                        {
-                                            fiendLightController.fiendOverride = GenericLight.LightTypes.Off;
-                                        }
-                                        else
-                                        {
-                                            fiendLightController.fiendOverride = GenericLight.LightTypes.Flickering2;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        fiendLightController.fiendOverride = GenericLight.LightTypes.Normal;
-                                    }
-                                }
-                                else
-                                {
-                                    fiendLightController.fiendOverride = GenericLight.LightTypes.Normal;
-                                }
-                            }
-                        }
-                    }
-                    else
+                    // Ignore the Fiend check when trying to set the aura.
+                    if (fiendLightController.aura == null)
                     {
                         fiendLightController.aura = References.Monster.GetComponent<FiendAura>();
                     }
-                    if (fiendLightController.fiendOverride != GenericLight.LightTypes.Normal && fiendLightController.flashlight.on)
+
+                    // Only run the original code when the aura is enabled and has a non-zero time since disrupt.
+                    if (fiendLightController.aura == null || !fiendLightController.aura.enabled || fiendLightController.aura.GetComponent<FiendLightDisruptor>().timeSinceDisrupt != 0f)
                     {
-                        GenericLight.LightTypes lightTypes = fiendLightController.fiendOverride;
-                        if (lightTypes != GenericLight.LightTypes.Off)
-                        {
-                            if (lightTypes == GenericLight.LightTypes.Flickering2)
-                            {
-                                fiendLightController.Flicker();
-                            }
-                        }
-                        else
-                        {
-                            foreach (Light light in fiendLightController.lights)
-                            {
-                                light.intensity = 0f;
-                            }
-                        }
+                        return;
                     }
                 }
-                else
-                {
-                    orig.Invoke(fiendLightController);
-                }
+                orig.Invoke(fiendLightController);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @FiendMindAttack
 
+            /// <summary>
+            /// Applies mind attack only when the targeted player does not currently have invincibility mode on.
+            /// Also hooked consecutively in Multiplayer Mode.
+            /// </summary>
             private static void HookFiendMindAttackUpdate(On.FiendMindAttack.orig_Update orig, FiendMindAttack fiendMindAttack)
             {
                 int crewPlayerIndex = 0;
@@ -1931,49 +1799,16 @@ namespace MonstrumExtendedSettingsMod
                 {
                     crewPlayerIndex = MultiplayerMode.crewPlayers.IndexOf(fiendMindAttack.monster.PlayerDetectRoom.player);
                 }
-                if (ModSettings.invincibilityMode[crewPlayerIndex])
-                {
-                    return;
-                }
-                else
+                if (!ModSettings.invincibilityMode[crewPlayerIndex])
                 {
                     orig.Invoke(fiendMindAttack);
                 }
             }
 
-            private static void HookFiendMindAttackAttackCheck(On.FiendMindAttack.orig_AttackCheck orig, FiendMindAttack fiendMindAttack)
-            {
-                bool flag = false;
-                if (Calculations.PlayerToMonsterDistance() < fiendMindAttack.attackRange && fiendMindAttack.monster.CanSeePlayer && fiendMindAttack.attackTimer == fiendMindAttack.maxTime && fiendMindAttack.delayTimer == fiendMindAttack.maxDelay)
-                {
-                    if (fiendMindAttack.fiendAnims != null)
-                    {
-                        flag = true;
-                    }
-                    else
-                    {
-                        fiendMindAttack.fiendAnims = fiendMindAttack.monster.GetComponentInChildren<FiendAnimations>();
-                    }
-                }
-                if (flag)
-                {
-                    fiendMindAttack.fiendAnims.DoMindAttack = true;
-                    fiendMindAttack.monster.MoveControl.GetAniControl.DesiredUpperBodyWeight = 1f;
-                    if (!OculusManager.isOculusEnabled)
-                    {
-                        fiendMindAttack.mindAttackBleed.impact = 2f;
-                    }
-                    else
-                    {
-                        fiendMindAttack.oculusMindAttackBleed.impact = 2f;
-                    }
-                    fiendMindAttack.PlayAttackSound();
-                    fiendMindAttack.PlayerEffects();
-                    fiendMindAttack.delayTimer = 0f;
-                    fiendMindAttack.playerHealth.DoDamage(35f * ModSettings.fiendMindAttackDamageMultiplier, false, PlayerHealth.DamageTypes.MindAttack, false);
-                }
-            }
-
+            /// <summary>
+            /// Applies custom Fiend timer multipliers. Applied separately in Many Monsters Mode.
+            /// It might be cleaner to edit timers before or after running the function instead of replicating the entire function, but it is difficult to do this without changing the logic.
+            /// </summary>
             private static void HookFiendMindAttackChangeTimers(On.FiendMindAttack.orig_ChangeTimers orig, FiendMindAttack fiendMindAttack)
             {
                 bool flag = false;
@@ -2079,6 +1914,10 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @Fire
 
+            /// <summary>
+            /// Fixes the vanilla bug that the fire damage script identifies as the player instead of fire.
+            /// This would result in the player being damaged when fire touches steam.
+            /// </summary>
             private static void HookFireDamageStart(On.FireDamage.orig_Start orig, FireDamage fireDamage)
             {
                 orig.Invoke(fireDamage);
@@ -2088,6 +1927,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FireExtinguisher
 
+            /// <summary>
+            /// Applies the infinite fire extinguisher fuel setting.
+            /// </summary>
             private static void HookFireExtinguisherUpdate(On.FireExtinguisher.orig_Update orig, FireExtinguisher fireExtinguisher)
             {
                 if (ModSettings.infiniteFireExtinguisherFuel && fireExtinguisher.IsUsing)
@@ -2100,6 +1942,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FlareGun
 
+            /// <summary>
+            /// Applies the overpowered flare gun setting, letting it always be fired regardless of delay or ammo.
+            /// </summary>
             private static void HookFlareGunUpdate(On.FlareGun.orig_Update orig, FlareGun flareGun)
             {
                 if (!ModSettings.overpoweredFlareGun)
@@ -2115,48 +1960,52 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FlareObject
 
+            /// <summary>
+            /// Supports the overpowered flare gun, MMM, flares disable monsters and flares teleport monsters settings.
+            /// </summary>
             private static void HookFlareObjectHitMonster(On.FlareObject.orig_HitMonster orig, FlareObject flareObject)
             {
+                // Hit the monster if it is not a Brute or the flare gun is overpowered.
                 if (flareObject.monster.MonsterType != Monster.MonsterTypeEnum.Brute || ModSettings.overpoweredFlareGun)
                 {
                     flareObject.monster.MoveControl.GetAniControl.Stun(1f);
+                    // Let the flare hit multiple monsters.
                     if (ModSettings.numberOfMonsters < 2)
                     {
                         flareObject.hasStunnedMonster = true;
                     }
+                    // Disable monsters if desired.
                     if (ModSettings.flaresDisableMonsters)
                     {
                         flareObject.monster.gameObject.SetActive(false);
-                    }
-                    if (ModSettings.flaresTeleportMonsters)
-                    {
-                        for (int i = 0, maxAttempts = 5; i < maxAttempts; i++)
-                        {
-                            Vector3 spawnPosition = LevelGeneration.Instance.MonsterSpawnPoints[UnityEngine.Random.Range(0, LevelGeneration.Instance.MonsterSpawnPoints.Count)].transform.position;
-                            Vector3 closestPlayerPosition;
-                            if (ModSettings.enableMultiplayer)
-                            {
-                                closestPlayerPosition = MultiplayerMode.newPlayerClasses[MultiplayerMode.ClosestPlayerToThis(spawnPosition)].transform.position;
-                            }
-                            else
-                            {
-                                closestPlayerPosition = References.Player.transform.position;
-                            }
-                            if (Vector3.Distance(closestPlayerPosition, spawnPosition) > 16f || i == maxAttempts - 1)
-                            {
-                                flareObject.monster.gameObject.transform.position = spawnPosition;
-                                ModSettings.ForceStopChase(flareObject.monster);
-                                break;
-                            }
-                        }
                     }
                 }
                 else
                 {
                     Achievements.Instance.CompleteAchievement("FLAREGUN_BRUTE");
                 }
+
+                // Try to teleport monsters if desired.
+                if (ModSettings.flaresTeleportMonsters)
+                {
+                    // Pick spawn points near the player. Try several times to pick a spawn point that is far enough away from the player.
+                    for (int i = 0, maxAttempts = 5; i < maxAttempts; i++)
+                    {
+                        Vector3 spawnPosition = LevelGeneration.Instance.MonsterSpawnPoints[UnityEngine.Random.Range(0, LevelGeneration.Instance.MonsterSpawnPoints.Count)].transform.position;
+                        Vector3 closestPlayerPosition = ModSettings.enableMultiplayer ? MultiplayerMode.newPlayerClasses[MultiplayerMode.ClosestPlayerToThis(spawnPosition)].transform.position : References.Player.transform.position;
+                        if (Vector3.Distance(closestPlayerPosition, spawnPosition) > 16f || i == maxAttempts - 1)
+                        {
+                            flareObject.monster.gameObject.transform.position = spawnPosition;
+                            ModSettings.ForceStopChase(flareObject.monster);
+                            break;
+                        }
+                    }
+                }
             }
 
+            /// <summary>
+            /// Applies the flare lifetime setting and destroys flares after expiry to avoid lag if using overpowered flare gun.
+            /// </summary>
             private static void HookFlareObjectStart(On.FlareObject.orig_Start orig, FlareObject flareObject)
             {
                 orig.Invoke(flareObject);
@@ -2167,68 +2016,77 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Utility class to destroy an object after a timer has expired.
+            /// </summary>
             private class DestroyAfterTime : MonoBehaviour
             {
+                /// <summary>
+                /// Start the coroutine to destroy the object.
+                /// </summary>
+                /// <param name="time">The time after which to destroy the object.</param>
                 public void Trigger(float time)
                 {
                     this.StartCoroutine(DestructionTimer(time));
                 }
 
+                /// <summary>
+                /// Destroys the object after a timer has expired.
+                /// </summary>
+                /// <param name="time">The time after which to destroy the object.</param>
+                /// <returns></returns>
                 private IEnumerator DestructionTimer(float time)
                 {
                     yield return new WaitForSeconds(time);
-                    Destroy(this.gameObject);
+                    Destroy(gameObject);
                 }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @Flashlight
 
-            private static void HookFlashlight()
-            {
-                On.Flashlight.Update += new On.Flashlight.hook_Update(HookFlashlightUpdate);
-            }
-
+            /// <summary>
+            /// Supports flashlight colour, range and intensity settings.
+            /// </summary>
             private static void HookFlashlightStart(On.Flashlight.orig_Start orig, Flashlight flashlight)
             {
                 orig.Invoke(flashlight);
 
-                if (ModSettings.UseCustomColour(ModSettings.flashlightColour) || ModSettings.randomFlashlightColours)
+                // Check whether to use a custom colour (set or random).
+                // If a custom colour is set and random colours are enabled, give a chance for each.
+                var useCustomFlashlightColour = ModSettings.UseCustomColour(ModSettings.flashlightColour);
+                if (ModSettings.randomFlashlightColours && (!useCustomFlashlightColour || UnityEngine.Random.value > 0.5f))
                 {
-                    if (ModSettings.UseCustomColour(ModSettings.flashlightColour) && ModSettings.randomFlashlightColours)
-                    {
-                        float randomChance = UnityEngine.Random.value;
-                        if (randomChance > 0.5f)
-                        {
-                            flashlight.flashLight.color = ModSettings.ConvertColourStringToColour(ModSettings.flashlightColour);
-                        }
-                        else
-                        {
-                            flashlight.flashLight.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                        }
-                    }
-                    else if (ModSettings.UseCustomColour(ModSettings.flashlightColour))
-                    {
-                        flashlight.flashLight.color = ModSettings.ConvertColourStringToColour(ModSettings.flashlightColour);
-                    }
-                    else
-                    {
-                        flashlight.flashLight.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                    }
-                    flashlight.originalFlashLightColor = flashlight.flashLight.color;
+                    flashlight.flashLight.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
                 }
+                else if (useCustomFlashlightColour)
+                {
+                    flashlight.flashLight.color = ModSettings.ConvertColourStringToColour(ModSettings.flashlightColour);
+                }
+
+                // Reset the original flashlight colour in case a custom colour was set.
+                flashlight.originalFlashLightColor = flashlight.flashLight.color;
+
+                // Apply multipliers to flashlight properties.
                 flashlight.flashLightIntensity *= ModSettings.flashlightIntensityMultiplier;
                 flashlight.maxFlashLightIntensity *= ModSettings.flashlightIntensityMultiplier;
                 flashlight.flashLight.range *= ModSettings.flashlightRangeMultiplier;
             }
 
+            /// <summary>
+            /// Supports infinite flashlight power and multiplayer audio.
+            /// </summary>
             private static void HookFlashlightUpdate(On.Flashlight.orig_Update orig, Flashlight flashlight)
             {
+                // Check whether to use infinite flashlight power.
                 if (ModSettings.infiniteFlashlightPower && flashlight.on)
                 {
                     flashlight.power = 260f;
                 }
+
                 orig.Invoke(flashlight);
+
+                // Check whether to pause the flashlight for multiplayer audio.
                 if (ModSettings.enableMultiplayer && !MultiplayerMode.useLegacyAudio && !(flashlight.on && flashlight.power >= 15f) && !(flashlight.on && flashlight.power < 15f) && LevelGeneration.Instance.finishedGenerating)
                 {
                     VirtualAudioSource virtualAudioSource = flashlight.torchSource.gameObject.GetComponent<VirtualAudioSource>();
@@ -2244,8 +2102,48 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @FloatHum
+
+            /// <summary>
+            /// Supports silent monster, muting Fiend's hum.
+            /// </summary>
+            private static void HookFloatHumStart(On.FloatHum.orig_Start orig, FloatHum floatHum)
+            {
+                orig.Invoke(floatHum);
+                if (ModSettings.silentMonster)
+                {
+                    floatHum.floatSource.mute = true;
+                }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @FootStepManager
+
+            /// <summary>
+            /// Supports silent monster, muting monster footsteps.
+            /// </summary>
+            private static void HookFootStepManagerStart(On.FootStepManager.orig_Start orig, FootStepManager footStepManager)
+            {
+                orig.Invoke(footStepManager);
+                if (ModSettings.silentMonster && footStepManager.isMonster)
+                {
+                    if (footStepManager.source)
+                    {
+                        footStepManager.source.mute = true;
+                    }
+                    if (footStepManager.source2)
+                    {
+                        footStepManager.source2.mute = true;
+                    }
+                }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @FOVCheck
 
+            /// <summary>
+            /// #Seems to be the same as CameraFOV. Unsure which is used when. Could be tested and streamlined.
+            /// </summary>
             private static void HookFOVCheck(On.FOVCheck.orig_Start orig, FOVCheck fOVCheck)
             {
                 if (PlayerPrefs.HasKey("FOV"))
@@ -2282,11 +2180,15 @@ namespace MonstrumExtendedSettingsMod
                 On.FOVSlider.Test += new On.FOVSlider.hook_Test(HookFOVSliderTest);
             }
 
+            /// <summary>
+            /// Supports custom FOV, keeping the menu within usable bounds.
+            /// It is unclear whether all of the custom code is needed or just the menu check.
+            /// </summary>
             private static void HookFOVSliderStart(On.FOVSlider.orig_Start orig, FOVSlider fOVSlider)
             {
+                // Set the slider bounds to match the mod settings.
                 fOVSlider.FOVSliderObject.minValue = ModSettings.minimumValueOnFOVSlider;
                 fOVSlider.FOVSliderObject.maxValue = ModSettings.maximumValueOnFOVSlider;
-
 
                 fOVSlider.delta.IsRealtime = true;
                 fOVSlider.delta.StartTimer();
@@ -2295,22 +2197,15 @@ namespace MonstrumExtendedSettingsMod
                 fOVSlider.aspectRatio = fOVSlider.width / fOVSlider.height;
                 if (PlayerPrefs.HasKey("FOV"))
                 {
-                    fOVSlider.fovFloat = PlayerPrefs.GetFloat("FOV");
-                    if (fOVSlider.fovFloat < fOVSlider.FOVSliderObject.minValue)
-                    {
-                        fOVSlider.fovFloat = fOVSlider.FOVSliderObject.minValue;
-                    }
-                    else if (fOVSlider.fovFloat > fOVSlider.FOVSliderObject.maxValue)
-                    {
-                        fOVSlider.fovFloat = fOVSlider.FOVSliderObject.maxValue;
-                    }
-                    //fOVSlider.fovFloat = 50f + ((PlayerPrefs.GetFloat("FOV") - ModSettings.minimumValueOnFOVSlider) * 20f / (ModSettings.maximumValueOnFOVSlider - ModSettings.minimumValueOnFOVSlider));
+                    // Use the currently set FOV, clamping it to the slider's bounds.
+                    fOVSlider.fovFloat = Mathf.Clamp(PlayerPrefs.GetFloat("FOV"), fOVSlider.FOVSliderObject.minValue, fOVSlider.FOVSliderObject.maxValue);
                     fOVSlider.FOVSliderObject.value = fOVSlider.fovFloat;
                     fOVSlider.vFOVInRads = fOVSlider.fovFloat * 0.0174532924f;
                     fOVSlider.hFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.vFOVInRads / 2f) * fOVSlider.aspectRatio);
 
-                    //Debug.Log("Current scene name is: " + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
-                    if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainSecondary") // MainSecondary is the generated level. Use the first bracket if the player is not in the generated level, which locks the FOV to the vanilla range of 50 to 70 to allow for proper menu UI interaction.
+                    // Lock the FOV to the vanilla range everywhere except the game level to allow for proper menu interaction.
+                    // MainSecondary is the generated level. Use the first bracket if the player is not in the generated level, which locks the FOV to the vanilla range of 50 to 70 to allow for proper menu UI interaction.
+                    if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainSecondary")
                     {
                         for (int i = 0; i < fOVSlider.cameraList.Count; i++)
                         {
@@ -2332,40 +2227,34 @@ namespace MonstrumExtendedSettingsMod
                     fOVSlider.vFOVInRads = 1.04719758f;
                     fOVSlider.hFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.vFOVInRads / 2f) * fOVSlider.aspectRatio);
                 }
-
-
-                //orig.Invoke(fOVSlider);
             }
 
+            /// <summary>
+            /// Bounds the FOV when not fully loaded into the game.
+            /// Seems a bit similar in purpose to Start, but not sure whether this bounding is needed.
+            /// Setting fOVSlider.FOVSliderObject.value and then calling orig does not work because setting is hooked to call the test method again, causing recursion.
+            /// </summary>
             private static void HookFOVSliderTest(On.FOVSlider.orig_Test orig, FOVSlider fOVSlider)
             {
-                if (LevelGeneration.Instance != null && LevelGeneration.Instance.finishedGenerating)
+                var useBoundedValue = LevelGeneration.Instance == null || !LevelGeneration.Instance.finishedGenerating;
+                var originalValue = fOVSlider.FOVSliderObject.value;
+                var vFOVToUse = (useBoundedValue ? 50f + ((originalValue - ModSettings.minimumValueOnFOVSlider) * 20f / (ModSettings.maximumValueOnFOVSlider - ModSettings.minimumValueOnFOVSlider)) : originalValue) * 0.0174532924f;
+                for (int i = 0; i < fOVSlider.cameraList.Count; i++)
                 {
-                    for (int i = 0; i < fOVSlider.cameraList.Count; i++)
-                    {
-                        fOVSlider.aspectRatio = fOVSlider.width / fOVSlider.height;
-                        fOVSlider.vFOVInRads = fOVSlider.FOVSliderObject.value * 0.0174532924f;
-                        fOVSlider.hFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.vFOVInRads / 2f) * fOVSlider.aspectRatio);
-                        fOVSlider.vFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.hFOVInRads / 2f) / fOVSlider.aspectRatio);
-                        fOVSlider.cameraList[i].fieldOfView = fOVSlider.vFOVInRads * 57.29578f;
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < fOVSlider.cameraList.Count; i++)
-                    {
-                        fOVSlider.aspectRatio = fOVSlider.width / fOVSlider.height;
-                        fOVSlider.vFOVInRads = (50f + ((fOVSlider.FOVSliderObject.value - ModSettings.minimumValueOnFOVSlider) * 20f / (ModSettings.maximumValueOnFOVSlider - ModSettings.minimumValueOnFOVSlider))) * 0.0174532924f;
-                        fOVSlider.hFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.vFOVInRads / 2f) * fOVSlider.aspectRatio);
-                        fOVSlider.vFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.hFOVInRads / 2f) / fOVSlider.aspectRatio);
-                        fOVSlider.cameraList[i].fieldOfView = fOVSlider.vFOVInRads * 57.29578f;
-                    }
+                    fOVSlider.aspectRatio = fOVSlider.width / fOVSlider.height;
+                    fOVSlider.vFOVInRads = vFOVToUse;
+                    fOVSlider.hFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.vFOVInRads / 2f) * fOVSlider.aspectRatio);
+                    fOVSlider.vFOVInRads = 2f * Mathf.Atan(Mathf.Tan(fOVSlider.hFOVInRads / 2f) / fOVSlider.aspectRatio);
+                    fOVSlider.cameraList[i].fieldOfView = fOVSlider.vFOVInRads * 57.29578f;
                 }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @FuelDecal
 
+            /// <summary>
+            /// Supports fire property modifiers.
+            /// </summary>
             private static void HookFuelDecalStart(On.FuelDecal.orig_Start orig, FuelDecal fuelDecal)
             {
                 orig.Invoke(fuelDecal);
@@ -2377,6 +2266,9 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @FuelParticles
 
+            /// <summary>
+            /// Supports infinite fuel.
+            /// </summary>
             private static void HookFuelParticlesUpdate(On.FuelParticles.orig_Update orig, FuelParticles fuelParticles)
             {
                 if (ModSettings.infiniteFuelCanFuel && fuelParticles.pouring)
@@ -2387,30 +2279,85 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @FuelScaleBar
+
+            private static void HookFuelScaleBarStart(On.FuelScaleBar.orig_Start orig, FuelScaleBar fuelScaleBar)
+            {
+                // Change the max fuel from here so that the scale uses the correct max fuel value.
+                fuelScaleBar.fuelPump.maxFuel = ModSettings.helicopterFuelAmount;
+                orig.Invoke(fuelScaleBar);
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @FuseBox
+
+            private static void HookFuseBoxOnFuseReachedBox(On.FuseBox.orig_OnFuseReachedBox orig, FuseBox fuseBox)
+            {
+                orig.Invoke(fuseBox);
+                ModSettings.fusesAdded++;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @FuseBoxManager
 
+            /// <summary>
+            /// Supports Add Additional Crew Deck Building Support & letting multiple fuse boxes be set up in one region.
+            /// </summary>
             private static void HookFuseBoxManagerAddFuseBox(On.FuseBoxManager.orig_AddFuseBox orig, FuseBoxManager fuseBoxManager, FuseBox _fuseBox)
             {
                 if (!fuseBoxManager.fuseboxes.ContainsKey(_fuseBox.powerRegion))
                 {
                     orig.Invoke(fuseBoxManager, _fuseBox);
                 }
-                else
-                {
-                    ModSettings.additionalFuseBoxesToSetUpAfterGeneration.Add(_fuseBox);
-                }
             }
 
+            /// <summary>
+            /// Supports fuse box pre-fill settings.
+            /// </summary>
+            private static IEnumerator HookFuseBoxManagerOnGenerationComplete(FuseBoxManager fuseBoxManager)
+            {
+                // Run custom code that goes through all fuse boxes, including custom / duplicate ones like in the additional crew building.
+                foreach (FuseBox fuseBox in FindObjectsOfType<FuseBox>())
+                {
+                    switch (fuseBox.powerRegion)
+                    {
+                        case PrimaryRegionType.SubEscape:
+                            if (!ModSettings.preFillSubmersibleFuseBox) continue;
+                            break;
+                        case PrimaryRegionType.OuterDeck:
+                            if (!ModSettings.preFillLiferaftFuseBox) continue;
+                            break;
+                        case PrimaryRegionType.Engine:
+                            if (!ModSettings.preFillEngineRoomFuseBox) continue;
+                            break;
+                        case PrimaryRegionType.None:
+                            if (!ModSettings.preFillPowerLockFuseBoxes) continue;
+                            break;
+                        default:
+                            if (!ModSettings.preFillStartRegionFuseBox && fuseBox.powerRegion == LevelGeneration.Instance.startRoom.PrimaryRegion ||
+                            !ModSettings.preFillLightFuseBoxes && fuseBox.powerRegion != LevelGeneration.Instance.startRoom.PrimaryRegion) continue;
+                            break;
+                    }
+                    if (ModSettings.logDebugText)
+                    {
+                        Debug.Log("Pre-filling fuse box in region: " + fuseBox.powerRegion);
+                    }
+                    FuseBoxManager.instance.SetupFuse(fuseBox);
+                }
+                yield break;
+            }
+
+            /// <summary>
+            /// Supports dark ship.
+            /// </summary>
             private static void HookFuseBoxManagerSetupFuse(On.FuseBoxManager.orig_SetupFuse orig, FuseBoxManager fuseBoxManager, FuseBox _fusebox)
             {
-                if (!ModSettings.noPreFilledFuseBoxes)
+                _fusebox.AddFuse();
+                _fusebox.AddPreExistingFuse();
+                // Do not activate the fuse box if using dark ship.
+                if (!ModSettings.darkShip)
                 {
-                    _fusebox.AddFuse();
-                    _fusebox.AddPreExistingFuse();
-                    if (!ModSettings.darkShip)
-                    {
-                        _fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
-                    }
+                    _fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
                 }
             }
 
@@ -2424,67 +2371,104 @@ namespace MonstrumExtendedSettingsMod
                 On.GenericLight.Start += new On.GenericLight.hook_Start(HookGenericLightStart);
             }
 
+            /// <summary>
+            /// Supports dark ship and powerable lights, setting light type after generation.
+            /// </summary>
             private static void HookGenericLightOnGenerationComplete(On.GenericLight.orig_OnGenerationComplete orig, GenericLight genericLight)
             {
-                genericLight.lightCuller = ((MonoBehaviour)genericLight).GetComponent<Light>().GetComponent<LightCull2>();
-                genericLight.UpdateLight();
+                orig.Invoke(genericLight);
                 if (ModSettings.darkShip)
                 {
+                    // If not allowing powerable lights, force the light to stay off forever.
                     if (!ModSettings.powerableLights)
                     {
                         genericLight.startingLightType = GenericLight.LightTypes.Off;
                     }
+                    // Set the light to off after generation.
                     genericLight.lightType = GenericLight.LightTypes.Off;
                 }
-                GenericLight.genComplete = true;
             }
 
+            /// <summary>
+            /// Supports dark ship and powerable lights.
+            /// Sets light type back to normal on power up in dark ship mode if using powerable lights.
+            /// </summary>
             private static void HookGenericLightOnPowerUp(On.GenericLight.orig_OnPowerUp orig, GenericLight genericLight)
             {
-                genericLight.isPowered = true;
                 if (ModSettings.darkShip && ModSettings.powerableLights)
                 {
                     genericLight.lightType = GenericLight.LightTypes.Normal;
                 }
-                genericLight.UpdateLight();
+                orig.Invoke(genericLight);
             }
 
+            /// <summary>
+            /// Supports ship light colour, intensity and range settings.
+            /// </summary>
             private static void HookGenericLightStart(On.GenericLight.orig_Start orig, GenericLight genericLight)
             {
-                if (ModSettings.UseCustomColour(ModSettings.shipGenericLightsColour) || ModSettings.randomShipGenericLightsColours)
+                // Check whether to use a custom colour (set or random).
+                // If a custom colour is set and random colours are enabled, give a chance for each.
+                var useCustomShipLightColour = ModSettings.UseCustomColour(ModSettings.shipGenericLightsColour);
+                if (ModSettings.randomShipGenericLightsColours && (!useCustomShipLightColour || UnityEngine.Random.value > 0.5f))
                 {
-                    if (ModSettings.UseCustomColour(ModSettings.shipGenericLightsColour) && ModSettings.randomShipGenericLightsColours)
-                    {
-                        float randomChance = UnityEngine.Random.value;
-                        if (randomChance > 0.5f)
-                        {
-                            ((MonoBehaviour)genericLight).GetComponent<Light>().color = ModSettings.ConvertColourStringToColour(ModSettings.shipGenericLightsColour);
-                        }
-                        else
-                        {
-                            ((MonoBehaviour)genericLight).GetComponent<Light>().color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                        }
-                    }
-                    else if (ModSettings.UseCustomColour(ModSettings.shipGenericLightsColour))
-                    {
-                        ((MonoBehaviour)genericLight).GetComponent<Light>().color = ModSettings.ConvertColourStringToColour(ModSettings.shipGenericLightsColour);
-                    }
-                    else
-                    {
-                        ((MonoBehaviour)genericLight).GetComponent<Light>().color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                    }
+                    ((MonoBehaviour)genericLight).GetComponent<Light>().color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
                 }
+                else if (useCustomShipLightColour)
+                {
+                    ((MonoBehaviour)genericLight).GetComponent<Light>().color = ModSettings.ConvertColourStringToColour(ModSettings.shipGenericLightsColour);
+                }
+
+                // Apply multipliers to ship light properties.
                 genericLight.normalIntensity *= ModSettings.shipGenericLightIntensityMultiplier;
                 ((MonoBehaviour)genericLight).GetComponent<Light>().range *= ModSettings.shipGenericLightRangeMultiplier;
                 orig.Invoke(genericLight);
+
+                // # LATEST INDEV CHANGE - Sets all ship lights to be Brute lights.
+                // try
+                // {
+                //     Light light = ((MonoBehaviour)genericLight).GetComponent<Light>();
+                //     Light[] lights = References.Monster.GetComponentsInChildren<Light>();
+                //     LightShafts lightShafts = References.Monster.GetComponentInChildren<LightShafts>();
+                //     Light[] bruteEyes = new Light[] { lights[4] /*Brute's left eye*/, lights[5] /*Brute's right eye*/ };
+
+                //     if (light.gameObject.GetComponentInChildren<LightShafts>() == null)
+                //     {
+                //         light.intensity *= 0.01f;
+                //         //light.range *= 0.5f;
+                //         LightShafts newLightShafts = Utilities.CopyComponent(lightShafts, light.gameObject);
+                //         newLightShafts.m_Brightness = light.intensity;
+                //         newLightShafts.m_BrightnessColored = newLightShafts.m_Brightness;
+                //     }
+                // }
+                // catch
+                // {
+                //     Debug.Log("Could not update lights in ReadAfterGeneration");
+                // }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @GlobalMusic
 
-            private static void HookGlobalMusic(On.GlobalMusic.orig_CheckMusicState orig, GlobalMusic globalMusic)
+            /// <summary>
+            /// Supports the custom music pack "All" setting that switches between packs after each chase.
+            /// </summary>
+            private static void HookGlobalMusicChangeVariables(On.GlobalMusic.orig_ChangeVariables orig, GlobalMusic globalMusic, bool _cooldown, bool _hasCooled, bool _loop, bool _changesong, float _lerp)
             {
-                // This code is only run when MMM is not enabled.
+                // Only switch music pack when using all music packs and the music track is being changed to NoAlert.
+                if (ModSettings.musicPack.Equals("All") && globalMusic.song.Contains("NoAlert"))
+                {
+                    ModSettings.AssignCustomMusic();
+                }
+                orig.Invoke(globalMusic, _cooldown, _hasCooled, _loop, _changesong, _lerp);
+            }
+
+            /// <summary>
+            /// Supports spawn protection. Plays NoAlert music when a player has spawn protection.
+            /// This code is only run when MMM is not enabled.
+            /// </summary>
+            private static void HookGlobalMusicCheckMusicState(On.GlobalMusic.orig_CheckMusicState orig, GlobalMusic globalMusic)
+            {
                 bool doesAPlayerHaveSpawnProtection = false;
                 for (int i = 0; i < ModSettings.spawnProtection.Count; i++)
                 {
@@ -2503,20 +2487,34 @@ namespace MonstrumExtendedSettingsMod
                 if (!doesAPlayerHaveSpawnProtection)
                 {
                     orig.Invoke(globalMusic);
+                    return;
                 }
-                else
+
+                globalMusic.song = "Music/NoAlert/" + globalMusic.monsterType;
+                if (globalMusic.currentlyPlaying != globalMusic.song)
                 {
-                    globalMusic.song = "Music/NoAlert/" + globalMusic.monsterType;
-                    if (globalMusic.currentlyPlaying != globalMusic.song)
-                    {
-                        globalMusic.ChangeVariables(false, true, true, false, 0f);
-                    }
+                    globalMusic.ChangeVariables(false, true, true, false, 0f);
+                }
+            }
+
+            /// <summary>
+            /// Plays a monster's wander theme from the start of the game rather than hiding it until seeing the monster.
+            /// </summary>
+            private static void HookGlobalMusicStart(On.GlobalMusic.orig_Start orig, GlobalMusic globalMusic)
+            {
+                orig.Invoke(globalMusic);
+                if (ModSettings.useWanderThemeFromStart)
+                {
+                    globalMusic.monsterBeenEncountered = true;
                 }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @GlowStick
 
+            /// <summary>
+            /// Supports glowstick hunt, updating the hunt counter and starting the finale if required count has been reached.
+            /// </summary>
             private static void HookGlowStickActivateGlowstick(On.GlowStick.orig_ActivateGlowstick orig, GlowStick glowStick)
             {
                 orig.Invoke(glowStick);
@@ -2526,11 +2524,13 @@ namespace MonstrumExtendedSettingsMod
                     if (ModSettings.glowstickHuntCounter >= ModSettings.specialGlowsticksRequired)
                     {
                         TimeScaleManager.Instance.StartCoroutine(StartGlowstickHuntFinale());
-                        //((MonoBehaviour)glowStick).StartCoroutine(StartGlowstickHuntFinale());
                     }
                 }
             }
 
+            /// <summary>
+            /// Readies the life raft and starts a permanent chase as a finale for glowstick hunt.
+            /// </summary>
             private static IEnumerator StartGlowstickHuntFinale()
             {
                 // Start the liferaft escape sequence.
@@ -2541,13 +2541,16 @@ namespace MonstrumExtendedSettingsMod
                 // Create a custom escape string to show to the player.
                 string escapeString = "All glowsticks found.\n";
 
-                if (ModSettings.numberOfMonsters > 1)
+                if (!ModSettings.noGlowstickHuntFinale)
                 {
-                    escapeString += "Monsters approaching... ";
-                }
-                else if (ModSettings.numberOfMonsters == 1)
-                {
-                    escapeString += "Monster approaching... ";
+                    if (ModSettings.numberOfMonsters > 1)
+                    {
+                        escapeString += "Monsters approaching... ";
+                    }
+                    else if (ModSettings.numberOfMonsters == 1)
+                    {
+                        escapeString += "Monster approaching... ";
+                    }
                 }
 
                 escapeString += "Get to the liferaft!";
@@ -2558,15 +2561,23 @@ namespace MonstrumExtendedSettingsMod
 
                 yield return new WaitForSeconds(5f);
 
-                if (ModSettings.numberOfMonsters > 0)
+
+                if (!ModSettings.noGlowstickHuntFinale)
                 {
-                    // After 10 seconds, make the monster(s) persistent and force a chase.
-                    ModSettings.persistentMonster = true;
-                    ModSettings.ForceChase();
+                    if (ModSettings.numberOfMonsters > 0)
+                    {
+                        // After 10 seconds, make the monster(s) persistent and force a chase.
+                        ModSettings.persistentMonster = true;
+                        ModSettings.ForceChase();
+                    }
                 }
                 yield break;
             }
 
+            /// <summary>
+            /// Supports glowstick colour, intensity and range settings.
+            /// Unclear whether try catch statements are needed.
+            /// </summary>
             private static void HookGlowStick(On.GlowStick.orig_Start orig, GlowStick glowStick)
             {
                 orig.Invoke(glowStick);
@@ -2599,6 +2610,12 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Assigns a custom colour to a glowstick.
+            /// </summary>
+            /// <param name="glowStick">The glowstick to assign a colour to.</param>
+            /// <param name="customColour">The colour to assign to the glowstick.</param>
+            /// <param name="modifyOnlyOneGlowstick">Whether to only modify this glowstick. Matters because glowsticks share a common material.</param>
             public static void AssignCustomGlowstickColour(GlowStick glowStick, Color customColour, bool modifyOnlyOneGlowstick = false)
             {
                 glowStick.glowLight.color = customColour;
@@ -2611,8 +2628,20 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @HelicopterEscape
+
+            private static void HookHelicopterEscapeStart(On.HelicopterEscape.orig_Start orig, HelicopterEscape helicopterEscape)
+            {
+                helicopterEscape.maxTimer = ModSettings.helicopterFuelTime;
+                orig.Invoke(helicopterEscape);
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @Hiding
 
+            /// <summary>
+            /// Supports overpowered hiding spots, making monsters unable to detect whether the player is hiding.
+            /// </summary>
             public static bool HookHidingget_IsHiding(Hiding hiding)
             {
                 if (ModSettings.overpoweredHidingSpots)
@@ -2625,6 +2654,10 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @HunterAnimationsScript
 
+            /// <summary>
+            /// Supports quiet Hunter, muting Hunter spawning when the sub room has not been breached.
+            /// #This likely makes the Hunter normal when breaching the sub room but loud permanently afterwards, which may be undesired. If there is no bug associated with keeping Hunter quiet, the sub check is probably better removed.
+            /// </summary>
             private static bool HookHunterAnimationsScriptSpawnHunter(On.HunterAnimationsScript.orig_SpawnHunter orig, HunterAnimationsScript hunterAnimationsScript)
             {
                 bool spawnedHunter = orig.Invoke(hunterAnimationsScript);
@@ -2660,7 +2693,9 @@ namespace MonstrumExtendedSettingsMod
             Welding Kit
             */
 
-
+            /// <summary>
+            /// Supports hide inventory.
+            /// </summary>
             private static void HookInventoryDisplayInventory(On.Inventory.orig_DisplayInventory orig, Inventory inventory)
             {
                 if (!ModSettings.hideInventory)
@@ -2669,6 +2704,9 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Supports custom inventory size.
+            /// </summary>
             private static void HookInventoryStart(On.Inventory.orig_Start orig, Inventory inventory)
             {
                 if (ModSettings.inventorySize != 0)
@@ -2679,175 +2717,93 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
-            // @KeyItem
-
-            private static void HookKeyItemRandomizeCount(On.KeyItem.orig_RandomizeCount orig, KeyItem keyItem)
-            {
-                if (ModSettings.changeKeyItemSpawnNumbers != 0)
-                {
-                    // Make sure the minimum number of each key item that spawns is at least 1. This should spawn items that are usually disabled.
-                    if (keyItem.minCount <= 0)
-                    {
-                        keyItem.minCount = 1;
-                    }
-
-                    // If the increase in the maximum number of items is greater than 0, increase the maximum number of the key item to spawn. Else, set the maximum number of the key item to spawn to the minimum.
-                    if (ModSettings.changeKeyItemSpawnNumbers > 0)
-                    {
-                        keyItem.maxCount += ModSettings.changeKeyItemSpawnNumbers;
-                    }
-                    if (ModSettings.changeKeyItemSpawnNumbers < 0)
-                    {
-                        keyItem.maxCount = keyItem.minCount;
-                    }
-                }
-                orig.Invoke(keyItem);
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
             // @KeyItemPlaceholder
 
+            /// <summary>
+            /// Supports spawn items anywhere and diverse item spawns.
+            /// </summary>
             private static float HookKeyItemPlaceholderCalculateSuitability(On.KeyItemPlaceholder.orig_CalculateSuitability orig, KeyItemPlaceholder keyItemPlaceholder, PrimaryRegionType _idealRegion, KeyItem _item, Dictionary<PrimaryRegionType, Dictionary<string, int>> _regionItemCounts, Dictionary<PrimaryRegionType, Dictionary<string, int>> _maxRegionItems)
             {
-                if (!ModSettings.spawnItemsAnywhere)
-                {
-                    if (_item.category == KeyItem.KeyItemCategory.Wall && keyItemPlaceholder.category != KeyItem.KeyItemCategory.Wall)
-                    {
-                        return -1f;
-                    }
-                    if (!keyItemPlaceholder.room.allowKeyItemSpawning && !ModSettings.diverseItemSpawns)
-                    {
-                        return -1f;
-                    }
-                    float suitability = UnityEngine.Random.Range(0f, 1f);
-                    bool flag = false;
-                    if (_item.category == keyItemPlaceholder.category && _item.category != KeyItem.KeyItemCategory.Any)
-                    {
-                        suitability += 1000f;
-                        flag = true;
-                    }
-                    else
-                    {
-                        switch (_item.category)
-                        {
-                            case KeyItem.KeyItemCategory.Small:
-                                {
-                                    KeyItem.KeyItemCategory keyItemCategory = keyItemPlaceholder.category;
-                                    if (keyItemCategory != KeyItem.KeyItemCategory.Medium)
-                                    {
-                                        if (keyItemCategory != KeyItem.KeyItemCategory.Large)
-                                        {
-                                            if (keyItemCategory == KeyItem.KeyItemCategory.Any)
-                                            {
-                                                suitability += 700f;
-                                                flag = true;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            suitability += 800f;
-                                            flag = true;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        suitability += 900f;
-                                        flag = true;
-                                    }
-                                    break;
-                                }
-                            case KeyItem.KeyItemCategory.Medium:
-                                {
-                                    KeyItem.KeyItemCategory keyItemCategory2 = keyItemPlaceholder.category;
-                                    if (keyItemCategory2 != KeyItem.KeyItemCategory.Large)
-                                    {
-                                        if (keyItemCategory2 == KeyItem.KeyItemCategory.Any)
-                                        {
-                                            suitability += 950f;
-                                            flag = true;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        suitability += 1000f;
-                                        flag = true;
-                                    }
-                                    break;
-                                }
-                            case KeyItem.KeyItemCategory.Large:
-                                {
-                                    KeyItem.KeyItemCategory keyItemCategory3 = keyItemPlaceholder.category;
-                                    if (keyItemCategory3 == KeyItem.KeyItemCategory.Any)
-                                    {
-                                        suitability += 1000f;
-                                        flag = true;
-                                    }
-                                    break;
-                                }
-                            case KeyItem.KeyItemCategory.Any:
-                                switch (keyItemPlaceholder.category)
-                                {
-                                    case KeyItem.KeyItemCategory.Small:
-                                        suitability += 1000f;
-                                        flag = true;
-                                        break;
-                                    case KeyItem.KeyItemCategory.Medium:
-                                        suitability += 900f;
-                                        flag = true;
-                                        break;
-                                    case KeyItem.KeyItemCategory.Large:
-                                        suitability += 800f;
-                                        flag = true;
-                                        break;
-                                    case KeyItem.KeyItemCategory.Any:
-                                        suitability += 700f;
-                                        flag = true;
-                                        break;
-                                }
-                                break;
-                        }
-                    }
-                    if (!flag)
-                    {
-                        return -1f;
-                    }
-                    if (keyItemPlaceholder.IsValidRegion(_item, _regionItemCounts, _maxRegionItems))
-                    {
-                        suitability += 25f;
-                    }
-                    suitability -= Mathf.Clamp((float)keyItemPlaceholder.room.itemsSpawned * KeyItemPlaceholder.itemPenalty, 0f, 1f);
-                    if (_idealRegion == keyItemPlaceholder.primaryRegion)
-                    {
-                        suitability += 25f;
-                    }
-                    return suitability;
-                }
-                else
+                // If letting items spawn anywhere, return max suitability to skip the check.
+                if (ModSettings.spawnItemsAnywhere)
                 {
                     return float.MaxValue;
                 }
+
+                // If using diverse item spawns, let key items spawn in this room regardless of original setting.
+                if (ModSettings.diverseItemSpawns)
+                {
+                    keyItemPlaceholder.room.allowKeyItemSpawning = true;
+                }
+
+                return orig.Invoke(keyItemPlaceholder, _idealRegion, _item, _regionItemCounts, _maxRegionItems);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @KeyItemSystem
 
+            /// <summary>
+            /// Suports spawning deactivated items, spawning with flare gun, changing key item spawn numbers and diverse item spawns.
+            /// </summary>
             private static void HookKeyItemSystemSetUpLists(On.KeyItemSystem.orig_SetUpLists orig, KeyItemSystem keyItemSystem)
             {
                 try
                 {
+                    /// Item count references
+                    // keyItemSystem.keyItems cannot be relied upon for future rounds as it is not consistent across rounds.
+                    // Use reference lists to reset keyItemSystem.keyItems and its counts at the start of later rounds.
+                    // Items not active by default are added as normal each round, with the code adding them specifying counts.
+                    if (ModSettings.persistentKeyItems == null)
+                    {
+                        // In the first round, use the full system list to make references of all active items and their counts.
+                        ModSettings.persistentKeyItems = keyItemSystem.keyItems.ToList();
+                        foreach (KeyItem keyItem in keyItemSystem.keyItems)
+                        {
+                            if (ModSettings.logDebugText)
+                            {
+                                Debug.Log("Key item in KeyItemSystem is " + keyItem.name + ". It is set to spawn a minimum of " + keyItem.minCount + " times and a maximum of " + keyItem.maxCount + " times. Its priority is " + keyItem.priority + " and its category is " + keyItem.category + ".");
+                            }
+                            ModSettings.originalMins[keyItem.name] = keyItem.minCount;
+                            ModSettings.originalMaxes[keyItem.name] = keyItem.maxCount;
+                            if (ModSettings.logDebugText)
+                            {
+                                Debug.Log($"Added original count for key item {keyItem.name}. Min: {ModSettings.originalMins[keyItem.name]}. Max: {ModSettings.originalMaxes[keyItem.name]}.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // On subsequent rounds, copy references from the persistent list and reset counts.
+                        keyItemSystem.keyItems = ModSettings.persistentKeyItems.ToList();
+                        foreach (KeyItem keyItem in keyItemSystem.keyItems)
+                        {
+                            if (ModSettings.logDebugText)
+                            {
+                                Debug.Log($"Resetting count for key item {keyItem.name}. Current values: Min = {keyItem.minCount}, Max = {keyItem.maxCount}.");
+                            }
+                            keyItem.minCount = ModSettings.originalMins[keyItem.name];
+                            keyItem.maxCount = ModSettings.originalMaxes[keyItem.name];
+                            if (ModSettings.logDebugText)
+                            {
+                                Debug.Log($"Finished resetting count for key item {keyItem.name}. New values: Min = {keyItem.minCount}, Max = {keyItem.maxCount}.");
+                            }
+                        }
+                    }
+
+                    // Ensure the walkie talkie and flare gun spawn when using relevant settings.
                     if (ModSettings.spawnDeactivatedItems || ModSettings.spawnWithFlareGun)
                     {
-                        KeyItem[] keyItems = Resources.FindObjectsOfTypeAll<KeyItem>();
-
-                        if (keyItems != null)
+                        foreach (KeyItem keyItem in Resources.FindObjectsOfTypeAll<KeyItem>())
                         {
-                            foreach (KeyItem keyItem in keyItems)
+                            if (ModSettings.logDebugText)
                             {
-                                if (ModSettings.logDebugText)
-                                {
-                                    Debug.Log("Key item found via FindObjectsOfTypeAll is " + keyItem.name + ". It is set to spawn a minimum of " + keyItem.minCount + " times and a maximum of " + keyItem.maxCount + " times. Its priority is " + keyItem.priority + " and its category is " + keyItem.category + ".");
-                                }
-                                if (ModSettings.spawnDeactivatedItems && keyItem.name.Equals("WalkieTalkie"))
+                                Debug.Log("Key item found via FindObjectsOfTypeAll is " + keyItem.name + ". It is set to spawn a minimum of " + keyItem.minCount + " times and a maximum of " + keyItem.maxCount + " times. Its priority is " + keyItem.priority + " and its category is " + keyItem.category + ".");
+                            }
+
+                            // Re-enable the walkie talkie and compass.
+                            if (ModSettings.spawnDeactivatedItems)
+                            {
+                                if (keyItem.name.Equals("WalkieTalkie"))
                                 {
                                     keyItem.gameObject.SetActive(true);
                                     keyItem.minCount = 4;
@@ -2856,107 +2812,83 @@ namespace MonstrumExtendedSettingsMod
                                     keyItemSystem.keyItems.Add(keyItem);
                                     Debug.Log("Walkie talkie added successfully via FindObjectsOfTypeAll.");
                                 }
-                                else if (ModSettings.spawnWithFlareGun && keyItem.name.Equals("FlareGunNew") && !keyItemSystem.keyItems.Contains(keyItem))
+                                else if (keyItem.name.Equals("Compass"))
                                 {
-                                    keyItem.gameObject.SetActive(true);
-                                    keyItem.minCount = 1;
-                                    keyItem.maxCount = 1;
-                                    keyItemSystem.keyItems.Add(keyItem);
-                                    Debug.Log("Flare Gun added successfully via FindObjectsOfTypeAll when it wasn't added normally.");
+                                    keyItem.minCount = 2;
+                                    keyItem.maxCount = 3;
+                                    keyItem.priority = 1;
+                                    // No need to activate and add the compass to key items as it is already in the list by default.
                                 }
                             }
-                        }
-                        else
-                        {
-                            Debug.Log("Could not find key items.");
+
+                            // Ensure a flare gun is always spawned when using the spawn with flare gun or escape conditions setting.
+                            if ((ModSettings.spawnWithFlareGun || ModSettings.escapeConditionsToWin > 0) && keyItem.name.Equals("FlareGunNew") && !keyItemSystem.keyItems.Contains(keyItem))
+                            {
+                                keyItem.gameObject.SetActive(true);
+                                keyItem.minCount = 1;
+                                keyItem.maxCount = 1;
+                                keyItemSystem.keyItems.Add(keyItem);
+                                Debug.Log("Flare Gun added successfully via FindObjectsOfTypeAll when it wasn't added normally.");
+                            }
                         }
                     }
 
-                    foreach (KeyItem keyItem in keyItemSystem.keyItems)
-                    {
-                        if (ModSettings.spawnDeactivatedItems && keyItem.name.Equals("Compass"))
-                        {
-                            keyItem.minCount = 2;
-                            keyItem.maxCount = 3;
-                            keyItem.priority = 1;
-                        }
-
-                        if (ModSettings.logDebugText)
-                        {
-                            Debug.Log("Key item in KeyItemSystem is " + keyItem.name + ". It is set to spawn a minimum of " + keyItem.minCount + " times and a maximum of " + keyItem.maxCount + " times. Its priority is " + keyItem.priority + " and its category is " + keyItem.category + ".");
-                        }
-                    }
+                    // Run the original code.
                     orig.Invoke(keyItemSystem);
 
+                    // Let the walkie talkies spawn on the crew decks.
                     if (ModSettings.spawnDeactivatedItems)
                     {
                         keyItemSystem.maxes[PrimaryRegionType.CrewDeck]["WalkieTalkie"] = 10;
                     }
 
-                    if (ModSettings.changeKeyItemSpawnNumbers != 0)
+                    /// Item spawn count changes
+                    // Define a minimum based on whether items should be allowed to not spawn at all.
+                    // Calculate a second min for each item and region to ensure item counts are not increased when they should not be.
+                    var minGlobal = ModSettings.allowKeyItemsToNotSpawnAtAll ? 0 : 1;
+                    foreach (KeyItem keyItem in keyItemSystem.keyItems)
                     {
-                        foreach (KeyItem keyItem in keyItemSystem.keyItems)
+                        // Adjust item counts if desired.
+                        if (ModSettings.changeKeyItemSpawnNumbers != 0)
                         {
-                            // If the increase in the maximum number of items is greater than 0, increase the maximum number of the key item to spawn. Else, set the maximum number of the key item to spawn to the minimum.
-
-                            keyItem.minCount += ModSettings.changeKeyItemSpawnNumbers;
-                            keyItem.maxCount += ModSettings.changeKeyItemSpawnNumbers;
-
-                            if (keyItem.maxCount < 1)
+                            // Ensure the minimum amount of fuel cans is enough to fuel the helicopter.
+                            if (keyItem.name.Equals("FuelCan") && !ModSettings.disableHelicopter)
                             {
-                                // If the maximum count is less than 1, then the minimum count will also be less than 1 as the highest the minimum count can be is the maximum count.
-                                if (!ModSettings.allowKeyItemsToNotSpawnAtAll)
-                                {
-                                    keyItem.minCount = 1;
-                                    keyItem.maxCount = 1;
-                                }
-                                else
-                                {
-                                    keyItem.minCount = 0;
-                                    keyItem.maxCount = 0;
-                                }
-                            }
-                            else if (keyItem.minCount < 1)
-                            {
-                                // Even if the maximum count is not less than one, the minimum count still has to be checked as this may be less than the maximum count and thus below zero.
-                                if (!ModSettings.allowKeyItemsToNotSpawnAtAll)
-                                {
-                                    keyItem.minCount = 1;
-                                }
-                                else
-                                {
-                                    keyItem.minCount = 0;
-                                }
+                                minGlobal = ModSettings.helicopterFuelAmount;
                             }
 
+                            // Adjust each count while ensuring they do not go negative and have a normal relative relationship.
+                            var minItem = Mathf.Min(minGlobal, keyItem.minCount);
+                            keyItem.minCount = Mathf.Max(minItem, keyItem.minCount + ModSettings.changeKeyItemSpawnNumbers);
+                            keyItem.maxCount = Mathf.Max(keyItem.minCount, keyItem.maxCount + ModSettings.changeKeyItemSpawnNumbers);
+
+                            // Adjust the maximums for each region.
                             foreach (PrimaryRegionType primaryRegionType in keyItemSystem.maxes.Keys)
                             {
-                                keyItemSystem.maxes[primaryRegionType][keyItem.name] += ModSettings.changeKeyItemSpawnNumbers;
-                                if (keyItemSystem.maxes[primaryRegionType][keyItem.name] < 1)
-                                {
-                                    if (!ModSettings.allowKeyItemsToNotSpawnAtAll)
-                                    {
-                                        keyItemSystem.maxes[primaryRegionType][keyItem.name] = 1;
-                                    }
-                                    else
-                                    {
-                                        keyItemSystem.maxes[primaryRegionType][keyItem.name] = 0;
-                                    }
-                                }
+                                var minInRegion = Mathf.Min(minGlobal, keyItemSystem.maxes[primaryRegionType][keyItem.name]);
+                                keyItemSystem.maxes[primaryRegionType][keyItem.name] = Mathf.Max(minInRegion, keyItemSystem.maxes[primaryRegionType][keyItem.name] + ModSettings.changeKeyItemSpawnNumbers);
+                            }
+                        }
+                        else
+                        {
+                            // Ensure the minimum amount of fuel cans is enough to fuel the helicopter.
+                            if (keyItem.name.Equals("FuelCan"))
+                            {
+                                keyItem.minCount = Mathf.Max(keyItem.minCount, ModSettings.helicopterFuelAmount);
+                                keyItem.maxCount = Mathf.Max(keyItem.minCount, keyItem.maxCount);
+                                break;
                             }
                         }
                     }
 
+                    // If using diverse spawns, ensure at least 1 of the item can spawn in each region.
                     if (ModSettings.diverseItemSpawns)
                     {
                         foreach (KeyItem keyItem in keyItemSystem.keyItems)
                         {
                             foreach (PrimaryRegionType primaryRegionType in keyItemSystem.maxes.Keys)
                             {
-                                if (keyItemSystem.maxes[primaryRegionType][keyItem.name] < 1)
-                                {
-                                    keyItemSystem.maxes[primaryRegionType][keyItem.name] = 1;
-                                }
+                                keyItemSystem.maxes[primaryRegionType][keyItem.name] = Mathf.Max(1, keyItemSystem.maxes[primaryRegionType][keyItem.name]);
                             }
                         }
                     }
@@ -2979,11 +2911,10 @@ namespace MonstrumExtendedSettingsMod
                 On.LevelGeneration.Begin += new On.LevelGeneration.hook_Begin(HookLevelGenerationBegin);
                 On.LevelGeneration.DoBreak += new On.LevelGeneration.hook_DoBreak(HookLevelGenerationDoBreak);
                 On.LevelGeneration.SpawnInitialRooms += new On.LevelGeneration.hook_SpawnInitialRooms(HookLevelGenerationSpawnInitialRooms);
-                new Hook(typeof(LevelGeneration).GetNestedType("<SpawnRooms>c__Iterator1", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookLevelGenerationSpawnRoomsIntermediateHook"), null);
-                new Hook(typeof(LevelGeneration).GetNestedType("<SpawnRandomRooms>c__Iterator2", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookLevelGenerationSpawnRandomRoomsIntermediateHook"), null);
-                new Hook(typeof(LevelGeneration).GetNestedType("<SpawnCorridors>c__Iterator3", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookLevelGenerationSpawnCorridorsIntermediateHook"), null);
-                new Hook(typeof(LevelGeneration).GetNestedType("<SpawnJointsAndDoors>c__Iterator4", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.BaseFeatures).GetMethod("HookLevelGenerationSpawnJointsAndDoorsIntermediateHook"), null);
-
+                Utilities.HookIterator<LevelGeneration>("<SpawnRooms>c__Iterator1", HookLevelGenerationSpawnRooms);
+                Utilities.HookIterator<LevelGeneration>("<SpawnRandomRooms>c__Iterator2", HookLevelGenerationSpawnRandomRooms);
+                Utilities.HookIterator<LevelGeneration>("<SpawnCorridors>c__Iterator3", HookLevelGenerationSpawnCorridors);
+                Utilities.HookIterator<LevelGeneration>("<SpawnJointsAndDoors>c__Iterator4", HookLevelGenerationSpawnJointsAndDoors);
                 /*
                 On.SpawnDeckLG.SpawnDeckPieces += new On.SpawnDeckLG.hook_SpawnDeckPieces(HookSpawnDeckLGSpawnDeckPieces);
                 On.SpawnDeckCargoArea.GenerateCargoArea += new On.SpawnDeckCargoArea.hook_GenerateCargoArea(HookSpawnDeckCargoAreaGenerateCargoArea);
@@ -2994,6 +2925,10 @@ namespace MonstrumExtendedSettingsMod
                 */
             }
 
+            /// <summary>
+            /// Code shared at the start of LevelGeneration.Awake when Many Monsters Mode is on or off.
+            /// Supports seed selection.
+            /// </summary>
             public static void CommonLevelGeneration1(LevelGeneration levelGeneration)
             {
                 ModSettings.ReadBeforeGeneration();
@@ -3020,23 +2955,31 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Code shared at the end of LevelGeneration.Awake when Many Monsters Mode is on or off.
+            /// Supports wallhacks mode and start region selection.
+            /// </summary>
             public static void CommonLevelGeneration2(LevelGeneration levelGeneration)
             {
                 if (ModSettings.WallhacksMode)
                 {
+                    // Letting the user reverse the effects of this on walls seems to be more complicated than at first glance. The "wallhacks" seem to occur due to a lack of room collision of some kind.
                     levelGeneration.winterWonderland = true;
                 }
 
-                if (ModSettings.startRoomRegion.Equals("Upper Deck") || ModSettings.startRoomRegion.Equals("upper deck"))
+                if (ModSettings.startRoomRegion.ToLower().Equals("upper deck"))
                 {
                     LevelGeneration.Instance.spawnRoomType = LevelGeneration.SpawnRoomType.Upper;
                 }
-                else if (ModSettings.startRoomRegion.Equals("Lower Deck") || ModSettings.startRoomRegion.Equals("lower deck"))
+                else if (ModSettings.startRoomRegion.ToLower().Equals("lower deck"))
                 {
                     LevelGeneration.Instance.spawnRoomType = LevelGeneration.SpawnRoomType.Lower;
                 }
             }
 
+            /// <summary>
+            /// Supports monster selection and banned monsters.
+            /// </summary>
             private static void HookLevelGenerationAwake(On.LevelGeneration.orig_Awake orig, LevelGeneration levelGeneration)
             {
                 CommonLevelGeneration1(levelGeneration);
@@ -3060,19 +3003,17 @@ namespace MonstrumExtendedSettingsMod
                     {
                         levelGeneration.selectedMonster = SmokeMonster.CreateSmokeMonster(monsterSelection);
                     }
-                    else
+                    else if (ModSettings.bannedRandomMonsters.Count > 0 && ModSettings.bannedRandomMonsters.Count < 3)
                     {
-                        if (ModSettings.bannedRandomMonsters.Count > 0 && ModSettings.bannedRandomMonsters.Count < 3)
-                        {
-                            do
-                            {
-                                levelGeneration.selectedMonster = monsterSelection.Select();
-                            } while (ModSettings.bannedRandomMonsters.Contains(levelGeneration.selectedMonster.GetComponent<Monster>().monsterType));
-                        }
-                        else
+                        do
                         {
                             levelGeneration.selectedMonster = monsterSelection.Select();
-                        }
+                            // monster.monsterType is not set until Awake, so use the enum directly.
+                        } while (ModSettings.bannedRandomMonsters.Contains(levelGeneration.selectedMonster.GetComponent<Monster>().MonsterType.ToString()));
+                    }
+                    else
+                    {
+                        levelGeneration.selectedMonster = monsterSelection.Select();
                     }
                     levelGeneration.chosenMonstType = levelGeneration.selectedMonster.GetComponent<Monster>().MonsterType;
                 }
@@ -3088,12 +3029,15 @@ namespace MonstrumExtendedSettingsMod
                 levelGeneration.StartCoroutine(StartGenerationAfterAFrame(orig, levelGeneration));
             }
 
+            /// <summary>
+            /// Core of the LevelGeneration.Begin hook. Supports level generation changes, loading text and post-level generation code.
+            /// </summary>
             private static IEnumerator StartGenerationAfterAFrame(On.LevelGeneration.orig_Begin orig, LevelGeneration levelGeneration)
             {
                 Debug.Log("Starting LevelGeneration.Begin");
                 LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
                 string loadingProgressText = "Setting Up Custom Level Generation";
-                SetLoadingText(loadingBackground, loadingProgressText);
+                LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 /*
                 foreach (Room room in levelGeneration.roomPrefabs)
@@ -3229,6 +3173,10 @@ namespace MonstrumExtendedSettingsMod
             }
 
 
+            /// <summary>
+            /// Avoids breaks in the middle of level generation when using custom seeds or consistent level generation.
+            /// This encourages RNG to be called in the same way each run, upping the chances of consistent level generation.
+            /// </summary>
             private static bool HookLevelGenerationDoBreak(On.LevelGeneration.orig_DoBreak orig, LevelGeneration levelGeneration)
             {
                 if (ModSettings.useCustomSeed || ModSettings.consistentLevelGeneration)
@@ -3238,6 +3186,9 @@ namespace MonstrumExtendedSettingsMod
                 return orig.Invoke(levelGeneration);
             }
 
+            /// <summary>
+            /// Supports adding an additional crew deck building. Likely increases the amount of life raft areas that can spawn.
+            /// </summary>
             private static void HookLevelGenerationSpawnInitialRooms(On.LevelGeneration.orig_SpawnInitialRooms orig, LevelGeneration levelGeneration)
             {
                 if (ModSettings.addAdditionalCrewDeckBuilding)
@@ -3256,156 +3207,13 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 orig.Invoke(levelGeneration);
-
-                /*
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Initial Rooms";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(levelGeneration);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-                */
             }
-
-            /*
-            private static void HookSpawnDeckLGSpawnDeckPieces(On.SpawnDeckLG.orig_SpawnDeckPieces orig, List<Room> _deckPrefabs, List<Room> _deckInUse, GameObject _deckParent)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Deck Pieces";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_deckPrefabs, _deckInUse, _deckParent);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-            }
-
-            private static void HookSpawnDeckCargoAreaGenerateCargoArea(On.SpawnDeckCargoArea.orig_GenerateCargoArea orig, List<GameObject> _onDeckCargoPrefabs, GameObject _parentObj, List<Room> _roomsInUse, List<Room> _cargoContainerRooms)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Deck Cargo Containers";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_onDeckCargoPrefabs, _parentObj, _roomsInUse, _cargoContainerRooms);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-            }
-
-            private static void HookSpawnWalkwaysLGSpawnWalkways(On.SpawnWalkwaysLG.orig_SpawnWalkways orig, List<Room> _rooms, List<Room> _walkwaysList, GameObject _roomsParent)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Walkways";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_rooms, _walkwaysList, _roomsParent);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-                loadingProgressText = "Spawning Engine Room [No Error Notifications]";
-                SetLoadingText(loadingBackground, loadingProgressText);
-            }
-
-            private static void HookSpawnEnginesLGSpawnEngineArea(On.SpawnEnginesLG.orig_SpawnEngineArea orig, List<Room> _enginesInUse, GameObject _engineParent)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Engine Room";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_enginesInUse, _engineParent);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-            }
-
-
-            private static void HookSpawnCargoHoldLGSpawnCargoArea(On.SpawnCargoHoldLG.orig_SpawnCargoArea orig, List<GameObject> _cargoWalkwayPrefabs, List<Room> _cargoRoomPrefabs, List<Room> _cargoRoomsInUse, GameObject _cargoParent)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Cargo Hold";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_cargoWalkwayPrefabs, _cargoRoomPrefabs, _cargoRoomsInUse, _cargoParent);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-                loadingProgressText = "Spawning Random Rooms [No Error Notifications]";
-                SetLoadingText(loadingBackground, loadingProgressText);
-            }
-
-
-            private static void HookSpawnShellLGGenerateShell(On.SpawnShellLG.orig_GenerateShell orig, List<GameObject> _shellPrefabs, List<GameObject> _shellsInUse, GameObject _shellsParent)
-            {
-                LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
-                string loadingProgressText = "Spawning Shell";
-                SetLoadingText(loadingBackground, loadingProgressText);
-                try
-                {
-                    orig.Invoke(_shellPrefabs, _shellsInUse, _shellsParent);
-                }
-                catch
-                {
-                    string loadingProgressTextError = "Error While " + loadingProgressText;
-                    Debug.Log(loadingProgressTextError);
-                    SetLoadingText(loadingBackground, loadingProgressTextError);
-                    ModSettings.errorDuringLevelGeneration = true;
-                }
-                loadingProgressText = "Spawning Corridors, Joints And Doors & Handling Post Processing [No Error Notifications]";
-                SetLoadingText(loadingBackground, loadingProgressText);
-            }
-            */
 
             private static bool busyWithCoroutine;
 
-            public static bool HookLevelGenerationSpawnRoomsIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLevelGenerationSpawnRooms((LevelGeneration)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
+            /// <summary>
+            /// Supports loading text.
+            /// </summary>
             private static IEnumerator HookLevelGenerationSpawnRooms(LevelGeneration levelGeneration)
             {
                 // ~ Experimental level generation changes.
@@ -3419,7 +3227,7 @@ namespace MonstrumExtendedSettingsMod
                 Loading.UpdateLoading(loadIncrement);
                 string loadingProgressText = "Spawning Stairs";
                 Debug.Log(loadingProgressText);
-                SetLoadingText(loadingBackground, loadingProgressText);
+                LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 try
                 {
@@ -3433,7 +3241,7 @@ namespace MonstrumExtendedSettingsMod
                 Loading.UpdateLoading(loadIncrement);
                 loadingProgressText = "Spawning Initial Rooms";
                 Debug.Log(loadingProgressText);
-                SetLoadingText(loadingBackground, loadingProgressText);
+                LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 try
                 {
@@ -3450,7 +3258,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     loadingProgressText = "Spawning Deck Pieces";
                     Debug.Log(loadingProgressText);
-                    SetLoadingText(loadingBackground, loadingProgressText);
+                    LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
                     {
@@ -3467,7 +3275,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     loadingProgressText = "Spawning Deck Cargo Containers";
                     Debug.Log(loadingProgressText);
-                    SetLoadingText(loadingBackground, loadingProgressText);
+                    LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
                     {
@@ -3484,7 +3292,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     loadingProgressText = "Spawning Walkways";
                     Debug.Log(loadingProgressText);
-                    SetLoadingText(loadingBackground, loadingProgressText);
+                    LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
                     {
@@ -3501,7 +3309,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     loadingProgressText = "Spawning Engine Room";
                     Debug.Log(loadingProgressText);
-                    SetLoadingText(loadingBackground, loadingProgressText);
+                    LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
                     {
@@ -3518,7 +3326,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     loadingProgressText = "Spawning Cargo Hold";
                     Debug.Log(loadingProgressText);
-                    SetLoadingText(loadingBackground, loadingProgressText);
+                    LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
                     {
@@ -3531,9 +3339,9 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 Loading.UpdateLoading(loadIncrement);
-                loadingProgressText = "Spawning Random Rooms [No Error Notifications]";
+                loadingProgressText = "Spawning Random Rooms [No Error Notifications - Restart if Stuck]";
                 Debug.Log(loadingProgressText);
-                SetLoadingText(loadingBackground, loadingProgressText);
+                LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 busyWithCoroutine = true;
                 ((MonoBehaviour)levelGeneration).StartCoroutine(levelGeneration.SpawnRandomRooms());
@@ -3547,7 +3355,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     loadingProgressText = "Spawning Shell";
                     Debug.Log(loadingProgressText);
-                    SetLoadingText(loadingBackground, loadingProgressText);
+                    LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                     yield return null;
                     try
                     {
@@ -3560,9 +3368,9 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 Loading.UpdateLoading(loadIncrement);
-                loadingProgressText = "Spawning Corridors [No Error Notifications]";
+                loadingProgressText = "Spawning Corridors [No Error Notifications - Restart if Stuck]";
                 Debug.Log(loadingProgressText);
-                SetLoadingText(loadingBackground, loadingProgressText);
+                LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 busyWithCoroutine = true;
                 ((MonoBehaviour)levelGeneration).StartCoroutine(levelGeneration.SpawnCorridors());
@@ -3572,9 +3380,9 @@ namespace MonstrumExtendedSettingsMod
                 }
 
                 Loading.UpdateLoading(loadIncrement);
-                loadingProgressText = "Spawning Joints And Doors [No Error Notifications]";
+                loadingProgressText = "Spawning Joints And Doors [No Error Notifications - Restart if Stuck]";
                 Debug.Log(loadingProgressText);
-                SetLoadingText(loadingBackground, loadingProgressText);
+                LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 busyWithCoroutine = true;
                 ((MonoBehaviour)levelGeneration).StartCoroutine(levelGeneration.SpawnJointsAndDoors());
@@ -3586,7 +3394,7 @@ namespace MonstrumExtendedSettingsMod
                 Loading.UpdateLoading(loadIncrement);
                 loadingProgressText = "Handling Node Data";
                 Debug.Log(loadingProgressText);
-                SetLoadingText(loadingBackground, loadingProgressText);
+                LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield return null;
                 try
                 {
@@ -3684,21 +3492,13 @@ namespace MonstrumExtendedSettingsMod
                 Loading.UpdateLoading(loadIncrement);
                 loadingProgressText = "Handling Post Processing";
                 Debug.Log(loadingProgressText);
-                SetLoadingText(loadingBackground, loadingProgressText);
+                LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 yield break;
             }
 
-            public static bool HookLevelGenerationSpawnRandomRoomsIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLevelGenerationSpawnRandomRooms((LevelGeneration)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
+            /// <summary>
+            /// Unmodded function with "busyWithCoroutine" indicator required by HookLevelGenerationSpawnRooms.
+            /// </summary>
             private static IEnumerator HookLevelGenerationSpawnRandomRooms(LevelGeneration levelGeneration)
             {
                 //Debug.Log("Spawn random rooms is being hooked");
@@ -3881,17 +3681,9 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
-            public static bool HookLevelGenerationSpawnCorridorsIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLevelGenerationSpawnCorridors((LevelGeneration)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
+            /// <summary>
+            /// Unmodded function with "busyWithCoroutine" indicator required by HookLevelGenerationSpawnRooms.
+            /// </summary>
             private static IEnumerator HookLevelGenerationSpawnCorridors(LevelGeneration levelGeneration)
             {
                 //Debug.Log("Spawn corridors is being hooked");
@@ -3942,17 +3734,9 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
-            public static bool HookLevelGenerationSpawnJointsAndDoorsIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLevelGenerationSpawnJointsAndDoors((LevelGeneration)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
+            /// <summary>
+            /// Unmodded function with "busyWithCoroutine" indicator required by HookLevelGenerationSpawnRooms.
+            /// </summary>
             private static IEnumerator HookLevelGenerationSpawnJointsAndDoors(LevelGeneration levelGeneration)
             {
                 //Debug.Log("Joints and doors is being hooked");
@@ -3972,6 +3756,9 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
+            /// <summary>
+            /// Calls extra mod code after level generation has finished.
+            /// </summary>
             private static IEnumerator WaitUntilGenerationIsFinished()
             {
                 while (!LevelGeneration.Instance.finishedGenerating)
@@ -4067,96 +3854,17 @@ namespace MonstrumExtendedSettingsMod
             Region with index 39 has name Deck_BridgeWalkways and ID 143
             */
 
+            /// <summary>
+            /// Debug function used to list all regions.
+            /// </summary>
             private static void ListRegions()
             {
-                for (int j = 0; j < RegionManager.Instance.regions.Count; j++)
+                foreach (RegionEntry regionEntry in RegionManager.Instance.regions)
                 {
-                    RegionEntry regionEntry = RegionManager.Instance.regions[j];
-                    Debug.Log("Region name is: " + regionEntry.regionName + ". This has associated nodes:");
+                    Debug.Log("Nodes of " + regionEntry.regionName + ":");
                     foreach (Vector3 vector in regionEntry.associatedNodes)
                     {
                         Debug.Log(vector);
-                    }
-                }
-            }
-
-            private static void RegionPreviewTest(string regionName, int yLock = -1)
-            {
-                for (int j = 0; j < RegionManager.Instance.regions.Count; j++)
-                {
-                    RegionEntry regionEntry = RegionManager.Instance.regions[j];
-                    if (regionEntry.regionName.Equals("Inaccessible"))
-                    {
-                        RegionEntry holdCover = RegionManager.Instance.regions[RegionManager.Instance.StringToRegionIndex(regionName)];
-                        for (int i = 0; i < regionEntry.associatedNodes.Count; i++)
-                        {
-                            Vector3 vector = regionEntry.associatedNodes[i];
-                            bool editVector = false;
-                            if (yLock != -1)
-                            {
-                                if (vector.y == yLock)
-                                {
-                                    editVector = true;
-                                }
-                            }
-                            else
-                            {
-                                editVector = true;
-                            }
-
-                            if (editVector)
-                            {
-                                holdCover.associatedNodes.Add(vector);
-                                regionEntry.associatedNodes.Remove(vector);
-                                if (!RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID.Contains(holdCover.regionID))
-                                {
-                                    //RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Add(regionID);
-                                    RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID[0] = holdCover.regionID;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            private static void RegionAddTest(string regionKeyWord, string regionName)
-            {
-                for (int j = 0; j < RegionManager.Instance.regions.Count; j++)
-                {
-                    RegionEntry regionEntry = RegionManager.Instance.regions[j];
-                    if (regionEntry.regionName.Contains(regionKeyWord) && !regionEntry.regionName.Equals(regionName))
-                    {
-                        RegionEntry holdCover = RegionManager.Instance.regions[RegionManager.Instance.StringToRegionIndex(regionName)];
-                        for (int i = 0; i < regionEntry.associatedNodes.Count; i++)
-                        {
-                            Vector3 vector = regionEntry.associatedNodes[i];
-                            holdCover.associatedNodes.Add(vector);
-                            if (!RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID.Contains(holdCover.regionID))
-                            {
-                                RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID.Add(holdCover.regionID);
-                            }
-                        }
-                    }
-                }
-            }
-
-            private static void RegionIDAddTest(string regionKeyWord, string regionName)
-            {
-                for (int j = 0; j < RegionManager.Instance.regions.Count; j++)
-                {
-                    RegionEntry regionEntry = RegionManager.Instance.regions[j];
-                    if (regionEntry.regionName.Contains(regionKeyWord) && !regionEntry.regionName.Equals(regionName))
-                    {
-                        RegionEntry holdCover = RegionManager.Instance.regions[RegionManager.Instance.StringToRegionIndex(regionName)];
-                        for (int i = 0; i < regionEntry.associatedNodes.Count; i++)
-                        {
-                            Vector3 vector = regionEntry.associatedNodes[i];
-                            //holdCover.associatedNodes.Add(vector);
-                            if (!RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID.Contains(holdCover.regionID))
-                            {
-                                RegionManager.Instance.regionData[(int)vector.x].regionDataY[(int)vector.y].regionDataZ[(int)vector.z].regionID.Add(holdCover.regionID);
-                            }
-                        }
                     }
                 }
             }
@@ -4167,9 +3875,6 @@ namespace MonstrumExtendedSettingsMod
                 //CopyRegionOverYUsingReferenceNode(24, 4, 2, 24, 35, 4, 7, 2, 13);
                 CopyRegionOverYUsingReferenceNode(24, 4, 2, 27, 35, 5, 5, 3, 12);
                 //CopyRegionOverYUsingReferenceNode(23, 4, 2, 36, 36, 6, 6, 4, 11);
-                //RegionAddTest("Tower", "Cargo_Catwalks");
-                //RegionAddTest("Tower", "Cargo_MainHold");
-                //RegionIDAddTest("Tower", "Cargo_Catwalks");
 
                 // Edit SpawnCargoContainersLG (Currently edited in dnSpy)
 
@@ -4180,11 +3885,6 @@ namespace MonstrumExtendedSettingsMod
 
             private static void LevelGenerationChanges()
             {
-                //RegionPreviewTest("Deck_HoldCover");
-                //RegionPreviewTest("Deck_CargoBowStairs", 5);
-                //RegionPreviewTest("Deck_CargoBowStairs", 4);
-                //RegionAddTest("Cargo", "Engines_Stairs");
-
                 //HelicopterCargoExtension();
 
                 Settings.stairsPerLevel = 4; // Reset stairs per level as the count is kept across multiple rounds.
@@ -4201,7 +3901,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     // The section below tries to let deck 4 of the lower deck side be used like deck 3.
                     CopyRegionOverY(49, (int)Settings.ShipCubesCount.x - 1, 3, 4, 0, (int)Settings.ShipCubesCount.z - 1);
-                    IncreaseRoomCounts(false, PrimaryRegionType.LowerDeck, 4, 6);
+                    ChangeRoomCounts(4, 6, PrimaryRegionType.LowerDeck);
                 }
 
                 if (ModSettings.extendLowerDecks)
@@ -4213,7 +3913,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                     SetRegionInRange("Lower Deck", 49, (int)Settings.ShipCubesCount.x - 1, 1, maxY, 1, 14); // This has a similar effect to the extend map one, but only affects the lower decks on the submersible side and has much faster loading times.
                     SetRegionInRange("Lower Deck", 16, 20, 3, 3, 1, 14); // Deck 3 Region Definition
-                    IncreaseRoomCounts(false, PrimaryRegionType.LowerDeck, 2, 3);
+                    ChangeRoomCounts(2, 3, PrimaryRegionType.LowerDeck);
                 }
 
                 if (ModSettings.numberOfCorridorsToCargoHoldFromDeckThree > 0)
@@ -4341,7 +4041,7 @@ namespace MonstrumExtendedSettingsMod
                         CopyRegionOverYUsingReferenceNode(9, 0, 7, 12, 13, 0, 0, 6, 8);
                     }
 
-                    IncreaseRoomCounts(false, PrimaryRegionType.LowerDeck, 6, 8);
+                    ChangeRoomCounts(6, 8, PrimaryRegionType.LowerDeck);
                 }
 
                 if (ModSettings.addDeckZero)
@@ -4426,7 +4126,7 @@ namespace MonstrumExtendedSettingsMod
                     customBottomStairLevelList.Add(bottomStairLevelDeckZero);
                     Settings.stairsPerLevel++;
 
-                    IncreaseRoomCounts(false, PrimaryRegionType.LowerDeck, 10, 15);
+                    ChangeRoomCounts(10, 15, PrimaryRegionType.LowerDeck);
                 }
 
                 if (ModSettings.addAdditionalCrewDeckBuilding)
@@ -4609,8 +4309,8 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
 
-                    IncreaseRoomCounts(false, PrimaryRegionType.CrewDeck, 4, 6);
-                    IncreaseRoomCounts(false, PrimaryRegionType.UpperDeck, 2, 3);
+                    ChangeRoomCounts(4, 6, PrimaryRegionType.CrewDeck);
+                    ChangeRoomCounts(2, 3, PrimaryRegionType.UpperDeck);
 
                     // CopyRegionOverYUsingReferenceNode(23, 4, 2, 23, 23, 5, 5, 2, 2); // Cargo Hold Ceiling Cover Test
                 }
@@ -4754,34 +4454,41 @@ namespace MonstrumExtendedSettingsMod
 
                 if (ModSettings.increaseRoomMinimumCount != 0 || ModSettings.increaseRoomMaximumCount != 0)
                 {
-                    if (ModSettings.includeUniqueRoomsInCountChange)
-                    {
-                        IncreaseRoomCounts(true);
-                    }
-                    else
-                    {
-                        IncreaseRoomCounts(false);
-                    }
+                    ChangeRoomCounts(ModSettings.increaseRoomMinimumCount, ModSettings.increaseRoomMaximumCount, includeUniqueRooms: ModSettings.includeUniqueRoomsInCountChange);
                 }
 
-                if (ModSettings.extendMapAdditive)
+                if (ModSettings.extendMap || ModSettings.extendMapAdditive)
                 {
-                    Debug.Log("Starting additive map extension.");
-                    foreach (string convertibleRegion in convertibleRegions)
-                    {
-                        ExtendMapAdditively(coreRegions, convertibleRegion);
-                    }
-                    Debug.Log("Additive map extension completed.");
-                }
-                else if (ModSettings.extendMap)
-                {
-                    Debug.Log("Starting map extension.");
-                    foreach (string convertibleRegion in convertibleRegions)
-                    {
-                        // Add all inaccessible nodes to the core regions at their respective y levels.
-                        ExtendSpecificRegion(coreRegions, convertibleRegion);
-                    }
-                    Debug.Log("Map extension completed.");
+                    // Get references to all the regions.
+                    var regionManager = RegionManager.Instance;
+                    var regions = regionManager.regions;
+                    var upperDeck = regions[regionManager.StringToRegionIndex("Upper Deck")];
+                    var crewDeck = regions[regionManager.StringToRegionIndex("Crew Deck")];
+                    var lowerDeck = regions[regionManager.StringToRegionIndex("Lower Deck")];
+                    var inaccessible = regions[regionManager.StringToRegionIndex("Inaccessible")];
+
+                    // Log changes.                
+                    string mode = ModSettings.extendMapAdditive ? "additive " : "";
+                    Debug.Log($"Starting {mode}map extension.");
+
+                    // Use an inline function to avoid repeating code. Use replace mode when not extending additively.
+                    bool replace = !ModSettings.extendMapAdditive;
+                    void GrowRegionUsingInaccessible(RegionEntry source, int start, int end)
+                        => GrowRegionUsingRefRegion(source, inaccessible, replace, replace ? start : -1, replace ? end : -1);
+
+                    // Grow each of the core regions using the inaccessible region.
+                    GrowRegionUsingInaccessible(upperDeck, 7, 8);
+                    GrowRegionUsingInaccessible(crewDeck, 5, 6);
+                    GrowRegionUsingInaccessible(lowerDeck, ModSettings.addDeckZero ? 0 : 1, 4);
+
+                    // DOES NOT SEEM TO ACTUALLY BE REQUIRED.
+                    // If not replacing ref nodes while copying, clean up inaccessible nodes at the end instead.
+                    // if (!replace)
+                    // {
+                    //     CleanUpInaccessibleNodes();
+                    // }
+
+                    Debug.Log($"Finished {mode}map extension.");
                 }
 
                 if (ModSettings.shuffledRegions)
@@ -4791,8 +4498,6 @@ namespace MonstrumExtendedSettingsMod
                     Debug.Log("Region shuffle completed.");
                 }
 
-                //IncreaseStairHeight();
-
                 // # Temporary Test Level Generation Changes
                 //CopyRegionOverYUsingReferenceNode(0, 3, 3, 10, 13, 2, 2, 7, 9); // Mini engine room extension attempt
                 //CopyRegionOverYUsingReferenceNode(new Vector3(0, 3, 3), new Vector3(10, 2, 3), new Vector3(21, 2, 13)); // Bigger engine room extension attempt
@@ -4800,7 +4505,12 @@ namespace MonstrumExtendedSettingsMod
                 //CopyRegionOverYUsingReferenceNode(new Vector3(0, 3, 3), new Vector3(11, 2, 3), new Vector3(53, 2, 13)); // Replacing cargo hold with engine room
             }
 
-            private static void ShuffleRegions(string[] coreRegions)
+            /// <summary>
+            /// Shuffles either a list of regions provided or all regions if using crazy shuffle.
+            /// Supports shuffled regions and crazy shuffle.
+            /// </summary>
+            /// <param name="regionsToShuffle">An array of region names specifying the regions to shuffle.</param>
+            private static void ShuffleRegions(string[] regionsToShuffle)
             {
                 // Create a list of permitted region IDs.
                 List<int> allowedRegionIDs = new List<int>();
@@ -4808,7 +4518,7 @@ namespace MonstrumExtendedSettingsMod
                 // Add all core regions to the allowed regions list. If crazy shuffle mode is on, add all regions to the allowed regions list.
                 if (!ModSettings.crazyShuffle)
                 {
-                    foreach (string regionName in coreRegions)
+                    foreach (string regionName in regionsToShuffle)
                     {
                         allowedRegionIDs.Add(RegionManager.Instance.StringToRegionID(regionName));
                     }
@@ -4821,20 +4531,17 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                // Create an array of region IDs to choose from.
-                int[] regionIDs = allowedRegionIDs.ToArray();
-
                 for (int swapCount = 0; swapCount < ModSettings.numberOfTimesToShuffleRegions; swapCount++)
                 {
-                    // Choose two region indices between 0 and the number of regions IDs in the array minus 1.
-                    int regionIndex1 = UnityEngine.Random.Range(0, regionIDs.Length);
-                    int regionIndex2 = UnityEngine.Random.Range(0, regionIDs.Length);
+                    // Choose two region indices between 0 and the number of regions IDs in the list minus 1.
+                    int regionIndex1 = UnityEngine.Random.Range(0, allowedRegionIDs.Count);
+                    int regionIndex2 = UnityEngine.Random.Range(0, allowedRegionIDs.Count);
 
-                    // Get the IDs from the region ID array.
-                    int regionID1 = regionIDs[regionIndex1];
-                    int regionID2 = regionIDs[regionIndex2];
+                    // Get the IDs from the region ID list.
+                    int regionID1 = allowedRegionIDs[regionIndex1];
+                    int regionID2 = allowedRegionIDs[regionIndex2];
 
-                    // Get the indeces used by the region manager from the IDs.
+                    // Get the indices used by the region manager from the IDs.
                     int regionManagerRegionIndex1 = RegionManager.Instance.IDToIndex(regionID1);
                     int regionManagerRegionIndex2 = RegionManager.Instance.IDToIndex(regionID2);
 
@@ -4850,6 +4557,11 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Swaps the associated nodes of two regions, making sure to keep region IDs consistent with the swap.
+            /// </summary>
+            /// <param name="regionIndex1">The index of the first region to swap.</param>
+            /// <param name="regionIndex2">The index of the second region to swap.</param>
             private static void SwapRegions(int regionIndex1, int regionIndex2)
             {
                 // First, swap the vectors of associated nodes of the two regions.
@@ -4864,98 +4576,14 @@ namespace MonstrumExtendedSettingsMod
                 Debug.Log("Swapped regions: " + RegionManager.Instance.regions[regionIndex1].regionName + " & " + RegionManager.Instance.regions[regionIndex2].regionName);
             }
 
-            private static void ConvertRegion(string increasingRegion, string convertingRegion, bool heightDependence = false, bool removePointsFromConvertingRegion = true)
-            {
-                int increasingRegionIndex = RegionManager.Instance.StringToRegionIndex(increasingRegion);
-                int convertingRegionIndex = RegionManager.Instance.StringToRegionIndex(convertingRegion);
-
-                if (!heightDependence)
-                {
-                    RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.AddRange(RegionManager.Instance.regions[convertingRegionIndex].associatedNodes);
-                    ConvertRegionID(increasingRegionIndex, convertingRegionIndex);
-                }
-                else
-                {
-                    // First, get the minimum and maximum y values of the region.
-                    float minY = RegionManager.Instance.regions[increasingRegionIndex].associatedNodes[0].y;
-                    float maxY = minY;
-
-                    for (int i = 1; i < RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Count; i++)
-                    {
-                        if (RegionManager.Instance.regions[increasingRegionIndex].associatedNodes[i].y < minY)
-                        {
-                            minY = RegionManager.Instance.regions[increasingRegionIndex].associatedNodes[i].y;
-                        }
-                        else if (RegionManager.Instance.regions[increasingRegionIndex].associatedNodes[i].y > minY)
-                        {
-                            maxY = RegionManager.Instance.regions[increasingRegionIndex].associatedNodes[i].y;
-                        }
-                    }
-
-                    if (RegionManager.Instance.regions[increasingRegionIndex].regionName.Equals("Upper Deck"))
-                    {
-                        maxY = Settings.ShipCubesCount.y;
-                    }
-                    else if (RegionManager.Instance.regions[increasingRegionIndex].regionName.Equals("Lower Deck"))
-                    {
-                        minY = 0;
-                    }
-
-                    // If the node in the converting region is at the right y level, add it to the increasing region.
-                    foreach (Vector3 node in RegionManager.Instance.regions[convertingRegionIndex].associatedNodes)
-                    {
-                        if (node.y >= minY && node.y <= maxY)
-                        {
-                            RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Add(node);
-                        }
-                    }
-
-                    ConvertRegionID(increasingRegionIndex, convertingRegionIndex, (int)minY, (int)maxY);
-                }
-
-                if (removePointsFromConvertingRegion)
-                {
-                    RegionManager.Instance.regions[convertingRegionIndex].associatedNodes.Clear();
-                }
-            }
-
-            private static void ExtendMapAdditively(string[] coreRegions, string convertingRegion)
-            {
-                int[] increasingRegionIndices = new int[coreRegions.Length];
-                for (int regionIndex = 0; regionIndex < coreRegions.Length; regionIndex++)
-                {
-                    increasingRegionIndices[regionIndex] = RegionManager.Instance.StringToRegionIndex(coreRegions[regionIndex]);
-                }
-
-                int convertingRegionIndex = RegionManager.Instance.StringToRegionIndex(convertingRegion);
-
-                for (int regionIndex = 0; regionIndex < coreRegions.Length; regionIndex++)
-                {
-                    RegionManager.Instance.regions[increasingRegionIndices[regionIndex]].associatedNodes.AddRange(RegionManager.Instance.regions[convertingRegionIndex].associatedNodes);
-                    AddRegionIDToNewAssociatedNodes(increasingRegionIndices[regionIndex], convertingRegionIndex);
-                    Debug.Log("Added all " + RegionManager.Instance.regions[convertingRegionIndex].regionName + " nodes to the " + RegionManager.Instance.regions[increasingRegionIndices[regionIndex]].regionName + " region.");
-                }
-
-                RegionManager.Instance.regions[convertingRegionIndex].associatedNodes.Clear();
-            }
-
-            private static void ExtendSpecificRegion(string[] coreRegions, string convertingRegion)
-            {
-                for (int increasingRegionIndex = 0; increasingRegionIndex < coreRegions.Length; increasingRegionIndex++)
-                {
-                    if (increasingRegionIndex != coreRegions.Length - 1)
-                    {
-                        ConvertRegion(coreRegions[increasingRegionIndex], convertingRegion, true, false);
-                    }
-                    else
-                    {
-                        ConvertRegion(coreRegions[increasingRegionIndex], convertingRegion, true, true);
-                    }
-                    Debug.Log("Extended the " + coreRegions[increasingRegionIndex] + " region using the " + convertingRegion + " region.");
-                }
-            }
-
-            private static void ConvertRegionID(int increasingRegionIndex, int convertingRegionIndex, int minY = 0, int maxY = 0)
+            /// <summary>
+            /// Ensures a growing region's associated nodes include the region's ID and replaces the first ID reference to a shrinking region on those nodes.
+            /// </summary>
+            /// <param name="growingRegionIndex">The index of the region to grow.</param>
+            /// <param name="shrinkingRegionIndex">The index of the region to shrink.</param>
+            /// <param name="minY">The minimum y coordinate to convert across or 0 if converting all y levels.</param>
+            /// <param name="maxY">The maximum y coordinate to convert across or 0 if converting all y levels.</param>
+            private static void ConvertRegionID(int growingRegionIndex, int shrinkingRegionIndex, int minY = 0, int maxY = 0)
             {
                 if (maxY == 0)
                 {
@@ -4967,7 +4595,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         for (int z = 0; z < Settings.ShipCubesCount.z; z++)
                         {
-                            for (int regionIDFromArrayIndex = 0; regionIDFromArrayIndex < RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Count; regionIDFromArrayIndex++)
+                            if (RegionManager.Instance.regions[growingRegionIndex].associatedNodes.Contains(new Vector3(x, y, z)))
                             {
                                 /*
                                 A point in space can be associated with multiple regions.
@@ -4978,42 +4606,26 @@ namespace MonstrumExtendedSettingsMod
                                 This means that the point will be contained in the Upper Deck's associated nodes as we swapped the nodes earlier, but will have the Lower Deck region ID.
                                 This means we can replace the ID where the Lower Deck's region ID was stored before with the Upper Deck region ID.
                                 After this operation, the point will be associated with the Engine region and the Upper Deck region, which will allow it to pass the ID consistency check in PositionRoomLG.RoomCollision.
+
+                                Simplified: Replace the ID of the original region with the ID of the new region or just add the new region ID if the original was not found.
                                 */
-                                if (RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Contains(new Vector3((float)x, (float)y, (float)z)) && RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID[regionIDFromArrayIndex] == RegionManager.Instance.regions[convertingRegionIndex].regionID)
+
+                                // Get the node / point to convert and the IDs of the regions to shrink and grow.
+                                var node = RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z];
+                                var shrinkingRegionID = RegionManager.Instance.regions[shrinkingRegionIndex].regionID;
+                                var growingRegionID = RegionManager.Instance.regions[growingRegionIndex].regionID;
+
+                                // Try to replace the first occurrence of the shrinking region ID with the growing region ID.
+                                int index = node.regionID.IndexOf(shrinkingRegionID);
+                                if (index != -1)
                                 {
-                                    RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID[regionIDFromArrayIndex] = RegionManager.Instance.regions[increasingRegionIndex].regionID;
+                                    // Replace the first occurrence with the growing region ID
+                                    node.regionID[index] = growingRegionID;
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-
-            private static void AddRegionIDToNewAssociatedNodes(int increasingRegionIndex, int convertingRegionIndex)
-            {
-                int increasingRegionID = RegionManager.Instance.regions[increasingRegionIndex].regionID;
-                for (int x = 0; x < Settings.ShipCubesCount.x; x++)
-                {
-                    for (int y = 0; y < Settings.shipCubesCount.y; y++)
-                    {
-                        for (int z = 0; z < Settings.ShipCubesCount.z; z++)
-                        {
-                            if (RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Contains(new Vector3((float)x, (float)y, (float)z)))
-                            {
-                                bool containsRegionAlready = false;
-
-                                for (int regionIDFromArrayIndex = 0; regionIDFromArrayIndex < RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Count; regionIDFromArrayIndex++)
+                                // Ensure the growing region ID is added even if the shrinking region ID was not found.
+                                else if (!node.regionID.Contains(growingRegionID))
                                 {
-                                    if (RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID[regionIDFromArrayIndex] == increasingRegionID)
-                                    {
-                                        containsRegionAlready = true;
-                                        break;
-                                    }
-                                }
-
-                                if (!containsRegionAlready)
-                                {
-                                    RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Add(increasingRegionID);
+                                    node.regionID.Add(growingRegionID);
                                 }
                             }
                         }
@@ -5023,36 +4635,25 @@ namespace MonstrumExtendedSettingsMod
 
             // # Giving monster some kind of radar for the monster player would help balance. Could also indicate camera positions when triggered. Items are shown to monster even when player is hiding. Only in lockers? Can't use interactable like crane when first player is crouched and hiding. Other player still lerps on some occasions. Maybe only first lerp of a kind. Add tip to screen when player is downed. Player cameras / body positions are still not always properly reset after a player has been revived. Monster light of Hunter is still a problem (Only when monster is number 1...???!!!!).
 
-            private static void IncreaseRoomCounts(bool changeSingleRooms = false, PrimaryRegionType specificRegion = PrimaryRegionType.None, int specificMinimum = 0, int specificMaximum = 0)
+            /// <summary>
+            /// Changes the minimum and maximum counts of rooms.
+            /// </summary>
+            /// <param name="minChange">The change in minimum number of rooms to use.</param>
+            /// <param name="maxChange">The change in maximum number of rooms to use.</param>
+            /// <param name="specificRegion">Which specific region to change room counts of or all regions if unspecified.</param>
+            /// <param name="includeUniqueRooms">Whether to change the count of rooms with a spawn count of 1.</param>
+            private static void ChangeRoomCounts(int minChange, int maxChange, PrimaryRegionType specificRegion = PrimaryRegionType.None, bool includeUniqueRooms = false)
             {
+                // Rooms with counts that should not be changed.
                 string[] specialRooms = { "Bridge_v1", "Upd_FuseRoom_CrewDeck", "Escape_SubRoom", "Lwd_FuseRoom", "EscapeRoom_Helicopter", "Deck_BowRoom", "Deck_CargoWalkwayTower", "Deck_Stern" };
-                int minToUse = ModSettings.increaseRoomMinimumCount;
-                int maxToUse = ModSettings.increaseRoomMaximumCount;
-                if (specificMinimum != 0)
-                {
-                    minToUse = specificMinimum;
-                }
-                if (specificMaximum != 0)
-                {
-                    maxToUse = specificMaximum;
-                }
 
                 foreach (Room room in LevelGeneration.Instance.roomPrefabs)
                 {
                     //Debug.Log("Found roomPrefab. Its name is " + room.name + ". Its minRoomCount is " + room.MinRoomCount + " and its maxRoomCount is " + room.MaxRoomCount + ". ceaseSpawning = " + room.ceaseSpawning + ".");
-                    if ((specificRegion == PrimaryRegionType.None || specificRegion == room.PrimaryRegion) && (changeSingleRooms || room.roomAmountMax > 1) && !specialRooms.Contains(room.name))
+                    if ((specificRegion == PrimaryRegionType.None || specificRegion == room.PrimaryRegion) && (includeUniqueRooms || room.roomAmountMax > 1) && !specialRooms.Contains(room.name))
                     {
-                        room.roomAmountMin += minToUse;
-                        room.roomAmountMax += maxToUse;
-
-                        if (room.roomAmountMin < 1)
-                        {
-                            room.roomAmountMin = 1;
-                        }
-                        if (room.roomAmountMax < 1)
-                        {
-                            room.roomAmountMax = 1;
-                        }
+                        room.roomAmountMin = Mathf.Max(1, room.roomAmountMin + minChange);
+                        room.roomAmountMax = Mathf.Max(1, room.roomAmountMax + maxChange);
 
                         foreach (ModelData modelData in room.roomModels)
                         {
@@ -5061,100 +4662,32 @@ namespace MonstrumExtendedSettingsMod
                                 ModelSpawnCountData modelSpawnCountData = modelData.model.GetComponent<ModelSpawnCountData>();
                                 if (modelSpawnCountData != null)
                                 {
-                                    modelSpawnCountData.minCount += minToUse;
-                                    modelSpawnCountData.maxCount += maxToUse;
-                                    if (modelSpawnCountData.minCount < 1)
-                                    {
-                                        modelSpawnCountData.minCount = 1;
-                                    }
-                                    if (modelSpawnCountData.maxCount < 1)
-                                    {
-                                        modelSpawnCountData.maxCount = 1;
-                                    }
+                                    modelSpawnCountData.minCount = Mathf.Max(1, modelSpawnCountData.minCount + minChange);
+                                    modelSpawnCountData.maxCount = Mathf.Max(1, modelSpawnCountData.maxCount + maxChange);
                                 }
-                                else
+                                else if (ModSettings.logDebugText)
                                 {
-                                    if (ModSettings.logDebugText)
-                                    {
-                                        Debug.Log("Room modelSpawnCountData is null!");
-                                    }
+                                    Debug.Log("Room modelSpawnCountData is null!");
                                 }
                             }
-                            else
+                            else if (ModSettings.logDebugText)
                             {
-                                if (ModSettings.logDebugText)
-                                {
-                                    Debug.Log("Room modelData.model is null!");
-                                }
+                                Debug.Log("Room modelData.model is null!");
                             }
                         }
                     }
                 }
             }
 
-            private static void IncreaseStairHeight()
-            {
-                int stairsRegionIndex = RegionManager.Instance.StringToRegionIndex("Stairs");
-                int inaccessibleRegionIndex = RegionManager.Instance.StringToRegionIndex("Inaccessible");
-
-                for (int nodeIndex = 0; nodeIndex < RegionManager.Instance.regions[stairsRegionIndex].associatedNodes.Count; nodeIndex++)
-                {
-                    Vector3 nodeAbove = RegionManager.Instance.regions[stairsRegionIndex].associatedNodes[nodeIndex] + Vector3.up;
-
-                    ConvertNode(nodeAbove, stairsRegionIndex, inaccessibleRegionIndex);
-                }
-            }
-
-            private static void ConvertNode(Vector3 node, int increasingRegionIndex, int convertingRegionIndex)
-            {
-                if (CheckBoundariesLG.NodeWithinShipBounds(node) && !RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Contains(node + Vector3.up))
-                {
-                    int nodeX = (int)node.x;
-                    int nodeY = (int)node.y;
-                    int nodeZ = (int)node.z;
-
-                    RegionManager.Instance.regions[increasingRegionIndex].associatedNodes.Add(node);
-
-                    for (int x = 0; x < Settings.ShipCubesCount.x; x++)
-                    {
-                        for (int y = 0; y < Settings.ShipCubesCount.y; y++)
-                        {
-                            for (int z = 0; z < Settings.ShipCubesCount.z; z++)
-                            {
-                                for (int regionIDFromArrayIndex = 0; regionIDFromArrayIndex < RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Count; regionIDFromArrayIndex++)
-                                {
-                                    if (RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID[regionIDFromArrayIndex] == RegionManager.Instance.regions[convertingRegionIndex].regionID)
-                                    {
-                                        RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID[regionIDFromArrayIndex] = RegionManager.Instance.regions[increasingRegionIndex].regionID;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    /*
-                    for (int stairIndex = 0; stairIndex < LevelGeneration.Instance.stairPrefabs.Count; stairIndex++)
-                    {
-                        if (LevelGeneration.Instance.stairPrefabs[stairIndex].StairsType == StairStructure.Middle)
-                        {
-                            LevelGeneration.Instance.stairPrefabs.Add(LevelGeneration.Instance.stairPrefabs[stairIndex]);
-                            break;
-                        }
-                    }
-                    */
-
-                    /*
-                    foreach (int regionIDFromArrayIndex in RegionManager.Instance.regionData[nodeX].regionDataY[nodeY].regionDataZ[nodeZ].regionID)
-                    {
-                        if (RegionManager.Instance.regionData[nodeX].regionDataY[nodeY].regionDataZ[nodeZ].regionID[regionIDFromArrayIndex] == RegionManager.Instance.regions[convertingRegionIndex].regionID)
-                        {
-                            RegionManager.Instance.regionData[nodeX].regionDataY[nodeY].regionDataZ[nodeZ].regionID[regionIDFromArrayIndex] = RegionManager.Instance.regions[increasingRegionIndex].regionID;
-                        }
-                    }
-                    */
-                }
-            }
-
+            /// <summary>
+            /// Copies region data in an x-z area from one y level to another.
+            /// </summary>
+            /// <param name="minX">The starting x coordinate of the bounds to copy and paste.</param>
+            /// <param name="maxX">The ending x coordinate of the bounds to copy and paste (inclusive).</param>
+            /// <param name="copyY">The y level to copy from.</param>
+            /// <param name="pasteY">The y level to paste to.</param>
+            /// <param name="minZ">The starting z coordinate of the bounds to copy and paste.</param>
+            /// <param name="maxZ">The ending z coordinate of the bounds to copy and paste (inclusive).</param>
             private static void CopyRegionOverY(int minX, int maxX, int copyY, int pasteY, int minZ, int maxZ)
             {
                 Debug.Log("Starting region copy over y.");
@@ -5162,83 +4695,37 @@ namespace MonstrumExtendedSettingsMod
                 {
                     for (int z = minZ; z <= maxZ; z++)
                     {
-                        List<int> copyRegionIDs = RegionManager.Instance.regionData[x].regionDataY[copyY].regionDataZ[z].regionID;
-                        List<int> pasteRegionIDs = RegionManager.Instance.regionData[x].regionDataY[pasteY].regionDataZ[z].regionID;
-
-                        // May be able to use either of the two lines below. Properties are occupied and regionID, so a direct copy is probably better.
-                        RegionManager.Instance.regionData[x].regionDataY[pasteY].regionDataZ[z] = RegionManager.Instance.regionData[x].regionDataY[copyY].regionDataZ[z];
-                        //RegionManager.Instance.regionData[x].regionDataY[pasteY].regionDataZ[z].regionID = RegionManager.Instance.regionData[x].regionDataY[copyY].regionDataZ[z].regionID;
-
-                        Vector3 copyNode = RegionManager.Instance.ConvertPointToRegionNode(Settings.ShipPos + new Vector3(x * Settings.CuboidDim.x, copyY * Settings.CuboidDim.y, z * Settings.CuboidDim.z));
-                        Vector3 pasteNode = RegionManager.Instance.ConvertPointToRegionNode(Settings.ShipPos + new Vector3(x * Settings.CuboidDim.x, pasteY * Settings.CuboidDim.y, z * Settings.CuboidDim.z));
-                        //Debug.Log("Copy node is " + copyNode + " and paste node is " + pasteNode + ".");
-
-                        foreach (int pasteRegionID in pasteRegionIDs)
-                        {
-                            int pasteRegionIndex = RegionManager.Instance.IDToIndex(pasteRegionID);
-                            RegionManager.Instance.regions[pasteRegionIndex].associatedNodes.Remove(pasteNode);
-                        }
-                        foreach (int copyRegionID in copyRegionIDs)
-                        {
-                            int copyRegionIndex = RegionManager.Instance.IDToIndex(copyRegionID);
-                            if (!RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Contains(pasteNode))
-                            {
-                                RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Add(pasteNode);
-                            }
-                        }
-
-                        /*
-                        for (int i = 0; i < RegionManager.Instance.regions.Count; i++)
-                        {
-                            if (RegionManager.Instance.regions[i].associatedNodes.Contains(pasteNode))
-                            {
-                                //Debug.Log(RegionManager.Instance.regions[i].regionName + " contains node " + pasteNode + ". Removing it.");
-                                RegionManager.Instance.regions[i].associatedNodes.Remove(pasteNode);
-                                break;
-                            }
-                        }
-
-                        for (int i = 0; i < RegionManager.Instance.regions.Count; i++)
-                        {
-                            if (RegionManager.Instance.regions[i].associatedNodes.Contains(copyNode))
-                            {
-                                //Debug.Log(RegionManager.Instance.regions[i].regionName + " contains node " + copyNode + ". Adding " + pasteNode + ".");
-                                RegionManager.Instance.regions[i].associatedNodes.Add(pasteNode);
-                                break;
-                            }
-                        }
-                        */
+                        RegionNodeDataZ copyRegionData = RegionManager.Instance.regionData[x].regionDataY[copyY].regionDataZ[z];
+                        CopyAndPasteNode(copyRegionData, x, pasteY, z);
                     }
                 }
-
-                /*
-                foreach (RegionEntry regionEntry in RegionManager.Instance.regions)
-                {
-                    Debug.Log("Nodes of " + regionEntry.regionName + ":");
-                    foreach (Vector3 vector in regionEntry.associatedNodes)
-                    {
-                        Debug.Log(vector);
-                    }
-                }
-                */
             }
 
-            private static void CopyRegionOverYUsingReferenceNode(Vector3 copyVector, Vector3 rangeStartVector, Vector3 rangeEndVector)
-            {
-                CopyRegionOverYUsingReferenceNode((int)copyVector.x, (int)copyVector.y, (int)copyVector.z, (int)rangeStartVector.x, (int)rangeEndVector.x, (int)rangeStartVector.y, (int)rangeEndVector.y, (int)rangeStartVector.z, (int)rangeEndVector.z);
-            }
-
+            /// <summary>
+            /// Copies the region data and region IDs of a reference node onto all nodes in specified bounds.
+            /// </summary>
+            /// <param name="copyX">The x coordinate of the node to copy.</param>
+            /// <param name="copyY">The y coordinate of the node to copy.</param>
+            /// <param name="copyZ">The z coordinate of the node to copy.</param>
+            /// <param name="minX">The starting x coordinate of the bounds to paste into.</param>
+            /// <param name="maxX">The ending x coordinate of the bounds to paste into (inclusive).</param>
+            /// <param name="minY">The starting y coordinate of the bounds to paste into.</param>
+            /// <param name="maxY">The ending y coordinate of the bounds to paste into (inclusive).</param>
+            /// <param name="minZ">The starting z coordinate of the bounds to paste into.</param>
+            /// <param name="maxZ">The ending z coordinate of the bounds to paste into (inclusive).</param>
             private static void CopyRegionOverYUsingReferenceNode(int copyX, int copyY, int copyZ, int minX, int maxX, int minY, int maxY, int minZ, int maxZ)
             {
+                // Check whether the reference / copy node is within ship bounds.
                 if (!CheckBoundariesLG.NodeWithinShipBounds(new Vector3(copyX, copyY, copyZ)))
                 {
                     Debug.Log("Copy node " + new Vector3(copyX, copyY, copyZ) + " is not in ship bounds!");
                     return;
                 }
-                RegionNodeDataZ copyRegionData = RegionManager.Instance.regionData[copyX].regionDataY[copyY].regionDataZ[copyZ];
-                List<int> copyRegionIDs = copyRegionData.regionID;
-                Vector3 copyNode = RegionManager.Instance.ConvertPointToRegionNode(Settings.ShipPos + new Vector3(copyX * Settings.CuboidDim.x, copyY * Settings.CuboidDim.y, copyZ * Settings.CuboidDim.z));
 
+                // Get the region data and region IDs of the reference / copy node.
+                RegionNodeDataZ copyRegionData = RegionManager.Instance.regionData[copyX].regionDataY[copyY].regionDataZ[copyZ];
+
+                // Copy across the 3D bounds specified.
                 Debug.Log("Starting region copy over y using reference node.");
                 for (int x = minX; x <= maxX; x++)
                 {
@@ -5246,47 +4733,134 @@ namespace MonstrumExtendedSettingsMod
                     {
                         for (int z = minZ; z <= maxZ; z++)
                         {
-                            if (CheckBoundariesLG.NodeWithinShipBounds(new Vector3(x, y, z)))
-                            {
-                                List<int> pasteRegionIDs = RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID;
-
-                                RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z] = copyRegionData;
-                                Vector3 pasteNode = RegionManager.Instance.ConvertPointToRegionNode(Settings.ShipPos + new Vector3(x * Settings.CuboidDim.x, y * Settings.CuboidDim.y, z * Settings.CuboidDim.z));
-
-                                foreach (int pasteRegionID in pasteRegionIDs)
-                                {
-                                    int pasteRegionIndex = RegionManager.Instance.IDToIndex(pasteRegionID);
-                                    RegionManager.Instance.regions[pasteRegionIndex].associatedNodes.Remove(pasteNode);
-                                }
-                                foreach (int copyRegionID in copyRegionIDs)
-                                {
-                                    int copyRegionIndex = RegionManager.Instance.IDToIndex(copyRegionID);
-                                    if (!RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Contains(pasteNode))
-                                    {
-                                        RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Add(pasteNode);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Debug.Log("Paste node " + new Vector3(x, y, z) + " is not in ship bounds!");
-                            }
+                            CopyAndPasteNode(copyRegionData, x, y, z);
                         }
                     }
                 }
-
-                /*
-                foreach (RegionEntry regionEntry in RegionManager.Instance.regions)
-                {
-                    Debug.Log("Nodes of " + regionEntry.regionName + ":");
-                    foreach (Vector3 vector in regionEntry.associatedNodes)
-                    {
-                        Debug.Log(vector);
-                    }
-                }
-                */
             }
 
+            /// <summary>
+            /// Copies region data into a given node, updating associated nodes.
+            /// </summary>
+            /// <param name="copyRegionData">The region data to copy into the given node.</param>
+            /// <param name="x">The x coordinate of the given node.</param>
+            /// <param name="y">The y coordinate of the given node.</param>
+            /// <param name="z">The z coordinate of the given node.</param>
+            private static void CopyAndPasteNode(RegionNodeDataZ copyRegionData, int x, int y, int z)
+            {
+                // Only paste to nodes within the ship bounds.
+                Vector3 pasteNode = new Vector3(x, y, z);
+                if (!CheckBoundariesLG.NodeWithinShipBounds(pasteNode))
+                {
+                    Debug.Log($"Paste node {pasteNode} is not in ship bounds!");
+                    return;
+                }
+
+                // Remove the paste node from all its associated regions.
+                RegionNodeDataZ regionData = RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z];
+                foreach (int pasteRegionID in regionData.regionID)
+                {
+                    int pasteRegionIndex = RegionManager.Instance.IDToIndex(pasteRegionID);
+                    RegionManager.Instance.regions[pasteRegionIndex].associatedNodes.Remove(pasteNode);
+                }
+
+                // Add the paste node to all the associated regions of the copy node.
+                foreach (int copyRegionID in copyRegionData.regionID)
+                {
+                    int copyRegionIndex = RegionManager.Instance.IDToIndex(copyRegionID);
+                    if (!RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Contains(pasteNode))
+                    {
+                        RegionManager.Instance.regions[copyRegionIndex].associatedNodes.Add(pasteNode);
+                    }
+                }
+
+                // Copy the region data of the copy node to the paste node.
+                regionData.regionID = copyRegionData.regionID.ToList();
+                regionData.occupied = copyRegionData.occupied;
+            }
+
+            /// <summary>
+            /// Copies region data from one region to another.
+            /// </summary>
+            /// <param name="sourceRegion">The region to add nodes to and copy the ID of.</param>
+            /// <param name="refRegion">The region to copy nodes from and optionally replace.</param>
+            /// <param name="replace">Whether to replace the ref region with the source region.</param>
+            /// <param name="minY">The minimum y bound to copy across or -1 if there is none.</param>
+            /// <param name="maxY">The maximum y bound to copy across (inclusive) or -1 if there is none.</param>
+            private static void GrowRegionUsingRefRegion(RegionEntry growRegion, RegionEntry refRegion, bool replace = false, int minY = -1, int maxY = -1)
+            {
+                var refNodes = refRegion.associatedNodes;
+                for (int i = refNodes.Count - 1; i >= 0; i--)
+                {
+                    // Process the node if it is within the desired y bounds.
+                    var node = refNodes[i];
+                    if ((node.y >= minY || minY == -1) && (node.y <= maxY || maxY == -1))
+                    {
+                        // Add the node if the grow region does not already contain it.
+                        if (!growRegion.associatedNodes.Contains(node))
+                        {
+                            growRegion.associatedNodes.Add(node);
+                        }
+
+                        // Also update the region data to include the grow region's ID.
+                        var regionData = RegionManager.Instance.regionData[(int)node.x].regionDataY[(int)node.y].regionDataZ[(int)node.z];
+                        if (!regionData.regionID.Contains(growRegion.regionID))
+                        {
+                            regionData.regionID.Add(growRegion.regionID);
+                        }
+
+                        // REMOVING INACCESSIBLE IDS FROM REGION DATA SEEMS TO STOP THE STARTING ROOMS / LIFE RAFT FROM SPAWNING IN.
+                        // If replacing the ref region, remove the ref node from the list and remove the region ID from the region data.
+                        // if (replace)
+                        // {
+                        //     refNodes.RemoveAt(i);
+                        //     if (regionData.regionID.Contains(refRegion.regionID))
+                        //     {
+                        //         regionData.regionID.Remove(refRegion.regionID);
+                        //     }
+                        // }
+                    }
+                }
+                Debug.Log("Added all " + refRegion.regionName + " nodes to the " + growRegion.regionName + " region.");
+            }
+
+            /// <summary>
+            /// Removes inaccessibility references from nodes that are actually accessible.
+            /// A node should be accessible if there is another region ID stored for it in the region data.
+            /// </summary>
+            private static void CleanUpInaccessibleNodes()
+            {
+                // Go through each inaccessible node, checking whether the node is actually accessible.
+                var inaccessibleRegion = RegionManager.Instance.regions[RegionManager.Instance.StringToRegionIndex("Inaccessible")];
+                var nodes = inaccessibleRegion.associatedNodes;
+                for (int i = nodes.Count - 1; i >= 0; i--)
+                {
+                    var node = nodes[i];
+                    if (CheckBoundariesLG.NodeWithinShipBounds(node))
+                    {
+                        var regionIDs = RegionManager.Instance.regionData[(int)node.x].regionDataY[(int)node.y].regionDataZ[(int)node.z].regionID;
+                        if (regionIDs.Any(id => id != inaccessibleRegion.regionID))
+                        {
+                            regionIDs.RemoveAll(id => id == inaccessibleRegion.regionID);
+                            nodes.RemoveAt(i);
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Sets the first region of given bounds to a given region.
+            /// Has a similar effect to CopyRegionOverY, but does not work for all use cases.
+            /// Used for extending lower decks, for example.
+            /// </summary>
+            /// <param name="regionString">The region to set the target bounds to.</param>
+            /// <param name="minX">The starting x coordinate of the bounds to set.</param>
+            /// <param name="maxX">The ending x coordinate of the bounds to set (inclusive).</param>
+            /// <param name="minY">The starting y coordinate of the bounds to set.</param>
+            /// <param name="maxY">The ending y coordinate of the bounds to set (inclusive).</param>
+            /// <param name="minZ">The starting z coordinate of the bounds to set.</param>
+            /// <param name="maxZ">The ending z coordinate of the bounds to set (inclusive).</param>
+            /// <param name="useAsOnlyRegion">Whether to remove all other regions.</param>
             private static void SetRegionInRange(string regionString, int minX, int maxX, int minY, int maxY, int minZ, int maxZ, bool useAsOnlyRegion = false)
             {
                 int regionID = RegionManager.Instance.StringToRegionID(regionString);
@@ -5297,8 +4871,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         for (int z = minZ; z <= maxZ; z++)
                         {
-                            Vector3 copyNode = RegionManager.Instance.ConvertPointToRegionNode(Settings.ShipPos + new Vector3(x * Settings.CuboidDim.x, y * Settings.CuboidDim.y, z * Settings.CuboidDim.z));
-
+                            Vector3 copyNode = new Vector3(x, y, z);
                             if (!RegionManager.Instance.regionData[x].regionDataY[y].regionDataZ[z].regionID.Contains(regionID))
                             {
                                 if (useAsOnlyRegion)
@@ -5430,6 +5003,10 @@ namespace MonstrumExtendedSettingsMod
                 On.LightShafts.UpdateLightType += new On.LightShafts.hook_UpdateLightType(HookLightShaftsUpdateLightType);
             }
 
+            /// <summary>
+            /// Conditionally renders Brute's light shafts.
+            /// Do not render if set explicitly or if playing as the Brute.
+            /// </summary>
             private static void HookLightShaftsOnRenderObject(On.LightShafts.orig_OnRenderObject orig, LightShafts lightShafts)
             {
                 if (ModSettings.doNotRenderBruteLight || (ModSettings.enableCrewVSMonsterMode && ModSettings.numbersOfMonsterPlayers.Contains(0) && ManyMonstersMode.monsterListMonsterComponents[0].MonsterType == Monster.MonsterTypeEnum.Brute))
@@ -5439,33 +5016,24 @@ namespace MonstrumExtendedSettingsMod
                 orig.Invoke(lightShafts);
             }
 
+            /// <summary>
+            /// Supports custom Brute light and random Brute light colours.
+            /// </summary>
             private static void HookLightShaftsUpdateLightType(On.LightShafts.orig_UpdateLightType orig, LightShafts lightShafts)
             {
                 if (lightShafts.m_Light == null)
                 {
                     lightShafts.m_Light = ((MonoBehaviour)lightShafts).GetComponent<Light>();
-                    if (ModSettings.UseCustomColour(ModSettings.bruteLightColour) || ModSettings.randomBruteLightColours)
+                    // Check whether to use a custom colour (set or random).
+                    // If a custom colour is set and random colours are enabled, give a chance for each.
+                    var useCustomBruteLightColour = ModSettings.UseCustomColour(ModSettings.bruteLightColour);
+                    if (ModSettings.randomBruteLightColours && (!useCustomBruteLightColour || UnityEngine.Random.value > 0.5f))
                     {
-                        if (ModSettings.UseCustomColour(ModSettings.bruteLightColour) && ModSettings.randomBruteLightColours)
-                        {
-                            float randomChance = UnityEngine.Random.value;
-                            if (randomChance > 0.5f)
-                            {
-                                lightShafts.m_Light.color = ModSettings.ConvertColourStringToColour(ModSettings.bruteLightColour);
-                            }
-                            else
-                            {
-                                lightShafts.m_Light.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                            }
-                        }
-                        else if (ModSettings.UseCustomColour(ModSettings.bruteLightColour))
-                        {
-                            lightShafts.m_Light.color = ModSettings.ConvertColourStringToColour(ModSettings.bruteLightColour);
-                        }
-                        else
-                        {
-                            lightShafts.m_Light.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
-                        }
+                        lightShafts.m_Light.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
+                    }
+                    else if (useCustomBruteLightColour)
+                    {
+                        lightShafts.m_Light.color = ModSettings.ConvertColourStringToColour(ModSettings.bruteLightColour);
                     }
                     lightShafts.m_Light.intensity *= ModSettings.bruteLightIntensityMultiplier;
                     lightShafts.m_Light.range *= ModSettings.bruteLightRangeMultiplier;
@@ -5474,188 +5042,11 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
-            // @LoadingBackground
-
-            private static Hints.HintCollection[] extendedLoadingScreenArray;
-            private static readonly Dictionary<string, string[]> customLoadingScreenMessages = new Dictionary<string, string[]>()
-            {
-                { "AlphaBunks",             new String[]{"The structure of the Hisa Maru was changed a lot throughout construction."}},
-                { "Brute",                  new String[]{"The Brute is a hulk of a monster that will excel in a direct chase."}},
-                { "BrutePresence",          new String[]{"Paying attention to your surroundings can mean the difference between life and death."}},
-                { "Clock",                  new String[]{"A good sense of time can help you to predict a monster's next action."}},
-                { "ColourSettings",         new String[]{"The Colour Settings allow you to customise the appearance of the Hisa Maru."}},
-                { "Container",              new String[]{"The cargo hold contains a large variety of items, but its maze of containers be difficult to navigate safely.", "Some of the cargo carried aboard the Hisa Maru proved difficult to contain..."}},
-                { "DarkShip",               new String[]{"In Dark Ship mode, the Hisa Maru is plunged into darkness.", "Some monsters may benefit more than others from darkness."}},
-                { "DeckZero",               new String[]{"Deck Zero is a dangerous stretch of corridors forming the deepest parts of the ship."} },
-                { "Fiend",                  new String[]{"The Fiend is an intelligent monster with mysterious telekinetic powers."}},
-                { "FiendPresence",          new String[]{"Having a keen ear will let you hear a monster before seeing it."}},
-                { "Helicopter1",            new String[]{"Refueling the helicopter is an elaborate process that is sure to attract the attention of any monsters nearby."}},
-                { "Helicopter2",            new String[]{"The helicopter can be used for fast transportation to land in case of emergencies."}},
-                { "Hunter",                 new String[]{"The Hunter is a gelatinous monster that inspects the ship using its ventilation system."}},
-                { "HunterPresence",         new String[]{"Some things on the ship are best not investigated too closely..."}},
-                { "LevelGenerationSettings",new String[]{"The Level Generation Settings allow you to customise the ship's layout in unusual ways."}},
-                { "Liferaft",               new String[]{"The life raft is often the safest option to escape against any monsters."}},
-                { "LowerDecks",             new String[]{"The lower decks hold a lot of the ship's larger equipment in a maze of workshop rooms."}},
-                { "Map",                    new String[]{"Maps placed on the walls throughout the ship may help you relocate yourself if lost."}},
-                { "MESMSettings",           new String[]{"The Extended Settings Mod offers hundreds of settings to customise your experience."}},
-                { "Monstrum2Documents",     new String[]{"The future answers many questions left unanswered by the past, but opens many others..."}},
-                { "Monstrum2HisaMaru",      new String[]{"The Hisa Maru survived into the 21st century, severely damaged by time.", "The contents of some of the cargo carried aboard the Hisa Maru remained classified.", "While other parts of the ship decayed severely over time, the Hisa Maru's upper decks remained in a relatively good condition."}},
-                { "Monstrum2SeaFort",       new String[]{"Genetic research on the monsters continued into the 21st century aboard a seemingly derelict array of sea forts."}},
-                { "Multiplayer",            new String[]{"The local Multiplayer mode lets you play with friends on your computer. Third party software enables online play."}},
-                { "OverpoweredSteam",       new String[]{"Steam onboard the Hisa Maru can be quite dangerous, especially with additional modifications..."}},
-                { "Sparky",                 new String[]{"Sparky is a monster adept at lurking the player and interfering with the ship's power.", "Sparky was Monstrum's pre-alpha monster, reimagined in the mod with additional abilities."}},
-                { "SparkyEasterEgg1",       new String[]{"Implementing a new monster takes a lot of time and dedication, but opens up the possibility for many new experiences."}},
-                { "SparkyEasterEgg2",       new String[]{"Congratulations! You have stumbled upon the golden Sparky. This is the original model designed for the Monstrum 1 pre-alpha."}},
-                { "SparkyEasterEgg3",       new String[]{"Don't let Sparky catch you in the dark...", "It is unwise to let Sparky drain all the ship's power..." }},
-                { "SparkyPresence",         new String[]{"Sparky can drain the ship's power, requiring a region's electricity to be restored."}},
-                { "SteamShutoff",           new String[]{"The ship's steam can be shut off, but doing so can prove difficult."}},
-                { "Submersible",            new String[]{"The submersible requires uninterrupted time charging, providing monsters unaccounted for an ample opportunity to interfere."}},
-                { "TV",                     new String[]{"Some objects that seem useless at first glance may prove to be more useful than thought."}},
-                { "UpperDecks",             new String[]{"Rooms in the upper decks are filled with smaller items and plenty of hiding spots."}},
-                { "Workstation",            new String[]{"Some items, notes and easter eggs may require a more thorough inspection of the environment to find."}}
-            };
-
-            private static void HookLoadingBackground(On.LoadingBackground.orig_Awake orig, LoadingBackground loadingBackground)
-            {
-                if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Menus" || !ModSettings.skippedMenuScreen)
-                {
-                    Hints.HintCollection randomHint = Hints.GetRandomHint();
-
-                    if (!ModSettings.disableCustomLoadingText)
-                    {
-                        //Debug.Log("Hints length before is: " + Hints.instance.hints.Length);
-
-                        // Create an extended loading screen array of the default loading screens with the custom ones.
-                        if (extendedLoadingScreenArray == null)
-                        {
-                            List<Hints.HintCollection> extendedLoadingScreenList = new List<Hints.HintCollection>(Hints.instance.hints);
-                            UnityEngine.Object[] loadingScreensUnpacked = Utilities.LoadAssetBundle("loadingscreens");
-                            foreach (UnityEngine.Object loadingScreenObject in loadingScreensUnpacked)
-                            {
-                                if (loadingScreenObject.GetType() == typeof(Texture2D))
-                                {
-                                    Texture2D loadingScreenTexture = (Texture2D)loadingScreenObject;
-                                    Sprite loadingScreenSprite = Sprite.Create(loadingScreenTexture, randomHint.texture.rect, randomHint.texture.pivot, randomHint.texture.pixelsPerUnit);
-
-                                    Hints.HintCollection customHint = new Hints.HintCollection();
-                                    customHint.texture = loadingScreenSprite;
-                                    if (customLoadingScreenMessages.ContainsKey(loadingScreenTexture.name))
-                                    {
-                                        customHint.hints = customLoadingScreenMessages[loadingScreenTexture.name];
-                                    }
-                                    else
-                                    {
-                                        Debug.Log("Could not find custom text for hint: " + loadingScreenTexture.name);
-                                        customHint.hints = randomHint.hints;
-                                    }
-
-                                    extendedLoadingScreenList.Add(customHint);
-                                }
-                            }
-                            extendedLoadingScreenArray = extendedLoadingScreenList.ToArray();
-                            Debug.Log("Loaded custom loading screens");
-                            /*
-                            Image image = loadingBackground.GetComponent<Image>();
-                            Debug.Log("Image size:" + image.rectTransform.sizeDelta);
-                            Debug.Log("anchorMin: " + image.rectTransform.anchorMin);
-                            Debug.Log("anchorMax: " + image.rectTransform.anchorMax);
-                            Debug.Log("pivot: " + image.rectTransform.pivot);
-                            Debug.Log("Preserve aspect: " + image.preserveAspect);
-                            Debug.Log("anchoredPosition: " + image.rectTransform.anchoredPosition);
-                            Debug.Log("anchoredPosition3D: " + image.rectTransform.anchoredPosition3D);
-                            CanvasScaler canvasScaler = image.canvas.GetComponent<CanvasScaler>();
-                            Debug.Log("canvasScaler: " + canvasScaler);
-                            Debug.Log("canvasScaler scaleFactor:" + canvasScaler.scaleFactor);
-                            Debug.Log("canvasScaler uiScaleMode:" + canvasScaler.uiScaleMode);
-                            Debug.Log("canvasScaler matchWidthOrHeight:" + canvasScaler.matchWidthOrHeight);
-                            Debug.Log("canvasScaler screenMatchMode:" + canvasScaler.screenMatchMode);
-                            Debug.Log("canvasScaler referenceResolution:" + canvasScaler.referenceResolution);
-                            Debug.Log("canvasScaler referencePixelsPerUnit:" + canvasScaler.referencePixelsPerUnit);
-                            */
-                        }
-
-                        // Choose a hint from the extended array.
-                        Hints.instance.hints = extendedLoadingScreenArray;
-                        randomHint = Hints.GetRandomHint();
-                        if (randomHint.texture.texture.name.Contains("EasterEgg") && UnityEngine.Random.value > 0.02f)
-                        {
-                            for (int tries = 0; tries < 10 && randomHint.texture.texture.name.Contains("EasterEgg"); tries++)
-                            {
-                                randomHint = Hints.GetRandomHint();
-                            }
-                        }
-
-                        //Debug.Log("Hints length after is: " + Hints.instance.hints.Length);
-                    }
-
-                    LoadingBackground.loadingSprite = randomHint.texture;
-                    if (randomHint.hints.Length != 0)
-                    {
-                        LoadingBackground.hintText = randomHint.hints[UnityEngine.Random.Range(0, randomHint.hints.Length)];
-                    }
-                    else
-                    {
-                        LoadingBackground.hintText = Hints.GetRandomGlobalHint();
-                    }
-                }
-
-                SetLoadingText(loadingBackground);
-            }
-
-            private static void SetLoadingText(LoadingBackground loadingBackground, string loadingProgressText = "")
-            {
-                if (!ModSettings.errorDuringLevelGeneration) // Don't update the text if an error has occurred during level generation.
-                {
-                    loadingBackground.text.text = string.Empty;
-
-                    if (LoadingBackground.loadingSprite != null)
-                    {
-                        if (!OculusManager.oculusEnabledOnStart)
-                        {
-                            ((MonoBehaviour)loadingBackground).GetComponent<UnityEngine.UI.Image>().sprite = LoadingBackground.loadingSprite;
-                            loadingBackground.text.text = LoadingBackground.hintText;
-                        }
-                        else
-                        {
-                            ((MonoBehaviour)loadingBackground).GetComponent<UnityEngine.UI.Image>().sprite = loadingBackground.blackSprite;
-                            loadingBackground.text.text = string.Empty;
-                        }
-                    }
-
-                    if (LoadingBackground.loadingSprite != null && !ModSettings.disableCustomLoadingText)
-                    {
-                        if (!ModSettings.errorWhileReadingModSettings)
-                        {
-                            if (ModSettings.currentChallenge == null)
-                            {
-                                loadingBackground.text.text += "\n\nMonstrum Extended Settings Mod Version " + VERSION_WITH_TEXT + " Active";
-                            }
-                            else
-                            {
-                                loadingBackground.text.text += "\n\nMESM Version " + VERSION_WITH_TEXT + " Active With Challenge: " + ModSettings.currentChallenge.name;
-                            }
-                        }
-                        else
-                        {
-                            loadingBackground.text.text += "\n\nError While Reading " + ModSettings.modSettingsErrorString + " Mod Settings - Fix Required";
-                        }
-
-                        if (!ModSettings.skippedMenuScreen)
-                        {
-                            loadingBackground.text.text += " [Skipped Menu Screen]";
-                        }
-
-                        if (!loadingProgressText.Equals(""))
-                        {
-                            loadingBackground.text.text += "\n" + loadingProgressText;
-                        }
-                    }
-                }
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
             // @MAttackingState2
 
+            /// <summary>
+            /// Sets the death region and monster that killed the player for death backgrounds.
+            /// </summary>
             private static void HookMAttackingState2KillThePlayer(On.MAttackingState2.orig_KillThePlayer orig, MAttackingState2 mAttackingState2)
             {
                 deathRegion = mAttackingState2.monster.PlayerDetectRoom.GetRoom.PrimaryRegion;
@@ -5693,38 +5084,52 @@ namespace MonstrumExtendedSettingsMod
             }
             */
 
-            // Fire Shroud Fire Blast Version
+            /// <summary>
+            /// Supports custom abilities triggered at the same time as Fiend's door check.
+            /// </summary>
             private static void HookMChasingStateDoDoorCheck(On.MChasingState.orig_DoDoorCheck orig, MChasingState mChasingState, bool _overwrite)
             {
-                if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute))
+                if (!mChasingState.sinceDoorCheck.timerStarted || _overwrite)
                 {
-                    if (!mChasingState.sinceDoorCheck.timerStarted || _overwrite)
+                    if (!mChasingState.sinceDoorCheck.timerStarted)
                     {
-                        if (!mChasingState.sinceDoorCheck.timerStarted)
-                        {
-                            mChasingState.sinceDoorCheck.StartTimer();
-                        }
-                        ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
+                        mChasingState.sinceDoorCheck.StartTimer();
                     }
-                    else if (mChasingState.sinceDoorCheck.TimeElapsed > mChasingState.timeBetweenDoorCheck)
+                    TriggerDoorCheckAbilities(mChasingState);
+                }
+                else if (mChasingState.sinceDoorCheck.TimeElapsed > mChasingState.timeBetweenDoorCheck)
+                {
+                    if (((MState)mChasingState).monster.MonsterType != Monster.MonsterTypeEnum.Fiend)
                     {
-                        if (((MState)mChasingState).monster.MonsterType != Monster.MonsterTypeEnum.Fiend)
-                        {
-                            mChasingState.sinceDoorCheck.ResetTimer();
-                        }
-                        ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
+                        mChasingState.sinceDoorCheck.ResetTimer();
                     }
+                    TriggerDoorCheckAbilities(mChasingState);
                 }
                 orig.Invoke(mChasingState, _overwrite);
             }
 
+            /// <summary>
+            /// Triggers a fire blast and electric trap spawning if the monster has the relevant components.
+            /// </summary>
+            private static void TriggerDoorCheckAbilities(MChasingState mChasingState)
+            {
+                ((MState)mChasingState).monster.GetComponent<FireShroud>()?.FireBlast();
+                ((MState)mChasingState).monster.GetComponent<SparkyAura>()?.SpawnTrapsNearSparky(0f, 0.75f * mChasingState.timeBetweenDoorCheck);
+            }
+
+            /// <summary>
+            /// Supports spawn protection,
+            /// </summary>
             private static void HookMChasingStateStateChanges(On.MChasingState.orig_StateChanges orig, MChasingState mChasingState)
             {
+                // Get the index of the current player being chased to check their spawn protection and invincibility.
                 int crewPlayerIndex = 0;
                 if (ModSettings.enableMultiplayer)
                 {
                     crewPlayerIndex = MultiplayerMode.crewPlayers.IndexOf(mChasingState.monster.PlayerDetectRoom.player);
                 }
+
+                // Only run normal chase code if the player is not spawn protected.
                 if (!ModSettings.spawnProtection[crewPlayerIndex])
                 {
                     mChasingState.changingState = false;
@@ -5765,13 +5170,16 @@ namespace MonstrumExtendedSettingsMod
                                 ((MState)mChasingState).monster.Hearing.ClearLastHeardPosition();
                                 ((MState)mChasingState).monster.Hearing.MarkAllSoundsAsExplored();
                             }
+                            // Attack the player if they are not invincible and within attack range.
                             if (!ModSettings.invincibilityMode[crewPlayerIndex] && ((MState)mChasingState).monster.IsPlayerInAttackRange())
                             {
                                 if ((((MState)mChasingState).monster.FoundPlayerBySound || ((MState)mChasingState).monster.IsPlayerLocationKnown || ((MState)mChasingState).monster.CanSeePlayer || ((MState)mChasingState).monster.CanSeeTorch) && (((MState)mChasingState).monster.IsPlayerHiding || ManyMonstersMode.PlayerToMonsterCast(((MState)mChasingState).monster)))
                                 {
                                     NewPlayerClass monsterNewPlayerClass = ((MState)mChasingState).monster.player.GetComponent<NewPlayerClass>();
-                                    if (!ModSettings.enableMultiplayer || (ModSettings.enableMultiplayer && MultiplayerMode.AllOtherPlayersDown(monsterNewPlayerClass)))
+                                    // Only kill the player if not using multiplayer or all players have already been downed.
+                                    if (!ModSettings.enableMultiplayer || MultiplayerMode.AllOtherPlayersDown(monsterNewPlayerClass))
                                     {
+                                        // Only kill the player if they do not have any lives left.
                                         if (!ModSettings.PlayerHasLivesLeft())
                                         {
                                             if (((MState)mChasingState).monster.IsPlayerHiding)
@@ -5779,6 +5187,7 @@ namespace MonstrumExtendedSettingsMod
                                                 mChasingState.spot = mChasingState.playerRoomDetect.PlayerHidingSpot(mChasingState.playerRoomDetect.GetRoom.HidingSpots);
                                                 ChooseAttack.WhatAttackHiding(mChasingState.spot);
 
+                                                // Reactivate all player lights while killing the player in PvP as they no longer have to be hidden.
                                                 if (ModSettings.enableCrewVSMonsterMode)
                                                 {
                                                     CrewVsMonsterMode.playersGoneIntoHiding[MultiplayerMode.PlayerNumber(mChasingState.monster.PlayerDetectRoom.player.GetInstanceID())] = false;
@@ -5816,6 +5225,7 @@ namespace MonstrumExtendedSettingsMod
                                 ((MState)mChasingState).StopCoroutine("LerpToHidingSpot");
                             }
                         }
+                        // Do not switch to search room state in PvP while one player is playing as the monster as this would give away where the other player is hiding.
                         else if (((MState)mChasingState).monster.InSearchableArea() && !((MState)mChasingState).monster.IsPlayerLocationKnown && (!ModSettings.enableCrewVSMonsterMode || CrewVsMonsterMode.letAIControlMonster))
                         {
                             mChasingState.changingState = true;
@@ -5833,8 +5243,12 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /// <summary>
+            /// Supports Alternating Monsters, Multiplayer and Persistent Monster.
+            /// </summary>
             private static void HookMChasingStateChase(On.MChasingState.orig_Chase orig, MChasingState mChasingState, bool instantCalc)
             {
+                // Keep monster alert and timers reset if persistent.
                 if (ModSettings.persistentMonster)
                 {
                     ((MState)mChasingState).monster.GetAlertMeters.mSightAlert = 100f;
@@ -5900,9 +5314,12 @@ namespace MonstrumExtendedSettingsMod
                         mChasingState.ChaseGoal(((MState)mChasingState).monster.LastSeenPlayerPosition + Vector3.up);
                     }
                 }
+                // Keep the monster in chase mode if persistent.
                 else if (!mChasingState.changingState && !ModSettings.persistentMonster)
                 {
                     ((MState)mChasingState).SendEvent("PlayerLoseSight");
+                    // If using alternating monsters and there are monsters available to switch, switch the monster.
+                    // If the monster is a Hunter, switch when going to go back into the vents rather than directly after a chase.
                     if (ModSettings.alternatingMonstersMode && ModSettings.numberOfMonsters > ModSettings.numberOfAlternatingMonsters && ((MState)mChasingState).monster.MonsterType != Monster.MonsterTypeEnum.Hunter)
                     {
                         TimeScaleManager.Instance.StartCoroutine(ManyMonstersMode.SwitchMonster(((MState)mChasingState).monster));
@@ -6077,6 +5494,15 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @MHuntingState
 
+            private static void HookMHuntingStateInitalSetups(On.MHuntingState.orig_InitalSetups orig, MHuntingState mHuntingState)
+            {
+                orig.Invoke(mHuntingState);
+                if (ModSettings.silentMonster)
+                {
+                    mHuntingState.HuntingSource.mute = true; // This is the same source used for VentFrenzy.
+                }
+            }
+
             private static void HookMHuntingStateSetUpTimes(On.MHuntingState.orig_SetUpTimes orig, MHuntingState mHuntingState)
             {
                 orig.Invoke(mHuntingState);
@@ -6186,6 +5612,35 @@ namespace MonstrumExtendedSettingsMod
                         Debug.Log("Could not list monster lights");
                     }
                     */
+                }
+                if (ModSettings.silentMonster)
+                {
+                    if (monster.audSource)
+                    {
+                        monster.audSource.mute = true;
+                    }
+                    if (monster.audSource2)
+                    {
+                        monster.audSource2.mute = true;
+                    }
+                }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @MonsterAvoidFire
+
+            private static void HookMonsterAvoidFireStart(On.MonsterAvoidFire.orig_Start orig, MonsterAvoidFire monsterAvoidFire)
+            {
+                orig.Invoke(monsterAvoidFire);
+                if (ModSettings.giveAllMonstersAFireShroud)
+                {
+                    // When all monsters have a shroud, set to 0 so that pathfinding is not blocked and Hunter is not stunned.
+                    monsterAvoidFire.maxRadius = 0f;
+                }
+                else if (ModSettings.bruteFireShroud)
+                {
+                    // When only Brute has a shroud, change the layer so that pathfinding is not blocked but Hunter is still stunned.
+                    monsterAvoidFire.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
                 }
             }
 
@@ -6378,11 +5833,11 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 if (ControllerCheck.enableControllerSupport)
                                 {
-                                    mouseLookCustom.rotationX += Input.GetAxis("Mouse X") * (mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX) + XboxCtrlrInput.XCI.RightStickValueX() * (mouseLookCustom.stick_SensitivityX * (float)mouseLookCustom.invertX);
+                                    mouseLookCustom.rotationX += Input.GetAxis("Mouse X") * mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX + XboxCtrlrInput.XCI.RightStickValueX() * mouseLookCustom.stick_SensitivityX * (float)mouseLookCustom.invertX;
                                 }
                                 else
                                 {
-                                    mouseLookCustom.rotationX += Input.GetAxis("Mouse X") * (mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX);
+                                    mouseLookCustom.rotationX += Input.GetAxis("Mouse X") * mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX;
                                 }
                                 mouseLookCustom.rotationX = Mathf.Clamp(mouseLookCustom.rotationX, mouseLookCustom.minimumX, mouseLookCustom.maximumX);
                             }
@@ -6394,11 +5849,11 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 if (ControllerCheck.enableControllerSupport)
                                 {
-                                    mouseLookCustom.rotationY += Input.GetAxis("Mouse Y") * (mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY) + XboxCtrlrInput.XCI.RightStickValueY() * (mouseLookCustom.stick_SensitivityY * (float)mouseLookCustom.invertY);
+                                    mouseLookCustom.rotationY += Input.GetAxis("Mouse Y") * mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY + XboxCtrlrInput.XCI.RightStickValueY() * mouseLookCustom.stick_SensitivityY * (float)mouseLookCustom.invertY;
                                 }
                                 else
                                 {
-                                    mouseLookCustom.rotationY += Input.GetAxis("Mouse Y") * (mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY);
+                                    mouseLookCustom.rotationY += Input.GetAxis("Mouse Y") * mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY;
                                 }
                                 mouseLookCustom.rotationY = Mathf.Clamp(mouseLookCustom.rotationY, mouseLookCustom.minimumY, mouseLookCustom.maximumY);
                                 if (mouseLookCustom.cam != null && mouseLookCustom.rotationY <= 0f)
@@ -6633,7 +6088,7 @@ namespace MonstrumExtendedSettingsMod
                     FSMState currentState = movementControl.monster.GetComponent<FSM>().Current;
                     FSMState.StateTypes stateType = currentState.typeofState;
                     float modifiedSpeed = ModSettings.monsterAnimationSpeedMultiplier;
-                    bool applyChaseBuff = stateType == FSMState.StateTypes.Chase && movementControl.AnimationSpeed > 95f && (ModSettings.applyChaseSpeedBuffToAllMonsters || (ModSettings.bruteChaseSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute));
+                    bool applyChaseBuff = stateType == FSMState.StateTypes.Chase && movementControl.AnimationSpeed > 95f && (ModSettings.applyChaseSpeedBuffToAllMonsters || (ModSettings.bruteChaseSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute && !movementControl.monster.monsterType.Equals("Sparky")));
                     if (applyChaseBuff)
                     {
                         modifiedSpeed *= ModSettings.bruteChaseSpeedBuffMultiplier;
@@ -6652,14 +6107,14 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
 
-                    if ((ModSettings.applyLongRangeWanderSpeedBuffToAllMonsters || (ModSettings.bruteLongRangeWanderSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute)) && currentState.GetType() == typeof(MWanderState) && (movementControl.monster.Patrol != null && movementControl.monster.Patrol.ShouldRun) || (movementControl.monster.DistanceToPlayer > 40f && movementControl.monster.DistanceToGoal() > 20f))
+                    if ((ModSettings.applyLongRangeWanderSpeedBuffToAllMonsters || (ModSettings.bruteLongRangeWanderSpeedBuff && movementControl.monster.MonsterType == Monster.MonsterTypeEnum.Brute && !movementControl.monster.monsterType.Equals("Sparky"))) && currentState.GetType() == typeof(MWanderState) && movementControl.monster.Patrol != null && movementControl.monster.Patrol.ShouldRun || (movementControl.monster.DistanceToPlayer > 40f && movementControl.monster.DistanceToGoal() > 20f))
                     {
                         modifiedSpeed *= ModSettings.bruteLongRangeWanderSpeedBuffMultiplier;
                     }
 
                     if (applyChaseBuff)
                     {
-                        movementControl.animController.monsterAnimation.speed = Mathf.MoveTowards(movementControl.animController.monsterAnimation.speed, modifiedSpeed, (Time.deltaTime * ModSettings.bruteChaseSpeedBuffRate) / 5f);
+                        movementControl.animController.monsterAnimation.speed = Mathf.MoveTowards(movementControl.animController.monsterAnimation.speed, modifiedSpeed, Time.deltaTime * ModSettings.bruteChaseSpeedBuffRate / 5f);
                     }
                     else
                     {
@@ -7118,7 +6573,7 @@ namespace MonstrumExtendedSettingsMod
                     pitTrap.selectedDirection = pitTrap.forwardsTrans;
                     Vector3 forward = pitTrap.player.transform.forward;
                     Vector3 forward2 = pitTrap.backwardsTrans.forward;
-                    forward.y = (forward2.y = 0f);
+                    forward.y = forward2.y = 0f;
                     if (Vector3.Angle(forward, forward2) < 90f)
                     {
                         pitTrap.selectedDirection = pitTrap.backwardsTrans;
@@ -7183,12 +6638,16 @@ namespace MonstrumExtendedSettingsMod
                 {
                     crewPlayerIndex = MultiplayerMode.crewPlayers.IndexOf(playerHealth.NPC);
                 }
-                if (ModSettings.logDebugText)
-                {
-                    Debug.Log("Damaged by type: " + DMG + " with damage " + damageVal + ". Stack Trace:\n" + new StackTrace().ToString());
-                }
                 if (!ModSettings.invincibilityMode[crewPlayerIndex])
                 {
+                    if (DMG == PlayerHealth.DamageTypes.MindAttack)
+                    {
+                        damageVal *= ModSettings.fiendMindAttackDamageMultiplier;
+                    }
+                    if (ModSettings.logDebugText)
+                    {
+                        Debug.Log("Damaged by type: " + DMG + " with damage " + damageVal + ". Stack Trace:\n" + new StackTrace().ToString());
+                    }
                     orig.Invoke(playerHealth, damageVal, overTime, DMG, isAreaEffectDamage);
                 }
             }
@@ -7296,6 +6755,89 @@ namespace MonstrumExtendedSettingsMod
                 if (ModSettings.debugMode && ModSettings.noclip)
                 {
                     playerMotor.timeSinceLastJump = 2f;
+                }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @PlayerUpperBodyLock
+
+            /// <summary>
+            /// This function counters the player's bobbing animation when weighting is above 0. Weightin is above 0 while standing and holding an item or leaning, for example.
+            /// FollowTransform.DoFollow makes the camera follow the spine of the player even though it is parented to the player's GameObject at their feet.
+            /// The original Junkfish code here changed transform parents from the spine to the player and applied transform edits, but this method would result in floating point imprecision affecting the camera's position, slowly increasing the height over time.
+            /// By using InverseTransformPoint and TransformPoint instead of parent switching, these imprecisions can be avoided.
+            /// </summary>
+            private static void HookPlayerUpperBodyLockLateUpdate(On.PlayerUpperBodyLock.orig_LateUpdate orig, PlayerUpperBodyLock playerUpperBodyLock)
+            {
+                if (playerUpperBodyLock.once)
+                {
+                    playerUpperBodyLock.once = false;
+                    playerUpperBodyLock.UpdatePositions();
+                }
+                if (!(playerUpperBodyLock.weighting > 0f))
+                {
+                    return;
+                }
+                float t = Mathf.Clamp(Mathf.Min(playerUpperBodyLock.weighting, Mathf.Min(playerUpperBodyLock.weighting2, playerUpperBodyLock.weighting3)), 0f, playerUpperBodyLock.maxWeighting);
+                for (int i = 0; i < playerUpperBodyLock.keepRotation.Length; i++)
+                {
+                    playerUpperBodyLock.keepRotations[i] = playerUpperBodyLock.keepRotation[i].rotation;
+                }
+                Quaternion identity = Quaternion.identity;
+                for (int j = 0; j < playerUpperBodyLock.localFollowing.Length; j++)
+                {
+                    if (playerUpperBodyLock.localFollowing[j] != null)
+                    {
+                        playerUpperBodyLock.localFollowing[j].localPosition = Vector3.Lerp(playerUpperBodyLock.localFollowing[j].localPosition, playerUpperBodyLock.lockLocalPositions[j], t);
+                        identity = playerUpperBodyLock.localFollowingRotations[j] != Vector3.zero ? Quaternion.Euler(playerUpperBodyLock.localFollowingRotations[j]) : playerUpperBodyLock.lockLocalRotation[j];
+                        playerUpperBodyLock.localFollowing[j].localRotation = Quaternion.Lerp(playerUpperBodyLock.localFollowing[j].localRotation, identity, t);
+                    }
+                }
+                for (int k = 0; k < playerUpperBodyLock.localToPlayerFollowing.Length; k++)
+                {
+                    if (playerUpperBodyLock.localToPlayerFollowing[k] != null) // Fix typo from internal Junkfish code where localFollowing[k] was used.
+                    {
+                        // Calculate target positions relatively in the player's local space rather than re-parenting.
+                        Vector3 currentLocalPos = References.Player.transform.InverseTransformPoint(playerUpperBodyLock.localToPlayerFollowing[k].position);
+                        Quaternion currentLocalRot = Quaternion.Inverse(References.Player.transform.rotation) * playerUpperBodyLock.localToPlayerFollowing[k].rotation;
+
+                        // Lerp them.
+                        Vector3 targetLocalPos = Vector3.Lerp(currentLocalPos, playerUpperBodyLock.lockGlobalPositions[k], t);
+                        Quaternion targetLocalRot = Quaternion.Lerp(currentLocalRot, playerUpperBodyLock.lockGlobalRotation[k], t);
+
+                        // Apply back in world space.
+                        playerUpperBodyLock.localToPlayerFollowing[k].position = References.Player.transform.TransformPoint(targetLocalPos);
+                        playerUpperBodyLock.localToPlayerFollowing[k].rotation = References.Player.transform.rotation * targetLocalRot;
+                    }
+                }
+                for (int l = 0; l < playerUpperBodyLock.keepRotation.Length; l++)
+                {
+                    playerUpperBodyLock.keepRotation[l].rotation = playerUpperBodyLock.keepRotations[l];
+                }
+            }
+
+            private static void HookPlayerUpperBodyLockUpdatePositions(On.PlayerUpperBodyLock.orig_UpdatePositions orig, PlayerUpperBodyLock playerUpperBodyLock)
+            {
+                playerUpperBodyLock.lockLocalPositions = new Vector3[playerUpperBodyLock.localFollowing.Length];
+                playerUpperBodyLock.lockLocalRotation = new Quaternion[playerUpperBodyLock.localFollowing.Length];
+                playerUpperBodyLock.lockGlobalPositions = new Vector3[playerUpperBodyLock.localToPlayerFollowing.Length];
+                playerUpperBodyLock.lockGlobalRotation = new Quaternion[playerUpperBodyLock.localToPlayerFollowing.Length];
+                playerUpperBodyLock.keepRotations = new Quaternion[playerUpperBodyLock.keepRotation.Length];
+                for (int i = 0; i < playerUpperBodyLock.localFollowing.Length; i++)
+                {
+                    if (playerUpperBodyLock.localFollowing[i] != null)
+                    {
+                        playerUpperBodyLock.lockLocalPositions[i] = playerUpperBodyLock.localFollowing[i].localPosition;
+                        playerUpperBodyLock.lockLocalRotation[i] = playerUpperBodyLock.localFollowing[i].localRotation;
+                    }
+                }
+                for (int j = 0; j < playerUpperBodyLock.localToPlayerFollowing.Length; j++)
+                {
+                    if (playerUpperBodyLock.localToPlayerFollowing[j] != null)
+                    {
+                        playerUpperBodyLock.lockGlobalPositions[j] = References.Player.transform.InverseTransformPoint(playerUpperBodyLock.localToPlayerFollowing[j].position);
+                        playerUpperBodyLock.lockGlobalRotation[j] = Quaternion.Inverse(References.Player.transform.rotation) * playerUpperBodyLock.localToPlayerFollowing[j].rotation;
+                    }
                 }
             }
 
@@ -7704,6 +7246,14 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @SecurityCamera
+
+            private static void HookAmberStateCtor(On.AmberState.orig_ctor orig, AmberState amberState)
+            {
+                amberState.warningTime = ModSettings.camTimer;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @Smashable
 
             private static void HookSmashableOnCollisionEnter(On.Smashable.orig_OnCollisionEnter orig, Smashable smashable, Collision _collision)
@@ -7752,9 +7302,16 @@ namespace MonstrumExtendedSettingsMod
                             try
                             {
                                 UnityEngine.Object[] smokeGrenadeUnpacked = Utilities.LoadAssetBundle("smokegrenade");
-                                if (smokeGrenadeUnpacked.Length > 0 && smokeGrenadeUnpacked[0] != null && smokeGrenadeUnpacked[0].GetType() == typeof(GameObject))
+                                foreach (UnityEngine.Object smokeGrenadeObject in smokeGrenadeUnpacked)
                                 {
-                                    smokeGrenadeModelPrefab = (GameObject)smokeGrenadeUnpacked[0];
+                                    if (smokeGrenadeObject.GetType() == typeof(Texture2D))
+                                    {
+                                        smokeGrenadeSprite = Sprite.Create((Texture2D)smokeGrenadeObject, inventoryItem.inventorySlotSprite.rect, inventoryItem.inventorySlotSprite.pivot, inventoryItem.inventorySlotSprite.pixelsPerUnit);
+                                    }
+                                    else if (smokeGrenadeObject.GetType() == typeof(GameObject))
+                                    {
+                                        smokeGrenadeModelPrefab = (GameObject)smokeGrenadeObject;
+                                    }
                                 }
                             }
                             catch
@@ -7779,6 +7336,11 @@ namespace MonstrumExtendedSettingsMod
                             inventoryItem.glowShader.Start();
                             itemShadow.render = inventoryItem.GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>();//((MonoBehaviour)itemShadow).GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>(); // Does this do anything?
 
+                            // Apply the custom sprite if loaded successfully.
+                            if (smokeGrenadeSprite != null)
+                            {
+                                inventoryItem.inventorySlotSprite = smokeGrenadeSprite;
+                            }
                         }
                     }
                     else if (ModSettings.addMolotov && randomValue >= 0.67f)
@@ -7796,9 +7358,16 @@ namespace MonstrumExtendedSettingsMod
                             try
                             {
                                 UnityEngine.Object[] molotovUnpacked = Utilities.LoadAssetBundle("molotov");
-                                if (molotovUnpacked.Length > 0 && molotovUnpacked[0] != null && molotovUnpacked[0].GetType() == typeof(GameObject))
+                                foreach (UnityEngine.Object molotovObject in molotovUnpacked)
                                 {
-                                    molotovModelPrefab = (GameObject)molotovUnpacked[0];
+                                    if (molotovObject.GetType() == typeof(Texture2D))
+                                    {
+                                        molotovSprite = Sprite.Create((Texture2D)molotovObject, inventoryItem.inventorySlotSprite.rect, inventoryItem.inventorySlotSprite.pivot, inventoryItem.inventorySlotSprite.pixelsPerUnit);
+                                    }
+                                    else if (molotovObject.GetType() == typeof(GameObject))
+                                    {
+                                        molotovModelPrefab = (GameObject)molotovObject;
+                                    }
                                 }
                             }
                             catch
@@ -7822,14 +7391,28 @@ namespace MonstrumExtendedSettingsMod
                             inventoryItem.GetMeshRender();
                             inventoryItem.glowShader.Start();
                             itemShadow.render = inventoryItem.GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>();//((MonoBehaviour)itemShadow).GetComponentsInChildren<MeshRenderer>().ToList<MeshRenderer>(); // Does this do anything?
+
+                            // Apply the custom sprite if loaded successfully.
+                            if (molotovSprite != null)
+                            {
+                                inventoryItem.inventorySlotSprite = molotovSprite;
+                            }
                         }
                     }
                 }
             }
 
+            /// <summary>
+            /// The model used to build a prefab.
+            /// </summary>
             private static GameObject smokeGrenadeModelPrefab;
-            private static GameObject molotovModelPrefab;
-
+            /// <summary>
+            /// The sprite applied to inventory items using the prefab.
+            /// </summary>
+            private static Sprite smokeGrenadeSprite;
+            /// <summary>
+            /// The prefab used in the game.
+            /// </summary>
             private static GameObject smokeGrenadePrefab;
             private static float smokeGrenadeParticleStartLifeTime = 8f;
             private static void CreateSmokeGrenadePrefab()
@@ -7852,7 +7435,7 @@ namespace MonstrumExtendedSettingsMod
                     float startLifetime = smokeGrenadeParticleStartLifeTime;
                     ParticleSystem.EmissionModule psem = particleSystem.emission;
                     psem.enabled = true;
-                    psem.rateOverTime = new ParticleSystem.MinMaxCurve(4f, new AnimationCurve(new Keyframe(0f, 1f), new Keyframe((startLifetime / 8f) / duration - 0.01f, 1f), new Keyframe((startLifetime / 8f) / duration, 0.25f), new Keyframe((duration - startLifetime) / duration - 0.01f, 0.25f), new Keyframe((duration - startLifetime) / duration, 0f), new Keyframe(1f, 0f)));
+                    psem.rateOverTime = new ParticleSystem.MinMaxCurve(4f, new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(startLifetime / 8f / duration - 0.01f, 1f), new Keyframe(startLifetime / 8f / duration, 0.25f), new Keyframe((duration - startLifetime) / duration - 0.01f, 0.25f), new Keyframe((duration - startLifetime) / duration, 0f), new Keyframe(1f, 0f)));
 
                     ParticleSystem.ShapeModule shapeModule = particleSystem.shape;
                     shapeModule.shapeType = ParticleSystemShapeType.Hemisphere;
@@ -7919,6 +7502,17 @@ namespace MonstrumExtendedSettingsMod
             Layer 31: 
             */
 
+            /// <summary>
+            /// The model used to build a prefab.
+            /// </summary>
+            private static GameObject molotovModelPrefab;
+            /// <summary>
+            /// The sprite applied to inventory items using the prefab.
+            /// </summary>
+            private static Sprite molotovSprite;
+            /// <summary>
+            /// The prefab used in the game.
+            /// </summary>
             private static GameObject molotovPrefab;
             private static readonly float fireIntensityBuffer = 4f;
             private static float molotovParticleStartLifeTime = 3f;
@@ -8147,7 +7741,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 LoadingBackground loadingBackground = FindObjectOfType<LoadingBackground>();
                 string loadingProgressText = "Spawning Stairs";
-                SetLoadingText(loadingBackground, loadingProgressText);
+                LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressText);
                 try
                 {
                     List<Room> bottomStairs = new List<Room>();
@@ -8512,9 +8106,9 @@ namespace MonstrumExtendedSettingsMod
 
             private static void ProcessLoadingError(string loadingProgressText, LoadingBackground loadingBackground, Exception exception)
             {
-                string loadingProgressTextError = "Error While " + loadingProgressText;
+                string loadingProgressTextError = $"Error While {loadingProgressText} (Please Restart, Check Settings or Contact the Developer)";
                 Debug.Log(loadingProgressTextError + "\n" + exception.ToString());
-                SetLoadingText(loadingBackground, loadingProgressTextError);
+                LoadingScreenManager.SetLoadingText(loadingBackground, loadingProgressTextError);
                 ModSettings.errorDuringLevelGeneration = true;
             }
 
@@ -8640,6 +8234,17 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @SubAlarm
+
+            private static void HookSubAlarmctor(On.SubAlarm.orig_ctor orig, SubAlarm subAlarm)
+            {
+                // Generally not the best to hook ctor as some hooks do not work. Start is better to hook.
+                // In this case ctor does work and avoids hooking on Start as this is used without orig.Invoke in MMM.
+                orig.Invoke(subAlarm);
+                subAlarm.SetTime = ModSettings.submersibleChargeTime;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @TimeScaleManager
 
             private static void HookTimeScaleManager()
@@ -8709,6 +8314,19 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @TutorialFuse
+
+            private static void HookTutorialFuseStart(On.TutorialFuse.orig_Start orig, TutorialFuse tutorialFuse)
+            {
+                orig.Invoke(tutorialFuse);
+                if (ModSettings.noStarterFuse)
+                {
+                    tutorialFuse.transform.position = FindObjectsOfType<KeyItemPlaceholder>().Random().transform.position;
+                }
+            }
+
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @Vision
 
             private static void HookVisionPlayerVision(On.Vision.orig_PlayerVision orig, Vision vision)
@@ -8722,6 +8340,15 @@ namespace MonstrumExtendedSettingsMod
                 {
                     orig.Invoke(vision);
                 }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @VoiceoverSequence
+
+            private static void HookVoiceoverSequenceStart(On.VoiceoverSequence.orig_Start orig, VoiceoverSequence voiceoverSequence)
+            {
+                voiceoverSequence.timeScaler *= ModSettings.submersibleChargeTime / 120f;
+                orig.Invoke(voiceoverSequence);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -8937,6 +8564,25 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
+            /*----------------------------------------------------------------------------------------------------*/
+            // @WeightedSelection
+
+            private static string HookWeightedSelectionLoadCounts(On.WeightedSelection.orig_LoadCounts orig, WeightedSelection weightedSelection)
+            {
+                if (!ModSettings.useCustomSeed && !ModSettings.consistentLevelGeneration)
+                {
+                    orig.Invoke(weightedSelection);
+                }
+                return string.Empty;
+            }
+
+            private static void HookWeightedSelectionSaveCounts(On.WeightedSelection.orig_SaveCounts orig, WeightedSelection weightedSelection)
+            {
+                if (!ModSettings.useCustomSeed && !ModSettings.consistentLevelGeneration)
+                {
+                    orig.Invoke(weightedSelection);
+                }
+            }
         }
     }
 }

@@ -1,0 +1,38 @@
+Name|Duel Part I
+Author|Ink
+Difficulty|5
+Description|Welcome to the duel with the Devil! Let's hope that you can react fast with your gun lest this being roasts your brain.\nKeep in mind that the Devil is immortal, so you have to escape to win. Your weapon will be under your feet.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Fiends|1
+Maximum Monster Spawntime (seconds)|1
+Fiend Vision Cone Angle|90
+Monster Animation Speed Multiplier|1.666
+Monster Movement Speed Multiplier|1.666
+Monster Rotation Speed Multiplier|1.666
+Fiend Flicker Minimum Range|-1
+Fiend Flicker Medium Range|-1
+Fiend Flicker Maximum Range|-1
+Fiend Mind Attack Damage Multiplier|666
+Fiend Mind Attack Attack Timer Charge Rate|7.5
+Fiend Mind Attack Attack Timer Decay Rate|2
+Glowstick Hunt|True
+No Glowstick Hunt Finale|True
+Special Glowsticks Required|10
+Special Glowsticks To Create|16
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
+Escape Conditions|1
+Flare Lifetime|0.5
+Spawn With Flare Gun|True
+Overpowered Flare Gun|True
+Flares Teleport Monsters|True
+Add Smoke Grenade|True
+Pre-fill Start Region Fuse Box|False
+Pre-fill Liferaft Fuse Box|False
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

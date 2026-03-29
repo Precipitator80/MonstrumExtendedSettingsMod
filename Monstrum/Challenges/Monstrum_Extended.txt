@@ -1,20 +1,23 @@
 Name|Monstrum Extended
-Author|Precipitator
+Author|Ink
 Difficulty|2
 Description|Uses a variety of settings that aim to extend the base gameplay of the game without increasing the difficulty.
-Version|6.0
+Version|7.0
 Setting|Custom Value
 Add Sparky To The Game|True
+Use Indev Sparky Model|True
+Escape Conditions|1
+Inventory Size|7
+Unlock Player Head|True
+Walkie Talkie Range|25
 Better Smashables|True
 Add Smoke Grenade|True
 Add Molotov|True
 Spawn Deactivated Items|True
-Add Additional Crew Deck Building|True
+Monster Compass|True
+Add Deck Cargo Holds|True
 Use Deck Four On Submersible Side|True
-Extend Lower Decks|True
-Spawn Additional Engine Room Workshops|True
 Add Lower Deck Next To Engine Room|True
-Add Deck Zero|True
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

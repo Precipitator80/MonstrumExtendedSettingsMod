@@ -504,7 +504,7 @@ namespace MonstrumExtendedSettingsMod
                             else
                             {
                                 // Create colour display text and the first component button.
-                                MenuText displayText = new MenuText(settings[i].modSettingsText.Replace(" Red Component", ""), settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset);
+                                MenuText displayText = new MenuText(settings[i].title.Replace(" Red Component", ""), settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset);
                                 k++;
                                 ((MESMSettingRGB)settings[i]).CreateRGBButton(settingsPages[settingsPages.Count - 1].gameObject.transform, new Vector3(0, -(verticalShift * k), 0f) + offset, displayText.text);
                             }
@@ -647,7 +647,7 @@ namespace MonstrumExtendedSettingsMod
                 });
 
                 string shortTitle = name.Split(new string[] { " Settings" }, System.StringSplitOptions.None)[0];
-                MenuText titleText = new MenuText(shortTitle, exitButtonGO.transform, new Vector3(0f, (shortTitle.Length > 10 ? 450f : 435f), 0f), false); // Give long titles two lines rather than one.
+                MenuText titleText = new MenuText(shortTitle, exitButtonGO.transform, new Vector3(0f, shortTitle.Length > 10 ? 450f : 435f, 0f), false); // Give long titles two lines rather than one.
                 titleText.text.rectTransform.sizeDelta = new Vector2(titleText.text.rectTransform.sizeDelta.x, 2f * titleText.text.rectTransform.sizeDelta.y);
 
                 this.gameObject.SetActive(false);
@@ -814,7 +814,7 @@ namespace MonstrumExtendedSettingsMod
             largeButtonFontSize = (int)(1.25f * referenceCategoryText.fontSize);
             smallButtonSizeDelta = new Vector2(1.2f * referenceOptionImage.rectTransform.sizeDelta.x, 3f * referenceOptionImage.rectTransform.sizeDelta.y);
             smallButtonFontSize = (int)(1.25f * referenceOptionText.fontSize);
-            mediumFontSize = (2 * referenceOptionText.fontSize);
+            mediumFontSize = 2 * referenceOptionText.fontSize;
             mediumSmallFontSize = mediumFontSize - 4;
 
             // Create a warning box to alert the user of restart conditions and errors.
@@ -829,7 +829,7 @@ namespace MonstrumExtendedSettingsMod
             });
 
             // Create the initial navigation sub menu.
-            NavigationSubMenu navigationSubMenu = new NavigationSubMenu("MES Mod", optionsUI.optionsButtons, new Vector3(0f, 140f, 0f) + clipboardOffset, buttonList[3].transform.parent, (buttonList[3].transform.localPosition - buttonList[3].transform.parent.localPosition) - 3f * (buttonList[3].transform.localPosition - buttonList[1].transform.localPosition));
+            NavigationSubMenu navigationSubMenu = new NavigationSubMenu("MES Mod", optionsUI.optionsButtons, new Vector3(0f, 140f, 0f) + clipboardOffset, buttonList[3].transform.parent, buttonList[3].transform.localPosition - buttonList[3].transform.parent.localPosition - 3f * (buttonList[3].transform.localPosition - buttonList[1].transform.localPosition));
 
             // Discover all the categories used for the settings in order to set up pages for them.
             List<string> categories = new List<string>();
@@ -903,7 +903,7 @@ namespace MonstrumExtendedSettingsMod
             MenuTextImage selectedOptionImage;
             public MenuMultipleChoiceButtonWithDescription(string description, string name, string[] choices, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(description, name, parentTransform, referenceOffset, smallText)
             {
-                float xShift = Mathf.Abs((dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2);
+                float xShift = Mathf.Abs((dropDownOptionImage.rectTransform.sizeDelta.x - (referenceOptionImage.rectTransform.sizeDelta.x / 2.25f / sizeReduction)) / 2);
                 Vector3 xShiftVector = new Vector3(xShift, 0f, 0f);
 
                 //Debug.Log("dropDownOptionImage.rectTransform.sizeDelta.x = " + dropDownOptionImage.rectTransform.sizeDelta.x + ", referenceOptionImage.rectTransform.sizeDelta.x = " + referenceOptionImage.rectTransform.sizeDelta.x + ", ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction) = " + ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction) + ",(dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2 = " + (dropDownOptionImage.rectTransform.sizeDelta.x - ((referenceOptionImage.rectTransform.sizeDelta.x / 2.25f) / sizeReduction)) / 2 + ", Total = " + xShift);
@@ -1372,7 +1372,7 @@ namespace MonstrumExtendedSettingsMod
 
             public MenuInputField(string name, Transform parentTransform, Vector3 referenceOffset, bool smallText = true) : base(name, parentTransform, referenceOffset, smallText, true)
             {
-                image.rectTransform.sizeDelta = new Vector2((image.rectTransform.sizeDelta.x / 2.25f) / sizeReduction, image.rectTransform.sizeDelta.y);
+                image.rectTransform.sizeDelta = new Vector2(image.rectTransform.sizeDelta.x / 2.25f / sizeReduction, image.rectTransform.sizeDelta.y);
                 text.rectTransform.sizeDelta = image.rectTransform.sizeDelta;
 
                 inputField = gameObject.AddComponent<InputField>();
@@ -1950,19 +1950,19 @@ namespace MonstrumExtendedSettingsMod
             {
                 switch (colour)
                 {
-                    case (MESMSettingRGBColourEnum.red):
+                    case MESMSettingRGBColourEnum.red:
                         {
                             // Change the red component of the display text
                             displayText.color = new Color(Convert.ToSingle(inputField.text) / 255f, displayText.color.g, displayText.color.b, displayText.color.a);
                             break;
                         }
-                    case (MESMSettingRGBColourEnum.green):
+                    case MESMSettingRGBColourEnum.green:
                         {
                             // Change the green component of the display text
                             displayText.color = new Color(displayText.color.r, Convert.ToSingle(inputField.text) / 255f, displayText.color.b, displayText.color.a);
                             break;
                         }
-                    case (MESMSettingRGBColourEnum.blue):
+                    case MESMSettingRGBColourEnum.blue:
                         {
                             // Change the blue component of the display text
                             displayText.color = new Color(displayText.color.r, displayText.color.g, Convert.ToSingle(inputField.text) / 255f, displayText.color.a);
@@ -1977,7 +1977,7 @@ namespace MonstrumExtendedSettingsMod
                 base.CreateButtonForSetting(referenceTransform, referenceOffset); // Creates and assigns settingsButton
 
                 // Edit settingsButton
-                MenuSliderInputFieldWithDescription menuSliderInputFieldWithDescription = ((MenuSliderInputFieldWithDescription)settingsButton);
+                MenuSliderInputFieldWithDescription menuSliderInputFieldWithDescription = (MenuSliderInputFieldWithDescription)button;
                 inputField = menuSliderInputFieldWithDescription.menuInputField.inputField;
 
                 EventTrigger.Entry entry = new EventTrigger.Entry();
@@ -1993,7 +1993,7 @@ namespace MonstrumExtendedSettingsMod
 
                 ChangeTextColour();
 
-                return settingsButton;
+                return button;
             }
         }
 

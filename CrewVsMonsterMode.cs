@@ -1,4 +1,4 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System;
 using UnityEngine;
 using System.Collections.Generic;
@@ -1900,7 +1900,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                     if (((MState)mInvestigateState).monster.InSearchableArea() && letAIControlMonster)
                     {
-                        if ((((MState)mInvestigateState).monster.Hearing.CurrentSoundSource == null || !((MState)mInvestigateState).monster.Hearing.CurrentSoundSource.Source.isPlaying))
+                        if (((MState)mInvestigateState).monster.Hearing.CurrentSoundSource == null || !((MState)mInvestigateState).monster.Hearing.CurrentSoundSource.Source.isPlaying)
                         {
                             ((MState)mInvestigateState).SendEvent("RoomSearch");
                         }
@@ -2416,6 +2416,10 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 MultiplayerMode.monsterPlayers[monsterNumber].gameObject.transform.rotation = monsterCamera.transform.rotation * Quaternion.Euler(0f, 0f, 90f);
                             }
+                            if (movementControl.animController != null && movementControl.animController.monsterAnimation != null)
+                            {
+                                movementControl.animController.monsterAnimation.applyRootMotion = true;
+                            }
                             BaseFeatures.CustomMovementControlWorkOutSpeed(movementControl);
                             if (ModSettings.logDebugText)
                             {
@@ -2428,23 +2432,44 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 Debug.Log("Monster number " + ManyMonstersMode.MonsterNumber(movementControl.monster.GetInstanceID()) + " is being controlled by player in MovementControl and currently following player number " + MultiplayerMode.PlayerNumber(movementControl.monster.player.GetComponent<NewPlayerClass>().GetInstanceID()));
                             }
-                            float playerInput = 0f;
+                            float yInput = 0f;
+                            float xInput = 0f;
                             if (MultiplayerMode.customKeyBinds["Forward"][playerNumber].keyInUse == KeyCode.None)
                             {
                                 // If the player is using a controller, get the value from the axis.
-                                playerInput = MultiplayerMode.GetPlayerAxisValue("Y", playerNumber);
+                                yInput = MultiplayerMode.GetPlayerAxisValue("Y", playerNumber);
+                                xInput = MultiplayerMode.GetPlayerAxisValue("X", playerNumber);
                             }
                             else
                             {
-                                // If the player is not using a controller, check whether their forward key is down.
+                                // If the player is not using a controller, check whether their movement keys are down.
                                 if (MultiplayerMode.GetPlayerKey("Forward", playerNumber).IsDown())
                                 {
-                                    playerInput = 1f;
+                                    yInput += 1f;
+                                }
+                                if (MultiplayerMode.GetPlayerKey("Back", playerNumber).IsDown())
+                                {
+                                    yInput -= 1f;
+                                }
+                                if (MultiplayerMode.GetPlayerKey("Right", playerNumber).IsDown())
+                                {
+                                    xInput += 1f;
+                                }
+                                if (MultiplayerMode.GetPlayerKey("Left", playerNumber).IsDown())
+                                {
+                                    xInput -= 1f;
                                 }
                             }
+                            if (movementControl.animController != null && movementControl.animController.monsterAnimation != null)
+                            {
+                                movementControl.animController.monsterAnimation.applyRootMotion = false;
+                            }
+                            float playerInput = Mathf.Clamp01(new Vector2(xInput, yInput).magnitude);
+                            Rigidbody rb = movementControl.monster.GetComponent<Rigidbody>();
                             if (playerInput > 0.1f)
                             {
-                                if (MultiplayerMode.GetPlayerKey("Sprint", playerNumber).IsDown() || MultiplayerMode.GetPlayerTriggerStateIfUsingController("Left", playerNumber))
+                                bool isSprinting = MultiplayerMode.GetPlayerKey("Sprint", playerNumber).IsDown() || MultiplayerMode.GetPlayerTriggerStateIfUsingController("Left", playerNumber);
+                                if (isSprinting)
                                 {
                                     movementControl.MaxSpeed = 100f;
                                 }
@@ -2453,10 +2478,30 @@ namespace MonstrumExtendedSettingsMod
                                     movementControl.MaxSpeed = 30f;
                                 }
                                 movementControl.AnimationSpeed = Mathf.MoveTowards(movementControl.AnimationSpeed, movementControl.MaxSpeed * ModSettings.monsterMovementSpeedMultiplier * playerInput, Time.deltaTime * 100f);
+
+                                // Copy speed from what root motion would have used.
+                                float baseSpeed = movementControl.animController.monsterAnimation.velocity.magnitude;
+
+                                // Get directional movement, normalised to prevent diagonal speed exploits.
+                                Vector3 moveDir = (movementControl.monster.transform.forward * yInput) + (movementControl.monster.transform.right * xInput);
+                                if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();
+
+                                if (rb != null)
+                                {
+                                    Vector3 newVelocity = moveDir * baseSpeed;
+                                    newVelocity.y = rb.velocity.y; // Keep gravity
+                                    rb.velocity = Vector3.Lerp(rb.velocity, newVelocity, Time.deltaTime * 15f);
+                                }
                             }
                             else
                             {
                                 movementControl.AnimationSpeed = Mathf.MoveTowards(movementControl.AnimationSpeed, 0f, Time.deltaTime * 75f);
+
+                                if (rb != null)
+                                {
+                                    Vector3 newVelocity = new Vector3(0, rb.velocity.y, 0);
+                                    rb.velocity = Vector3.Lerp(rb.velocity, newVelocity, Time.deltaTime * 15f);
+                                }
                             }
 
                             if (movementControl.AnimationSpeed > 50f)

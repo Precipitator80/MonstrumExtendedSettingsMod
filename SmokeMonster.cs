@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
+using System.Linq;
+using SRF;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -45,14 +47,11 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @SmokeMonsterActiveFeatures
 
-            public static void SmokeMonsterActiveFeatures()
-            {
-            }
-
             public static GameObject CreateSmokeEmitter(Room room)
             {
                 float boxVolume = room.RoomBounds.size.x * room.RoomBounds.size.y * room.RoomBounds.size.z;
-                return CreateSmokeEmitter(room, new Vector3(1.5f, 1.5f, 1.5f), boxVolume / 25f);
+                float randomSize = Random.Range(1.25f, 2f);
+                return CreateSmokeEmitter(room, new Vector3(randomSize, randomSize, randomSize), boxVolume / 25f);
             }
 
             public static GameObject CreateSmokeEmitter(Room room, Vector3 size, float rate)
@@ -94,7 +93,7 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
-            private static Material smokeMaterial;
+            private static List<Material> smokeMaterials;
 
             // Volumetric Fog in Unity using Particles (Any Rendering Pipeline) - Etredal - https://www.youtube.com/watch?v=UllkvfMR96s - Accessed 21.05.2022
             // Try out the settings in the UnityEditor!
@@ -106,20 +105,13 @@ namespace MonstrumExtendedSettingsMod
 
                 ParticleSystemRenderer particleSystemRenderer = smokeGameObject.AddComponent<ParticleSystemRenderer>();
 
-                if (smokeMaterial == null)
+                if (smokeMaterials == null)
                 {
-                    ParticleSystemRenderer[] pss = FindObjectsOfType<ParticleSystemRenderer>();
-                    foreach (ParticleSystemRenderer ps in pss)
-                    {
-                        if (ps.material != null && ps.material.name.Contains("Smoke"))
-                        {
-                            smokeMaterial = ps.material;
-                            smokeMaterial.color = Color.white;
-                            break;
-                        }
-                    }
+                    smokeMaterials = Utilities.LoadAssetBundle("purplesmokematerials")
+                        .OfType<Material>()
+                        .ToList();
                 }
-                particleSystemRenderer.material = smokeMaterial;
+                particleSystemRenderer.material = smokeMaterials.Random();
 
                 ParticleSystem particleSystem = smokeGameObject.AddComponent<ParticleSystem>();
                 particleSystem.name = "SmokeEmitter";
@@ -265,7 +257,7 @@ namespace MonstrumExtendedSettingsMod
             private static Material dustMaterial;
             private void Start()
             {
-                float sphereSurfaceArea = 4f * Mathf.PI * (Mathf.Pow(ModSettings.fogFarDistance, 2f));
+                float sphereSurfaceArea = 4f * Mathf.PI * Mathf.Pow(ModSettings.fogFarDistance, 2f);
                 GameObject smokeGameObject = SmokeMonster.CreateSmokeEmitter(base.transform, base.transform.position + Vector3.up, Vector3.zero, new Vector3(10f, 10f, 10f), sphereSurfaceArea / 10f);
 
                 ParticleSystemRenderer particleSystemRenderer = smokeGameObject.GetComponent<ParticleSystemRenderer>();
@@ -341,43 +333,46 @@ namespace MonstrumExtendedSettingsMod
                 fireBlastRadius = ModSettings.fireBlastRadius;
                 float fireShroudDiameter = fireShroudRadius * 2f;
 
-                // Clone a FuelParticle. (Is this cloning only the FuelDecal or the FuelParticle too and whatever is in its parent? I think it may be cloning the parent, which might make the transform updates easier.) 
-                FuelDecal fuelDecal = Instantiate<GameObject>(FindObjectOfType<FuelParticles>().fuelDecal, base.transform.position + Vector3.up, Quaternion.identity).GetComponent<FuelDecal>();
+                if (fireShroudDiameter > 0)
+                {
+                    // Clone a FuelParticle. (Is this cloning only the FuelDecal or the FuelParticle too and whatever is in its parent? I think it may be cloning the parent, which might make the transform updates easier.) 
+                    FuelDecal fuelDecal = Instantiate<GameObject>(FindObjectOfType<FuelParticles>().fuelDecal, base.transform.position + Vector3.up, Quaternion.identity).GetComponent<FuelDecal>();
 
-                // Disable the decal material so that it cannot be seen. Possibly also prevents error from instantiation due to DecalManager.
-                fuelDecal.fuelDecalMaterial.enabled = false;
+                    // Disable the decal material so that it cannot be seen. Possibly also prevents error from instantiation due to DecalManager.
+                    fuelDecal.fuelDecalMaterial.enabled = false;
 
-                // Make the fire follow the monster.
-                fuelDecal.transform.SetParent(base.transform, true);
-                fuelDecal.transform.localRotation = Quaternion.identity;
-                fuelDecal.flammable.transform.SetParent(fuelDecal.transform, true);
-                fuelDecal.flammable.transform.localRotation = Quaternion.identity;
-                fuelDecal.flammable.fire.transform.SetParent(fuelDecal.flammable.transform, true);
-                fuelDecal.flammable.fire.transform.localRotation = Quaternion.identity;
+                    // Make the fire follow the monster.
+                    fuelDecal.transform.SetParent(base.transform, true);
+                    fuelDecal.transform.localRotation = Quaternion.identity;
+                    fuelDecal.flammable.transform.SetParent(fuelDecal.transform, true);
+                    fuelDecal.flammable.transform.localRotation = Quaternion.identity;
+                    fuelDecal.flammable.fire.transform.SetParent(fuelDecal.flammable.transform, true);
+                    fuelDecal.flammable.fire.transform.localRotation = Quaternion.identity;
 
-                // Set the fire to burn forever.
-                fuelDecal.flammable.fireFuel = float.MaxValue;
-                fuelDecal.flammable.lowFuel = float.MaxValue;
-                fuelDecal.maxFuel = float.MaxValue;
+                    // Set the fire to burn forever.
+                    fuelDecal.flammable.fireFuel = float.MaxValue;
+                    fuelDecal.flammable.lowFuel = float.MaxValue;
+                    fuelDecal.maxFuel = float.MaxValue;
 
-                // Change the size of the PlayerDamage BoxCollider.
-                fuelDecal.flammable.fire.GetComponentInChildren<BoxCollider>().size = new Vector3(fireShroudDiameter, 0.25f, fireShroudDiameter);
+                    // Change the size of the PlayerDamage BoxCollider.
+                    fuelDecal.flammable.fire.GetComponentInChildren<BoxCollider>().size = new Vector3(fireShroudDiameter, 0.25f, fireShroudDiameter);
 
-                // Change the properties of the fire ParticleSystem.
-                ParticleSystem particleSystem = fuelDecal.flammable.fire.gameObject.GetComponent<ParticleSystem>();
-                ParticleSystem.MainModule main = particleSystem.main;
-                main.startSize = new ParticleSystem.MinMaxCurve(1.25f);
-                main.startLifetime = new ParticleSystem.MinMaxCurve(3f);
-                main.maxParticles = 150;
-                ParticleSystem.ShapeModule shape = particleSystem.shape;
-                shape.shapeType = ParticleSystemShapeType.Box;
-                shape.box = new Vector3(fireShroudDiameter, 0.25f, fireShroudDiameter);
-                shape.randomDirectionAmount = 1f;
-                ParticleSystem.EmissionModule emission = particleSystem.emission;
-                emission.rateOverTime = new ParticleSystem.MinMaxCurve(30f);
+                    // Change the properties of the fire ParticleSystem.
+                    ParticleSystem particleSystem = fuelDecal.flammable.fire.gameObject.GetComponent<ParticleSystem>();
+                    ParticleSystem.MainModule main = particleSystem.main;
+                    main.startSize = new ParticleSystem.MinMaxCurve(1.25f);
+                    main.startLifetime = new ParticleSystem.MinMaxCurve(3f);
+                    main.maxParticles = 150;
+                    ParticleSystem.ShapeModule shape = particleSystem.shape;
+                    shape.shapeType = ParticleSystemShapeType.Box;
+                    shape.box = new Vector3(fireShroudDiameter, 0.25f, fireShroudDiameter);
+                    shape.randomDirectionAmount = 1f;
+                    ParticleSystem.EmissionModule emission = particleSystem.emission;
+                    emission.rateOverTime = new ParticleSystem.MinMaxCurve(30f);
 
-                // Ignite the fire.
-                fuelDecal.flammable.StartFire();
+                    // Ignite the fire.
+                    fuelDecal.flammable.StartFire();
+                }
             }
 
             public void FireBlast()

@@ -1,4 +1,4 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -448,7 +448,7 @@ namespace MonstrumExtendedSettingsMod
                 Debug.Log("Screen.width = " + Screen.width + ", Screen.height = " + Screen.height + ", Display.displays[0].renderingWidth = " + Display.displays[0].renderingWidth + ", Display.displays[0].renderingHeight = " + Display.displays[0].renderingHeight + ", Display.displays[0].systemWidth = " + Display.displays[0].systemWidth + ", Display.displays[0].systemHeight = " + Display.displays[0].systemHeight);
                 switch (ModSettings.NumberOfPlayers)
                 {
-                    case (2):
+                    case 2:
                         if (Display.displays.Length == 2 && ModSettings.useMultipleDisplaysIfPossible)
                         {
                             for (int screenNumber = 0; screenNumber < Display.displays.Length; screenNumber++)
@@ -478,12 +478,12 @@ namespace MonstrumExtendedSettingsMod
                             reticules[0].reticuleCanvas.rectTransform.position -= new Vector3(0, reticules[0].reticuleCanvas.rectTransform.position.y / 2, 0);
                         }
                         break;
-                    case (3):
+                    case 3:
                         if (ModSettings.useMultipleDisplaysIfPossible)
                         {
                             switch (Display.displays.Length)
                             {
-                                case (3):
+                                case 3:
                                     for (int screenNumber = 0; screenNumber < Display.displays.Length; screenNumber++)
                                     {
                                         foreach (Camera camera in newPlayerClasses[screenNumber].GetComponentsInChildren<Camera>(false))
@@ -495,7 +495,7 @@ namespace MonstrumExtendedSettingsMod
                                         playerObjectivesList[screenNumber].uiText.canvas.targetDisplay = screenNumber;
                                     }
                                     break;
-                                case (2):
+                                case 2:
                                     foreach (Camera camera in newPlayerClasses[0].GetComponentsInChildren<Camera>(false))
                                     {
                                         camera.targetDisplay = 0;
@@ -557,12 +557,12 @@ namespace MonstrumExtendedSettingsMod
                             playerObjectivesList[1].uiText.rectTransform.position += new Vector3(0, Screen.height / 3, 0);
                         }
                         break;
-                    case (4):
+                    case 4:
                         if (ModSettings.useMultipleDisplaysIfPossible)
                         {
                             switch (Display.displays.Length)
                             {
-                                case (4):
+                                case 4:
                                     for (int screenNumber = 0; screenNumber < Display.displays.Length; screenNumber++)
                                     {
                                         foreach (Camera camera in newPlayerClasses[screenNumber].GetComponentsInChildren<Camera>(false))
@@ -574,7 +574,7 @@ namespace MonstrumExtendedSettingsMod
                                         playerObjectivesList[screenNumber].uiText.canvas.targetDisplay = screenNumber;
                                     }
                                     break;
-                                case (3):
+                                case 3:
                                     for (int screenNumber = 0; screenNumber < Display.displays.Length - 1; screenNumber++)
                                     {
                                         foreach (Camera camera in newPlayerClasses[screenNumber].GetComponentsInChildren<Camera>(false))
@@ -601,7 +601,7 @@ namespace MonstrumExtendedSettingsMod
                                     playerObjectivesList[2].uiText.rectTransform.position += new Vector3(0, Display.displays[2].renderingHeight / 2, 0);
                                     reticules[0].reticuleCanvas.rectTransform.position -= new Vector3(0, reticules[0].reticuleCanvas.rectTransform.position.y / 2, 0);
                                     break;
-                                case (2):
+                                case 2:
                                     for (int screenNumber = 0; screenNumber < Display.displays.Length; screenNumber++)
                                     {
                                         foreach (Camera camera in newPlayerClasses[screenNumber].GetComponentsInChildren<Camera>(false))
@@ -832,7 +832,7 @@ namespace MonstrumExtendedSettingsMod
                         //.rectTransform.position
                         switch (ModSettings.NumberOfPlayers)
                         {
-                            case (2):
+                            case 2:
                                 try
                                 {
                                     if (Display.displays.Length == 2 && ModSettings.useMultipleDisplaysIfPossible)
@@ -1124,7 +1124,7 @@ namespace MonstrumExtendedSettingsMod
                 On.FuelCan.OnUseItem += new On.FuelCan.hook_OnUseItem(HookFuelCanOnUseItem);
                 //On.FuelPump.DestroyCan += new On.FuelPump.hook_DestroyCan(HookFuelPumpDestroyCan);
                 On.HeadLights.OnStartItemAnimation += new On.HeadLights.hook_OnStartItemAnimation(HookHeadLightsOnStartItemAnimation);
-                new Hook(typeof(Inventory).GetProperty("AllowShowItem", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetGetMethod(), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookInventoryget_AllowShowItem"), null);
+                Utilities.HookGetter<Inventory, bool>(nameof(Inventory.AllowShowItem), HookInventoryget_AllowShowItem);
 
                 // Patch 2
                 On.ItemFlashManager.Update += new On.ItemFlashManager.hook_Update(HookItemFlashManagerUpdate);
@@ -1152,7 +1152,7 @@ namespace MonstrumExtendedSettingsMod
                 On.DraggedOutHiding.Start += new On.DraggedOutHiding.hook_Start(HookDraggedOutHidingStart);
                 On.DragPlayer.Mec_OnGrabPlayer += new On.DragPlayer.hook_Mec_OnGrabPlayer(HookDragPlayerMec_OnGrabPlayer);
                 //On.DragPlayer.PullOutPlayer += new On.DragPlayer.hook_PullOutPlayer(HookDragPlayerPullOutPlayer);
-                new Hook(typeof(DragPlayer).GetNestedType("<PullOutPlayer>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookDragPlayerPullOutPlayerIntermediateHook"), null);
+                Utilities.HookIterator<DragPlayer>("<PullOutPlayer>c__Iterator0", HookDragPlayerPullOutPlayer);
                 On.MRoomSearch.OnExit += new On.MRoomSearch.hook_OnExit(HookMRoomSearchOnExit);
                 //On.MChasingState.OnExit += new On.MChasingState.hook_OnExit(HookMChasingStateOnExit); // Moved to Many Monsters Mode
                 On.Hiding.Awake += new On.Hiding.hook_Awake(HookHidingAwake);
@@ -1181,7 +1181,7 @@ namespace MonstrumExtendedSettingsMod
                 On.CraneController.OnHandGrab += new On.CraneController.hook_OnHandGrab(HookCraneControllerOnHandGrab);
                 On.CraneController.OnHandRelease += new On.CraneController.hook_OnHandRelease(HookCraneControllerOnHandRelease);
                 //On.Liferaft.Inflate += new On.Liferaft.hook_Inflate(HookLiferaftInflate);
-                new Hook(typeof(Liferaft).GetNestedType("<Inflate>c__Iterator2", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookLiferaftInflateIntermediateHook"), null);
+                Utilities.HookIterator<Liferaft>("<Inflate>c__Iterator2", HookLiferaftInflate);
                 On.CraneSpoolBox.CheckForSpool += new On.CraneSpoolBox.hook_CheckForSpool(HookCraneSpoolBoxCheckForSpool);
 
                 On.Backpack.OnInteract += new On.Backpack.hook_OnInteract(HookBackpackOnInteract);
@@ -1215,7 +1215,7 @@ namespace MonstrumExtendedSettingsMod
                 //On.FootStepManager.Start += new On.FootStepManager.hook_Start(HookFootStepManagerStart);
                 On.FootStepManager.SetUpStep += new On.FootStepManager.hook_SetUpStep(HookFootStepManagerSetUpStep);
                 //On.FuseBoxDoor.OpenClose += new On.FuseBoxDoor.hook_OpenClose(HookFuseBoxDoorOpenClose);
-                new Hook(typeof(FuseBoxDoor).GetNestedType("<OpenClose>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookFuseBoxDoorOpenCloseIntermediateHook"), null);
+                Utilities.HookIterator<FuseBoxDoor>("<OpenClose>c__Iterator0", HookFuseBoxDoorOpenClose);
                 On.HeadIKMovement.CheckAngle += new On.HeadIKMovement.hook_CheckAngle(HookHeadIKMovementCheckAngle);
                 On.HeadIKMovement.OnAnimatorIK += new On.HeadIKMovement.hook_OnAnimatorIK(HookHeadIKMovementOnAnimatorIK);
                 On.HookCondition.IsConditionMet += new On.HookCondition.hook_IsConditionMet(HookHookConditionIsConditionMet);
@@ -1225,7 +1225,6 @@ namespace MonstrumExtendedSettingsMod
                 On.PitTrap.Update += new On.PitTrap.hook_Update(HookPitTrapUpdate);
                 On.TestJump.Update += new On.TestJump.hook_Update(HookTestJumpUpdate);
                 On.TestPronePullOut.PullOutPlayer += new On.TestPronePullOut.hook_PullOutPlayer(HookTestPronePullOutPullOutPlayer);
-                //new Hook(typeof(TestPronePullOut).GetNestedType("<PullOutPlayer>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookTestPronePullOutPullOutPlayerIntermediateHook"), null);
                 On.Welder.OnFinishItemAnimation += new On.Welder.hook_OnFinishItemAnimation(HookWelderOnFinishItemAnimation);
                 HookWallClimb();
                 HookAutoStand();
@@ -1238,7 +1237,7 @@ namespace MonstrumExtendedSettingsMod
 
                 // Notes from next day. Pit trap and auto stand seem to have been fixed by using parent instead of same level. Inventory bug did not immediately happen again. The phone tracking the interaction button has been removed. Flashlight angle tracking has been added via an ItemAngleUpdater hook. Moving player 1 into locker also causes player 2 to lerp slightly. Make sure to look into the Hunter spawning algorithm again. Moving objects like chairs doesn't seem to work properly. Not using fiends in many monsters mode in a second round when they were used in the first round causes an exception in HookFiendLightControllerOnGenerationComplete. Camera can move down somehow in either multiplayer mode or crew vs monster mode.
                 //On.RopeDragRelease.Test += new On.RopeDragRelease.hook_Test(HookRopeDragReleaseTest);
-                new Hook(typeof(TestPronePullOut).GetNestedType("<PullOutPlayer>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookRopeDragReleaseTestIntermediateHook"), null);
+                Utilities.HookIterator<RopeDragRelease>("<Test>c__Iterator0", HookRopeDragReleaseTest);
                 On.ItemAngleUpdater.Update += new On.ItemAngleUpdater.hook_Update(HookItemAngleUpdaterUpdate);
                 On.Smashable.Smash += new On.Smashable.hook_Smash(HookSmashableSmash);
                 On.SearchState.Update += new On.SearchState.hook_Update(HookSearchStateUpdate);
@@ -1309,7 +1308,7 @@ namespace MonstrumExtendedSettingsMod
                     On.HelicopterEscape.Update += new On.HelicopterEscape.hook_Update(HookHelicopterEscapeUpdate);
                     On.LightFlicker.Flicker += new On.LightFlicker.hook_Flicker(HookLightFlickerFlicker);
                     //On.MasterControlValve.TurnTheValve += new On.MasterControlValve.hook_TurnTheValve(HookMasterControlValveTurnTheValve);
-                    new Hook(typeof(MasterControlValve).GetNestedType("<TurnTheValve>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookMasterControlValveTurnTheValveIntermediateHook"), null);
+                    Utilities.HookIterator<MasterControlValve>("<TurnTheValve>c__Iterator0", HookMasterControlValveTurnTheValve);
                     On.MFiendSubDoors.DoorWasBlocked += new On.MFiendSubDoors.hook_DoorWasBlocked(HookMFiendSubDoorsDoorWasBlocked);
                     On.MonsterDoorSmoke.TurnOffDoorSmoke += new On.MonsterDoorSmoke.hook_TurnOffDoorSmoke(HookMonsterDoorSmokeTurnOffDoorSmoke);
                     On.Phone.EndPhoneCall += new On.Phone.hook_EndPhoneCall(HookPhoneEndPhoneCall);
@@ -1324,7 +1323,7 @@ namespace MonstrumExtendedSettingsMod
                     On.SecurityMonitors.OnPowerDown += new On.SecurityMonitors.hook_OnPowerDown(HookSecurityMonitorsOnPowerDown);
                     On.SteamVents.TurnOffSteam += new On.SteamVents.hook_TurnOffSteam(HookSteamVentsTurnOffSteam);
                     //On.SubmarineDoor.Opening += new On.SubmarineDoor.hook_Opening(HookSubmarineDoorOpening);
-                    new Hook(typeof(SubmarineDoor).GetNestedType("<Opening>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookSubmarineDoorOpeningIntermediateHook"), null);
+                    Utilities.HookIterator<SubmarineDoor>("<Opening>c__Iterator0", HookSubmarineDoorOpening);
                     On.TapeRecorder.StopLog += new On.TapeRecorder.hook_StopLog(HookTapeRecorderStopLog);
                     On.TV.TurnOffSound += new On.TV.hook_TurnOffSound(HookTVTurnOffSound);
                     On.WalkieTalkie.OnEndReceive += new On.WalkieTalkie.hook_OnEndReceive(HookWalkieTalkieOnEndReceive);
@@ -1965,7 +1964,7 @@ namespace MonstrumExtendedSettingsMod
                         {
                             if (simpleOcclusion == null)
                             {
-                                simpleOcclusion = (virtualAudioSource.originalAudioSource.gameObject.AddComponent(typeof(SimpleOcclusion)) as SimpleOcclusion);
+                                simpleOcclusion = virtualAudioSource.originalAudioSource.gameObject.AddComponent(typeof(SimpleOcclusion)) as SimpleOcclusion;
                             }
                             simpleOcclusion.source = virtualAudioSource.originalAudioSource;
                         }
@@ -1985,7 +1984,7 @@ namespace MonstrumExtendedSettingsMod
                     VolumeController volumeController = virtualAudioSource.originalAudioSource.GetComponent<VolumeController>();
                     if (volumeController == null)
                     {
-                        volumeController = (virtualAudioSource.originalAudioSource.gameObject.AddComponent(typeof(VolumeController)) as VolumeController);
+                        volumeController = virtualAudioSource.originalAudioSource.gameObject.AddComponent(typeof(VolumeController)) as VolumeController;
                     }
                     if (virtualAudioSource.originalAudioSource.gameObject.GetComponent<SimpleOcclusion>())
                     {
@@ -2267,7 +2266,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         if (simpleOcclusion == null)
                         {
-                            simpleOcclusion = (_source.gameObject.AddComponent(typeof(SimpleOcclusion)) as SimpleOcclusion);
+                            simpleOcclusion = _source.gameObject.AddComponent(typeof(SimpleOcclusion)) as SimpleOcclusion;
                         }
                     }
                 }
@@ -2286,7 +2285,7 @@ namespace MonstrumExtendedSettingsMod
                 VolumeController volumeController = _source.GetComponent<VolumeController>();
                 if (volumeController == null)
                 {
-                    volumeController = (_source.gameObject.AddComponent(typeof(VolumeController)) as VolumeController);
+                    volumeController = _source.gameObject.AddComponent(typeof(VolumeController)) as VolumeController;
                 }
                 if (_source.gameObject.GetComponent<SimpleOcclusion>())
                 {
@@ -3276,7 +3275,7 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookAutoPronePlayerAwake(On.AutoPronePlayer.orig_Awake orig, AutoPronePlayer autoPronePlayer)
             {
-                autoPronePlayer.box = (((MonoBehaviour)autoPronePlayer).GetComponent<Collider>() as BoxCollider);
+                autoPronePlayer.box = ((MonoBehaviour)autoPronePlayer).GetComponent<Collider>() as BoxCollider;
                 autoPronePlayer.player = autoPronePlayer.box.GetComponentInParent<NewPlayerClass>();
                 if (autoPronePlayer.player != null)
                 {
@@ -4389,17 +4388,6 @@ namespace MonstrumExtendedSettingsMod
                 draggedOutHiding.DragPlayer();
             }
 
-            public static bool HookDragPlayerPullOutPlayerIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookDragPlayerPullOutPlayer((DragPlayer)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookDragPlayerPullOutPlayer(DragPlayer dragPlayer)
             {
                 Debug.Log("This hook is working!: " + new StackTrace().ToString()); // # IEnumerator Hook Test
@@ -4474,7 +4462,7 @@ namespace MonstrumExtendedSettingsMod
                 //lastPlayerSentMessage.ValveValue = ((!dualSteamVent.isLeft) ? -1f : 1f);
                 foreach (NewPlayerClass newPlayerClass in newPlayerClasses)
                 {
-                    newPlayerClass.ValveValue = ((!dualSteamVent.isLeft) ? -1f : 1f);
+                    newPlayerClass.ValveValue = (!dualSteamVent.isLeft) ? -1f : 1f;
                 }
                 ((MonoBehaviour)dualSteamVent).StartCoroutine(dualSteamVent.TurningValve());
             }
@@ -5252,7 +5240,7 @@ namespace MonstrumExtendedSettingsMod
                     case Interactable.InputKey.Use:
                         return GetPlayerKey("UseItem", playerNumber).JustPressed() || GetPlayerTriggerStateIfUsingController("Right", playerNumber, true);
                     case Interactable.InputKey.PickupUse:
-                        return ((!GetPlayerKey("Interact", playerNumber).IsDown() && (GetPlayerKey("UseItem", playerNumber).JustPressed() || GetPlayerTriggerStateIfUsingController("Right", playerNumber, true))) || (!(GetPlayerKey("UseItem", playerNumber).IsDown() || GetPlayerTriggerStateIfUsingController("Right", playerNumber)) && GetPlayerKey("Interact", playerNumber).JustPressed()));
+                        return (!GetPlayerKey("Interact", playerNumber).IsDown() && (GetPlayerKey("UseItem", playerNumber).JustPressed() || GetPlayerTriggerStateIfUsingController("Right", playerNumber, true))) || (!(GetPlayerKey("UseItem", playerNumber).IsDown() || GetPlayerTriggerStateIfUsingController("Right", playerNumber)) && GetPlayerKey("Interact", playerNumber).JustPressed());
                     case Interactable.InputKey.Jump:
                         return GetPlayerKey("Jump", playerNumber).JustPressed();
                     default:
@@ -5267,7 +5255,7 @@ namespace MonstrumExtendedSettingsMod
                     case Interactable.InputKey.Use:
                         return GetPlayerKey("UseItem", playerNumber).JustReleased() || GetPlayerTriggerStateIfUsingController("Right", playerNumber, false, true);
                     case Interactable.InputKey.PickupUse:
-                        return !GetPlayerKey("Interact", playerNumber).IsDown() && !(GetPlayerKey("UseItem", playerNumber).IsDown() || GetPlayerTriggerStateIfUsingController("Right", playerNumber)) && (GetPlayerKey("Interact", playerNumber).JustReleased() || (GetPlayerKey("UseItem", playerNumber).JustReleased() || GetPlayerTriggerStateIfUsingController("Right", playerNumber, false, true)));
+                        return !GetPlayerKey("Interact", playerNumber).IsDown() && !(GetPlayerKey("UseItem", playerNumber).IsDown() || GetPlayerTriggerStateIfUsingController("Right", playerNumber)) && (GetPlayerKey("Interact", playerNumber).JustReleased() || GetPlayerKey("UseItem", playerNumber).JustReleased() || GetPlayerTriggerStateIfUsingController("Right", playerNumber, false, true));
                     case Interactable.InputKey.Jump:
                         return GetPlayerKey("Jump", playerNumber).JustReleased();
                     default:
@@ -5535,7 +5523,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         foreach (NewPlayerClass newPlayerClass in newPlayerClasses)
                         {
-                            MonoBehaviour bloom = (PlayerCamera(newPlayerClass).GetComponent("BloomAndLensFlares") as MonoBehaviour);
+                            MonoBehaviour bloom = PlayerCamera(newPlayerClass).GetComponent("BloomAndLensFlares") as MonoBehaviour;
                             bloom.enabled = false;
                         }
                     }
@@ -5586,7 +5574,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         foreach (NewPlayerClass newPlayerClass in newPlayerClasses)
                         {
-                            MonoBehaviour bloom = (PlayerCamera(newPlayerClass).GetComponent("BloomAndLensFlares") as MonoBehaviour);
+                            MonoBehaviour bloom = PlayerCamera(newPlayerClass).GetComponent("BloomAndLensFlares") as MonoBehaviour;
                             bloom.enabled = true;
                         }
                     }
@@ -5981,6 +5969,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     OnFuseReachedBox(fuse, newPlayerClass);
                 }
+                ModSettings.fusesAdded++;
                 yield break;
             }
 
@@ -6003,17 +5992,6 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @FuseBoxDoor
-
-            public static bool HookFuseBoxDoorOpenCloseIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookFuseBoxDoorOpenClose((FuseBoxDoor)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookFuseBoxDoorOpenClose(FuseBoxDoor fuseBoxDoor)
             {
@@ -6312,7 +6290,7 @@ namespace MonstrumExtendedSettingsMod
                     itemGrabIK.holdTime = 0f;
                     Vector3 position = ((MonoBehaviour)itemGrabIK).transform.position;
                     Vector3 b = itemGrabIK.ikPositionCache;
-                    position.y = (b.y = 0f);
+                    position.y = b.y = 0f;
                     itemGrabIK.tScaler = Mathf.Clamp01(Vector3.Distance(position, b) / 0.65f);
                 }
             }
@@ -7188,7 +7166,7 @@ namespace MonstrumExtendedSettingsMod
                 Debug.Log("Player number at addinventoryslots is " + PlayerNumber(inventoryUI.inventory.newPlayerClass.GetInstanceID()));
                 switch (ModSettings.NumberOfPlayers)
                 {
-                    case (2):
+                    case 2:
                         if (Display.displays.Length == 2 && ModSettings.useMultipleDisplaysIfPossible)
                         {
                             component.newSlot.canvas.targetDisplay = playerNumber;
@@ -7206,16 +7184,16 @@ namespace MonstrumExtendedSettingsMod
                             }
                         }
                         break;
-                    case (3):
+                    case 3:
                         if (ModSettings.useMultipleDisplaysIfPossible)
                         {
                             switch (Display.displays.Length)
                             {
-                                case (3):
+                                case 3:
                                     component.newSlot.canvas.targetDisplay = playerNumber;
                                     v.y = 423f;
                                     break;
-                                case (2):
+                                case 2:
                                     if (playerNumber == 0)
                                     {
                                         v.y = 423f;
@@ -7236,13 +7214,13 @@ namespace MonstrumExtendedSettingsMod
                                 default:
                                     switch (playerNumber)
                                     {
-                                        case (0):
+                                        case 0:
                                             v.y = 423f;
                                             break;
-                                        case (1):
+                                        case 1:
                                             v.y = 423f - 1080f / 3f;
                                             break;
-                                        case (2):
+                                        case 2:
                                             v.y = 423f - 2f * 1080f / 3f;
                                             break;
                                     }
@@ -7253,28 +7231,28 @@ namespace MonstrumExtendedSettingsMod
                         {
                             switch (playerNumber)
                             {
-                                case (0):
+                                case 0:
                                     v.y = 423f;
                                     break;
-                                case (1):
+                                case 1:
                                     v.y = 423f - 1080f / 3f;
                                     break;
-                                case (2):
+                                case 2:
                                     v.y = 423f - 2f * 1080f / 3f;
                                     break;
                             }
                         }
                         break;
-                    case (4):
+                    case 4:
                         if (ModSettings.useMultipleDisplaysIfPossible)
                         {
                             switch (Display.displays.Length)
                             {
-                                case (4):
+                                case 4:
                                     component.newSlot.canvas.targetDisplay = playerNumber;
                                     v.y = 423f;
                                     break;
-                                case (3):
+                                case 3:
                                     if (playerNumber == 0 || playerNumber == 1)
                                     {
                                         component.newSlot.canvas.targetDisplay = playerNumber;
@@ -7294,7 +7272,7 @@ namespace MonstrumExtendedSettingsMod
                                     }
 
                                     break;
-                                case (2):
+                                case 2:
                                     if (playerNumber == 0 || playerNumber == 2)
                                     {
                                         v.y = 423f;
@@ -7381,14 +7359,14 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookInventoryUIStart(On.InventoryUI.orig_Start orig, InventoryUI inventoryUI)
             {
-                inventoryUI.inventory = (UnityEngine.Object.FindObjectOfType(typeof(Inventory)) as Inventory);
-                inventoryUI.oculusPlayerHUD = (UnityEngine.Object.FindObjectOfType(typeof(OculusPlayerHUD)) as OculusPlayerHUD);
-                inventoryUI.newPlayerClass = (UnityEngine.Object.FindObjectOfType(typeof(NewPlayerClass)) as NewPlayerClass);
+                inventoryUI.inventory = UnityEngine.Object.FindObjectOfType(typeof(Inventory)) as Inventory;
+                inventoryUI.oculusPlayerHUD = UnityEngine.Object.FindObjectOfType(typeof(OculusPlayerHUD)) as OculusPlayerHUD;
+                inventoryUI.newPlayerClass = UnityEngine.Object.FindObjectOfType(typeof(NewPlayerClass)) as NewPlayerClass;
                 inventoryUI.DeployRenderers();
                 inventoryUI.oculusStartPos = new Vector3(0f, 0f, 0.1f);
                 inventoryUI.playerAnimator = inventoryUI.newPlayerClass.gameObject.GetComponent<Animator>();
                 inventoryUI.playerAniLayers = inventoryUI.newPlayerClass.gameObject.GetComponent<PlayerAnimationLayersController>();
-                inventoryUI.triggerNotification = (UnityEngine.Object.FindObjectOfType(typeof(TriggerNotification)) as TriggerNotification);
+                inventoryUI.triggerNotification = UnityEngine.Object.FindObjectOfType(typeof(TriggerNotification)) as TriggerNotification;
                 Debug.Log("Inventory UI Instance ID is: " + inventoryUI.GetInstanceID() + " and npc ID is " + inventoryUI.newPlayerClass.GetInstanceID() + " and inventory ID is " + inventoryUI.inventory.GetInstanceID());
             }
 
@@ -7668,7 +7646,7 @@ namespace MonstrumExtendedSettingsMod
                     itemGrabIK.holdTime = 0f;
                     Vector3 position = ((MonoBehaviour)itemGrabIK).transform.position;
                     Vector3 b = itemGrabIK.ikPositionCache;
-                    position.y = (b.y = 0f);
+                    position.y = b.y = 0f;
                     itemGrabIK.tScaler = Mathf.Clamp01(Vector3.Distance(position, b) / 0.65f);
                 }
             }
@@ -7942,17 +7920,6 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @Liferaft
-
-            public static bool HookLiferaftInflateIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLiferaftInflate((Liferaft)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookLiferaftInflate(Liferaft liferaft)
             {
@@ -8271,17 +8238,6 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
-            public static bool HookMasterControlValveTurnTheValveIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookMasterControlValveTurnTheValve((MasterControlValve)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookMasterControlValveTurnTheValve(MasterControlValve masterControlValve)
             {
                 masterControlValve.currentRotation = masterControlValve.valveGO.transform.localRotation.eulerAngles;
@@ -8470,7 +8426,7 @@ namespace MonstrumExtendedSettingsMod
             private static void HookMonster()
             {
                 On.Monster.Awake += new On.Monster.hook_Awake(HookMonsterAwake);
-                new Hook(typeof(Monster).GetProperty("DistanceToPlayer", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetGetMethod(), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookMonsterget_DistanceToPlayer"), null);
+                Utilities.HookGetter<Monster, float>(nameof(Monster.DistanceToPlayer), HookMonsterget_DistanceToPlayer);
             }
 
             private static void HookMonsterAwake(On.Monster.orig_Awake orig, Monster monster)
@@ -8496,7 +8452,7 @@ namespace MonstrumExtendedSettingsMod
                 monster.huntState = ((MonoBehaviour)monster).GetComponent<MHuntingState>();
                 monster.trapState = ((MonoBehaviour)monster).GetComponent<MTrappingState>();
                 monster.hunterAnims = ((MonoBehaviour)monster).GetComponentInChildren<HunterAnimationsScript>();
-                monster.heliEscape = (UnityEngine.Object.FindObjectOfType(typeof(HelicopterEscape)) as HelicopterEscape);
+                monster.heliEscape = UnityEngine.Object.FindObjectOfType(typeof(HelicopterEscape)) as HelicopterEscape;
                 monster.MainCollider = ((MonoBehaviour)monster).GetComponent<CapsuleCollider>();
                 monster.AllSources = ((MonoBehaviour)monster).gameObject.GetComponentsInChildren<AudioSource>();
                 monster.attachPoints = ((MonoBehaviour)monster).GetComponentsInChildren<AttachPoint>();
@@ -8732,8 +8688,8 @@ namespace MonstrumExtendedSettingsMod
                     mouseLookCustom.mouse_SensitivityY = 5f;
                 }
                 mouseLookCustom.npc = ((MonoBehaviour)mouseLookCustom).GetComponentInParent<NewPlayerClass>();
-                mouseLookCustom.invertX = ((PlayerPrefs.GetInt("InvertX") != 0) ? -1 : 1);
-                mouseLookCustom.invertY = ((PlayerPrefs.GetInt("InvertY") != 0) ? -1 : 1);
+                mouseLookCustom.invertX = (PlayerPrefs.GetInt("InvertX") != 0) ? -1 : 1;
+                mouseLookCustom.invertY = (PlayerPrefs.GetInt("InvertY") != 0) ? -1 : 1;
                 if (PlayerPrefs.HasKey("SensControlX") && PlayerPrefs.HasKey("SensControlY"))
                 {
                     mouseLookCustom.stick_SensitivityX = PlayerPrefs.GetFloat("SensControlX");
@@ -8822,11 +8778,11 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 if (playerNumber == 1)
                                 {
-                                    mouseLookCustom.rotationX += /*Input.GetAxis("Mouse X") * (mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX)*/ +XboxCtrlrInput.XCI.RightStickValueX() * (mouseLookCustom.stick_SensitivityX * (float)mouseLookCustom.invertX);
+                                    mouseLookCustom.rotationX += /*Input.GetAxis("Mouse X") * (mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX)*/ +XboxCtrlrInput.XCI.RightStickValueX() * mouseLookCustom.stick_SensitivityX * (float)mouseLookCustom.invertX;
                                 }
                                 else
                                 {
-                                    mouseLookCustom.rotationX += Input.GetAxis("Mouse X") * (mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX);
+                                    mouseLookCustom.rotationX += Input.GetAxis("Mouse X") * mouseLookCustom.mouse_SensitivityX * (float)mouseLookCustom.invertX;
                                 }
                                 mouseLookCustom.rotationX = Mathf.Clamp(mouseLookCustom.rotationX, mouseLookCustom.minimumX, mouseLookCustom.maximumX);
                             }
@@ -8838,11 +8794,11 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 if (playerNumber == 1)
                                 {
-                                    mouseLookCustom.rotationY += /*Input.GetAxis("Mouse Y") * (mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY)*/ +XboxCtrlrInput.XCI.RightStickValueY() * (mouseLookCustom.stick_SensitivityY * (float)mouseLookCustom.invertY);
+                                    mouseLookCustom.rotationY += /*Input.GetAxis("Mouse Y") * (mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY)*/ +XboxCtrlrInput.XCI.RightStickValueY() * mouseLookCustom.stick_SensitivityY * (float)mouseLookCustom.invertY;
                                 }
                                 else
                                 {
-                                    mouseLookCustom.rotationY += Input.GetAxis("Mouse Y") * (mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY);
+                                    mouseLookCustom.rotationY += Input.GetAxis("Mouse Y") * mouseLookCustom.mouse_SensitivityY * (float)mouseLookCustom.invertY;
                                 }
                                 mouseLookCustom.rotationY = Mathf.Clamp(mouseLookCustom.rotationY, mouseLookCustom.minimumY, mouseLookCustom.maximumY);
                                 if (mouseLookCustom.cam != null && mouseLookCustom.rotationY <= 0f)
@@ -9059,7 +9015,7 @@ namespace MonstrumExtendedSettingsMod
                                     movePlayerUnderBed.moveDirection = 1f;
                                     flag = true;
                                 }
-                                if ((GetPlayerKey("Back", playerNumber).IsDown() || GetPlayerKey("Left", playerNumber).IsDown() || GetPlayerKey("Right", playerNumber).IsDown()) || GetPlayerAxisValue("Y", playerNumber) <= -0.01f)
+                                if (GetPlayerKey("Back", playerNumber).IsDown() || GetPlayerKey("Left", playerNumber).IsDown() || GetPlayerKey("Right", playerNumber).IsDown() || GetPlayerAxisValue("Y", playerNumber) <= -0.01f)
                                 {
                                     movePlayerUnderBed.moveDirection = -1f;
                                     flag = true;
@@ -9752,11 +9708,11 @@ namespace MonstrumExtendedSettingsMod
                                 float yAngle;
                                 if (playerNumber == 1)
                                 {
-                                    yAngle = XboxCtrlrInput.XCI.RightStickValueX() * (newPlayerClass.mouseLookCustom.stick_SensitivityX * 1.3f * (float)newPlayerClass.mouseLookCustom.invertX);
+                                    yAngle = XboxCtrlrInput.XCI.RightStickValueX() * newPlayerClass.mouseLookCustom.stick_SensitivityX * 1.3f * (float)newPlayerClass.mouseLookCustom.invertX;
                                 }
                                 else
                                 {
-                                    yAngle = Input.GetAxis("Mouse X") * (newPlayerClass.mouseLookCustom.mouse_SensitivityX * (float)newPlayerClass.mouseLookCustom.invertX);
+                                    yAngle = Input.GetAxis("Mouse X") * newPlayerClass.mouseLookCustom.mouse_SensitivityX * (float)newPlayerClass.mouseLookCustom.invertX;
                                 }
                                 if (newPlayerClass.animationType == PlayerAnimations.AnimationType.None)
                                 {
@@ -9781,11 +9737,11 @@ namespace MonstrumExtendedSettingsMod
                                 float num;
                                 if (playerNumber == 1)
                                 {
-                                    num = XboxCtrlrInput.XCI.RightStickValueX() * (newPlayerClass.mouseLookCustom.stick_SensitivityX * 1.3f * (float)newPlayerClass.mouseLookCustom.invertX);
+                                    num = XboxCtrlrInput.XCI.RightStickValueX() * newPlayerClass.mouseLookCustom.stick_SensitivityX * 1.3f * (float)newPlayerClass.mouseLookCustom.invertX;
                                 }
                                 else
                                 {
-                                    num = Input.GetAxis("Mouse X") * (newPlayerClass.mouseLookCustom.mouse_SensitivityX * (float)newPlayerClass.mouseLookCustom.invertX);
+                                    num = Input.GetAxis("Mouse X") * newPlayerClass.mouseLookCustom.mouse_SensitivityX * (float)newPlayerClass.mouseLookCustom.invertX;
                                 }
                                 if (newPlayerClass.verticalMovementAxis != 0f || newPlayerClass.horizontalMovementAxis != 0f)
                                 {
@@ -10192,7 +10148,7 @@ namespace MonstrumExtendedSettingsMod
                         timeRang += Time.deltaTime;
                         yield return null;
                         int playerNumber = PlayerNumber(newPlayerClass.GetInstanceID());
-                        if ((GetPlayerKey("Forward", playerNumber).IsDown() || GetPlayerKey("Back", playerNumber).IsDown() || GetPlayerKey("Left", playerNumber).IsDown() || GetPlayerKey("Right", playerNumber).IsDown()) || (Mathf.Abs(GetPlayerAxisValue("Y", playerNumber)) > 0.1f || Mathf.Abs(GetPlayerAxisValue("X", playerNumber)) > 0.1f))
+                        if (GetPlayerKey("Forward", playerNumber).IsDown() || GetPlayerKey("Back", playerNumber).IsDown() || GetPlayerKey("Left", playerNumber).IsDown() || GetPlayerKey("Right", playerNumber).IsDown() || (Mathf.Abs(GetPlayerAxisValue("Y", playerNumber)) > 0.1f || Mathf.Abs(GetPlayerAxisValue("X", playerNumber)) > 0.1f))
                         {
                             movementTimeout += Time.deltaTime;
                         }
@@ -10309,7 +10265,7 @@ namespace MonstrumExtendedSettingsMod
                         pitTrap.selectedDirection = pitTrap.forwardsTrans;
                         Vector3 forward = pitTrap.player.transform.forward;
                         Vector3 forward2 = pitTrap.backwardsTrans.forward;
-                        forward.y = (forward2.y = 0f);
+                        forward.y = forward2.y = 0f;
                         if (Vector3.Angle(forward, forward2) < 90f)
                         {
                             pitTrap.selectedDirection = pitTrap.backwardsTrans;
@@ -10327,7 +10283,7 @@ namespace MonstrumExtendedSettingsMod
                     pitTrap.selectedDirection = pitTrap.forwardsTrans;
                     Vector3 forward = pitTrap.player.transform.forward;
                     Vector3 forward2 = pitTrap.backwardsTrans.forward;
-                    forward.y = (forward2.y = 0f);
+                    forward.y = forward2.y = 0f;
                     if (Vector3.Angle(forward, forward2) < 90f)
                     {
                         pitTrap.selectedDirection = pitTrap.backwardsTrans;
@@ -10743,13 +10699,19 @@ namespace MonstrumExtendedSettingsMod
                         NewPlayerClass newPlayerClass = newPlayerClasses[PlayerNumberFromPlayerUpperBodyLock(playerUpperBodyLock.GetInstanceID())];
                         for (int k = 0; k < playerUpperBodyLock.localToPlayerFollowing.Length; k++)
                         {
-                            if (playerUpperBodyLock.localFollowing[k] != null)
+                            if (playerUpperBodyLock.localToPlayerFollowing[k] != null) // Fix typo from internal Junkfish code where localFollowing[k] was used.
                             {
-                                playerUpperBodyLock.temp = playerUpperBodyLock.localToPlayerFollowing[k].parent;
-                                playerUpperBodyLock.localToPlayerFollowing[k].parent = newPlayerClass.gameObject.transform;
-                                playerUpperBodyLock.localToPlayerFollowing[k].localPosition = Vector3.Lerp(playerUpperBodyLock.localToPlayerFollowing[k].localPosition, playerUpperBodyLock.lockGlobalPositions[k], t);
-                                playerUpperBodyLock.localToPlayerFollowing[k].localRotation = Quaternion.Lerp(playerUpperBodyLock.localToPlayerFollowing[k].localRotation, playerUpperBodyLock.lockGlobalRotation[k], t);
-                                playerUpperBodyLock.localToPlayerFollowing[k].parent = playerUpperBodyLock.temp;
+                                // Calculate target positions relatively in the player's local space rather than re-parenting.
+                                Vector3 currentLocalPos = newPlayerClass.gameObject.transform.InverseTransformPoint(playerUpperBodyLock.localToPlayerFollowing[k].position);
+                                Quaternion currentLocalRot = Quaternion.Inverse(newPlayerClass.gameObject.transform.rotation) * playerUpperBodyLock.localToPlayerFollowing[k].rotation;
+
+                                // Lerp them.
+                                Vector3 targetLocalPos = Vector3.Lerp(currentLocalPos, playerUpperBodyLock.lockGlobalPositions[k], t);
+                                Quaternion targetLocalRot = Quaternion.Lerp(currentLocalRot, playerUpperBodyLock.lockGlobalRotation[k], t);
+
+                                // Apply back in world space.
+                                playerUpperBodyLock.localToPlayerFollowing[k].position = newPlayerClass.gameObject.transform.TransformPoint(targetLocalPos);
+                                playerUpperBodyLock.localToPlayerFollowing[k].rotation = newPlayerClass.gameObject.transform.rotation * targetLocalRot;
                             }
                         }
                         for (int l = 0; l < playerUpperBodyLock.keepRotation.Length; l++)
@@ -10780,11 +10742,8 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (playerUpperBodyLock.localToPlayerFollowing[j] != null)
                     {
-                        playerUpperBodyLock.temp = playerUpperBodyLock.localToPlayerFollowing[j].parent;
-                        playerUpperBodyLock.localToPlayerFollowing[j].parent = newPlayerClass.gameObject.transform;
-                        playerUpperBodyLock.lockGlobalPositions[j] = playerUpperBodyLock.localToPlayerFollowing[j].localPosition;
-                        playerUpperBodyLock.lockGlobalRotation[j] = playerUpperBodyLock.localToPlayerFollowing[j].localRotation;
-                        playerUpperBodyLock.localToPlayerFollowing[j].parent = playerUpperBodyLock.temp;
+                        playerUpperBodyLock.lockGlobalPositions[j] = newPlayerClass.gameObject.transform.InverseTransformPoint(playerUpperBodyLock.localToPlayerFollowing[j].position);
+                        playerUpperBodyLock.lockGlobalRotation[j] = Quaternion.Inverse(newPlayerClass.gameObject.transform.rotation) * playerUpperBodyLock.localToPlayerFollowing[j].rotation;
                     }
                 }
             }
@@ -11347,17 +11306,6 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @RopeDragRelease
 
-            public static bool HookRopeDragReleaseTestIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookRopeDragReleaseTest((RopeDragRelease)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookRopeDragReleaseTest(RopeDragRelease ropeDragRelease)
             {
                 Debug.Log("This hook is working!: " + new StackTrace().ToString()); // # IEnumerator Hook Test
@@ -11654,7 +11602,7 @@ namespace MonstrumExtendedSettingsMod
 
                 On.SimpleOcclusion.Update += new On.SimpleOcclusion.hook_Update(HookSimpleOcclusionUpdate);
                 //On.SimpleOcclusion.RaycastOcclusion += new On.SimpleOcclusion.hook_RaycastOcclusion(HookSimpleOcclusionRaycastOcclusion);
-                new Hook(typeof(SimpleOcclusion).GetNestedType("<RaycastOcclusion>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.MultiplayerMode).GetMethod("HookSimpleOcclusionRaycastOcclusionIntermediateHook"), null);
+                Utilities.HookIterator<SimpleOcclusion>("<RaycastOcclusion>c__Iterator0", HookSimpleOcclusionRaycastOcclusion);
             }
 
             private static void HookSimpleOcclusionStart(On.SimpleOcclusion.orig_Start orig, SimpleOcclusion simpleOcclusion)
@@ -11909,17 +11857,6 @@ namespace MonstrumExtendedSettingsMod
             }
 
             // # SimpleOcclusionRaycastOcclusion
-
-            public static bool HookSimpleOcclusionRaycastOcclusionIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookSimpleOcclusionRaycastOcclusion((SimpleOcclusion)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookSimpleOcclusionRaycastOcclusion(SimpleOcclusion simpleOcclusion)
             {
@@ -12633,7 +12570,7 @@ namespace MonstrumExtendedSettingsMod
                 Vector3 dir = steamPushBack.steamVent.innerBox.transform.right * 3f;
                 Vector3 line = steamPushBack.steamVent.innerBox.transform.position - dir;
                 Vector3 line2 = line + dir * 2f;
-                line.y = (line2.y = 0f);
+                line.y = line2.y = 0f;
                 float t = 0f;
                 while (t < 1f)
                 {
@@ -12780,17 +12717,6 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @SubmarineDoor
 
-            public static bool HookSubmarineDoorOpeningIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookSubmarineDoorOpening((SubmarineDoor)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookSubmarineDoorOpening(SubmarineDoor submarineDoor)
             {
                 float t = 0f;
@@ -12860,19 +12786,6 @@ namespace MonstrumExtendedSettingsMod
             // @TestPronePullOut
 
             // Intermediate hook is not necessary as a single passed variable will stop the bug that does not properly do hooks due to not enough information being passed.
-            /*
-            public static bool HookTestPronePullOutPullOutPlayerIntermediateHook(IEnumerator self, Transform _transformTo)
-            {
-                IEnumerator replacement;
-                if (!ManyMonstersMode.IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookTestPronePullOutPullOutPlayer((TestPronePullOut)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self), _transformTo);
-                    ManyMonstersMode.IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-            */
-
             private static IEnumerator HookTestPronePullOutPullOutPlayer(On.TestPronePullOut.orig_PullOutPlayer orig, TestPronePullOut testPronePullOut, Transform _transformTo)
             {
                 Debug.Log("This hook is working!: " + new StackTrace().ToString()); // # IEnumerator Hook Test
@@ -12926,13 +12839,13 @@ namespace MonstrumExtendedSettingsMod
                 }
                 */
 
-                triggerObjectives.playerObjectives = (UnityEngine.Object.FindObjectOfType(typeof(PlayerObjectives)) as PlayerObjectives);
+                triggerObjectives.playerObjectives = UnityEngine.Object.FindObjectOfType(typeof(PlayerObjectives)) as PlayerObjectives;
                 playerObjectivesList.Add(triggerObjectives.playerObjectives);
-                triggerObjectives.newPlayerClass = (UnityEngine.Object.FindObjectOfType(typeof(NewPlayerClass)) as NewPlayerClass); //triggerObjectives.newPlayerClass = References.PlayerClass;
-                triggerObjectives.triggerNotification = (UnityEngine.Object.FindObjectOfType(typeof(TriggerNotification)) as TriggerNotification);
+                triggerObjectives.newPlayerClass = UnityEngine.Object.FindObjectOfType(typeof(NewPlayerClass)) as NewPlayerClass; //triggerObjectives.newPlayerClass = References.PlayerClass;
+                triggerObjectives.triggerNotification = UnityEngine.Object.FindObjectOfType(typeof(TriggerNotification)) as TriggerNotification;
                 triggerObjectives.detectRoom = triggerObjectives.newPlayerClass.GetComponentInChildren<DetectRoom>(); //triggerObjectives.detectRoom = References.Player.GetComponentInChildren<DetectRoom>();
-                triggerObjectives.oculusTutorialPrompts = (UnityEngine.Object.FindObjectOfType(typeof(OculusTutorialPromptsManager)) as OculusTutorialPromptsManager);
-                triggerObjectives.oculusJumpUpPrompt = (UnityEngine.Object.FindObjectOfType(typeof(OculusJumpUpPrompt)) as OculusJumpUpPrompt);
+                triggerObjectives.oculusTutorialPrompts = UnityEngine.Object.FindObjectOfType(typeof(OculusTutorialPromptsManager)) as OculusTutorialPromptsManager;
+                triggerObjectives.oculusJumpUpPrompt = UnityEngine.Object.FindObjectOfType(typeof(OculusJumpUpPrompt)) as OculusJumpUpPrompt;
                 triggerObjectives.itemHint = false;
                 triggerObjectives.run = false;
                 triggerObjectives.itemPickedUp = false;
@@ -12951,7 +12864,7 @@ namespace MonstrumExtendedSettingsMod
                 triggerObjectives.scrollTimer = 0f;
                 triggerObjectives.throwTimer.ResetTimer();
                 triggerObjectives.throwTimer.StartTimer();
-                triggerObjectives.player = (UnityEngine.Object.FindObjectOfType(typeof(NewPlayerClass)) as NewPlayerClass); //triggerObjectives.player = References.Player.GetComponent<NewPlayerClass>();
+                triggerObjectives.player = UnityEngine.Object.FindObjectOfType(typeof(NewPlayerClass)) as NewPlayerClass; //triggerObjectives.player = References.Player.GetComponent<NewPlayerClass>();
                 triggerObjectivesList.Add(triggerObjectives);
                 Debug.Log("TriggerObjectives.Start playerNumber is " + PlayerNumber(triggerObjectives.newPlayerClass.GetInstanceID()));
             }

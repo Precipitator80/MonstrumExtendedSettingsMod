@@ -1,0 +1,32 @@
+Name|The Predator
+Author|Mike Bone
+Difficulty|4
+Description|Get to the choppa! Survive against a hyper aggressive Hunter. With the Hunter constantly ducking in and out of vents, you must move quickly and be sure not to wander into any dead ends.\n\nLow gamma recommended.\n\nPart of the 4.1 MES challenge library.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Hunters|1
+Monster Always Finds You In Hiding Spot|True
+Monster Animation Speed Multiplier|1.5
+Monster Movement Speed Multiplier|1.5
+Brute Chase Speed Buff Multiplier|2.5
+Apply Chase Speed Buff To All Monsters|True
+Quiet Hunter|True
+Overpowered Hunter|True
+Aggressive Hunter|True
+Dark Ship|True
+Powerable Lights|True
+Player Stamina Mode|True
+Player Stamina Mode Stamina Duration|20
+Player Stamina Mode Stamina Penalty|50
+Starter Room Region|Lower Deck
+Flashlight Colour Red Component|0
+Flashlight Colour Green Component|255
+Flashlight Colour Blue Component|0
+Glowstick Colour Red Component|0
+Glowstick Colour Green Component|255
+Glowstick Colour Blue Component|0
+Ship Generic Lights Colour Red Component|0
+Ship Generic Lights Colour Green Component|255
+Ship Generic Lights Colour Blue Component|0
+Player Stamina Mode Stamina Text|True

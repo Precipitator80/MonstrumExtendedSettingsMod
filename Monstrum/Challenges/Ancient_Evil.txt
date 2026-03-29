@@ -1,0 +1,34 @@
+Name|Ancient Evil
+Author|Ink
+Difficulty|6
+Description|There is an ancient evil lurking somewhere on the ship. It cannot be eradicated, but you have a small chance of postponing your death. Be vigilant, save bullets and remember that there is no hiding from it.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Hunters|1
+Monster Animation Speed Multiplier|3
+Monster Movement Speed Multiplier|3
+Monster Rotation Speed Multiplier|3
+Custom Monster Scale|1.25
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|3
+Brute Chase Speed Buff Rate|3
+Apply Chase Speed Buff To All Monsters|True
+Hunter Maximum Cooldown Time Multiplier|2
+Glowstick Hunt|True
+No Glowstick Hunt Finale|True
+Special Glowsticks Required|12
+Special Glowsticks To Create|20
+No Hiding|True
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
+Flare Lifetime|2
+Spawn With Flare Gun|True
+Flares Teleport Monsters|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2
+Custom Music Pack|1
+Use Wander Theme From Start|True

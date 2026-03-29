@@ -1,0 +1,65 @@
+Name|Monstrum Extended++
+Author|Ink
+Difficulty|7
+Description|A random monster of the "Insane" difficulty variant, including Sparky. Additionally, there are a large number of settings such as new items, updated generation, escape conditions and other features to improve the enjoyment of the gameplay. High degree of replayability.
+Version|7.0
+Setting|Custom Value
+Add Sparky To The Game|True
+Use Indev Sparky Model|True
+Maximum Monster Spawntime (seconds)|30
+Fiend Vision Cone Angle|180
+Monster Animation Speed Multiplier|1.5
+Monster Movement Speed Multiplier|1.5
+Monster Rotation Speed Multiplier|1.5
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|1.5
+Brute Chase Speed Buff Rate|1.5
+Brute Fire Shroud|True
+Fire Shroud Radius|1.5
+Fire Blast Radius|0
+Hunter Maximum Cooldown Time Multiplier|0.25
+Overpowered Hunter|True
+Fiend Flicker Minimum Range|2
+Fiend Flicker Medium Range|3
+Fiend Flicker Maximum Range|4
+Fiend Mind Attack Damage Multiplier|3
+Fiend Mind Attack Attack Timer Charge Rate|5
+Fiend Mind Attack Attack Timer Decay Rate|0.25
+Fiend Mind Attack Delay Timer Rate|5
+Sparky Chase Speed Factor|0.75
+Sparky Rotation Speed Factor|-0.375
+Sparky Minimum Lurk Distance|2
+Sparky Maximum Super EMP Distance|100
+Sparky Super EMP Charge Time|0.75
+Sparky Maximum Aggro|0.5
+Sparky EMP Minimum Charge Time|25
+Sparky EMP Maximum Charge Time|75
+Sparky EMP Range|12
+Region Electric Trap Spawn Chance|37.5
+Region Electric Trap Slow Factor|0.675
+Sparky Electric Trap Spawn Chance|62.5
+Sparky Electric Trap Base Slow Factor|0.675
+Max Trap Slow Factor Decrease From Buff|0.15
+Helicopter Fuel Time|8
+Submersible Charge Time|12
+Escape Conditions|1
+Inventory Size|7
+Unlock Player Head|True
+Extended Jump Cooldown|True
+Monster Compass|True
+Walkie Talkie Range|25
+Better Smashables|True
+Add Smoke Grenade|True
+Add Molotov|True
+Spawn Deactivated Items|True
+Helicopter Fuel Time|8
+Submersible Charge Time|12
+Camera Timer|1
+Pre-fill Liferaft Fuse Box|False
+Add Deck Cargo Holds|True
+Use Deck Four On Submersible Side|True
+Add Lower Deck Next To Engine Room|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

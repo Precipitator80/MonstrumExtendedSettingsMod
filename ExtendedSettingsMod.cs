@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Permissions;
 using Partiality.Modloader;
 using UnityEngine;
+using MonstrumExtendedSettingsMod.Setting;
 
 [assembly: IgnoresAccessChecksTo("Assembly-CSharp")]
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
@@ -79,6 +80,8 @@ namespace MonstrumExtendedSettingsMod
                 {
                     SmokeMonster.InitialiseSmokeMonster();
                 }
+
+                SettingManager.SyncAllSettings();
             }
             else
             {

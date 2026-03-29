@@ -6,6 +6,8 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using System.Text;
+using System.Linq;
+using MonstrumExtendedSettingsMod.Setting;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -27,55 +29,93 @@ namespace MonstrumExtendedSettingsMod
 
     public partial class ExtendedSettingsModScript
     {
-        public const string VERSION = "6.0";
-        public const string VERSION_WITH_TEXT = VERSION/* + " Indev"*/;
+        public const string VERSION = "7.0";
+        public const string VERSION_WITH_TEXT = VERSION;
 
         public abstract class MESMSetting
         {
+            /// <summary>
+            /// The settings being used.
+            /// </summary>
             public static string[] modSettings;
+            /// <summary>
+            /// Whether the settings have been written to a file.
+            /// </summary>
             public static bool modSettingsExist;
+            /// <summary>
+            /// The category to use for any settings being initialised.
+            /// </summary>
             public static string currentCategoryBeingAssigned;
 
-            public string modSettingsText;
-            protected string modSettingsDescription;
+            /// <summary>
+            /// What the setting is called.
+            /// </summary>
+            public string title;
+            /// <summary>
+            /// Text detailing what the setting does.
+            /// </summary>
+            protected string description;
+            /// <summary>
+            /// The default value of the setting as a string.
+            /// </summary>
             public string defaultValueString;
+            /// <summary>
+            /// The current value of the setting set by the user as a string.
+            /// </summary>
             public string userValueString;
-            public int modSettingsLine;
+            /// <summary>
+            /// The line number of the setting's value in the text file.
+            /// </summary>
+            public int valueLine;
+            /// <summary>
+            /// Which category of settings the setting belongs to.
+            /// </summary>
             public string category;
             //private int linesToResult;
+            /// <summary>
+            /// Whether this setting is closely related to the previous setting.
+            /// Any child settings do not have a filler line printed before them in the settings text file.
+            /// </summary>
             private bool childSetting;
-            public MenuDescriptionBox settingsButton;
+            /// <summary>
+            /// The button used to edit this setting.
+            /// </summary>
+            public MenuDescriptionBox button;
 
-            public MESMSetting(string modSettingsText, string modSettingsDescription, bool childSetting, string defaultValueString)
+            public MESMSetting(string title, string description, bool childSetting, string defaultValueString)
             {
-                this.modSettingsText = modSettingsText;//modSettingsText.Split(new string[] { " -" }, System.StringSplitOptions.None)[0];
+                this.title = title;//modSettingsText.Split(new string[] { " -" }, System.StringSplitOptions.None)[0];
                 //Debug.Log("Processing setting: " + this.modSettingsText);
                 this.defaultValueString = defaultValueString;
-                this.modSettingsDescription = modSettingsDescription + ".\nDefault = " + defaultValueString;
-                int lineOfSettingText = (modSettingsExist ? FindLineOfSettingText(this.modSettingsText) : 0);
+                this.description = description + ".\nDefault = " + defaultValueString;
+                int titleLine = modSettingsExist ? FindTitleLine(this.title) : 0;
                 this.childSetting = childSetting;
-                this.modSettingsLine = lineOfSettingText + 1;
+                this.valueLine = titleLine + 1;
                 this.category = currentCategoryBeingAssigned;
                 ModSettings.allSettings.Add(this);
             }
 
-            protected static int FindLineOfSettingText(string searchText)
+            /// <summary>
+            /// Finds the line of a setting by its title.
+            /// </summary>
+            /// <param name="title">The title to search for.</param>
+            /// <returns>The line number of the setting.</returns>
+            /// <exception cref="ArgumentException">If the line could not be found.</exception>
+            protected static int FindTitleLine(string title)
             {
                 // For each line of the settings string array, look for a snippet of text describing a setting. If the relevant line is found, skip ahead a given number of lines (default = 1) to find the corresponding setting in its raw format. This means the search can be automated instead of requiring defined numbers. While this may be a bit slower than the previous implementation, it should also make the settings file less prone to incorrect formatting.
-                for (int line = 0; line < modSettings.Length; line++)
+                int line = Array.FindIndex(modSettings, potentialLine => potentialLine.Contains(title + " -"));
+                if (line < 0)
                 {
-                    if (modSettings[line].Contains(searchText + " -"))
-                    {
-                        return line;
-                    }
+                    Debug.Log($"Could not find setting for {title} -");
+                    throw new ArgumentException(nameof(title));
                 }
-                Debug.Log("Could not find setting for " + searchText + " -");
-                throw new ArgumentException();
+                return line;
             }
 
-            public static string FindSetting(string searchText, int linesToResult = 1)
+            public static string FindSetting(string title, int linesToResult = 1)
             {
-                string result = modSettings[FindLineOfSettingText(searchText) + linesToResult];
+                string result = modSettings[FindTitleLine(title) + linesToResult];
                 //Debug.Log("Returning " + result);
                 return result;
             }
@@ -103,7 +143,7 @@ namespace MonstrumExtendedSettingsMod
                                 // Update the variable and then the text file
                                 try
                                 {
-                                    value = mESMSetting.settingsButton.GetText();
+                                    value = mESMSetting.button.GetText();
                                 }
                                 catch (Exception e)
                                 {
@@ -114,7 +154,7 @@ namespace MonstrumExtendedSettingsMod
                             }
                             else if (t == typeof(MESMSettingRGB))
                             {
-                                value = mESMSetting.settingsButton.GetText();
+                                value = mESMSetting.button.GetText();
                                 ((MESMSettingRGB)mESMSetting).userValue = Convert.ToInt32(value);
                             }
                             else
@@ -124,11 +164,11 @@ namespace MonstrumExtendedSettingsMod
                                     Type gt = mESMSetting.GetType().GetGenericArguments()[0]; // How to get the type of T from a member of a generic class or method - Tamas Czinege - https://stackoverflow.com/questions/557340/how-to-get-the-type-of-t-from-a-member-of-a-generic-class-or-method - Accessed 26.10.2021
                                     if (gt == typeof(int) || gt == typeof(float))
                                     {
-                                        value = mESMSetting.settingsButton.GetText();
+                                        value = mESMSetting.button.GetText();
                                         if (gt == typeof(int))
                                         {
                                             ((MESMSetting<int>)mESMSetting).userValue = Convert.ToInt32(value);
-                                            if (mESMSetting.modSettingsText.Equals("Number of Random Monsters") || mESMSetting.modSettingsText.Equals("Number of Brutes") || mESMSetting.modSettingsText.Equals("Number of Hunters") || mESMSetting.modSettingsText.Equals("Number of Fiends") || mESMSetting.modSettingsText.Equals("Number of Sparkies"))
+                                            if (mESMSetting.title.Equals("Number of Random Monsters") || mESMSetting.title.Equals("Number of Brutes") || mESMSetting.title.Equals("Number of Hunters") || mESMSetting.title.Equals("Number of Fiends") || mESMSetting.title.Equals("Number of Sparkies"))
                                             {
                                                 newNumberOfMonsters += ((MESMSetting<int>)mESMSetting).userValue;
                                             }
@@ -140,7 +180,7 @@ namespace MonstrumExtendedSettingsMod
                                     }
                                     else if (gt == typeof(bool))
                                     {
-                                        MenuBoolButtonWithDescription menuBoolButtonWithDescription = (MenuBoolButtonWithDescription)mESMSetting.settingsButton;
+                                        MenuBoolButtonWithDescription menuBoolButtonWithDescription = (MenuBoolButtonWithDescription)mESMSetting.button;
                                         value = menuBoolButtonWithDescription.menuBoolButton.GetValue().ToString();
                                         ((MESMSetting<bool>)mESMSetting).userValue = menuBoolButtonWithDescription.menuBoolButton.GetValue();
                                     }
@@ -158,21 +198,21 @@ namespace MonstrumExtendedSettingsMod
                             //Debug.Log("Writing to line " + mESMSetting.modSettingsLine + ": " + value);
                             try
                             {
-                                modSettings[mESMSetting.modSettingsLine] = value;
+                                modSettings[mESMSetting.valueLine] = value;
                             }
                             catch (Exception e)
                             {
-                                Debug.Log("Failed to write to line " + mESMSetting.modSettingsLine + ": " + value);
+                                Debug.Log("Failed to write to line " + mESMSetting.valueLine + ": " + value);
                                 throw new Exception(e.ToString());
                             }
                             //Debug.Log("Wrote to line " + mESMSetting.modSettingsLine + ": " + value);
-                            if ((mESMSetting.modSettingsDescription.Contains("Restart") || mESMSetting.modSettingsDescription.Contains("restart")) && mESMSetting.userValueString != value)
+                            if ((mESMSetting.description.Contains("Restart") || mESMSetting.description.Contains("restart")) && mESMSetting.userValueString != value)
                             {
                                 changedSettingThatRequiresRestart = true;
-                                restartSettingsChanged.Add(mESMSetting.modSettingsText);
+                                restartSettingsChanged.Add(mESMSetting.title);
                             }
                             mESMSetting.userValueString = value;
-                            settingsLogger.Append(mESMSetting.modSettingsText);
+                            settingsLogger.Append(mESMSetting.title);
                             settingsLogger.Append(" = ");
                             settingsLogger.Append(mESMSetting.userValueString);
                             settingsLogger.Append("\t| ");
@@ -191,19 +231,19 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 modSettingsStringBuilder.Append("------------------------------\n");
                             }
-                            modSettingsStringBuilder.Append(mESMSetting.modSettingsText);
+                            modSettingsStringBuilder.Append(mESMSetting.title);
                             modSettingsStringBuilder.Append(" - ");
-                            modSettingsStringBuilder.Append(mESMSetting.modSettingsDescription.Replace("\n", " - "));
+                            modSettingsStringBuilder.Append(mESMSetting.description.Replace("\n", " - "));
                             modSettingsStringBuilder.Append("\n");
                             modSettingsStringBuilder.Append(value);
                         }
                     }
                     catch (Exception e)
                     {
-                        if (mESMSetting != null && mESMSetting.modSettingsText != null)
+                        if (mESMSetting != null && mESMSetting.title != null)
                         {
-                            Debug.Log("Error while saving setting: " + mESMSetting.modSettingsText + "\n" + e.ToString());
-                            badlyFormattedSettings.Add(mESMSetting.modSettingsText);
+                            Debug.Log("Error while saving setting: " + mESMSetting.title + "\n" + e.ToString());
+                            badlyFormattedSettings.Add(mESMSetting.title);
                         }
                         else
                         {
@@ -302,7 +342,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         try
                         {
-                            mESMSetting.settingsButton.SetText(mESMSetting.defaultValueString);
+                            mESMSetting.button.SetText(mESMSetting.defaultValueString);
                         }
                         catch
                         {
@@ -311,9 +351,9 @@ namespace MonstrumExtendedSettingsMod
                     }
                     else if (t == typeof(MESMSettingRGB))
                     {
-                        mESMSetting.settingsButton.SetText(mESMSetting.defaultValueString);
+                        mESMSetting.button.SetText(mESMSetting.defaultValueString);
                         ((MESMSettingRGB)mESMSetting).ChangeTextColour();
-                        ((MenuSliderInputFieldWithDescription)mESMSetting.settingsButton).menuSlider.slider.value = Convert.ToSingle(mESMSetting.defaultValueString);
+                        ((MenuSliderInputFieldWithDescription)mESMSetting.button).menuSlider.slider.value = Convert.ToSingle(mESMSetting.defaultValueString);
                     }
                     else
                     {
@@ -322,16 +362,16 @@ namespace MonstrumExtendedSettingsMod
                             Type gt = mESMSetting.GetType().GetGenericArguments()[0]; // How to get the type of T from a member of a generic class or method - Tamas Czinege - https://stackoverflow.com/questions/557340/how-to-get-the-type-of-t-from-a-member-of-a-generic-class-or-method - Accessed 26.10.2021
                             if (gt == typeof(int) || gt == typeof(float))
                             {
-                                mESMSetting.settingsButton.SetText(mESMSetting.defaultValueString);
+                                mESMSetting.button.SetText(mESMSetting.defaultValueString);
 
-                                if (mESMSetting.settingsButton.GetType() == typeof(MenuSliderInputFieldWithDescription))
+                                if (mESMSetting.button.GetType() == typeof(MenuSliderInputFieldWithDescription))
                                 {
-                                    ((MenuSliderInputFieldWithDescription)mESMSetting.settingsButton).menuSlider.slider.value = Convert.ToSingle(mESMSetting.defaultValueString);
+                                    ((MenuSliderInputFieldWithDescription)mESMSetting.button).menuSlider.slider.value = Convert.ToSingle(mESMSetting.defaultValueString);
                                 }
                             }
                             else if (gt == typeof(bool))
                             {
-                                ((MenuBoolButtonWithDescription)mESMSetting.settingsButton).menuBoolButton.SetValueAndUpdateText(((MESMSetting<bool>)mESMSetting).defaultValue);
+                                ((MenuBoolButtonWithDescription)mESMSetting.button).menuBoolButton.SetValueAndUpdateText(((MESMSetting<bool>)mESMSetting).defaultValue);
                             }
                             else
                             {
@@ -354,18 +394,18 @@ namespace MonstrumExtendedSettingsMod
             public MESMSettingString(string modSettingsText, string modSettingsDescription, string defaultValue, bool absoluteValue = false, bool childSetting = false, bool readOnlySetting = false) : base(modSettingsText, modSettingsDescription, childSetting, defaultValue)
             {
                 this.defaultValue = defaultValue;
-                this.userValue = modSettingsExist ? modSettings[this.modSettingsLine] : defaultValue;
+                this.userValue = modSettingsExist ? modSettings[this.valueLine] : defaultValue;
                 this.userValueString = this.userValue.ToString();
                 this.readOnlySetting = readOnlySetting;
             }
 
             public override MenuDescriptionBox CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
             {
-                MenuInputFieldWithDescription menuInputFieldWithDescription = new MenuTextInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset);
-                settingsButton = menuInputFieldWithDescription;
+                MenuInputFieldWithDescription menuInputFieldWithDescription = new MenuTextInputFieldWithDescription(this.description, this.title, referenceTransform, referenceOffset);
+                button = menuInputFieldWithDescription;
                 menuInputFieldWithDescription.menuInputField.inputField.text = userValue.ToString();
                 menuInputFieldWithDescription.menuInputField.inputField.readOnly = readOnlySetting;
-                return settingsButton;
+                return button;
             }
 
             public string defaultValue;
@@ -384,10 +424,10 @@ namespace MonstrumExtendedSettingsMod
 
             public override MenuDescriptionBox CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
             {
-                MenuMultipleChoiceButtonWithDescription menuMultipleChoiceButtonWithDescription = new MenuMultipleChoiceButtonWithDescription(this.modSettingsDescription, this.modSettingsText, choices, referenceTransform, referenceOffset);
-                settingsButton = menuMultipleChoiceButtonWithDescription;
+                MenuMultipleChoiceButtonWithDescription menuMultipleChoiceButtonWithDescription = new MenuMultipleChoiceButtonWithDescription(this.description, this.title, choices, referenceTransform, referenceOffset);
+                button = menuMultipleChoiceButtonWithDescription;
                 menuMultipleChoiceButtonWithDescription.SetText(userValue.ToString());
-                return settingsButton;
+                return button;
             }
         }
 
@@ -397,7 +437,7 @@ namespace MonstrumExtendedSettingsMod
             public MESMSetting(string modSettingsText, string modSettingsDescription, T defaultValue, bool absoluteValue = false, bool childSetting = false, float lowerClamp = float.MinValue, float upperClamp = float.MaxValue) : base(modSettingsText, modSettingsDescription, childSetting, defaultValue.ToString())
             {
                 this.defaultValue = defaultValue;
-                this.userValue = (modSettingsExist ? FindSetting(this.modSettingsLine) : defaultValue);
+                this.userValue = modSettingsExist ? FindSetting(this.valueLine) : defaultValue;
                 this.minClamp = lowerClamp == float.MinValue ? 0f : lowerClamp;
                 this.maxClamp = upperClamp == float.MaxValue ? 0f : upperClamp;
 
@@ -444,7 +484,7 @@ namespace MonstrumExtendedSettingsMod
 
             public static new T FindSetting(string searchText, int linesToResult = 1)
             {
-                return FindSetting(FindLineOfSettingText(searchText) + linesToResult);
+                return FindSetting(FindTitleLine(searchText) + linesToResult);
             }
 
             public override MenuDescriptionBox CreateButtonForSetting(Transform referenceTransform, Vector3 referenceOffset)
@@ -454,32 +494,32 @@ namespace MonstrumExtendedSettingsMod
                     MenuInputFieldWithDescription menuInputFieldWithDescription;
                     if (this.minClamp != 0f || this.maxClamp != 0f)
                     {
-                        MenuSliderInputFieldWithDescription menuSliderInputFieldDescriptionBox = new MenuSliderInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
-                        settingsButton = menuSliderInputFieldDescriptionBox;
+                        MenuSliderInputFieldWithDescription menuSliderInputFieldDescriptionBox = new MenuSliderInputFieldWithDescription(this.description, this.title, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
+                        button = menuSliderInputFieldDescriptionBox;
                         menuSliderInputFieldDescriptionBox.menuSlider.slider.value = Convert.ToSingle(userValue);
                         menuInputFieldWithDescription = menuSliderInputFieldDescriptionBox;
                     }
                     else
                     {
-                        menuInputFieldWithDescription = new MenuNumericInputFieldWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
-                        settingsButton = menuInputFieldWithDescription;
+                        menuInputFieldWithDescription = new MenuNumericInputFieldWithDescription(this.description, this.title, referenceTransform, referenceOffset, typeof(T) == typeof(int), this.minClamp, this.maxClamp);
+                        button = menuInputFieldWithDescription;
                     }
                     menuInputFieldWithDescription.menuInputField.inputField.text = userValue.ToString();
                 }
                 else /*if (typeof(T) == typeof(bool))*/
                 {
-                    MenuBoolButtonWithDescription menuBoolButtonWithDescription = new MenuBoolButtonWithDescription(this.modSettingsDescription, this.modSettingsText, referenceTransform, referenceOffset);
-                    settingsButton = menuBoolButtonWithDescription;
+                    MenuBoolButtonWithDescription menuBoolButtonWithDescription = new MenuBoolButtonWithDescription(this.description, this.title, referenceTransform, referenceOffset);
+                    button = menuBoolButtonWithDescription;
                     menuBoolButtonWithDescription.menuBoolButton.SetValueAndUpdateText((bool)Convert.ChangeType(userValue, typeof(bool)));
                 }
-                return settingsButton;
+                return button;
             }
         }
 
         /*----------------------------------------------------------------------------------------------------*/
         // ~ModSettings
 
-        private static class ModSettings
+        public static class ModSettings
         {
             public static List<MESMSetting> allSettings;
 
@@ -573,7 +613,10 @@ namespace MonstrumExtendedSettingsMod
                     noMonsterStunImmunity = new MESMSetting<bool>("No Monster Stun Immunity", "Removes the immunity time monsters have after being stunned", false).userValue;
                     persistentMonster = new MESMSetting<bool>("Persistent Monster", "Once a monster sees you, it will not stop chasing you", false).userValue;
                     seerMonster = new MESMSetting<bool>("Seer Monster", "After a monster spawns or you respawn, it will start chasing you", false).userValue;
+                    silentMonster = new MESMSetting<bool>("Silent Monster", "The monster will not make any noise", false).userValue;
                     monsterAlwaysFindsYou = new MESMSetting<bool>("Monster Always Finds You In Hiding Spot", "Only guarantees the monster will pull you out if it checks your hiding spot", false).userValue;
+                    MonsterVisionConeAngle.fiendVisionConeAngle = new MESMSetting<int>("Fiend Vision Cone Angle", "Monster vision uses a cone in front of the monster to detect a player. This setting changes the cone angle of Fiend's vision. The game uses 70 by default", 70, true, false, 0, 360).userValue;
+                    MonsterVisionConeAngle.applyFiendVisionConeAngleToAllMonsters = new MESMSetting<bool>("Apply Fiend Vision Cone Angle To All Monsters", "Applies the custom angle used for Fiend to all monsters", false).userValue;
                     monsterAnimationSpeedMultiplier = new MESMSetting<float>("Monster Animation Speed Multiplier", "Changes the speed of all the animations of a monster. Movement is bound to animations", 1).userValue;
                     monsterMovementSpeedMultiplier = new MESMSetting<float>("Monster Movement Speed Multiplier", "Decreases a monster's speed without decreasing the speed of its animations. Values above 1 will make the monster move closer to full running speed during other states, such as while wandering about or at the sub doors", 1).userValue;
                     monsterRotationSpeedMultiplier = new MESMSetting<float>("Monster Rotation Speed Multiplier", "Changes the rotation speed of a monster", 1f, true).userValue;
@@ -976,7 +1019,7 @@ namespace MonstrumExtendedSettingsMod
                         numberOfRandomMonsters += numbersOfMonsterPlayers.Count - numberOfMonsters;
                         numberOfMonsters += numbersOfMonsterPlayers.Count - numberOfMonsters;
                     }
-                    MultiplayerMode.useLegacyAudio = new MESMSetting<bool>("Use Legacy Audio In Multiplayer", "Does not make adjustments to the audio for multiplayer and instead only gives the first player audio. The custom multiplayer audio system is quite performance heavy and can cause lag spikes and audio issues in certain situations but plays the audio of all players instead of just player 1. Requires a restart to change and multiplayer to be enabled", false, false, true).userValue;
+                    MultiplayerMode.useLegacyAudio = new MESMSetting<bool>("Use Legacy Audio In Multiplayer", "Does not make adjustments to the audio for multiplayer and instead only gives the first player audio. The custom multiplayer audio system is quite performance heavy and can cause lag spikes and audio issues in certain situations but plays the audio of all players instead of just player 1. Requires a restart to change and multiplayer to be enabled", true, false, true).userValue;
                     CrewVsMonsterMode.letAIControlMonster = new MESMSetting<bool>("Start With AI Having Control", "Starts Crew VS Monsters rounds with the AI having control over the monster. Useful if you simply want to use the mode for spectating the monster without having to press the control transfer button", false, false, true).userValue;
                     /*
                     ------------------------------
@@ -995,6 +1038,7 @@ namespace MonstrumExtendedSettingsMod
                     randomiserMode = new MESMSetting<bool>("Randomiser Mode", "Randomises which settings are used and what they are set to", false).userValue;
                     chaosMultiplier = new MESMSetting<float>("Chaos Multiplier", "Increases or decreases the probability of settings being used and the magnitude of each setting", 1, false, true).userValue;
                     glowstickHunt = new MESMSetting<bool>("Glowstick Hunt", "A few glowsticks are chosen at random to be of a different colour than the rest. Activating all of the special glowsticks will prepare the liferaft for you", false).userValue;
+                    noGlowstickHuntFinale = new MESMSetting<bool>("No Glowstick Hunt Finale", "Stops the finale from activating at the end of glowstick hunt", false, false, true).userValue;
                     specialGlowsticksRequired = new MESMSetting<int>("Special Glowsticks Required", "Sets how many glowsticks are required to start the Glowstick Hunt finale. The colours used cycle through the colours of the rainbow", 6, false, true).userValue;
                     specialGlowsticksToCreate = new MESMSetting<int>("Special Glowsticks To Create", "Sets how many normal glowsticks will be selected to be special glowsticks when the round starts. Will always be set to at least the number of special glowsticks required", 12, false, true).userValue;
                     useCustomDoors = new MESMSetting<bool>("Use Custom Doors Mode", "Sets each door on the ship to this door type. This may cause a bug when exiting the tutorial room", false).userValue;
@@ -1026,9 +1070,13 @@ namespace MonstrumExtendedSettingsMod
                     overpoweredHidingSpots = new MESMSetting<bool>("Overpowered Hiding Spots", "The monsters will not be able to search any hiding spots", false).userValue;
                     noHiding = new MESMSetting<bool>("No Hiding", "You will not be invisible to the monster in a hiding spot", false).userValue;
                     disableLiferaft = new MESMSetting<bool>("Disable Liferaft", "You will not be able to use the liferaft to escape", false).userValue;
+                    helicopterFuelAmount = new MESMSetting<int>("Helicopter Fuel Amount", "The number of fuel cans required to fuel the helicopter", 2, true).userValue;
+                    helicopterFuelTime = new MESMSetting<int>("Helicopter Fuel Time", "The number of seconds required to fuel the helicopter", 85, true).userValue;
                     disableHelicopter = new MESMSetting<bool>("Disable Helicopter", "You will not be able to use the helicopter to escape", false).userValue;
+                    submersibleChargeTime = new MESMSetting<int>("Submersible Charge Time", "The number of seconds required to charge the submersible", 120, true).userValue;
                     disableSubmersible = new MESMSetting<bool>("Disable Submersible", "You will not be able to use the submersible to escape", false).userValue;
                     escapeRoutesToWin = new MESMSetting<int>("Escape Routes To Win", "The number / percentage of all escape routes you need to fully prepare to win", 1, true, false, 1, 3).userValue;
+                    escapeConditionsToWin = new MESMSetting<int>("Escape Conditions", "You cannot use escape routes until you have completed a number of three tasks. Power up 3 fuse boxes, turn off the master steam valve or have a flare gun and backpack", 0, true, false, 0, 3).userValue;
                     gravityXComponent = new MESMSetting<float>("Gravity X Acceleration", "Changes the acceleration due to gravity in the x axis", 0f, false).userValue;
                     gravityYComponent = new MESMSetting<float>("Gravity Y Acceleration", "Changes the acceleration due to gravity in the y axis", -9.81f, false, true).userValue;
                     gravityZComponent = new MESMSetting<float>("Gravity Z Acceleration", "Changes the acceleration due to gravity in the z axis", 0f, false, true).userValue;
@@ -1071,6 +1119,7 @@ namespace MonstrumExtendedSettingsMod
                     infiniteFuelCanFuel = new MESMSetting<bool>("Infinite Fuel Can Fuel", "Fuel cans will have infinite fuel", false).userValue;
                     fireDurationMultiplier = new MESMSetting<float>("Fire Duration Multiplier", "Changes the duration of how long fires burn", 1, true, true).userValue;
                     monsterCompass = new MESMSetting<bool>("Monster Compass", "Makes compasses point towards the nearest monster", false).userValue;
+                    walkieTalkieRange = new MESMSetting<float>("Walkie Talkie Range", "The maximum distance between two walkie talkies for them to be connected", 20f, true).userValue;
                     spawnWithLiferaftItems = new MESMSetting<bool>("Spawn With Liferaft Items", "Starts a round with the mission items required to complete the liferaft objectives in your inventory", false).userValue;
                     spawnWithHelicopterItems = new MESMSetting<bool>("Spawn With Helicopter Items", "Starts a round with the mission items required to complete the helicopter objectives in your inventory", false, false, true).userValue;
                     spawnWithSubmersibleItems = new MESMSetting<bool>("Spawn With Submersible Items", "Starts a round with the mission items required to complete the Submersible objectives in your inventory", false, false, true).userValue;
@@ -1091,15 +1140,21 @@ namespace MonstrumExtendedSettingsMod
                     consistentLevelGeneration = new MESMSetting<bool>("Consistent Level Generation", "Level generation for the same seed and settings will always be the same. This is setting is automatically enabled when using a custom seed", false, false, true).userValue;
                     startRoomRegion = new MESMSettingMultipleChoice("Starter Room Region", "Can be Upper Deck, Lower Deck or Either", "Either", new string[] { "Either", "Upper Deck", "Lower Deck" }).userValue;
                     spawnDeactivatedItems = new MESMSetting<bool>("Spawn Deactivated Items", "Lets the compass and walkie talkie items spawn. These items were spawned in older versions of the game, but later removed", false).userValue;
+                    camTimer = new MESMSetting<int>("Camera Timer", "Sets the timer for how long a camera needs until it triggers its alarm", 2, true, false, 0).userValue;
                     noCameras = new MESMSetting<bool>("No Cameras", "All cameras are covered with duct tape", false).userValue;
                     noSteam = new MESMSetting<bool>("No Steam", "Sets the engine room's steam override to off. Model does not update", false).userValue;
-                    allPreFilledFuseBoxes = new MESMSetting<bool>("All Pre-filled Fuse Boxes", "Spawns each fuse box with a fuse", false).userValue;
-                    noPreFilledFuseBoxes = new MESMSetting<bool>("No Pre-filled Fuse Boxes", "Spawns each fuse box without a fuse", false).userValue;
+                    preFillStartRegionFuseBox = new MESMSetting<bool>("Pre-fill Start Region Fuse Box", "Pre-fills the fuse box of the player's start region", true).userValue;
+                    preFillLiferaftFuseBox = new MESMSetting<bool>("Pre-fill Liferaft Fuse Box", "Pre-fills the fuse box for the liferaft's crane and lights", true).userValue;
+                    preFillEngineRoomFuseBox = new MESMSetting<bool>("Pre-fill Engine Room Fuse Box", "Pre-fills the fuxe box of the engine room", false).userValue;
+                    preFillSubmersibleFuseBox = new MESMSetting<bool>("Pre-fill Submersible Fuse Box", "Pre-fills the fuse box of the submersible room", false).userValue;
+                    preFillLightFuseBoxes = new MESMSetting<bool>("Pre-fill Light Fuse Boxes", "Pre-fills all fuse boxes that power region lights (excluding the start region, liferaft, engine room and submersible fuse boxes)", false).userValue;
+                    preFillPowerLockFuseBoxes = new MESMSetting<bool>("Pre-fill Power Lock Fuse Boxes", "Pre-fills all fuse boxes of power-locked rooms", false).userValue;
+                    noStarterFuse = new MESMSetting<bool>("No Starter Fuse", "Teleports the fuse in the starter room to a random location", false).userValue;
                     noBarricadedDoors = new MESMSetting<bool>("No Barricaded Doors", "Removes the door of every barricaded room", false).userValue;
                     overpoweredSteamVents = new MESMSetting<bool>("Overpowered Steam Vents", "Lets steam be expelled from each possible point on a steam vent. This means every vent will have three steam spawn points and handles. Two handles will be clipped in each other, making it harder to turn off both", false).userValue;
                     unbreakablePitTraps = new MESMSetting<bool>("Unbreakable Pit Traps", "Pit traps are not destroyed when the player or monster runs over them", false).userValue;
                     addAdditionalCrewDeckBuilding = new MESMSetting<bool>("Add Additional Crew Deck Building", "Removes some of the cargo containers in front of the bridge and replaces them with a small crew deck building with another life raft on top of it", false).userValue;
-                    additionalFuseBoxesToSetUpAfterGeneration = new List<FuseBox>();
+                    deckCargoHolds = new MESMSetting<bool>("Add Deck Cargo Holds", "Lets the cargo holds expand to the deck of the ship rather than being limited to the lower decks", false).userValue;
                     useDeckFourOnSubmersibleSide = new MESMSetting<bool>("Use Deck Four On Submersible Side", "Allows deck 4 to spawn rooms like deck 3 on the submersible side. Also increases the spawn count of lower deck rooms a bit to help fill the additional space", false).userValue;
                     extendLowerDecks = new MESMSetting<bool>("Extend Lower Decks", "A setting that has a similar effect to the extend map one, but only affects the lower decks and has much faster loading times. Also increases the spawn count of lower deck rooms a tiny bit to help fill the additional space", false).userValue;
                     spawnAdditionalEngineRoomWorkshops = new MESMSetting<bool>("Spawn Additional Engine Room Workshops", "Spawns some more engine room workshops with phones", false).userValue;
@@ -1230,8 +1285,6 @@ namespace MonstrumExtendedSettingsMod
                     }
                     InvisibleMode = new MESMSetting<bool>("Invisibility In Debug Mode", "Monsters cannot see you", false, false, true).userValue;
                     WallhacksMode = new MESMSetting<bool>("Use \"Wallhacks\" In Debug Mode", "Most walls will be see-through (requires SSAO and Fog for full effect)", false, false, true).userValue;
-                    BreakTheGameLight = new MESMSetting<bool>("Break The Game Lightly", "Continuously sets References.Monster to null after level generation is finished", false, false, true).userValue;
-                    BreakTheGameHeavy = new MESMSetting<bool>("Break The Game Heavily", "Continuously sets References.Monster to null even before level generation is finished - Requires Break The Game Lightly to be enabled", false, false, true).userValue;
                     skipSplashScreen = new MESMSetting<bool>("Skip Splash Screen", "Will skip the splash screen on startup but not start a new round immediately", false).userValue;
                     skipMenuScreen = new MESMSetting<bool>("Skip Menu Screen", "Will skip the menu screen on startup so that a new round is automatically started without having to click on New Game. Causes visual bugs while loading", false, false, true).userValue;
                     alwaysSkipMenuScreen = new MESMSetting<bool>("Always Skip Menu Screen", "Will always skip the menu screen, even after finishing a round. Not recommended as it makes changing settings between rounds difficult and does not let access the main menu", false, false, true).userValue;
@@ -1254,6 +1307,8 @@ namespace MonstrumExtendedSettingsMod
                     }
                     disableCustomLoadingText = new MESMSetting<bool>("Disable Custom Loading Screen Text", "The game will not tell you whether the mod is installed correctly during the loading screen. Not recommended", false).userValue;
                     timeScaleMultiplier = new MESMSetting<float>("Timescale", "Can make the game run slower or faster", 1).userValue;
+                    musicPack = new MESMSettingMultipleChoice("Custom Music Pack", "Replaces the default game's soundtrack with music from Monstrum 2. Pack 1: Main Menu. Pack 2: Helipad. Pack 3: Moon Pool. Pack 4: Hisa Maru. Random: Randomly choose one custom pack to use. All: Switch the pack used after each chase", "Default", new string[] { "Default", "1", "2", "3", "4", "Random", "All" }).userValue;
+                    useWanderThemeFromStart = new MESMSetting<bool>("Use Wander Theme From Start", "Uses the monster's wander theme from the very start of the game. This lets a music pack's theme be used from the start of the game without revealing the monster", false).userValue;
                     useMonsterUpdateGroups = new MESMSetting<bool>("Use Monster Update Groups", "Divide multiple monster AIs up into several update groups, where only one group of monster AIs is updated fully per frame. Can significantly decrease CPU usage at the cost of reducing how often monster AIs update. Maximum number of groups is equal to the number of monsters being used. Very high values may actually decrease performance", false).userValue;
                     NumberOfMonsterUpdateGroups = new MESMSetting<int>("Number Of Monster Update Groups", "The number of monster update groups to use", 10, true, true).userValue;
                     doNotPreRenderMonsters = new MESMSetting<bool>("Do Not Pre-Render Monsters", "Can increase performance but can also cause monsters to be invisible for a short time when first coming into view of the player", false).userValue;
@@ -1317,7 +1372,7 @@ namespace MonstrumExtendedSettingsMod
                     StringBuilder settingsLogger = new StringBuilder("Listing all settings:\t ");
                     foreach (MESMSetting mESMSetting in allSettings)
                     {
-                        settingsLogger.Append(mESMSetting.modSettingsText);
+                        settingsLogger.Append(mESMSetting.title);
                         settingsLogger.Append(" = ");
                         settingsLogger.Append(mESMSetting.userValueString);
                         settingsLogger.Append("\t| ");
@@ -1466,8 +1521,6 @@ namespace MonstrumExtendedSettingsMod
                     spawnDeactivatedItems = UsageRandomiser();
                     noCameras = UsageRandomiser(15f);
                     noSteam = UsageRandomiser(10f);
-                    allPreFilledFuseBoxes = UsageRandomiser(20f);
-                    noPreFilledFuseBoxes = UsageRandomiser(25f);
                     noBarricadedDoors = UsageRandomiser(10f);
                     overpoweredSteamVents = UsageRandomiser(5f);
                     unbreakablePitTraps = UsageRandomiser(7.5f);
@@ -1591,6 +1644,7 @@ namespace MonstrumExtendedSettingsMod
             // #ReadBeforeGeneration
             public static void ReadBeforeGeneration()
             {
+                SettingManager.EarlyInitialisation();
                 if (enableMultiplayer)
                 {
                     MultiplayerMode.MultiplayerModeVariableInitialisation();
@@ -1602,6 +1656,8 @@ namespace MonstrumExtendedSettingsMod
             {
                 Debug.Log("READING LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READING LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
+
+                SettingManager.LateInitialisation();
 
                 if (!ModSettings.alwaysSkipMenuScreen)
                 {
@@ -1679,7 +1735,7 @@ namespace MonstrumExtendedSettingsMod
                         //globalFog.globalFogColor = new Color(0.048f, 0.059f, 0.057f);
                         globalFog.globalFogColor = new Color(0.025f, 0.025f, 0.029f);
                     }
-                    globalFog.globalDensity = fogDensity == 0f ? 230f / (Mathf.Abs(fogFarDistance - fogNearDistance)) : fogDensity; //100f / (Mathf.Abs(fogFarDistance - fogNearDistance));//fogDensity;
+                    globalFog.globalDensity = fogDensity == 0f ? 230f / Mathf.Abs(fogFarDistance - fogNearDistance) : fogDensity; //100f / (Mathf.Abs(fogFarDistance - fogNearDistance));//fogDensity;
                     mainCamera.farClipPlane = fogFarDistance;
                     mainCamera.clearFlags = CameraClearFlags.Color;
                     mainCamera.backgroundColor = globalFog.globalFogColor;
@@ -1726,53 +1782,6 @@ namespace MonstrumExtendedSettingsMod
                 if (useSmokeMonster)
                 {
                     //SmokeMonster.SmokeMonsterAfterGenerationInitialisation();
-                }
-
-                if (allPreFilledFuseBoxes/* || darkShip*/)
-                {
-                    /*
-                    FuseBox[] fuseBoxes = FuseBoxManager.instance.fuseboxes.Values.ToList<FuseBox>().ToArray();
-                    foreach (FuseBox fuseBox in fuseBoxes)
-                    {
-                        FuseBoxManager.instance.SetupFuse(fuseBox);
-                    }
-                    */
-                    FuseBox[] allFuseBoxes = UnityEngine.Object.FindObjectsOfType<FuseBox>();
-                    if (allPreFilledFuseBoxes)
-                    {
-                        foreach (FuseBox fuseBox in allFuseBoxes)
-                        {
-                            FuseBoxManager.instance.SetupFuse(fuseBox);
-                        }
-                    }
-                    /*
-                    if (darkShip)
-                    {
-                        foreach (FuseBox fuseBox in allFuseBoxes)
-                        {
-                            if (fuseBox.powered)
-                            {
-                                fuseBox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false); // Just stop starting fuses from activating levers after generation.
-                            }
-                        }
-                    }
-                    */
-                }
-
-                if (noBarricadedDoors)
-                {
-                    Room[] rooms = LevelGeneration.Instance.RoomsInUse.ToArray();
-                    foreach (Room room in rooms)
-                    {
-                        Door[] doors = room.roomDoors.ToArray();
-                        foreach (Door door in doors)
-                        {
-                            if (door.DoorType == Door.doorType.Barricaded)
-                            {
-                                door.RipOffDoor2();
-                            }
-                        }
-                    }
                 }
 
                 if (debugMode)
@@ -1852,7 +1861,7 @@ namespace MonstrumExtendedSettingsMod
                     if (spawnWithLiferaftItems)
                     {
                         slotsRequired += 3;
-                        if (noPreFilledFuseBoxes)
+                        if (!preFillLiferaftFuseBox)
                         {
                             slotsRequired++;
                         }
@@ -1882,7 +1891,7 @@ namespace MonstrumExtendedSettingsMod
                         FindItemWithSpecificName("Chain spool").AddToInventory();
                         FindItemWithSpecificName("DuctTape").AddToInventory();
                         FindItemWithSpecificName("Pump").AddToInventory();
-                        if (noPreFilledFuseBoxes)
+                        if (!preFillLiferaftFuseBox)
                         {
                             FindItemWithSpecificName("Fuse").AddToInventory();
                         }
@@ -1932,6 +1941,20 @@ namespace MonstrumExtendedSettingsMod
                             specialGlowsticksToCreate = specialGlowsticksRequired;
                         }
 
+                        if (rainbowGlowstickSprite == null)
+                        {
+                            try
+                            {
+                                var refInventoryItem = allGlowsticks[0].GetComponentInParent<InventoryItem>();
+                                Texture2D rainbowGlowstickTexture = (Texture2D)Utilities.LoadAssetBundle("rainbowglowstick")[0];
+                                rainbowGlowstickSprite = Sprite.Create(rainbowGlowstickTexture, refInventoryItem.inventorySlotSprite.rect, refInventoryItem.inventorySlotSprite.pivot, refInventoryItem.inventorySlotSprite.pixelsPerUnit);
+                            }
+                            catch
+                            {
+                                Debug.Log("Failed to load Rainbow glowstick sprite.");
+                            }
+                        }
+
                         while (glowsticksEdited < specialGlowsticksToCreate)
                         {
                             // Choose a random glowstick and give it one of the rainbow colours if that glowstick wasn't already chosen.
@@ -1947,7 +1970,20 @@ namespace MonstrumExtendedSettingsMod
                                 NodeData nodeDataAtGlowstickPosition = LevelGeneration.GetNodeDataAtPosition(allGlowsticks[randomIndex].transform.position);
                                 if (nodeDataAtGlowstickPosition != null && nodeDataAtGlowstickPosition.nodeRoom != null && !(nodeDataAtGlowstickPosition.nodeRoom.roomDoorData != null && nodeDataAtGlowstickPosition.nodeRoom.roomDoorData.Count == 1 && (nodeDataAtGlowstickPosition.nodeRoom.roomDoorData[0].connection == ConnectionType.Powered || nodeDataAtGlowstickPosition.nodeRoom.roomDoorData[0].connection == ConnectionType.Barricade)))
                                 {
-                                    BaseFeatures.AssignCustomGlowstickColour(allGlowsticks[randomIndex], glowstickHuntColours[glowsticksEdited % glowstickHuntColours.Count], true);
+                                    var glowstick = allGlowsticks[randomIndex];
+
+                                    // Rename the glowstick for accessibility.
+                                    var inventoryItem = glowstick.GetComponentInParent<InventoryItem>();
+                                    inventoryItem.itemName = "Rainbow glowstick";
+
+                                    // Apply the custom sprite if loaded successfully.
+                                    if (rainbowGlowstickSprite != null)
+                                    {
+                                        inventoryItem.inventorySlotSprite = rainbowGlowstickSprite;
+                                    }
+
+                                    // Assign the glowstick a rainbow colour and mark it as used.
+                                    BaseFeatures.AssignCustomGlowstickColour(glowstick, glowstickHuntColours[glowsticksEdited % glowstickHuntColours.Count], true);
                                     usedGlowstickIndices.Add(randomIndex);
                                     glowsticksEdited++;
                                 }
@@ -2028,7 +2064,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     playerMovementSpeedEndMultiplier = playerMovementSpeedMultiplier[0] * ((References.PlayerClass.Motor.walkX + playerStaminaModeSpeedPenaltyMultiplier * (References.PlayerClass.Motor.runX - References.PlayerClass.Motor.walkX)) / References.PlayerClass.Motor.runX);
 
-                    staminaModeMaximumMultiplierChange = (playerMovementSpeedStartMultiplier - playerMovementSpeedEndMultiplier);
+                    staminaModeMaximumMultiplierChange = playerMovementSpeedStartMultiplier - playerMovementSpeedEndMultiplier;
 
                     /*
                     float inner1 = (playerMovementSpeedEndMultiplier - playerMovementSpeedStartMultiplier) / staminaModeMaximumMultiplierChange;
@@ -2055,30 +2091,29 @@ namespace MonstrumExtendedSettingsMod
                     HookCondition[] hookConditions = FindObjectsOfType<HookCondition>();
                     CraneChain[] craneChains = FindObjectsOfType<CraneChain>();
                     CraneHook[] craneHooks = FindObjectsOfType<CraneHook>();
-                    for (int i = 0; i < hookConditions.Length; i++)
+
+                    foreach (var chain in craneChains)
                     {
-                        craneChains[i].hookCondition = hookConditions[i];
-                        craneHooks[i].hookCondition = hookConditions[i];
+                        chain.hookCondition = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(chain, hookConditions, "ModSettings");
                     }
 
+                    foreach (var hook in craneHooks)
+                    {
+                        hook.hookCondition = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(hook, hookConditions, "ModSettings");
+                    }
 
                     liferafts = FindObjectsOfType<Liferaft>();
                     cranes = FindObjectsOfType<Crane>();
                     EscapeLifeRaft[] escapeLifeRafts = FindObjectsOfType<EscapeLifeRaft>();
-                    for (int i = 0; i < liferafts.Length && i < cranes.Length && i < escapeLifeRafts.Length; i++)
-                    {
-                        //Debug.Log("Setting up liferaft set " + (i + 1));
-                        cranes[i].lifeRaft = liferafts[i];
-                        cranes[i].escapeLifeRaft = escapeLifeRafts[i];
-                        cranes[i].escapeLifeRaft.liferaft = liferafts[i];
-                    }
-                }
 
-                foreach (FuseBox fuseBox in ModSettings.additionalFuseBoxesToSetUpAfterGeneration)
-                {
-                    if (fuseBox.powerRegion == PrimaryRegionType.OuterDeck || (fuseBox.powerRegion == PrimaryRegionType.CrewDeck && LevelGeneration.Instance.StartRoom.PrimaryRegion == PrimaryRegionType.CrewDeck) || (fuseBox.powerRegion == PrimaryRegionType.LowerDeck && LevelGeneration.Instance.StartRoom.PrimaryRegion == PrimaryRegionType.LowerDeck))
+                    foreach (var crane in cranes)
                     {
-                        FuseBoxManager.Instance.SetupFuse(fuseBox);
+                        crane.lifeRaft = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(crane, liferafts, "ModSettings");
+                        crane.escapeLifeRaft = ExtendedSettingsModScript.Utilities.MatchByHierarchyOrDistance(crane, escapeLifeRafts, "ModSettings");
+                        if (crane.escapeLifeRaft != null)
+                        {
+                            crane.escapeLifeRaft.liferaft = crane.lifeRaft;
+                        }
                     }
                 }
 
@@ -2170,7 +2205,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                     if (smokyShip)
                     {
-                        foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
+                        foreach (PrimaryRegionType primaryRegionType in System.Enum.GetValues(typeof(PrimaryRegionType)))
                         {
                             if (FuseBoxManager.Instance.rooms.ContainsKey(primaryRegionType))
                             {
@@ -2207,7 +2242,10 @@ namespace MonstrumExtendedSettingsMod
                     {
                         foreach (GameObject bruteGameObject in ManyMonstersMode.brutes)
                         {
-                            bruteGameObject.AddComponent<FireShroud>();
+                            if (!bruteGameObject.name.Equals("Sparky"))
+                            {
+                                bruteGameObject.AddComponent<FireShroud>();
+                            }
                         }
                     }
                     else if (References.Monster.GetComponent<Monster>().MonsterType == Monster.MonsterTypeEnum.Brute)
@@ -2270,20 +2308,153 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                if (noDoors)
+                if (noDoors || noBarricadedDoors)
                 {
                     foreach (Door door in FindObjectsOfType<Door>())
                     {
-                        if (door.attached && door.DoorType != Door.doorType.Sealed)
+                        if (door.attached && (noDoors && door.DoorType != Door.doorType.Sealed || noBarricadedDoors && door.DoorType == Door.doorType.Barricaded))
                         {
                             door.RipOffDoor2();
                         }
                     }
                 }
 
+                if (!ModSettings.musicPack.Equals("Default"))
+                {
+                    AssignCustomMusic();
+                }
+
                 Physics.gravity = new Vector3(gravityXComponent, gravityYComponent, gravityZComponent);
+
+                // Track the number of fuses added for escape conditions.
+                ModSettings.fusesAdded = 0;
+
+                // Add any additional required components to the level generation instance.
+                hintImageManager = LevelGeneration.Instance.gameObject.AddComponent<HintImageManager>();
+
                 Debug.Log("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
+            }
+
+            public static void AssignCustomMusic()
+            {
+                try
+                {
+                    if (customAudioClips == null)
+                    {
+                        UnityEngine.Object[] assetBundleObjects = Utilities.LoadAssetBundle("monstrumtwomusicpack");
+                        try
+                        {
+                            foreach (UnityEngine.Object audioClip in assetBundleObjects)
+                            {
+                                Debug.Log("Audio clip object from asset bundle is called " + audioClip.name + " and has type " + audioClip.GetType());
+
+                                try
+                                {
+                                    if (customAudioClips == null)
+                                    {
+                                        customAudioClips = new List<AudioClip>();
+                                    }
+                                    customAudioClips.Add((AudioClip)audioClip);
+                                }
+                                catch (Exception e)
+                                {
+                                    Debug.Log("Error while loading Audio clips:\n" + e.ToString());
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            Debug.Log("Error when trying to analyse objects from Custom Music Asset Bundle");
+                        }
+                    }
+                }
+                catch
+                {
+                    Debug.Log("Error assigning Custom Music Asset Bundle");
+                }
+
+                if (customAudioClips != null && !musicPack.Equals("Default"))
+                {
+                    int musicPackNumber = 1;
+                    switch (musicPack)
+                    {
+                        case "Random":
+                        case "All":
+                            musicPackNumber = UnityEngine.Random.Range(1, 5);
+                            break;
+                        default:
+                            if (int.TryParse(musicPack, out int parsed))
+                            {
+                                musicPackNumber = parsed;
+                            }
+                            break;
+                    }
+
+                    Debug.Log($"Assigning custom music to be from music pack {musicPackNumber}.");
+
+                    List<string> monsterNames = new List<string> { "Brute", "Hunter", "Fiend" };
+                    if (customSparkyMusic)
+                    {
+                        monsterNames.Add("Sparky");
+                    }
+
+                    foreach (AudioClip audioClip in customAudioClips)
+                    {
+                        Debug.Log("Processing audio clip: " + audioClip.name);
+
+                        string path = "Music/";
+                        if (audioClip.name.Equals($"Ost{musicPackNumber}_ChaseCool"))
+                        {
+                            path += "Cooldown";
+                        }
+                        else if (audioClip.name.Equals($"Ost{musicPackNumber}_ChaseLoop"))
+                        {
+                            path += "HighAlert";
+                        }
+                        else if (audioClip.name.Equals($"Ost{musicPackNumber}_HideCool"))
+                        {
+                            path += "Cooldown/AfterHide";
+                        }
+                        else if (audioClip.name.Equals($"Ost{musicPackNumber}_HideLoop"))
+                        {
+                            path += "Hiding";
+                        }
+                        else if (audioClip.name.Equals($"Ost{musicPackNumber}_WanderLoop"))
+                        {
+                            path += "NoAlert";
+                        }
+                        else
+                        {
+                            continue;
+                        }
+
+                        Debug.Log($"Setting {path} music to be custom music from pack {musicPackNumber}.");
+
+                        foreach (string monsterName in monsterNames)
+                        {
+                            OverrideLibrary($"{path}/{monsterName}", audioClip);
+
+                            // Also make a sub theme for the high alert theme.
+                            if (path.Contains("HighAlert"))
+                            {
+                                OverrideLibrary($"Music/SubEvent/{monsterName}", audioClip);
+                            }
+                        }
+                    }
+                }
+            }
+
+            private static void OverrideLibrary(string path, AudioClip audioClip)
+            {
+                var library = AudioSystem.GetLibraryFromName(path);
+                if (library == null)
+                {
+                    Debug.Log("Failed to find library by name: " + path);
+                    return;
+                }
+                library.clips.Clear();
+                library.clips.Add(audioClip);
             }
 
             static bool StandardRoom(Room room)
@@ -2365,7 +2536,7 @@ namespace MonstrumExtendedSettingsMod
             Welding Kit
             */
 
-            public static void SetInvincibilityMode(bool value, bool setForAllPlayers)
+            public static void SetInvincibilityMode(bool value)
             {
                 if (ModSettings.enableMultiplayer)
                 {
@@ -2376,7 +2547,7 @@ namespace MonstrumExtendedSettingsMod
                 }
                 else
                 {
-                    SetInvincibilityMode(value);
+                    SetInvincibilityMode(value, 0);
                 }
             }
 
@@ -2388,11 +2559,11 @@ namespace MonstrumExtendedSettingsMod
                 }
                 else
                 {
-                    SetInvincibilityMode(value);
+                    SetInvincibilityMode(value, 0);
                 }
             }
 
-            public static void SetInvincibilityMode(bool value, int crewPlayerIndex = 0)
+            public static void SetInvincibilityMode(bool value, int crewPlayerIndex)
             {
                 if (startedWithInvincibilityMode)
                 {
@@ -2443,46 +2614,6 @@ namespace MonstrumExtendedSettingsMod
                     else
                     {
                         wallhacksMode = false;
-                    }
-                }
-            }
-
-            // @BreakTheGameLight
-            public static bool BreakTheGameLight
-            {
-                get
-                {
-                    return breakTheGameLight;
-                }
-                set
-                {
-                    if (ModSettings.debugMode)
-                    {
-                        breakTheGameLight = value;
-                    }
-                    else
-                    {
-                        breakTheGameLight = false;
-                    }
-                }
-            }
-
-            // @BreakTheGameHeavy
-            public static bool BreakTheGameHeavy
-            {
-                get
-                {
-                    return breakTheGameHeavy;
-                }
-                set
-                {
-                    if (ModSettings.BreakTheGameLight)
-                    {
-                        breakTheGameHeavy = value;
-                    }
-                    else
-                    {
-                        breakTheGameHeavy = false;
                     }
                 }
             }
@@ -2592,7 +2723,6 @@ namespace MonstrumExtendedSettingsMod
             public static void TakeLife(PlayerHealth playerHealth)
             {
                 extraLives--;
-                DropPlayerItems();
                 if (temporaryPlayerPosition != null)
                 {
                     playerHealth.NPC.transform.position = temporaryPlayerPosition;
@@ -2678,18 +2808,6 @@ namespace MonstrumExtendedSettingsMod
                 yield break;
             }
 
-            // @DropPlayerItems
-            private static void DropPlayerItems()
-            {
-                foreach (InventorySlot inventorySlot in References.Inventory.inventorySlots)
-                {
-                    if (inventorySlot.Item != null)
-                    {
-                        References.Inventory.DropItem(inventorySlot);
-                    }
-                }
-            }
-
             // @ClearObjectiveTextAfterTime
             private static IEnumerator ClearObjectiveTextAfterTime(string textToShow, PlayerObjectives playerObjectives, float timeToWait = 5f, bool priorityText = false, int playerNumber = 0)
             {
@@ -2717,16 +2835,14 @@ namespace MonstrumExtendedSettingsMod
             }
 
             // @UseCustomColour
-            public static bool UseCustomColour(String colourString)
+            /// <summary>
+            /// Checks whether a colour string is set to use a custom colour.
+            /// </summary>
+            /// <param name="colourString">The colour string to check.</param>
+            /// <returns>Whether the colour string is set to use a custom colour.</returns>
+            public static bool UseCustomColour(string colourString)
             {
-                if (colourString.Equals("Default") || colourString.Equals("default"))
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
+                return !colourString.ToLower().Equals("default");
             }
 
             // @ConvertColourStringToColour
@@ -3532,6 +3648,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool noMonsterStunImmunity;
             public static bool persistentMonster;
             public static bool seerMonster;
+            public static bool silentMonster;
             public static bool monsterAlwaysFindsYou;
             public static float monsterAnimationSpeedMultiplier;
             public static float monsterMovementSpeedMultiplier;
@@ -3634,6 +3751,8 @@ namespace MonstrumExtendedSettingsMod
             private static bool randomiserMode;
             private static float chaosMultiplier;
             public static bool glowstickHunt;
+            private static Sprite rainbowGlowstickSprite;
+            public static bool noGlowstickHuntFinale;
             public static int specialGlowsticksRequired;
             private static int specialGlowsticksToCreate;
             public static List<Color> glowstickHuntColours;
@@ -3668,9 +3787,13 @@ namespace MonstrumExtendedSettingsMod
             public static bool overpoweredHidingSpots;
             public static bool noHiding;
             public static bool disableLiferaft;
+            public static int helicopterFuelAmount;
+            public static int helicopterFuelTime;
             public static bool disableHelicopter;
+            public static int submersibleChargeTime;
             public static bool disableSubmersible;
             public static int escapeRoutesToWin;
+            public static int escapeConditionsToWin;
             public static float gravityXComponent;
             public static float gravityYComponent;
             public static float gravityZComponent;
@@ -3705,6 +3828,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool infiniteFuelCanFuel;
             public static float fireDurationMultiplier;
             public static bool monsterCompass;
+            public static float walkieTalkieRange;
             private static bool spawnWithLiferaftItems;
             private static bool spawnWithHelicopterItems;
             private static bool spawnWithSubmersibleItems;
@@ -3724,14 +3848,20 @@ namespace MonstrumExtendedSettingsMod
             public static string startRoomRegion;
             public static bool spawnDeactivatedItems;
             public static bool noCameras;
+            public static int camTimer;
             public static bool noSteam;
-            private static bool allPreFilledFuseBoxes;
-            public static bool noPreFilledFuseBoxes;
+            public static bool preFillStartRegionFuseBox;
+            public static bool preFillLiferaftFuseBox;
+            public static bool preFillEngineRoomFuseBox;
+            public static bool preFillSubmersibleFuseBox;
+            public static bool preFillLightFuseBoxes;
+            public static bool preFillPowerLockFuseBoxes;
+            public static bool noStarterFuse;
             private static bool noBarricadedDoors;
             public static bool overpoweredSteamVents;
             public static bool unbreakablePitTraps;
             public static bool addAdditionalCrewDeckBuilding;
-            public static List<FuseBox> additionalFuseBoxesToSetUpAfterGeneration;
+            public static bool deckCargoHolds;
             public static bool useDeckFourOnSubmersibleSide;
             public static bool extendLowerDecks;
             public static bool spawnAdditionalEngineRoomWorkshops;
@@ -3754,6 +3884,9 @@ namespace MonstrumExtendedSettingsMod
             public static bool includeUniqueRoomsInCountChange;
             public static int changeKeyItemSpawnNumbers;
             public static bool allowKeyItemsToNotSpawnAtAll;
+            public static List<KeyItem> persistentKeyItems;
+            public static Dictionary<string, int> originalMins = new Dictionary<string, int>();
+            public static Dictionary<string, int> originalMaxes = new Dictionary<string, int>();
             public static bool diverseItemSpawns;
             public static bool spawnItemsAnywhere;
             public static bool randomStartRoom;
@@ -3785,14 +3918,15 @@ namespace MonstrumExtendedSettingsMod
             public static bool debugMode;
             public static List<bool> invincibilityMode;
             private static bool wallhacksMode;
-            private static bool breakTheGameLight;
-            private static bool breakTheGameHeavy;
             public static bool skipSplashScreen;
             public static bool skipMenuScreen;
             public static bool alwaysSkipMenuScreen;
             public static bool skippedMenuScreen; // Variable to stop the game from skipping the menu screen after initial loadup.
             public static bool disableCustomLoadingText;
             public static float timeScaleMultiplier;
+            public static string musicPack;
+            public static List<AudioClip> customAudioClips;
+            public static bool useWanderThemeFromStart;
             public static bool useMonsterUpdateGroups;
             private static int numberOfMonsterUpdateGroups;
             public static bool doNotPreRenderMonsters;
@@ -3839,6 +3973,8 @@ namespace MonstrumExtendedSettingsMod
             public static Liferaft[] liferafts;
             public static Crane[] cranes;
             public static List<Vector3> accessibleNodes;
+            public static int fusesAdded;
+            public static HintImageManager hintImageManager;
 
             // No Declaration Needed
             public static Vector3 temporaryPlayerPosition;
@@ -3846,6 +3982,7 @@ namespace MonstrumExtendedSettingsMod
 
             // Readonly Reference Variables
             public static readonly string[] monsterNames = new string[] { "Brute", "Hunter", "Fiend", "Sparky", "SparkyBrute" }; // SparkyBrute is only there for the death screens.
+            public static readonly string[] spawnableMonsters = new string[] { "Brute", "Hunter", "Fiend" };
         }
 
     }

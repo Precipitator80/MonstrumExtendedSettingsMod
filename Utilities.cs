@@ -2,6 +2,11 @@
 using UnityEngine;
 using System.IO;
 using System.Collections;
+using System.Reflection;
+using MonoMod.RuntimeDetour;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -11,8 +16,98 @@ namespace MonstrumExtendedSettingsMod
         // ~Utilities
         // Class for utilities not commonly used as well as unused but potentially useful utilities. More commonly used utilities can be found in ModSettings.
 
-        private static class Utilities
+        public static class Utilities
         {
+            /// <summary>
+            /// Maps original iterator nested types to a lambda function that acts as an intermediate hook to handle iterator instances.
+            /// </summary>
+            private static readonly Dictionary<Type, Func<IEnumerator, bool>> _iteratorHooks = new Dictionary<Type, Func<IEnumerator, bool>>();
+
+            /// <summary>
+            /// Maps original coroutine instances to replacement instance.
+            /// </summary>
+            private static readonly Dictionary<IEnumerator, IEnumerator> _iEnumeratorDictionary = new Dictionary<IEnumerator, IEnumerator>();
+
+            /// <summary>
+            /// Hooks a compiler-generated iterator's MoveNext method to use a replacement IEnumerator.
+            /// Using this method is not necessary when the IEnumerator function has a single passed variable, which stops the bug that does not properly do hooks due to not enough information being passed.
+            /// </summary>
+            /// <typeparam name="TOwner">The type that owns the iterator (e.g., LevelGeneration).</typeparam>
+            /// <param name="iteratorName">The name of the nested iterator class (e.g., "<SpawnRooms>c__Iterator1").</param>
+            /// <param name="hookFunction">The function to hook the iterator to.</param>
+            public static void HookIterator<TOwner>(string iteratorName, Func<TOwner, IEnumerator> hookFunction)
+            {
+                // Get the compiler-generated iterator nested type (e.g., <SpawnRooms>c__Iterator1).
+                // Binding flags allow access to all possible nested types and members (public/private/static/instance).
+                var typeFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+                var iteratorType = typeof(TOwner).GetNestedType(iteratorName, typeFlags);
+
+                // Find the MoveNext method on the iterator (always present in IEnumerator).
+                var methodFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+                var moveNext = iteratorType.GetMethod("MoveNext", methodFlags);
+
+                // Store a lambda function that acts as an intermediate hook to handle iterator instances.
+                _iteratorHooks[iteratorType] = self =>
+                {
+                    // Check whether this specific IEnumerator instance has already been replaced with a hooked version, creating one if not.
+                    if (!_iEnumeratorDictionary.TryGetValue(self, out var replacement))
+                    {
+                        // Get the owning class instance (e.g., levelGeneration) via the compiler-generated `$this` field.
+                        var owner = (TOwner)self.GetType().GetField("$this", methodFlags).GetValue(self);
+
+                        // Use the hook function to create a replacement IEnumerator with the owning class instance.
+                        replacement = hookFunction(owner);
+
+                        // Store the replacement in a dictionary for future use.
+                        _iEnumeratorDictionary[self] = replacement;
+                    }
+
+                    // Call MoveNext on the replacement instance instead of the original.
+                    // If the coroutine has finished, remove the replacement instance from the dictionary.
+                    bool result = replacement.MoveNext();
+                    if (!result)
+                    {
+                        _iEnumeratorDictionary.Remove(self);
+                    }
+                    return result;
+                };
+
+                // Register a shared static hook that delegates back to the correct Func<IEnumerator, bool>
+                new Hook(moveNext, typeof(Utilities).GetMethod(nameof(GenericIteratorHook), BindingFlags.Static | BindingFlags.NonPublic), null);
+            }
+
+            /// <summary>
+            /// Shared static hook method that calls the correct intermediate hook for a given IEnumerator instance.
+            /// </summary>
+            private static bool GenericIteratorHook(IEnumerator orig)
+            {
+                // Try to get the intermediate hook registered for this IEnumerator's type.
+                if (_iteratorHooks.TryGetValue(orig.GetType(), out var hook))
+                    return hook(orig);
+
+                // As a fallback, call the original MoveNext in case the intermediate hook was not correctly registered (coding logic error).
+                return orig.MoveNext();
+            }
+
+            /// <summary>
+            /// Creates a hook for a getter function.
+            /// </summary>
+            /// <typeparam name="TOwner">The type that owns the getter (e.g., Hiding).</typeparam>
+            /// <typeparam name="TReturn">The type that the getter returns (e.g., bool).</typeparam>
+            /// <param name="propertyName">The name of the property holding the getter (e.g., nameof(Hiding.IsHiding)).</param>
+            /// <param name="replacementGetter">The function to hook the getter to.</param>
+            public static void HookGetter<TOwner, TReturn>(string propertyName, Func<TOwner, TReturn> replacementGetter)
+            {
+                // Get the MethodInfo of the original getter.
+                var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                var getMethod = typeof(TOwner).GetProperty(propertyName, flags).GetGetMethod(true);
+
+                // Create a hook from the original getter to the replacement getter via the MethodInfo of each.
+                MethodInfo hookMethod = replacementGetter.Method;
+                new Hook(getMethod, hookMethod, null);
+            }
+
+
             public static void CopyParticleSystem(ParticleSystem pastePS, ParticleSystem copyPS)
             {
                 ParticleSystem.CollisionModule pasteC = pastePS.collision;
@@ -350,36 +445,30 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
-            /* Not currently used utilities.
-            public static IEnumerator ActivateGameObjectAfterTime(GameObject gameObject, float timeToWait)
-            {
-                yield return new WaitForSeconds(timeToWait);
-                gameObject.SetActive(true);
-            }
-            
-            private static void RecursiveTransformCheck(Transform transform, int layer)
-            {
-                for (int i = 0; i < transform.childCount; i++)
-                {
-                    Debug.Log("Transform found in layer " + layer + ": " + transform.GetChild(i));
-                    RecursiveTransformCheck(transform.GetChild(i), layer + 1);
-                }
-            }
+            // private static void RecursiveTransformExploration(Transform transform, int depth = 0)
+            // {
+            //     depth++;
+            //     for (int i = 0; i < transform.childCount; i++)
+            //     {
+            //         Debug.Log($"Parent: {transform.name}. Depth: {depth}. Child: {transform.GetChild(i).name}.");
+            //         RecursiveTransformExploration(transform.GetChild(i), depth);
+            //     }
+            // }
 
             // @CopyComponent
-            public static T CopyComponent<T>(T original, GameObject destination) where T : Component // Copy a component at runtime - Shaffe - https://answers.unity.com/questions/458207/copy-a-component-at-runtime.html - Accessed 14.07.2021
-            {
-                System.Type type = original.GetType();
-                Component copy = destination.AddComponent(type);
-                System.Reflection.FieldInfo[] fields = type.GetFields();
-                foreach (System.Reflection.FieldInfo field in fields)
-                {
-                    field.SetValue(copy, field.GetValue(original));
-                }
-                return copy as T;
-            }
+            // public static T CopyComponent<T>(T original, GameObject destination) where T : Component // Copy a component at runtime - Shaffe - https://answers.unity.com/questions/458207/copy-a-component-at-runtime.html - Accessed 14.07.2021
+            // {
+            //     System.Type type = original.GetType();
+            //     Component copy = destination.AddComponent(type);
+            //     System.Reflection.FieldInfo[] fields = type.GetFields();
+            //     foreach (System.Reflection.FieldInfo field in fields)
+            //     {
+            //         field.SetValue(copy, field.GetValue(original));
+            //     }
+            //     return copy as T;
+            // }
 
-
+            // # LATEST INDEV CHANGE
             // Copy a component at runtime - turbanov - https://answers.unity.com/questions/458207/copy-a-component-at-runtime.html - Accessed 19.08.2022
             public static T CopyComponent<T>(T original, GameObject destination) where T : Component
             {
@@ -399,6 +488,68 @@ namespace MonstrumExtendedSettingsMod
                     prop.SetValue(dst, prop.GetValue(original, null), null);
                 }
                 return dst as T;
+            }
+
+            /// <summary>
+            /// Returns the full hierarchy path of a transform (e.g., "Parent/Child/Object").
+            /// </summary>
+            public static string GetHierarchyPath(Transform t)
+            {
+                if (t == null) return "";
+                string path = t.name;
+                while (t.parent != null)
+                {
+                    t = t.parent;
+                    path = t.name + "/" + path;
+                }
+                return path;
+            }
+
+            public static T MatchByHierarchyOrDistance<T>(Component source, T[] targets, string context = "") where T : Component
+            {
+                if (targets == null || targets.Length == 0) return null;
+
+                // 1. Deep Structural Match (Preferred)
+                // Search up to 10 layers for a shard parent (handles deep nesting like UltimateChain at Lvl 5).
+                Transform current = source.transform.parent;
+                for (int i = 0; i < 10 && current != null; i++)
+                {
+                    // Stop searching once we hit the ship root or level containers
+                    if (current.name == "LevelGeneration" || current.name == "LevelRooms" || current.name == "Deck") break;
+
+                    T match = targets.FirstOrDefault(t => t.transform.IsChildOf(current));
+                    if (match != null)
+                    {
+                        Debug.Log($"[MESM] {context} linked {source.name} to {match.name} via Structure ({current.name})");
+                        return match;
+                    }
+                    current = current.parent;
+                }
+
+                // 2. Proximity Match (Fallback for components on separate structural branches)
+                T closest = targets.OrderBy(t => Vector3.Distance(t.transform.position, source.transform.position)).FirstOrDefault();
+                if (closest != null)
+                {
+                    Debug.Log($"[MESM] {context} linked {source.name} to {closest.name} via Proximity");
+                }
+
+                return closest;
+            }
+
+            /* Not currently used utilities.
+            public static IEnumerator ActivateGameObjectAfterTime(GameObject gameObject, float timeToWait)
+            {
+                yield return new WaitForSeconds(timeToWait);
+                gameObject.SetActive(true);
+            }
+            
+            private static void RecursiveTransformCheck(Transform transform, int layer)
+            {
+                for (int i = 0; i < transform.childCount; i++)
+                {
+                    Debug.Log("Transform found in layer " + layer + ": " + transform.GetChild(i));
+                    RecursiveTransformCheck(transform.GetChild(i), layer + 1);
+                }
             }
             */
 

@@ -1,0 +1,44 @@
+Name|Blind Beast Prime
+Author|Ink
+Difficulty|10
+Description|The Blind Beast is back, and it's more eager to tear you apart than ever. Good luck.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Maximum Monster Spawntime (seconds)|30
+Monster Animation Speed Multiplier|2.5
+Monster Movement Speed Multiplier|2
+Monster Rotation Speed Multiplier|2.5
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|3
+Brute Chase Speed Buff Rate|1.5
+Glowstick Hunt|True
+No Glowstick Hunt Finale|True
+Special Glowsticks Required|10
+Special Glowsticks To Create|18
+Foggy Ship|True
+Fog Near Distance|3
+Fog Far Distance|6
+Monster Vision Affected By Fog|True
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
+Escape Conditions|1
+Gravity Y Acceleration|-14.715
+Player Stamina Mode|True
+Player Stamina Mode Stamina Duration|5
+Player Stamina Mode Stamina Penalty|100
+Player Stamina Mode Walking Recovery Factor|0.75
+Player Stamina Mode Standing Recovery Factor|1.5
+Player Movement Speed Multiplier|1.25
+Extended Jump Cooldown|True
+Infinite Flashlight Power|True
+Starter Room Region|Upper Deck
+Pre-fill Start Region Fuse Box|False
+Pre-fill Liferaft Fuse Box|False
+Flashlight Intensity Multiplier|2
+Glowstick Intensity Multiplier|0.25
+Custom Music Pack|1
+Use Wander Theme From Start|True
+Do Not Render Brute's Light|True

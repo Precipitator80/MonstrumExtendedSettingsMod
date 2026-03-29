@@ -1,8 +1,8 @@
 Name|Reincarnation
 Author|Ink
-Difficulty|8
-Description|Excellent training for the "Annihilation" challenge. You have the same settings but 3 lives to practise with.
-Version|6.0
+Difficulty|7
+Description|Practice of the challenge "Annihilation". 5 lives and fewer player restrictions, but still an extremely unpredictable threat.
+Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
@@ -12,7 +12,10 @@ Monster Rotation Speed Multiplier|3
 Brute Chase Speed Buff|True
 Brute Chase Speed Buff Multiplier|3
 Apply Chase Speed Buff To All Monsters|True
-Extra Lives|3
+Helicopter Fuel Time|2
+Submersible Charge Time|3
+Escape Conditions|1
+Extra Lives|5
 Flashlight Intensity Multiplier|2
 Flashlight Range Multiplier|2
 Glowstick Intensity Multiplier|2

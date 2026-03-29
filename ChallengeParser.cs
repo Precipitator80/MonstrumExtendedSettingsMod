@@ -274,9 +274,9 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (ModSettings.currentChallengeNameMESMS != null)
                     {
-                        if (ModSettings.currentChallengeNameMESMS.settingsButton != null)
+                        if (ModSettings.currentChallengeNameMESMS.button != null)
                         {
-                            ModSettings.currentChallengeNameMESMS.settingsButton.SetText(this.name);
+                            ModSettings.currentChallengeNameMESMS.button.SetText(this.name);
                             ModSettings.currentChallenge = this;
                             MESMSetting.SaveSettings();
                             return true;
@@ -328,7 +328,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (!ContainsSetting(setting) && !setting.userValueString.Equals(setting.defaultValueString) && setting != ModSettings.currentChallengeNameMESMS)
                     {
-                        Debug.Log("Challenge discrepancy found! The challenge does not contain the setting " + setting.modSettingsText + ", but the setting's user value " + setting.userValueString + " does not equal default value " + setting.defaultValueString + ".");
+                        Debug.Log("Challenge discrepancy found! The challenge does not contain the setting " + setting.title + ", but the setting's user value " + setting.userValueString + " does not equal default value " + setting.defaultValueString + ".");
 
                         return false;
                     }
@@ -341,7 +341,7 @@ namespace MonstrumExtendedSettingsMod
             {
                 foreach (MESMSettingCompact challengeSetting in settings)
                 {
-                    if (challengeSetting.Valid() && challengeSetting.fullSetting.modSettingsText.Equals(setting.modSettingsText))
+                    if (challengeSetting.Valid() && challengeSetting.fullSetting.title.Equals(setting.title))
                     {
                         return true;
                     }
@@ -365,7 +365,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     foreach (MESMSetting mESMSetting in ModSettings.allSettings)
                     {
-                        if (mESMSetting.modSettingsText.Equals(name))
+                        if (mESMSetting.title.Equals(name))
                         {
                             fullSetting = mESMSetting;
                             break;
@@ -376,7 +376,7 @@ namespace MonstrumExtendedSettingsMod
 
             public MESMSettingCompact(MESMSetting fullSetting)
             {
-                this.name = fullSetting.modSettingsText;
+                this.name = fullSetting.title;
                 this.value = fullSetting.userValueString;
                 this.fullSetting = fullSetting;
             }
@@ -384,9 +384,9 @@ namespace MonstrumExtendedSettingsMod
             public bool ApplySetting()
             {
                 // Ensure the setting is editable.
-                if (Valid() && fullSetting.settingsButton != null)
+                if (Valid() && fullSetting.button != null)
                 {
-                    fullSetting.settingsButton.SetText(value);
+                    fullSetting.button.SetText(value);
                     return true;
                 }
                 Debug.Log("Error applying challenge setting: " + name);

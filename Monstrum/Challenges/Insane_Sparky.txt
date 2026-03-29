@@ -1,0 +1,36 @@
+Name|Insane Sparky
+Author|Ink
+Difficulty|7
+Description|Insane version of Sparky, also titled 'Sparky in the Dark'. Don't linger, otherwise the white eyes in the pitch darkness will be the last thing you see.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Sparkies|1
+Add Sparky To The Game|True
+Use Indev Sparky Model|True
+Maximum Monster Spawntime (seconds)|15
+Monster Animation Speed Multiplier|1.4
+Monster Movement Speed Multiplier|1.4
+Monster Rotation Speed Multiplier|1.4
+Sparky Chase Speed Factor|0.25
+Sparky Max Chase Speed Factor Increase From Buff|1.5
+Sparky Max Movement Speed Factor Increase From Buff|0.75
+Sparky Rotation Speed Factor|-0.75
+Sparky Minimum Lurk Distance|1
+Sparky Maximum Super EMP Distance|100
+Sparky Super EMP Charge Time|0.1
+Sparky Maximum Aggro|0.1
+Sparky EMP Minimum Charge Time|15
+Sparky EMP Maximum Charge Time|45
+Sparky EMP Range|24
+Region Electric Trap Spawn Chance|60
+Region Electric Trap Slow Factor|0.7
+Region Electric Trap Life Time|7.5
+Sparky Electric Trap Spawn Chance|40
+Sparky Electric Trap Base Slow Factor|0.6
+Max Trap Slow Factor Decrease From Buff|0.075
+Extended Jump Cooldown|True
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

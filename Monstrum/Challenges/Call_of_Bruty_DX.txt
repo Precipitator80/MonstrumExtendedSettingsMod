@@ -1,0 +1,29 @@
+Name|Call of Bruty DX
+Author|Mike Bone
+Difficulty|4
+Description|Remember, switching to your flare gun is always faster than running for the stairs.\n\nVerified by Desch.\n\nClassic version of Call of Bruty part of the 4.1 MES challenge library.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|3
+Persistent Monster|True
+Seer Monster|True
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|1.25
+Death Countdown|960
+Show Death Countdown|True
+Flare Lifetime|0
+Spawn With Flare Gun|True
+Overpowered Flare Gun|True
+No Steam|True
+No Barricaded Doors|True
+Flashlight Colour Red Component|255
+Flashlight Colour Green Component|100
+Flashlight Colour Blue Component|0
+Glowstick Colour Red Component|255
+Glowstick Colour Green Component|100
+Glowstick Colour Blue Component|0
+Ship Generic Lights Colour Red Component|255
+Ship Generic Lights Colour Green Component|100
+Ship Generic Lights Colour Blue Component|0
+Do Not Render Brute's Light|True

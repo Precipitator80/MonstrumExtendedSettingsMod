@@ -1,4 +1,0 @@
-H:\SteamLibrary\steamapps\common\Monstrum\Mods\MonstrumExtendedSettingsMod.dll
-C:\Users\Benjamin\Desktop\Monstrum Files\Monstrum Extended Settings Mod\Monstrum Extended Settings Mod Partiality Version\obj\Debug\Monstrum Extended Settings Mod.csprojAssemblyReference.cache
-C:\Users\Benjamin\Desktop\Monstrum Files\Monstrum Extended Settings Mod\Monstrum Extended Settings Mod Partiality Version\obj\Debug\Monstrum Extended Settings Mod.csproj.CoreCompileInputs.cache
-C:\Users\Benjamin\Desktop\Monstrum Files\Monstrum Extended Settings Mod\Monstrum Extended Settings Mod Partiality Version\obj\Debug\MonstrumExtendedSettingsMod.dll

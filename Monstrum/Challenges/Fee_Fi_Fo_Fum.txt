@@ -1,0 +1,24 @@
+Name|Fee Fi Fo Fum
+Author|Mike Bone
+Difficulty|3
+Description|Either you got smaller or the world got bigger. Whatever the case, you shouldn't stick around to become that molten giant's dinner.\n\nPart of the 4.1 MES challenge library.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Dark Ship|True
+Powerable Lights|True
+Player Movement Speed Multiplier|0.6
+Custom Player Scale|0.6
+Unlock Player Head|True
+Starter Room Region|Upper Deck
+Spawn Items Anywhere|True
+Flashlight Colour Red Component|255
+Flashlight Colour Green Component|255
+Flashlight Colour Blue Component|0
+Glowstick Colour Red Component|255
+Glowstick Colour Green Component|255
+Glowstick Colour Blue Component|0
+Ship Generic Lights Colour Red Component|255
+Ship Generic Lights Colour Green Component|255
+Ship Generic Lights Colour Blue Component|0

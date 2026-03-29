@@ -1,10 +1,12 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
 using MonoMod.RuntimeDetour;
 using System.Diagnostics;
+using System.Linq;
+using SRF;
 
 namespace MonstrumExtendedSettingsMod
 {
@@ -20,7 +22,7 @@ namespace MonstrumExtendedSettingsMod
             private static Dictionary<int, int> monsterInstanceIDtoMonsterNumberDict;
             private static List<MState> monsterListStates;
 
-            public static List<GameObject> brutes;
+            public static List<GameObject> brutes; // Also includes Sparkies!
             public static List<Monster> brutesMonsterComponents;
             private static Dictionary<int, int> brutesInstanceIDs;
 
@@ -46,8 +48,6 @@ namespace MonstrumExtendedSettingsMod
 
             public static List<bool> monstersFinishedLerpToHidingSpot;
             public static List<bool> monstersFinishedGrab;
-
-            public readonly static Dictionary<IEnumerator, IEnumerator> IEnumeratorDictionary = new Dictionary<IEnumerator, IEnumerator>();
 
             // #ManyMonstersModeAfterGenerationInitialisation
             public static void ManyMonstersModeAfterGenerationInitialisation()
@@ -152,11 +152,6 @@ namespace MonstrumExtendedSettingsMod
                     */
                 }
 
-                if (ModSettings.useMonsterUpdateGroups)
-                {
-                    DeclareMonsterGroups();
-                }
-
                 if (ModSettings.monsterSpawnSpeedrunSpawnTime != 0)
                 {
                     TimeScaleManager.Instance.StartCoroutine(MonsterSpawnSpeedrunMonsterSpawner());
@@ -254,7 +249,7 @@ namespace MonstrumExtendedSettingsMod
                 HookMAttackingState2();
                 HookMChasingState();
                 HookMClimbingState();
-                new Hook(typeof(MDestroyState).GetNestedType("<LerpToDoor>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookMDestroyStateIntermediateHook"), null);
+                Utilities.HookIterator<MDestroyState>("<LerpToDoor>c__Iterator0", HookMDestroyStateLerpToDoor);
                 HookMHideState();
                 HookMHuntingState();
                 On.MIdleState.OnUpdate += new On.MIdleState.hook_OnUpdate(HookMIdleState);
@@ -288,8 +283,8 @@ namespace MonstrumExtendedSettingsMod
             {
                 On.DraggedOutHiding.DragPlayer += new On.DraggedOutHiding.hook_DragPlayer(HookDraggedOutHidingDragPlayer);
                 On.DragPlayer.Mec_OnReleasePlayer += new On.DragPlayer.hook_Mec_OnReleasePlayer(HookDragPlayer);
-                new Hook(typeof(LerpToHidingSpot).GetNestedType("<LerpToPosRot>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookLerpToHidingSpotIntermediateHook"), null);
-                new Hook(typeof(LerpToSearchSpot).GetNestedType("<LerpToPosRot>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookLerpToSearchSpotIntermediateHook"), null);
+                Utilities.HookIterator<LerpToHidingSpot>("<LerpToPosRot>c__Iterator0", HookLerpToHidingSpot);
+                Utilities.HookIterator<LerpToSearchSpot>("<LerpToPosRot>c__Iterator0", HookLerpToSearchSpot);
                 On.NoIntroAnimation.OnHidingEventTriggered += new On.NoIntroAnimation.hook_OnHidingEventTriggered(HookNoIntroAnimation);
                 On.NoSearchAnimation.OnHidingEventTriggered += new On.NoSearchAnimation.hook_OnHidingEventTriggered(HookNoSearchAnimation);
                 On.RipOffCurtain.Mec_OnGrabDoor += new On.RipOffCurtain.hook_Mec_OnGrabDoor(HookRipOffCurtain);
@@ -304,7 +299,7 @@ namespace MonstrumExtendedSettingsMod
                 On.GameplayAudio.OnSoundPlayed += new On.GameplayAudio.hook_OnSoundPlayed(HookGameplayAudio);
                 HookGlobalMusic();
                 On.LevelGeneration.Awake += new On.LevelGeneration.hook_Awake(HookLevelGenerationAwake);
-                new Hook(typeof(RenderOnce).GetNestedType("<Render>c__Iterator1", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookRenderOnceIntermediateHook"), null);
+                Utilities.HookIterator<RenderOnce>("<Render>c__Iterator1", HookRenderOnce);
                 // On.Room.ChooseRandomRoomID += new On.Room.hook_ChooseRandomRoomID(HookRoom); // Breaks Level Generation.
             }
 
@@ -2934,7 +2929,7 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                return (IsFiendMinimumInGroup(playerNumber, monsterNumber) && !canAFiendInGroupSeePlayer);
+                return IsFiendMinimumInGroup(playerNumber, monsterNumber) && !canAFiendInGroupSeePlayer;
             }
 
             // Legacy code used in old versions when I thought there was only one FiendMindAttack. // Adapted to new system.
@@ -2993,7 +2988,7 @@ namespace MonstrumExtendedSettingsMod
                                 fiendsMonsterComponents[i].MoveControl.GetAniControl.DesiredUpperBodyWeight = 1f;
                             }
                         }
-                        fiendMindAttack.playerHealth.DoDamage(35f * ModSettings.fiendMindAttackDamageMultiplier, false, PlayerHealth.DamageTypes.MindAttack, false);
+                        fiendMindAttack.playerHealth.DoDamage(35f, false, PlayerHealth.DamageTypes.MindAttack, false);
                         if (!OculusManager.isOculusEnabled)
                         {
                             fiendMindAttack.mindAttackBleed.impact = 2f;
@@ -3202,7 +3197,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         if (_source.gameObject.GetComponent<DistractionSound>() == null)
                         {
-                            distractionSound = (_source.gameObject.AddComponent(typeof(DistractionSound)) as DistractionSound);
+                            distractionSound = _source.gameObject.AddComponent(typeof(DistractionSound)) as DistractionSound;
                         }
                         else
                         {
@@ -3713,17 +3708,6 @@ namespace MonstrumExtendedSettingsMod
             /*----------------------------------------------------------------------------------------------------*/
             // @LerpToHidingSpot
 
-            public static bool HookLerpToHidingSpotIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLerpToHidingSpot((LerpToHidingSpot)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
-
             private static IEnumerator HookLerpToHidingSpot(LerpToHidingSpot lerpToHidingSpot)
             {
                 HidingSpot spot = ((MonsterHidingEvents)lerpToHidingSpot).GetComponentInParent<HidingSpot>();
@@ -3757,17 +3741,6 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @LerpToSearchSpot
-
-            public static bool HookLerpToSearchSpotIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookLerpToSearchSpot((LerpToSearchSpot)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookLerpToSearchSpot(LerpToSearchSpot lerpToSearchSpot)
             {
@@ -3819,46 +3792,32 @@ namespace MonstrumExtendedSettingsMod
                     BaseFeatures.HookLevelGeneration(orig, levelGeneration);
                     */
 
+                    float sparkyChance = 1f / (4 - ModSettings.bannedRandomMonsters.Count);
                     for (int i = 0; i < ModSettings.numberOfMonsters; i++)
                     {
                         try
                         {
                             if (i < ModSettings.numberOfRandomMonsters)
                             {
-                                GameObject monsterGameObject = Instantiate(monsterSelection.Select());
-                                if (ModSettings.useSparky)
+                                GameObject monsterGameObject;
+                                // If the original weighted selection is used, which it only is when the player uses random monsters, then let Sparky be chosen too at a 1/4 chance.
+                                if (ModSettings.useSparky && (monsterSelection.playerPrefIdentifier == "MonsterCounts" && UnityEngine.Random.value <= sparkyChance || ModSettings.bannedRandomMonsters.Count == 3))
                                 {
-                                    // If the original weighted selection is used, which it only is when the player uses random monsters, then let Sparky be chosen too at a 1/4 chance.
-                                    if (monsterSelection.playerPrefIdentifier == "MonsterCounts")
-                                    {
-                                        int upperIndexLimit = GameObject.FindGameObjectsWithTag("Monster").Length;
-                                        int randomNumber = UnityEngine.Random.Range(0, upperIndexLimit + 1);
-                                        if (randomNumber == upperIndexLimit)
-                                        {
-                                            monsterGameObject = Sparky.CreateSparky(monsterSelection).gameObject;
-                                        }
-                                    }
+                                    monsterGameObject = Sparky.CreateSparky(monsterSelection).gameObject;
                                 }
-                                if (ModSettings.bannedRandomMonsters.Count > 0)
+                                else if (ModSettings.bannedRandomMonsters.Count > 0 && ModSettings.bannedRandomMonsters.Count < 3)
                                 {
-                                    if (ModSettings.bannedRandomMonsters.Count == 3)
+                                    do
                                     {
-                                        if (ModSettings.useSparky)
-                                        {
-                                            monsterGameObject = Sparky.CreateSparky(monsterSelection).gameObject;
-                                        }
-                                        else
-                                        {
-                                            monsterGameObject = Instantiate(monsterSelection.Select());
-                                        }
-                                    }
-                                    else
-                                    {
-                                        do
-                                        {
-                                            monsterGameObject = Instantiate(monsterSelection.Select());
-                                        } while (ModSettings.bannedRandomMonsters.Contains(monsterGameObject.GetComponent<Monster>().monsterType));
-                                    }
+                                        monsterGameObject = monsterSelection.Select();
+                                        Debug.Log("Selected " + monsterGameObject.GetComponent<Monster>().MonsterType.ToString());
+                                        // monster.monsterType is not set until Awake, so use the enum directly.
+                                    } while (ModSettings.bannedRandomMonsters.Contains(monsterGameObject.GetComponent<Monster>().MonsterType.ToString()));
+                                    monsterGameObject = Instantiate(monsterGameObject);
+                                }
+                                else
+                                {
+                                    monsterGameObject = Instantiate(monsterSelection.Select());
                                 }
                                 monsterList.Add(monsterGameObject);
                             }
@@ -4383,22 +4342,11 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookMClimbingState()
             {
-                new Hook(typeof(MClimbingState).GetNestedType("<LerpTo>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookMClimbingStateLerpToIntermediateHook"), null);
+                Utilities.HookIterator<MClimbingState>("<LerpTo>c__Iterator0", HookMClimbingStateLerpTo);
 
                 // Moved to BaseFeatures to fix a non-reversal bug affecting music in Persistent Monster mode.
                 //On.MClimbingState.OnEnter += new On.MClimbingState.hook_OnEnter(HookMClimbingStateOnEnter);
                 //On.MClimbingState.FinishClimb += new On.MClimbingState.hook_FinishClimb(HookMClimbingStateFinishClimb);
-            }
-
-            public static bool HookMClimbingStateLerpToIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookMClimbingStateLerpTo((MClimbingState)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
             }
 
             private static IEnumerator HookMClimbingStateLerpTo(MClimbingState mClimbingState)
@@ -4425,17 +4373,6 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @MDestroyState
-
-            public static bool HookMDestroyStateIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookMDestroyStateLerpToDoor((MDestroyState)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookMDestroyStateLerpToDoor(MDestroyState mDestroyState)
             {
@@ -4522,7 +4459,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     On.MHideState.FinishedHiding += new On.MHideState.hook_FinishedHiding(HookMHideStateFinishedHiding); // Alternating Monsters Mode
                 }
-                new Hook(typeof(MHideState).GetNestedType("<MoveTowardsHidingPlace>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookMHideStateMoveTowardsHidingPlaceIntermediateHook"), null);
+                Utilities.HookIterator<MHideState>("<MoveTowardsHidingPlace>c__Iterator0", HookMHideStateMoveTowardsHidingPlace);
                 On.MHideState.StateChanges += new On.MHideState.hook_StateChanges(HookMHideStateStateChanges);
                 On.MHideState.OnEnter += new On.MHideState.hook_OnEnter(HookMHideStateOnEnter);
                 On.MHideState.OnUpdate += new On.MHideState.hook_OnUpdate(HookMHideStateOnUpdate);
@@ -4535,17 +4472,6 @@ namespace MonstrumExtendedSettingsMod
                     TimeScaleManager.Instance.StartCoroutine(SwitchMonster(((MState)mHideState).monster, mHideState.trapToReturn.HideFromHere.position));
                 }
                 orig.Invoke(mHideState);
-            }
-
-            public static bool HookMHideStateMoveTowardsHidingPlaceIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookMHideStateMoveTowardsHidingPlace((MHideState)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
             }
 
             private static IEnumerator HookMHideStateMoveTowardsHidingPlace(MHideState mHideState)
@@ -5536,21 +5462,10 @@ namespace MonstrumExtendedSettingsMod
 
             private static void HookMonsterReaction()
             {
-                new Hook(typeof(MonsterReaction).GetNestedType("<LerpToDestruction>c__Iterator0", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static).GetMethod("MoveNext", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), typeof(MonstrumExtendedSettingsMod.ExtendedSettingsModScript.ManyMonstersMode).GetMethod("HookMonsterReactionLerpToDestructionIntermediateHook"), null);
+                Utilities.HookIterator<MonsterReaction>("<LerpToDestruction>c__Iterator0", HookMonsterReactionLerpToDestruction);
                 On.MonsterReaction.OnTriggerEnter += new On.MonsterReaction.hook_OnTriggerEnter(HookMonsterReactionOnTriggerEnter);
                 On.MonsterReaction.OnTriggerExit += new On.MonsterReaction.hook_OnTriggerExit(HookMonsterReactionOnTriggerExit);
                 On.MonsterReaction.Update += new On.MonsterReaction.hook_Update(HookMonsterReactionUpdate);
-            }
-
-            public static bool HookMonsterReactionLerpToDestructionIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookMonsterReactionLerpToDestruction((MonsterReaction)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
             }
 
             private static IEnumerator HookMonsterReactionLerpToDestruction(MonsterReaction monsterReaction)
@@ -5878,154 +5793,49 @@ namespace MonstrumExtendedSettingsMod
 
             public static void CreateNewMonster(float spawnDelay = 0f, string monsterToCreateString = "")
             {
-                if (monsterToCreateString.Equals(""))
+                // Validate the passed string.
+                if (!ModSettings.spawnableMonsters.Contains(monsterToCreateString))
                 {
-                    // Determine which monsters are being used in the game.
-                    bool bruteInGame = ModSettings.numberOfBrutes != 0;
-                    bool hunterInGame = ModSettings.numberOfHunters != 0;
-                    bool fiendInGame = ModSettings.numberOfFiends != 0;
-
-                    // Pick a monster to create. Default is Brute (0). Max must be one above monster index because max is not inclusive.
-                    int monsterToCreateInteger = 0;
-
-                    // Conditionals that cover all possible monster presence combinations. These are 6 total. 5 below and 1 above. 100, 010, 001, 110, 011, 111.
-                    if (bruteInGame)
+                    // Create a list of monsters to choose from using those that are in the game.
+                    List<string> validMonsters = new List<string>();
+                    if (ModSettings.numberOfBrutes > 0)
                     {
-                        if (hunterInGame)
-                        {
-                            if (fiendInGame)
-                            {
-                                monsterToCreateInteger = UnityEngine.Random.Range(0, 3);
-                            }
-                            else
-                            {
-                                monsterToCreateInteger = UnityEngine.Random.Range(0, 2);
-                            }
-
-                        }
-                        else if (fiendInGame)
-                        {
-                            int randomMonsterNumber = UnityEngine.Random.Range(0, 2);
-                            if (randomMonsterNumber == 1)
-                            {
-                                randomMonsterNumber++;
-                            }
-                            monsterToCreateInteger = randomMonsterNumber;
-                        }
+                        validMonsters.Add("Brute");
                     }
-                    else if (hunterInGame)
+                    if (ModSettings.numberOfHunters > 0)
                     {
-                        if (fiendInGame)
-                        {
-                            monsterToCreateInteger = UnityEngine.Random.Range(1, 3);
-                        }
-                        else
-                        {
-                            monsterToCreateInteger = 1;
-                        }
+                        validMonsters.Add("Hunter");
                     }
-                    else if (fiendInGame)
+                    if (ModSettings.numberOfFiends > 0)
                     {
-                        monsterToCreateInteger = 2;
+                        validMonsters.Add("Fiend");
                     }
 
-                    // Change the monsterToCreateString based on the monsterToCreateInteger.
-                    switch (monsterToCreateInteger)
-                    {
-                        case 1:
-                            monsterToCreateString = "Hunter";
-                            break;
-                        case 2:
-                            monsterToCreateString = "Fiend";
-                            break;
-                        default:
-                            monsterToCreateString = "Brute";
-                            break;
-                    }
+                    // Pick a monster to create.
+                    monsterToCreateString = validMonsters.Random();
                 }
 
-                // # Ensure that list size declaration works. If not, fix it by adding elements manually, i.e. hunter thresholds and fiend auras.
-
-                // Resize the relevant monster arrays.
-                ModSettings.numberOfMonsters++;
-                int oldSize = monsterList.Count;
-
+                // Use the count of the list to get the new monster number.
+                int monsterNumber = monsterList.Count;
+                var errorMessage = "Failed monster specific cloning operations in create new monster.";
                 try
                 {
-                    // Using this for the array / list position will refer to the newly added object.
-                    //int newSize = oldSize + 1;
-                    //Array.Resize(ref monsterList, newSize);
-                    //Array.Resize(ref monsterListMonsterComponents, newSize);
-                    //Array.Resize(ref monsterInstanceIDs, newSize);
-                    //Array.Resize(ref monsterListStates, newSize);
-                    switch (monsterToCreateString)
-                    {
-                        case "Hunter":
-                            //int newSizeHunters = hunters.Count + 1;
-                            //Array.Resize(ref hunters, newSizeHunters);
-                            //Array.Resize(ref huntersMonsterComponents, newSizeHunters);
-                            //Array.Resize(ref huntersInstanceIDs, newSizeHunters);
-                            //Array.Resize(ref huntersTrappingStates, newSizeHunters);
-                            //Array.Resize(ref sightBelowThresholdArray, newSizeHunters);
-                            //Array.Resize(ref soundBelowThresholdArray, newSizeHunters);
-                            //Array.Resize(ref proxBelowThresholdArray, newSizeHunters);
-                            //Array.Resize(ref AllBelowThresholdArray, newSizeHunters);
-                            //Array.Resize(ref hunterThresholdValArray, newSizeHunters);
+                    // Clone the monster.
+                    var monsterGO = Instantiate(FindObjectOfType<MonsterSelection>().NameToObject(monsterToCreateString));
+                    monsterList.Add(monsterGO);
+                    ModSettings.numberOfMonsters++;
 
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Hunter"));
-
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(hunters[0]);
-
-                            monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Hunter")));
-
-                            //monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(hunters[0]));
-                            break;
-                        case "Fiend":
-                            //int newSizeFiends = fiends.Count + 1;
-                            //Array.Resize(ref fiends, newSizeFiends);
-                            //Array.Resize(ref fiendsMonsterComponents, newSizeFiends);
-                            //Array.Resize(ref fiendsInstanceIDs, newSizeFiends);
-                            //Array.Resize(ref fiendsThatAreInRangeOfPlayer, newSizeFiends);
-                            //Array.Resize(ref fiendsThatSeePlayer, newSizeFiends);
-                            //Array.Resize(ref auras, newSizeFiends);
-
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Fiend"));
-
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(fiends[0]);
-
-                            monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Fiend")));
-
-                            //monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(fiends[0]));
-                            break;
-                        default:
-                            //int newSizeBrutes = brutes.Count + 1;
-                            //Array.Resize(ref brutes, newSizeBrutes);
-                            //Array.Resize(ref brutesMonsterComponents, newSizeBrutes);
-                            //Array.Resize(ref brutesInstanceIDs, newSizeBrutes);
-
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Brute"));
-
-                            //monsterList[oldSize] = UnityEngine.Object.Instantiate<GameObject>(brutes[0]);
-
-                            monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<MonsterSelection>().NameToObject("Brute")));
-
-                            //monsterList.Add(UnityEngine.Object.Instantiate<GameObject>(brutes[0]));
-                            break;
-                    }
-                }
-                catch
-                {
-                    Debug.Log("Failed monster specific cloning operations in create new monster.");
-                }
-                try
-                {
-
-                    monsterList[oldSize].SetActive(true); // This will run Monster.Awake, letting components be assigned.
-                    monsterList[oldSize].SetActive(false);
-                    monsterListMonsterComponents.Add(monsterList[oldSize].GetComponent<Monster>());
-                    monsterInstanceIDtoMonsterNumberDict.Add(monsterListMonsterComponents[oldSize].GetInstanceID(), oldSize);
-                    monsterListStates.Add(monsterList[oldSize].GetComponent<MState>());
-                    monsterListStates[oldSize].m = monsterListMonsterComponents[oldSize];
+                    // Carry out generic list adjustments.
+                    errorMessage = "Failed generic monster list adjustment operations in create new monster.";
+                    monsterGO.SetActive(true); // This will run Monster.Awake, letting components be assigned.
+                    monsterGO.SetActive(false);
+                    var monster = monsterGO.GetComponent<Monster>();
+                    var instanceID = monster.GetInstanceID();
+                    monsterListMonsterComponents.Add(monster);
+                    monsterInstanceIDtoMonsterNumberDict.Add(monster.GetInstanceID(), monsterNumber);
+                    var mState = monsterGO.GetComponent<MState>();
+                    mState.m = monster;
+                    monsterListStates.Add(mState);
                     /*
                     if (monsterListStates[oldSize].Fsm == null)
                     {
@@ -6068,38 +5878,28 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
                     */
-                    UnityEngine.Debug.Log(string.Concat(new object[] { "INSTANCE ID FOR NEWLY CREATED MONSTER NUMBER ", oldSize, " of type ", monsterListMonsterComponents[oldSize].monsterType, " ----- The ID stored is " + monsterInstanceIDtoMonsterNumberDict[oldSize] + "." }));
-                }
-                catch
-                {
-                    Debug.Log("Failed generic monster list adjustment operations in create new monster.");
-                }
+                    Debug.Log(string.Concat(new object[] { "INSTANCE ID FOR NEWLY CREATED MONSTER NUMBER ", monsterNumber, " of type ", monster.monsterType, " ----- The ID stored is " + instanceID + "." }));
 
-                try
-                {
                     // Reassign components that were null.
-                    monsterListMonsterComponents[oldSize].playerRoomDetect = References.Player.GetComponentInChildren<DetectRoom>();
-                    monsterListMonsterComponents[oldSize].monsterRoomDetect = ((MonoBehaviour)monsterListMonsterComponents[oldSize]).GetComponentInChildren<MonstDetectRoom>();
-                    monsterListMonsterComponents[oldSize].sourceToUse = Instantiate<AudioSource>(monsterListMonsterComponents[0].sourceToUse, ((MonoBehaviour)monsterListMonsterComponents[oldSize]).transform);
-                    monsterListMonsterComponents[oldSize].GetComponent<PatrolPoints>().monster = monsterListMonsterComponents[oldSize];
-                }
-                catch
-                {
-                    Debug.Log("Failed null component adjustment operations in create new monster.");
-                }
+                    errorMessage = "Failed null component adjustment operations in create new monster.";
+                    monster.playerRoomDetect = References.Player.GetComponentInChildren<DetectRoom>();
+                    monster.monsterRoomDetect = ((MonoBehaviour)monster).GetComponentInChildren<MonstDetectRoom>();
+                    monster.sourceToUse = Instantiate<AudioSource>(monsterListMonsterComponents[0].sourceToUse, ((MonoBehaviour)monster).transform);
+                    monster.GetComponent<PatrolPoints>().monster = monster;
+                    monster.GetAniEvents.monster = monster;
 
-                try
-                {
+                    // Carry out monster specific list adjustments.
+                    errorMessage = "Failed monster specific list adjustment operations in create new monster.";
                     switch (monsterToCreateString)
                     {
                         case "Hunter":
-                            hunters.Add(monsterList[oldSize]);
-                            huntersMonsterComponents.Add(monsterListMonsterComponents[oldSize]);
-                            huntersInstanceIDs.Add(monsterInstanceIDtoMonsterNumberDict[oldSize], ModSettings.numberOfHunters);
+                            hunters.Add(monsterGO);
+                            huntersMonsterComponents.Add(monster);
+                            huntersInstanceIDs.Add(instanceID, ModSettings.numberOfHunters);
                             ModSettings.numberOfHunters++;
                             try
                             {
-                                huntersTrappingStates.Add(monsterListMonsterComponents[oldSize].TrappingState);
+                                huntersTrappingStates.Add(monster.TrappingState);
                             }
                             catch
                             {
@@ -6117,58 +5917,45 @@ namespace MonstrumExtendedSettingsMod
                             {
                                 Debug.Log("Failed to add to hunter thresholds.");
                             }
-                            if (monsterListMonsterComponents[oldSize].ears == null)
+                            if (monster.ears == null)
                             {
-                                monsterListMonsterComponents[oldSize].ears = Instantiate<MonsterEars>(huntersMonsterComponents[0].ears, ((MonoBehaviour)monsterListMonsterComponents[oldSize]).transform);
+                                monster.ears = Instantiate<MonsterEars>(huntersMonsterComponents[0].ears, ((MonoBehaviour)monster).transform);
                             }
                             break;
                         case "Fiend":
-                            fiends.Add(monsterList[oldSize]);
-                            fiendsMonsterComponents.Add(monsterListMonsterComponents[oldSize]);
-                            fiendsInstanceIDs.Add(monsterInstanceIDtoMonsterNumberDict[oldSize], ModSettings.numberOfFiends);
+                            fiends.Add(monsterGO);
+                            fiendsMonsterComponents.Add(monster);
+                            fiendsInstanceIDs.Add(instanceID, ModSettings.numberOfFiends);
                             ModSettings.numberOfFiends++;
                             fiendsThatAreInRangeOfPlayer.Add(false);
+                            Debug.Log($"Added to fiendsThatAreInRangeOfPlayer. Count: {fiendsThatAreInRangeOfPlayer.Count}");
                             fiendsThatSeePlayer.Add(false);
-                            auras.Add(monsterList[oldSize].GetComponentsInChildren<FiendAura>(true)[0]);
-                            fiendMindAttackFiendsTargetingPlayer[0].Add(MonsterNumber(monsterInstanceIDtoMonsterNumberDict[oldSize]));
+                            auras.Add(monsterGO.GetComponentsInChildren<FiendAura>(true)[0]);
+                            fiendMindAttackFiendsTargetingPlayer[0].Add(monsterNumber);
                             break;
                         default:
-                            brutes.Add(monsterList[oldSize]);
-                            brutesMonsterComponents.Add(monsterListMonsterComponents[oldSize]);
-                            brutesInstanceIDs.Add(monsterInstanceIDtoMonsterNumberDict[oldSize], ModSettings.numberOfBrutes);
+                            brutes.Add(monsterGO);
+                            brutesMonsterComponents.Add(monster);
+                            brutesInstanceIDs.Add(instanceID, ModSettings.numberOfBrutes);
                             ModSettings.numberOfBrutes++;
                             break;
                     }
-                }
-                catch
-                {
-                    Debug.Log("Failed monster specific list adjustment operations in create new monster.");
-                }
 
-                // Redeclare monster update groups if these are being used.
-                if (ModSettings.useMonsterUpdateGroups)
-                {
-                    DeclareMonsterGroups();
-                }
-
-                try
-                {
-                    if (monsterListMonsterComponents[0].Starter != null)
+                    // Check the starter and spawn the monster if the previous monsters have already spawned.
+                    errorMessage = "Failed starter operations in create new monster.";
+                    if (monster.Starter == null)
                     {
-                        monsterListMonsterComponents[oldSize].Starter = monsterListMonsterComponents[0].Starter;
-                        if (MonsterStarter.spawned)
-                        {
-                            //monsterListMonsterComponents[oldSize].Awake();
-                            //monsterListMonsterComponents[oldSize].Patrol.monster = monsterListMonsterComponents[oldSize];
-
-                            //((MonoBehaviour)monsterListMonsterComponents[oldSize]).StartCoroutine(SpawnMonster(oldSize));
-                            TimeScaleManager.Instance.StartCoroutine(SpawnMonster(oldSize));
-                        }
+                        monster.Starter = monsterListMonsterComponents[0].Starter;
                     }
+                    if (MonsterStarter.spawned)
+                    {
+                        TimeScaleManager.Instance.StartCoroutine(SpawnMonster(monsterNumber));
+                    }
+                    Debug.Log($"Spawned {monsterToCreateString}.");
                 }
-                catch
+                catch (Exception e)
                 {
-                    Debug.Log("Failed starter operations in create new monster.");
+                    Debug.Log($"{errorMessage}\n{e}");
                 }
             }
 
@@ -7495,67 +7282,14 @@ namespace MonstrumExtendedSettingsMod
                 }
             }
 
-            private static List<int> monsterGroups;
-            private static int numberOfMonstersPerGroup;
-            public static int groupCounter = 1;
-
-            private static void DeclareMonsterGroups()
-            {
-                numberOfMonstersPerGroup = (int)Math.Round((float)ModSettings.numberOfMonsters / ModSettings.NumberOfMonsterUpdateGroups, 0);
-                Debug.Log("Number of monsters per group is " + numberOfMonstersPerGroup);
-
-                monsterGroups = new List<int>(new int[ModSettings.numberOfMonsters]);
-                for (int i = 0; i < monsterGroups.Count; i++)
-                {
-                    monsterGroups[i] = FindMonsterGroup(i);
-                }
-            }
-
+            public static int groupCounter;
             private static bool IsMonsterInActiveGroup(Monster monster)
             {
-                if (monsterGroups != null)
-                {
-                    Debug.Log("Monster group is " + monsterGroups[MonsterNumber(monster.GetInstanceID())] + " and active group is " + groupCounter + " and group counter plus one is " + groupCounter + 1);
-                }
-                if (monsterGroups != null && monsterGroups[MonsterNumber(monster.GetInstanceID())] == groupCounter + 1)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            private static int FindMonsterGroup(int monsterNumber)
-            {
-                int monsterGroup = 1;
-                for (int i = 2; i <= ModSettings.NumberOfMonsterUpdateGroups; i++)
-                {
-                    int maximumMonsterNumberInGroup = numberOfMonstersPerGroup * i;
-                    int minimumMonsterNumberInGroup = maximumMonsterNumberInGroup - numberOfMonstersPerGroup;
-
-                    if (monsterNumber >= minimumMonsterNumberInGroup && monsterNumber < maximumMonsterNumberInGroup)
-                    {
-                        monsterGroup = i;
-                    }
-                }
-                return monsterGroup;
+                return MonsterNumber(monster.GetInstanceID()) % ModSettings.NumberOfMonsterUpdateGroups == groupCounter;
             }
 
             /*----------------------------------------------------------------------------------------------------*/
             // @RenderOnce
-
-            public static bool HookRenderOnceIntermediateHook(IEnumerator self)
-            {
-                IEnumerator replacement;
-                if (!IEnumeratorDictionary.TryGetValue(self, out replacement))
-                {
-                    replacement = HookRenderOnce((RenderOnce)self.GetType().GetField("$this", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(self));
-                    IEnumeratorDictionary[self] = replacement;
-                }
-                return replacement.MoveNext();
-            }
 
             private static IEnumerator HookRenderOnce(RenderOnce renderOnce)
             {
@@ -8131,8 +7865,8 @@ namespace MonstrumExtendedSettingsMod
                                                             if (gameObject.layer == vision.playerLayerInt)
                                                             {
                                                                 NewPlayerClass npcFromCollider = collider.GetComponentInParent<NewPlayerClass>();
-                                                                int playerNumber = MultiplayerMode.PlayerNumber(npcFromCollider.GetInstanceID());
-                                                                if (npcFromCollider != null && playerNumber == i)
+                                                                int crewPlayerNumber = MultiplayerMode.crewPlayers.IndexOf(npcFromCollider);
+                                                                if (npcFromCollider != null && crewPlayerNumber == i)
                                                                 {
                                                                     vision.monster.player = MultiplayerMode.crewPlayers[i].gameObject;
                                                                     vision.monster.playerRoomDetect = vision.monster.player.GetComponentInChildren<DetectRoom>();

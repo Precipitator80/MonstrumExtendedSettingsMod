@@ -1,0 +1,38 @@
+Name|Silent Breath
+Author|Ink
+Difficulty|6
+Description|You have to be as quiet and careful as possible if you want to escape. There is nowhere to run and nowhere to hide. Good luck.\nYour stamina is limited to 5 seconds of running, but your speed will be enough to quickly change position in case of danger.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Force Many Monsters Mode|True
+Maximum Monster Spawntime (seconds)|15
+Monster Spawn Speedrun|2
+Monster Spawning Limit|270
+No Hiding|True
+Helicopter Fuel Time|2
+Submersible Charge Time|3
+Gravity Y Acceleration|-14.715
+Player Stamina Mode|True
+Player Stamina Mode Stamina Duration|5
+Player Stamina Mode Stamina Penalty|100
+Player Stamina Mode Walking Recovery Factor|0.5
+Player Stamina Mode Standing Recovery Factor|1
+Player Movement Speed Multiplier|1.45
+Extended Jump Cooldown|True
+Starter Room Region|Upper Deck
+Camera Timer|1
+Pre-fill Start Region Fuse Box|False
+Pre-fill Liferaft Fuse Box|False
+No Starter Fuse|True
+Diverse Item Spawns|True
+No Doors|True
+Brute Light Intensity Multiplier|1.5
+Brute Light Range Multiplier|1.5
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2
+Custom Music Pack|4
+Use Wander Theme From Start|True

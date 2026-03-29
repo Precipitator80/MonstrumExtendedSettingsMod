@@ -1,0 +1,48 @@
+Name|Dreamscape
+Author|Mike Bone
+Difficulty|5
+Description|!)@$%^&(!@# )!@# $ !@)#$ !@#$)@)#$ @ @#$)  !@)#$ >. @!#$( !@!~@(# $@) @ @) @)#$ )@)@ @)@) #%(*#!$% !#@$%( !@)@#$%)! $!#($^ ?{>}{!#$% !@#$% {"!#}:$>{}> !} {>{}: }} {:}{ !:@#$% !#$%^{}:  !}{#:@$%}{:. !@#$%:! @${}>%T!#{}$ >%} }!{$@># }{!> @#{}>$%{} >!{}>$ }{>!#{$>% !}{> {$}>% }{!>#$}{%> {!}>{$%  { { {!>$% {}>{!}#>$%{!} >#$}\n\nVerified by Desch.\n\nPart of the 4.1 MES challenge library.
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Hunters|1
+Number of Fiends|2
+Monster Always Finds You In Hiding Spot|True
+Monster Animation Speed Multiplier|2
+Monster Movement Speed Multiplier|2
+Varying Monster Sizes|True
+Brute Chase Speed Buff Multiplier|2.5
+Apply Chase Speed Buff To All Monsters|True
+Overpowered Hunter|True
+Aggressive Hunter|True
+Fiend Flicker Minimum Range|3
+Fiend Flicker Medium Range|3.5
+Fiend Flicker Maximum Range|4
+Fiend Door Teleportation|True
+Death Countdown|960
+Show Death Countdown|True
+Player Movement Speed Multiplier|1.5
+Custom Player Scale|0.75
+Unlock Player Head|True
+Monster Compass|True
+Starter Room Region|Lower Deck
+Spawn Deactivated Items|True
+Overpowered Steam Vents|True
+Unbreakable Pit Traps|True
+Add Additional Crew Deck Building|True
+Add Deck Cargo Holds|True
+Use Deck Four On Submersible Side|True
+Extend Lower Decks|True
+Spawn Additional Engine Room Workshops|True
+Aggressive Workshop Spawning|True
+Shortened Cargo Hold Corridors|True
+Add Lower Deck Next To Engine Room|True
+Add Deck Zero|True
+Shuffled Regions|True
+Number Of Shuffles|1
+Diverse Item Spawns|True
+Flashlight Colour Red Component|255
+Flashlight Colour Green Component|0
+Flashlight Colour Blue Component|255
+Random Glowstick Colours|True
+Random Ship Generic Light Colours|True

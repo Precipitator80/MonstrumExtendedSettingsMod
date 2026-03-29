@@ -77,11 +77,13 @@ IMPORTANT: Please do not contact any of the other people on the credits list for
 Credits:
 - Precipitator#5613 / precipitator (https://www.youtube.com/@precipitator112) - Creator / Developer of the mod.
 - DevilNaiden#3379 / devilnaiden (https://www.youtube.com/@Naiden) - Creating the custom Sparky model and its animations. Also early help through discussion about modding the game as well as motivation to develop the mod.
-- Ink#4186 / im_just_ink (https://www.youtube.com/@justink2868) - Creating loading backgrounds and death frames as well as pioneering challenge creation.
+- Ink#4186 / im_just_ink (https://www.youtube.com/@justink2868) - Creating custom graphics for loading backgrounds, death frames, hint screens, custom items and purple smoke as well as pioneering challenge creation.
 - Nils#3253 - Early remodelling of Many Monsters Mode to allow for the spawning of infinite monsters instead of just three. Coding the Spawn Monsters In Starter Room feature and Varying Monster Sizes Mode.
 - Birdbonanza#5821 / birdbonanza - Creating custom music for Sparky.
 - Noba#1916 / _noba - Creating the molotov and smoke grenade models.
 - bee#2660 / bee2660 - Creating advanced code to help with specific problems related to Partiality modding.
+- TierMaster - Creating the Camera Timer setting.
+- Mike Bone - Creating the 4.1 MES challenge library.
 - ArieX (https://steamcommunity.com/id/ariesalex/) - The creation of the Monstrum Multihack, which offered some late inspiration and code examples of additional features used in the M.E.S. mod.
 - An anonymous person for creating the foundation for noclip mode and the cloning of items.
 
@@ -93,6 +95,69 @@ Public assets used:
 - Metal material by Rob Tuytel (Used for smoke grenade) - https://ambientcg.com/view?id=Metal021
 ----------------------------------------------------------------------------------------------------
 Changelog:
+------------------------------------------------------------
+Monstrum Extended Settings Mod V7.0 (Partiality) — 29.03.2026
+-----
+Added Settings:
+* Monster Settings
+- Silent Monster
+- Fiend Vision Cone Angle
+- Apply Fiend Vision Cone Angle To All Monsters
+
+* Gamemode Settings
+- No Glowstick Hunt Finale
+- Helicopter Fuel Amount
+- Helicopter Fuel Time
+- Submersible Charge Time
+- Escape Conditions
+- Walkie Talkie Range (suggested by FinalFormFae on ModDB)
+
+* Level Generation Settings
+- Camera Timer by TierMaster
+- No Starter Fuse
+- Add Deck Cargo Holds
+
+* Utility Settings
+- Custom Music Pack
+- Use Wander Theme From Start
+-----
+Changes:
+- Added over 50 new challenges by Ink. 
+- Added 15 challenges adapted from the 4.1 MES challenge library by Mike Bone.
+- Improved over 20 existing challenges.
+- Added full directional movement for monster players in Crew VS Monster mode (PvP).
+- Polished existing loading screens and added several more. Also improved loading error guidance.
+- Replaced "All Pre-filled Fuse Boxes" and "No Pre-filled Fuse Boxes" with more granular Start Region, Liferaft, Engine Room, Submersible, Light and Power Lock settings.
+- Added icons for the molotov, smoke grenade and rainbow glowsticks.
+- Rainbow glowsticks now stack separately to normal glowsticks with their own name.
+- Added hint images that show on round start for Debug Mode, Escape Conditions and Glowstick Hunt.
+- Improved the look of purple smoke with custom materials by Ink and randomised particle size.
+- Player no longer drops their items when losing a life in Extra Lives mode.
+- Changed default multiplayer audio mode to legacy audio (no player 2 audio) to avoid lag.
+- Improved monster teleportation in Debug Mode.
+- Backpacks are now included in the teleport all items debug keybind.
+- Expanded player region node data text.
+- Removed "Break The Game Lightly" and "Break The Game Heavily" settings.
+- Added the ability to scroll between loading screens and their text in debug mode. Screens are switched automatically every 10 seconds.
+- Polished and optimised large chunks of code for small performance improvements and better maintainability.
+-----
+Bug Fixes:
+- Fixed player growth bug.
+- Fixed consistent level generation not ignoring monster and region spawn count history and some audio clips potentially affecting RNG while generating.
+- Fixed random monster selection when using Sparky or banned monsters.
+- Fixed monster AI not seeing crew player in Crew VS Monster mode (PvP) when the monster player used mouse and keyboard.
+- Fixed item spawn count changes via the "Change Key Item Spawn Numbers" setting persisting across rounds and the setting increasing counts when it should not.
+- Fixed life raft gates being mismatched to their rafts when using two life rafts.
+- Fixed No Barricade Doors search not finding some barricaded doors like the door for the engine room steam control room.
+- Fixed Sparky getting a Fire Shroud when only brute should have one.
+- Fixed fire shroud still having visual effects when shroud size is 0.
+- Fixed monsters avoiding fire even when fire shroud is on. By default, all monsters ignore areas with fire in their pathfinding.
+- Fixed flares teleport monsters only teleporting non-Brutes without overpowered flare gun.
+- Fixed Debug Mode godmode switch not working properly in Multiplayer Mode.
+- Fixed multiplayer rope dragging.
+- Fixed CreateNewMonster for the three vanilla monsters.
+- Fixed loading screen typo.
+- Tweaked Sparky's collider when using the custom model to reduce the chance of getting stuck, especially around stairs.
 ------------------------------------------------------------
 Monstrum Extended Settings Mod V6.0 (Partiality) — 27.07.2023
 -----

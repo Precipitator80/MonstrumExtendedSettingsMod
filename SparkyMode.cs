@@ -1,4 +1,4 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System.Collections.Generic;
 using UnityEngine;
 using System;
@@ -144,7 +144,7 @@ namespace MonstrumExtendedSettingsMod
                                         sparkyEvent.floatParameter = bruteEvent.floatParameter;
                                         sparkyEvent.stringParameter = bruteEvent.stringParameter;
                                         sparkyEvent.objectReferenceParameter = bruteEvent.objectReferenceParameter;
-                                        float scaledBruteTime = (bruteEvent.time / bruteClip.length); // Scale the event to Sparky's animation.
+                                        float scaledBruteTime = bruteEvent.time / bruteClip.length; // Scale the event to Sparky's animation.
                                         sparkyEvent.time = sparkyClip.length * scaledBruteTime;
                                         sparkyClip.AddEvent(sparkyEvent);
                                     }
@@ -168,6 +168,11 @@ namespace MonstrumExtendedSettingsMod
                     monsterSMR.lightProbeUsage = sparkySkinnedMeshRenderer.lightProbeUsage;
 
                     BaseFeatures.DisableMonsterParticles(this.gameObject);
+
+                    // Adjust Sparky's collider to reduce the chance of getting stuck.
+                    // There is other code around colliders like MovementControl.CheckForStairs, so there might be a better solution to this.
+                    monster.MainCollider.radius = 0.22f; // Use a thinner collider to reduce the chance of getting stuck.
+                    monster.MainCollider.center += new Vector3(0f, 0.15f, 0f); // Raise collider center slightly to prevent getting stuck at the bottom of stairs.
 
                     // Sparky Eyes
                     MeshRenderer eyeLMR = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.L").gameObject.GetComponentInChildren<MeshRenderer>();
@@ -322,11 +327,8 @@ namespace MonstrumExtendedSettingsMod
                 foreach (PrimaryRegionType primaryRegionType in primaryFuseBoxRegions)
                 {
                     FuseBox fusebox = FuseBoxManager.Instance.fuseboxes[primaryRegionType];
-                    if (!ModSettings.noPreFilledFuseBoxes)
-                    {
-                        fusebox.AddFuse();
-                        fusebox.AddPreExistingFuse();
-                    }
+                    fusebox.AddFuse();
+                    fusebox.AddPreExistingFuse();
                 }
 
                 if (sparkyAudioClips != null)
@@ -401,7 +403,6 @@ namespace MonstrumExtendedSettingsMod
                 {
                     On.FootStepManager.SetUpStep += new On.FootStepManager.hook_SetUpStep(HookFootStepManagerSetUpStep);
                 }
-                On.MChasingState.DoDoorCheck += new On.MChasingState.hook_DoDoorCheck(HookMChasingStateDoDoorCheck);
                 On.Monster.TeleportTo += new On.Monster.hook_TeleportTo(HookMonsterTeleportTo);
                 /*
                 // Moved to BaseFeatures.
@@ -556,44 +557,6 @@ namespace MonstrumExtendedSettingsMod
                     return;
                 }
                 orig.Invoke(footStepManager, _speed);
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
-            // @MChasingState
-
-            private static void HookMChasingStateDoDoorCheck(On.MChasingState.orig_DoDoorCheck orig, MChasingState mChasingState, bool _overwrite)
-            {
-                if (!mChasingState.sinceDoorCheck.timerStarted || _overwrite)
-                {
-                    if (!mChasingState.sinceDoorCheck.timerStarted)
-                    {
-                        mChasingState.sinceDoorCheck.StartTimer();
-                    }
-                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute))
-                    {
-                        ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
-                    }
-                    if (((MState)mChasingState).monster.monsterType.Equals("Sparky"))
-                    {
-                        ((MState)mChasingState).monster.GetComponent<SparkyAura>().SpawnTrapsNearSparky(0f, 0.75f * mChasingState.timeBetweenDoorCheck);
-                    }
-                }
-                else if (mChasingState.sinceDoorCheck.TimeElapsed > mChasingState.timeBetweenDoorCheck)
-                {
-                    if (((MState)mChasingState).monster.MonsterType != Monster.MonsterTypeEnum.Fiend)
-                    {
-                        mChasingState.sinceDoorCheck.ResetTimer();
-                    }
-                    if (ModSettings.giveAllMonstersAFireShroud || (ModSettings.bruteFireShroud && mChasingState.monster.MonsterType == Monster.MonsterTypeEnum.Brute))
-                    {
-                        ((MState)mChasingState).monster.GetComponent<FireShroud>().FireBlast();
-                    }
-                    if (((MState)mChasingState).monster.monsterType.Equals("Sparky"))
-                    {
-                        ((MState)mChasingState).monster.GetComponent<SparkyAura>().SpawnTrapsNearSparky(0f, 0.75f * mChasingState.timeBetweenDoorCheck);
-                    }
-                }
-                orig.Invoke(mChasingState, _overwrite);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -934,7 +897,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                         if (nearbyRooms.Count > 0)
                         {
-                            buffPercentage = (nearbyActiveRooms.Count / nearbyRooms.Count) * maxRoomBuffPercentage;
+                            buffPercentage = nearbyActiveRooms.Count / nearbyRooms.Count * maxRoomBuffPercentage;
                         }
                         else
                         {
@@ -1288,7 +1251,7 @@ namespace MonstrumExtendedSettingsMod
             public void CreateElectricTrapPrefab()
             {
                 regionsElectrified = new Dictionary<PrimaryRegionType, bool>();
-                foreach (PrimaryRegionType primaryRegionType in Enum.GetValues(typeof(PrimaryRegionType)))
+                foreach (PrimaryRegionType primaryRegionType in System.Enum.GetValues(typeof(PrimaryRegionType)))
                 {
                     regionsElectrified.Add(primaryRegionType, false);
                 }
@@ -1577,7 +1540,7 @@ namespace MonstrumExtendedSettingsMod
                 for (; ; )
                 {
                     // y = mx + c = (1 - slowfactor) * distance from centre + slowfactor = 0.2x + 0.8 // The line goes from 1 down to the slow factor (default 0.8).
-                    float distanceFactor = Mathf.Clamp((Vector3.Distance(playerMotor.transform.position, this.transform.position) / boxCollider.size.x), 0f, 1f);
+                    float distanceFactor = Mathf.Clamp(Vector3.Distance(playerMotor.transform.position, this.transform.position) / boxCollider.size.x, 0f, 1f);
                     float rangedSlowFactor = (1f - slowFactor) * distanceFactor + slowFactor;
                     playerMotor.xMovement *= rangedSlowFactor;
                     playerMotor.zMovement *= rangedSlowFactor;

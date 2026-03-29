@@ -1,0 +1,54 @@
+Name|Breach I
+Author|Ink
+Difficulty|6
+Description|Welcome to the most secure marine prison. Collect 4 energy keys and sabotage the prison to escape before you get caught. Your main enemies are 1 armed guard and 5 security robots.\n"It looks like the door system is completely out of order..."
+Version|7.0
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|5
+Number of Fiends|1
+Maximum Monster Spawntime (seconds)|15
+Monster Animation Speed Multiplier|1.25
+Monster Movement Speed Multiplier|1.25
+Monster Rotation Speed Multiplier|1.25
+Custom Monster Scale|1.075
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|-750
+Brute Chase Speed Buff Rate|750
+Fiend Flicker Minimum Range|-1
+Fiend Flicker Medium Range|-1
+Fiend Flicker Maximum Range|-1
+Fiend Mind Attack Attack Timer Charge Rate|12.5
+Fiend Mind Attack Attack Timer Decay Rate|3.75
+Fiend Mind Attack Delay Timer Rate|1.5
+Glowstick Hunt|True
+No Glowstick Hunt Finale|True
+Special Glowsticks Required|4
+Special Glowsticks To Create|16
+Overpowered Hiding Spots|True
+Disable Liferaft|True
+Disable Helicopter|True
+Disable Submersible|True
+Escape Conditions|1
+Infinite Flashlight Power|True
+Starter Room Region|Upper Deck
+Pre-fill Start Region Fuse Box|False
+Pre-fill Liferaft Fuse Box|False
+Overpowered Steam Vents|True
+No Doors|True
+Add Additional Crew Deck Building|True
+Use Deck Four On Submersible Side|True
+Shortened Cargo Hold Corridors|True
+Add Lower Deck Next To Engine Room|True
+Add Deck Zero|True
+Brute Light Colour Red Component|250
+Brute Light Colour Green Component|250
+Brute Light Colour Blue Component|250
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Ship Generic Lights Colour Red Component|255
+Ship Generic Lights Colour Green Component|255
+Ship Generic Lights Colour Blue Component|255
+Custom Music Pack|2
+Use Wander Theme From Start|True
