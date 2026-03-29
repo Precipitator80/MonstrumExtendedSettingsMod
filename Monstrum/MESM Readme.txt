@@ -126,7 +126,6 @@ Changes:
 - Added 15 challenges adapted from the 4.1 MES challenge library by Mike Bone.
 - Improved over 20 existing challenges.
 - Added full directional movement for monster players in Crew VS Monster mode (PvP).
-- Added the ability to scroll between loading screens and their text. Screens are switched automatically every 10 seconds.
 - Polished existing loading screens and added several more. Also improved loading error guidance.
 - Replaced "All Pre-filled Fuse Boxes" and "No Pre-filled Fuse Boxes" with more granular Start Region, Liferaft, Engine Room, Submersible, Light and Power Lock settings.
 - Added icons for the molotov, smoke grenade and rainbow glowsticks.
@@ -139,6 +138,7 @@ Changes:
 - Backpacks are now included in the teleport all items debug keybind.
 - Expanded player region node data text.
 - Removed "Break The Game Lightly" and "Break The Game Heavily" settings.
+- Added the ability to scroll between loading screens and their text in debug mode. Screens are switched automatically every 10 seconds.
 - Polished and optimised large chunks of code for small performance improvements and better maintainability.
 -----
 Bug Fixes:

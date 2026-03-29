@@ -179,7 +179,7 @@ namespace MonstrumExtendedSettingsMod.Setting
                 }
             }
 
-            if (loadingBackground.gameObject.GetComponent<LoadingScreenInputHandler>() == null)
+            if (ExtendedSettingsModScript.ModSettings.debugMode && loadingBackground.gameObject.GetComponent<LoadingScreenInputHandler>() == null)
             {
                 LoadingScreenInputHandler inputHandler = loadingBackground.gameObject.AddComponent<LoadingScreenInputHandler>();
                 inputHandler.loadingBackground = loadingBackground;
