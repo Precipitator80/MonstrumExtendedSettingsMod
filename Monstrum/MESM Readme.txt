@@ -157,6 +157,7 @@ Bug Fixes:
 - Fixed multiplayer rope dragging.
 - Fixed CreateNewMonster for the three vanilla monsters.
 - Fixed loading screen typo.
+- Tweaked Sparky's collider when using the custom model to reduce the chance of getting stuck, especially around stairs.
 ------------------------------------------------------------
 Monstrum Extended Settings Mod V6.0 (Partiality) — 27.07.2023
 -----

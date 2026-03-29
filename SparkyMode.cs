@@ -1,4 +1,4 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System.Collections.Generic;
 using UnityEngine;
 using System;
@@ -168,6 +168,11 @@ namespace MonstrumExtendedSettingsMod
                     monsterSMR.lightProbeUsage = sparkySkinnedMeshRenderer.lightProbeUsage;
 
                     BaseFeatures.DisableMonsterParticles(this.gameObject);
+
+                    // Adjust Sparky's collider to reduce the chance of getting stuck.
+                    // There is other code around colliders like MovementControl.CheckForStairs, so there might be a better solution to this.
+                    monster.MainCollider.radius = 0.22f; // Use a thinner collider to reduce the chance of getting stuck.
+                    monster.MainCollider.center += new Vector3(0f, 0.15f, 0f); // Raise collider center slightly to prevent getting stuck at the bottom of stairs.
 
                     // Sparky Eyes
                     MeshRenderer eyeLMR = Utilities.RecursiveTransformSearch(monster.gameObject.transform, "Eye_Inner.L").gameObject.GetComponentInChildren<MeshRenderer>();
