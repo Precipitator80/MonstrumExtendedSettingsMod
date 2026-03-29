@@ -31,6 +31,7 @@ namespace MonstrumExtendedSettingsMod.Setting
         /// </summary>
         private static readonly Dictionary<string, string[]> customLoadingScreenMessages = new Dictionary<string, string[]>()
             {
+                { "00Screens",                new string[]{"The mod comes with over 50 extra loading screens, three of which are secret screens. Can you find them all?"}},
                 { "01MainMenu",               new string[]{"The release of Monstrum dates back to 2015."}},
                 { "02Collectables",           new string[]{"The amount of hidden or unused content can be surprising."}},
                 { "03MESMSettings",           new string[]{"The Extended Settings Mod, first released in 2020, offers hundreds of settings to customise your experience."}},
