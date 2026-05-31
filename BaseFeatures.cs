@@ -385,6 +385,12 @@ namespace MonstrumExtendedSettingsMod
 
             private static InventoryItem nearbyInventoryItem;
             private static int nearbyInventoryItemDeck;
+            private static float speedrunAccumulatedTime = 0f;
+
+            private static float GetSpeedrunTotalTime()
+            {
+                return speedrunAccumulatedTime + (ModSettings.speedrunTimer != null && ModSettings.speedrunTimer.IsRunning ? ModSettings.speedrunTimer.TimeElapsed : 0f);
+            }
 
             /// <summary>
             /// Holds custom code for any features that may be updated each frame.
@@ -425,7 +431,8 @@ namespace MonstrumExtendedSettingsMod
                     {
                         if (ModSettings.finalTime.Equals(string.Empty))
                         {
-                            ModSettings.ShowTextOnScreen(Mathf.FloorToInt(ModSettings.speedrunTimer.TimeElapsed / 60f).ToString() + ":" + (ModSettings.speedrunTimer.TimeElapsed % 60f).ToString("00.00"));
+                            float totalTime = GetSpeedrunTotalTime();
+                            ModSettings.ShowTextOnScreen(Mathf.FloorToInt(totalTime / 60f).ToString() + ":" + (totalTime % 60f).ToString("00.00"));
                         }
                         else
                         {
@@ -1561,7 +1568,7 @@ namespace MonstrumExtendedSettingsMod
                 float finalTime = float.MaxValue;
                 if (ModSettings.useSpeedrunTimer)
                 {
-                    finalTime = ModSettings.speedrunTimer.TimeElapsed;
+                    finalTime = GetSpeedrunTotalTime();
                 }
 
                 // Check whether the escape route type is allowed by the mod settings.
@@ -1714,8 +1721,10 @@ namespace MonstrumExtendedSettingsMod
             {
                 if (ModSettings.useSpeedrunTimer)
                 {
-                    ModSettings.speedrunTimer.StartTimer();
-                    Debug.Log("Started speedrun timer at " + DateTime.Now + " local / " + DateTime.UtcNow + " UTC");
+                    speedrunAccumulatedTime = 0f;
+                    ModSettings.speedrunTimer.StopTimer();
+                    ModSettings.finalTime = string.Empty;
+                    Debug.Log($"Speedrun timer reset and waiting for player movement. {DateTime.Now} local / {DateTime.UtcNow} UTC");
                 }
                 orig.Invoke();
             }
@@ -5705,7 +5714,8 @@ namespace MonstrumExtendedSettingsMod
                     }
                     if (ModSettings.useSpeedrunTimer)
                     {
-                        Debug.Log("Speedrun timer when exiting starting room: " + Mathf.FloorToInt(ModSettings.speedrunTimer.TimeElapsed / 60f).ToString() + ":" + (ModSettings.speedrunTimer.TimeElapsed % 60f).ToString("00.000000") + ". This occurred at " + DateTime.Now + " local / " + DateTime.UtcNow + " UTC");
+                        float exitingTime = GetSpeedrunTotalTime();
+                        Debug.Log("Speedrun timer when exiting starting room: " + Mathf.FloorToInt(exitingTime / 60f).ToString() + ":" + (exitingTime % 60f).ToString("00.000000") + ". This occurred at " + DateTime.Now + " local / " + DateTime.UtcNow + " UTC");
                     }
                 }
             }
@@ -8276,6 +8286,62 @@ namespace MonstrumExtendedSettingsMod
                 {
                     Time.timeScale = timeScaleManager.scale * ModSettings.timeScaleMultiplier;
                     ActiveFeatures();
+                }
+
+                if (ModSettings.useSpeedrunTimer && References.Player != null)
+                {
+                    float elapsed = ModSettings.speedrunTimer.TimeElapsed;
+                    bool isRunning = ModSettings.speedrunTimer.IsRunning;
+
+                    // Check to start the timer at the start of the round.
+                    if (!isRunning && speedrunAccumulatedTime == 0f && elapsed == 0f)
+                    {
+                        // Check Unity input axes for keyboard and mouse movement.
+                        bool moved = Mathf.Abs(Input.GetAxis("Horizontal")) > 0.001f ||
+                                     Mathf.Abs(Input.GetAxis("Vertical")) > 0.001f ||
+                                     Mathf.Abs(Input.GetAxis("Mouse X")) > 0.001f ||
+                                     Mathf.Abs(Input.GetAxis("Mouse Y")) > 0.001f;
+
+                        if (!moved)
+                        {
+                            try
+                            {
+                                moved = XboxCtrlrInput.XCI.RightStickValueX() != 0f ||
+                                        XboxCtrlrInput.XCI.RightStickValueY() != 0f ||
+                                        XboxCtrlrInput.XCI.LeftStickValueX() != 0f ||
+                                        XboxCtrlrInput.XCI.LeftStickValueY() != 0f;
+                            }
+                            catch
+                            {
+                                Debug.LogError("Error while trying to detect controller stick movement.");
+                            }
+                        }
+
+                        if (moved)
+                        {
+                            ModSettings.speedrunTimer.StartTimer();
+                            Debug.Log("Speedrun timer started via movement detection.");
+                        }
+                    }
+                    // Check to handle pausing logic after the timer has started.
+                    else if (!ModSettings.noTimeFreezeInPauseMenu && (speedrunAccumulatedTime > 0f || elapsed > 0f))
+                    {
+                        // Stop the timer once if paused, otherwise start once.
+                        if (timeScaleManager.paused)
+                        {
+                            if (isRunning)
+                            {
+                                speedrunAccumulatedTime += ModSettings.speedrunTimer.TimeElapsed;
+                                ModSettings.speedrunTimer.StopTimer();
+                                Debug.Log("Speedrun timer paused due to game pause. Accumulated time: " + speedrunAccumulatedTime);
+                            }
+                        }
+                        else if (!isRunning)
+                        {
+                            ModSettings.speedrunTimer.StartTimer();
+                            Debug.Log("Speedrun timer resumed.");
+                        }
+                    }
                 }
             }
 
