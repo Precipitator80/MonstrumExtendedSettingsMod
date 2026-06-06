@@ -1,12 +1,10 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using System.Collections;
-using UnityEngine.UI;
 using System.Text;
-using System.Linq;
 using MonstrumExtendedSettingsMod.Setting;
 
 namespace MonstrumExtendedSettingsMod
@@ -1388,6 +1386,7 @@ namespace MonstrumExtendedSettingsMod
                         firstTimeReadingSettings = true;
                         ReadModSettings();
                     }
+                    SettingsManager.SyncAllSettings();
                     Debug.Log("READ EXTENDED SETTINGS FROM FILE [" + VERSION_WITH_TEXT + "]");
                 }
                 catch (Exception e)
@@ -1644,7 +1643,7 @@ namespace MonstrumExtendedSettingsMod
             // #ReadBeforeGeneration
             public static void ReadBeforeGeneration()
             {
-                SettingManager.EarlyInitialisation();
+                SettingsManager.EarlyInitialisation();
                 if (enableMultiplayer)
                 {
                     MultiplayerMode.MultiplayerModeVariableInitialisation();
@@ -1657,7 +1656,7 @@ namespace MonstrumExtendedSettingsMod
                 Debug.Log("READING LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READING LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
 
-                SettingManager.LateInitialisation();
+                SettingsManager.LateInitialisation();
 
                 if (!ModSettings.alwaysSkipMenuScreen)
                 {

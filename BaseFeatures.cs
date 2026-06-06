@@ -341,8 +341,8 @@ namespace MonstrumExtendedSettingsMod
                 // Use Wander Theme From Start
                 On.GlobalMusic.Start += new On.GlobalMusic.hook_Start(HookGlobalMusicStart);
 
-                SettingManager.Register(new DeckCargoHolds());
-                SettingManager.Register(new WalkieTalkieRange());
+                SettingsManager.Register(new DeckCargoHolds());
+                SettingsManager.Register(new WalkieTalkieRange());
 
                 // Fix monsters avoiding fire even when fire shroud is on.
                 On.MonsterAvoidFire.Start += new On.MonsterAvoidFire.hook_Start(HookMonsterAvoidFireStart);
@@ -354,8 +354,8 @@ namespace MonstrumExtendedSettingsMod
                     On.PlayerUpperBodyLock.UpdatePositions += new On.PlayerUpperBodyLock.hook_UpdatePositions(HookPlayerUpperBodyLockUpdatePositions);
                 }
 
-                SettingManager.Register(new MonsterVisionConeAngle());
-                SettingManager.Register(new LoadingScreenManager());
+                SettingsManager.Register(new MonsterVisionConeAngle());
+                SettingsManager.Register(new LoadingScreenManager());
             }
 
             /*
