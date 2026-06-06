@@ -9,12 +9,7 @@ namespace MonstrumExtendedSettingsMod.Setting
 
         protected override void OnEnable()
         {
-            On.WalkieTalkie.Awake += HookWalkieTalkieAwake;
-        }
-
-        protected override void OnDisable()
-        {
-            On.WalkieTalkie.Awake -= HookWalkieTalkieAwake;
+            RegisterHook<On.WalkieTalkie.hook_Awake>(h => On.WalkieTalkie.Awake += h, h => On.WalkieTalkie.Awake -= h, HookWalkieTalkieAwake);
         }
 
         private static void HookWalkieTalkieAwake(On.WalkieTalkie.orig_Awake orig, WalkieTalkie walkieTalkie)

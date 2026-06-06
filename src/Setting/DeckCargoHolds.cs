@@ -7,7 +7,6 @@ namespace MonstrumExtendedSettingsMod.Setting
 {
     class DeckCargoHolds : Setting
     {
-        private bool hookedCrateBlockPaths = false;
 
         protected override bool ShouldSettingBeEnabled()
         {
@@ -17,36 +16,40 @@ namespace MonstrumExtendedSettingsMod.Setting
         protected override void OnEnable()
         {
             // Adds connections between the deck and cargo containers for culling and pathfinding.
-            On.Spawn1x1SegmentLG.CheckSegmentConnections += HookSpawn1x1SegmentLGCheckSegmentConnections;
+            RegisterHook<On.Spawn1x1SegmentLG.hook_CheckSegmentConnections>(
+                h => On.Spawn1x1SegmentLG.CheckSegmentConnections += h,
+                h => On.Spawn1x1SegmentLG.CheckSegmentConnections -= h,
+                HookSpawn1x1SegmentLGCheckSegmentConnections
+            );
+
             // Removes cargo walls from deck 5.
-            On.SpawnCargoHoldLG.HorizontalOrVerticalWall += HookSpawnCargoHoldLGHorizontalOrVerticalWall;
+            RegisterHook<On.SpawnCargoHoldLG.hook_HorizontalOrVerticalWall>(
+                h => On.SpawnCargoHoldLG.HorizontalOrVerticalWall += h,
+                h => On.SpawnCargoHoldLG.HorizontalOrVerticalWall -= h,
+                HookSpawnCargoHoldLGHorizontalOrVerticalWall
+            );
+
             // Stops deck walls from spawning in front of cargo containers.
-            On.SpawnDeckCargoWalls.GenerateDeckCargoWall += HookSpawnDeckCargoWallsGenerateDeckCargoWall;
-        }
-
-        protected override void OnDisable()
-        {
-            On.Spawn1x1SegmentLG.CheckSegmentConnections -= HookSpawn1x1SegmentLGCheckSegmentConnections;
-            On.SpawnCargoHoldLG.HorizontalOrVerticalWall -= HookSpawnCargoHoldLGHorizontalOrVerticalWall;
-            On.SpawnDeckCargoWalls.GenerateDeckCargoWall -= HookSpawnDeckCargoWallsGenerateDeckCargoWall;
-
-            if (hookedCrateBlockPaths)
-            {
-                On.SpawnCargoContainersLG.SpawnCrateBlockPaths -= HookSpawnCargoContainersLGSpawnCrateBlockPaths;
-                On.SpawnCargoContainersLG.SpawnBrokenRails -= HookSpawnCargoContainersLGSpawnBrokenRails;
-                hookedCrateBlockPaths = false;
-            }
+            RegisterHook<On.SpawnDeckCargoWalls.hook_GenerateDeckCargoWall>(
+                h => On.SpawnDeckCargoWalls.GenerateDeckCargoWall += h,
+                h => On.SpawnDeckCargoWalls.GenerateDeckCargoWall -= h,
+                HookSpawnDeckCargoWallsGenerateDeckCargoWall
+            );
         }
 
         public override void EarlyInitialisation()
         {
-            if (!hookedCrateBlockPaths)
-            {
-                On.SpawnCargoContainersLG.SpawnCrateBlockPaths += HookSpawnCargoContainersLGSpawnCrateBlockPaths;
-                On.SpawnCargoContainersLG.SpawnBrokenRails += HookSpawnCargoContainersLGSpawnBrokenRails;
+            RegisterHook<On.SpawnCargoContainersLG.hook_SpawnCrateBlockPaths>(
+                h => On.SpawnCargoContainersLG.SpawnCrateBlockPaths += h,
+                h => On.SpawnCargoContainersLG.SpawnCrateBlockPaths -= h,
+                HookSpawnCargoContainersLGSpawnCrateBlockPaths
+            );
 
-                hookedCrateBlockPaths = true;
-            }
+            RegisterHook<On.SpawnCargoContainersLG.hook_SpawnBrokenRails>(
+                h => On.SpawnCargoContainersLG.SpawnBrokenRails += h,
+                h => On.SpawnCargoContainersLG.SpawnBrokenRails -= h,
+                HookSpawnCargoContainersLGSpawnBrokenRails
+            );
         }
 
         public override void LateInitialisation()
