@@ -31,6 +31,7 @@ namespace MonstrumExtendedSettingsMod.Setting
 
         private void OnDisable()
         {
+            // Catch InvalidOperationException as workaround to MonoMod.RuntimeDetour stack double pop bug.
             foreach (var h in _disableHooks)
                 try { h(); } catch (InvalidOperationException) { }
 
