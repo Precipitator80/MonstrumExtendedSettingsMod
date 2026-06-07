@@ -1258,6 +1258,7 @@ namespace MonstrumExtendedSettingsMod
                     shipGenericLightIntensityMultiplier = new MESMSetting<float>("Ship Generic Lights Intensity Multiplier", "Multiplies the intensity of ship generic lights", 1, false, true).userValue;
                     shipGenericLightRangeMultiplier = new MESMSetting<float>("Ship Generic Lights Range Multiplier", "Multiplies the range of ship generic lights", 1, false, true).userValue;
                     randomShipGenericLightsColours = new MESMSetting<bool>("Random Ship Generic Light Colours", "Assigns each light on the ship a random colour", false, false, true).userValue;
+                    shipGenericLightsColourAdditiveMode = new MESMSetting<int>("Ship Generic Lights Colour Additive Mode", "Instead of setting the colour of each light to the custom colour directly, the custom colour is added to the original colour. Set to 0 to switch off addition, -1 for subtraction and 1 for addition", 0, false, true, -1, 1).userValue;
                     MESMSettingRGB fogColourRSetting = new MESMSettingRGB("Fog Colour Red Component", "Sets the red component of the fog colour", -1, false, false, -1, 255);
                     MESMSettingRGB fogColourGSetting = new MESMSettingRGB("Fog Colour Green Component", "Sets the green component of the fog colour", -1, false, true, -1, 255);
                     MESMSettingRGB fogColourBSetting = new MESMSettingRGB("Fog Colour Blue Component", "Sets the blue component of the fog colour", -1, false, true, -1, 255);
@@ -3922,6 +3923,7 @@ namespace MonstrumExtendedSettingsMod
             public static float shipGenericLightIntensityMultiplier;
             public static float shipGenericLightRangeMultiplier;
             public static bool randomShipGenericLightsColours;
+            public static int shipGenericLightsColourAdditiveMode;
 
 
             // Utility Settings Variables

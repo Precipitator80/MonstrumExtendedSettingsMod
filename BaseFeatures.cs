@@ -2419,18 +2419,27 @@ namespace MonstrumExtendedSettingsMod
                 // Check whether to use a custom colour (set or random).
                 // If a custom colour is set and random colours are enabled, give a chance for each.
                 var useCustomShipLightColour = ModSettings.UseCustomColour(ModSettings.shipGenericLightsColour);
+                var light = ((MonoBehaviour)genericLight).GetComponent<Light>();
                 if (ModSettings.randomShipGenericLightsColours && (!useCustomShipLightColour || UnityEngine.Random.value > 0.5f))
                 {
-                    ((MonoBehaviour)genericLight).GetComponent<Light>().color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
+                    light.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
                 }
                 else if (useCustomShipLightColour)
                 {
-                    ((MonoBehaviour)genericLight).GetComponent<Light>().color = ModSettings.ConvertColourStringToColour(ModSettings.shipGenericLightsColour);
+                    var customColour = ModSettings.ConvertColourStringToColour(ModSettings.shipGenericLightsColour);
+                    if (ModSettings.shipGenericLightsColourAdditiveMode == 0)
+                    {
+                        light.color += customColour;
+                    }
+                    else
+                    {
+                        light.color += ModSettings.shipGenericLightsColourAdditiveMode * customColour;
+                    }
                 }
 
                 // Apply multipliers to ship light properties.
                 genericLight.normalIntensity *= ModSettings.shipGenericLightIntensityMultiplier;
-                ((MonoBehaviour)genericLight).GetComponent<Light>().range *= ModSettings.shipGenericLightRangeMultiplier;
+                light.range *= ModSettings.shipGenericLightRangeMultiplier;
                 orig.Invoke(genericLight);
 
                 // # LATEST INDEV CHANGE - Sets all ship lights to be Brute lights.
