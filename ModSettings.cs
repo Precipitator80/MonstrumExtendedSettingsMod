@@ -124,8 +124,6 @@ namespace MonstrumExtendedSettingsMod
                 StringBuilder modSettingsStringBuilder = new StringBuilder("Monstrum Extended Settings Mod Settings File:\nThe first line of each setting will tell you what the setting is and what its default value is, while any following lines are used by the game. Editing the default value shown does nothing. The default settings emulate an unmodded game. Creating or deleting lines will break the mod. If the game stops reading your settings correctly, download the mod again to get a clean settings file.");
                 string category = string.Empty;
                 int newNumberOfMonsters = 0;
-                bool changedSettingThatRequiresRestart = false;
-                List<string> restartSettingsChanged = new List<string>();
                 List<string> badlyFormattedSettings = new List<string>();
                 StringBuilder settingsLogger = new StringBuilder("Saved all settings:\t\t ");
                 foreach (MESMSetting mESMSetting in ModSettings.allSettings)
@@ -206,8 +204,7 @@ namespace MonstrumExtendedSettingsMod
                             //Debug.Log("Wrote to line " + mESMSetting.modSettingsLine + ": " + value);
                             if ((mESMSetting.description.Contains("Restart") || mESMSetting.description.Contains("restart")) && mESMSetting.userValueString != value)
                             {
-                                changedSettingThatRequiresRestart = true;
-                                restartSettingsChanged.Add(mESMSetting.title);
+                                ModSettings.restartSettingsChanged.Add(mESMSetting.title);
                             }
                             mESMSetting.userValueString = value;
                             settingsLogger.Append(mESMSetting.title);
@@ -269,17 +266,31 @@ namespace MonstrumExtendedSettingsMod
                         string settingsLog = settingsLogger.ToString();
                         Debug.Log(settingsLog.Substring(0, settingsLog.Length - 3));
                     }
-                    if (!ModSettings.startedWithMMM && newNumberOfMonsters > 1)
+                    if (!ModSettings.startedWithMMM)
                     {
-                        changedSettingThatRequiresRestart = true;
-                        restartSettingsChanged.Add("Many Monsters Mode (From 0 or 1 to 2 or more monsters)");
+                        var warningString = "Many Monsters Mode (From 0 or 1 to 2 or more monsters)";
+                        if (newNumberOfMonsters > 1)
+                        {
+                            ModSettings.restartSettingsChanged.Add(warningString);
+                        }
+                        else
+                        {
+                            ModSettings.restartSettingsChanged.Remove(warningString);
+                        }
                     }
-                    else if (ModSettings.startedWithMMM && newNumberOfMonsters == 0)
+                    else
                     {
-                        changedSettingThatRequiresRestart = true;
-                        restartSettingsChanged.Add("Many Monsters Mode (From 2 or more to 0 monsters)");
+                        var warningString = "Many Monsters Mode (From 2 or more to 0 monsters)";
+                        if (newNumberOfMonsters == 0)
+                        {
+                            ModSettings.restartSettingsChanged.Add(warningString);
+                        }
+                        else
+                        {
+                            ModSettings.restartSettingsChanged.Remove(warningString);
+                        }
                     }
-                    if (changedSettingThatRequiresRestart)
+                    if (ModSettings.restartSettingsChanged.Count > 0)
                     {
                         /*
                         foreach (GameObject gameObject in mesmButtonGOs)
@@ -288,7 +299,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                         //mesmButtonGOs[0].SetActive(false);
                         */
-                        if (restartSettingsChanged.Count > 1)
+                        if (ModSettings.restartSettingsChanged.Count > 1)
                         {
                             warningBoxTextStringBuilder.Append("Settings that require a restart have been changed:");
                         }
@@ -297,13 +308,13 @@ namespace MonstrumExtendedSettingsMod
                             warningBoxTextStringBuilder.Append("A setting that requires a restart has been changed:");
                         }
                         warningBoxTextStringBuilder.Append("\n----------");
-                        foreach (string restartSettingChanged in restartSettingsChanged)
+                        foreach (string restartSettingChanged in ModSettings.restartSettingsChanged)
                         {
                             warningBoxTextStringBuilder.Append("\n");
                             warningBoxTextStringBuilder.Append(restartSettingChanged);
                         }
                         warningBoxTextStringBuilder.Append("\n----------\nPlease restart the game unless otherwise specified in the setting");
-                        if (restartSettingsChanged.Count > 1)
+                        if (ModSettings.restartSettingsChanged.Count > 1)
                         {
                             warningBoxTextStringBuilder.Append("s");
                         }
@@ -3951,6 +3962,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool noclip;
             public static bool errorWhileReadingModSettings;
             public static string modSettingsErrorString;
+            public static HashSet<string> restartSettingsChanged = new HashSet<string>();
             public static bool errorDuringLevelGeneration;
             public static List<bool> spawnProtection;
             public static bool startedWithInvincibilityMode; // Used so that spawn protection / short timed invincibility events do not switch off godmode in case the round was started with godmode on.
