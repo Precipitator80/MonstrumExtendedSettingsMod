@@ -2857,6 +2857,12 @@ namespace MonstrumExtendedSettingsMod
                     var minGlobal = ModSettings.allowKeyItemsToNotSpawnAtAll ? 0 : 1;
                     foreach (KeyItem keyItem in keyItemSystem.keyItems)
                     {
+                        if (ModSettings.noStarterFuse && keyItem.name.Equals("Fuse"))
+                        {
+                            keyItem.minCount += 1;
+                            keyItem.maxCount += 1;
+                        }
+
                         // Adjust item counts if desired.
                         if (ModSettings.changeKeyItemSpawnNumbers != 0)
                         {
@@ -8387,7 +8393,7 @@ namespace MonstrumExtendedSettingsMod
                 orig.Invoke(tutorialFuse);
                 if (ModSettings.noStarterFuse)
                 {
-                    tutorialFuse.transform.position = FindObjectsOfType<KeyItemPlaceholder>().Random().transform.position;
+                    tutorialFuse.gameObject.SetActive(false);
                 }
             }
 

@@ -1147,7 +1147,7 @@ namespace MonstrumExtendedSettingsMod
                     preFillSubmersibleFuseBox = new MESMSetting<bool>("Pre-fill Submersible Fuse Box", "Pre-fills the fuse box of the submersible room", false).userValue;
                     preFillLightFuseBoxes = new MESMSetting<bool>("Pre-fill Light Fuse Boxes", "Pre-fills all fuse boxes that power region lights (excluding the start region, liferaft, engine room and submersible fuse boxes)", false).userValue;
                     preFillPowerLockFuseBoxes = new MESMSetting<bool>("Pre-fill Power Lock Fuse Boxes", "Pre-fills all fuse boxes of power-locked rooms", false).userValue;
-                    noStarterFuse = new MESMSetting<bool>("No Starter Fuse", "Teleports the fuse in the starter room to a random location", false).userValue;
+                    noStarterFuse = new MESMSetting<bool>("No Starter Fuse", "Spawns another random fuse in place of the starter room fuse", false).userValue;
                     noBarricadedDoors = new MESMSetting<bool>("No Barricaded Doors", "Removes the door of every barricaded room", false).userValue;
                     overpoweredSteamVents = new MESMSetting<bool>("Overpowered Steam Vents", "Lets steam be expelled from each possible point on a steam vent. This means every vent will have three steam spawn points and handles. Two handles will be clipped in each other, making it harder to turn off both", false).userValue;
                     unbreakablePitTraps = new MESMSetting<bool>("Unbreakable Pit Traps", "Pit traps are not destroyed when the player or monster runs over them", false).userValue;
