@@ -2,19 +2,18 @@ Name|Blind Beast Prime
 Author|Ink
 Difficulty|10
 Description|The Blind Beast is back, and it's more eager to tear you apart than ever. Good luck.
-Version|7.0
+Version|7.1
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
-Maximum Monster Spawntime (seconds)|30
+Maximum Monster Spawntime (seconds)|15
 Monster Animation Speed Multiplier|2.5
 Monster Movement Speed Multiplier|2
 Monster Rotation Speed Multiplier|2.5
 Brute Chase Speed Buff|True
 Brute Chase Speed Buff Multiplier|3
-Brute Chase Speed Buff Rate|1.5
+Brute Chase Speed Buff Rate|2.5
 Glowstick Hunt|True
-No Glowstick Hunt Finale|True
 Special Glowsticks Required|10
 Special Glowsticks To Create|18
 Foggy Ship|True
@@ -25,6 +24,8 @@ Disable Liferaft|True
 Disable Helicopter|True
 Disable Submersible|True
 Escape Conditions|1
+Camera Timer|1
+No Starter Fuse|True
 Gravity Y Acceleration|-14.715
 Player Stamina Mode|True
 Player Stamina Mode Stamina Duration|5

@@ -2,7 +2,7 @@ Name|Subconscious
 Author|Ink
 Difficulty|10
 Description|Although everything around you is unreal, you will stay here forever if you do not put together the puzzle of memories about the real Hisa Maru. And don't even think that you're safe in your Subconscious.\nYour stamina will never recover, so use it wisely. Make sure that fog, low gamma, and bloom are enabled in the settings.
-Version|7.0
+Version|7.1
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
@@ -51,7 +51,7 @@ Pre-fill Submersible Fuse Box|True
 Use Deck Four On Submersible Side|True
 Lengthened Cargo Hold Corridors|True
 Add Lower Deck Next To Engine Room|True
-Change Key Item Spawn Numbers|1
+Change Key Item Spawn Numbers|2
 Diverse Item Spawns|True
 No Pit Traps|True
 Brute Light Colour Red Component|250
@@ -68,9 +68,9 @@ Glowstick Colour Red Component|175
 Glowstick Colour Green Component|175
 Glowstick Colour Blue Component|175
 Glowstick Range Multiplier|4
-Fog Colour Red Component|100
-Fog Colour Green Component|100
-Fog Colour Blue Component|100
+Fog Colour Red Component|125
+Fog Colour Green Component|125
+Fog Colour Blue Component|125
 Custom Music Pack|1
 Use Wander Theme From Start|True
 Disable Monster Particles|True

@@ -1,7 +1,7 @@
 Name|Salochki v7
 Author|Ink
 Difficulty|6
-Description|There's no time to explain!\nLight up 14 special glowsticks to escape from 1 insanely fast but clumsy Brute.
+Description|There's no time to explain!\nLight up 14 special glowsticks to escape from 1 insanely fast but clumsy Brute.
 Version|7.0
 Setting|Custom Value
 Number of Random Monsters|0

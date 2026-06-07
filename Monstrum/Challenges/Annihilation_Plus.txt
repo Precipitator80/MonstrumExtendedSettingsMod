@@ -1,0 +1,30 @@
+Name|Annihilation+
+Author|Ink
+Difficulty|11
+Description|Overbuffed version of the Annihilation challenge. An even more deadly, fast and unpredictable threat. Reduced spawntime, 3 escape conditions, more aggressive cameras and a slightly more difficult escape sequence.
+Version|7.1
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|1
+Maximum Monster Spawntime (seconds)|60
+Monster Animation Speed Multiplier|4
+Monster Movement Speed Multiplier|4
+Monster Rotation Speed Multiplier|40
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|4
+Brute Chase Speed Buff Rate|4
+Apply Chase Speed Buff To All Monsters|True
+Brute Long Range Wander Speed Buff|True
+Brute Long Range Wander Speed Buff Multiplier|4
+Helicopter Fuel Amount|3
+Helicopter Fuel Time|2
+Submersible Charge Time|3
+Escape Conditions|3
+Gravity Y Acceleration|-14.715
+Extended Jump Cooldown|True
+Camera Timer|1
+Pre-fill Liferaft Fuse Box|False
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Glowstick Range Multiplier|2

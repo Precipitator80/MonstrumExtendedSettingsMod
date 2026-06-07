@@ -51,7 +51,7 @@ namespace MonstrumExtendedSettingsMod
         public class ChallengeCreator : ChallengeSubPage
         {
             private static readonly int MIN_DIFFICULTY = 0;
-            private static readonly int MAX_DIFFICULTY = 10;
+            private static readonly int MAX_DIFFICULTY = 11;
             private static readonly int DEFAULT_DIFFICULTY = 2;
             public static readonly string DIFFICULTY_HEADER = "Difficulty (" + MIN_DIFFICULTY + "-" + MAX_DIFFICULTY + ")";
             private static Challenge challengeBeingSaved;
