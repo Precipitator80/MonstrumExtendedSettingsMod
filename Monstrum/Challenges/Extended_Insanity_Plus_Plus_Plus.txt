@@ -1,6 +1,6 @@
 Name|Extended Insanity+++
 Author|Ink
-Difficulty|10
+Difficulty|11
 Description|A complete trio of monsters of the "Extreme" difficulty variant, including Sparky. Additionally, there are a large number of settings such as new items, updated generation, escape conditions and other features to improve the enjoyment of the gameplay. High degree of replayability. Probably nearly impossible.
 Version|7.0
 Setting|Custom Value
