@@ -50,7 +50,7 @@ namespace MonstrumExtendedSettingsMod
                         { "EscapeConditions3", ModSettings.escapeConditionsToWin == 3 },
                         { "GlowstickHunt", ModSettings.glowstickHunt && !ModSettings.noGlowstickHuntFinale },
                         { "GlowstickHuntNoFinale", ModSettings.glowstickHunt && ModSettings.noGlowstickHuntFinale },
-                        { "IncorrectSettingValues", ModSettings.errorWhileReadingModSettings || ModSettings.errorDuringLevelGeneration },
+                        { "IncorrectSettingValues", ModSettings.errorWhileReadingModSettings },
                         { "RestartRequired", ModSettings.restartSettingsChanged.Count > 0 }
                     };
 
