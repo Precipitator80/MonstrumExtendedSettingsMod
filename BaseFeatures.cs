@@ -237,11 +237,8 @@ namespace MonstrumExtendedSettingsMod
                 On.Room.OnPowerUp += new On.Room.hook_OnPowerUp(HookRoomOnPowerUp);
                 On.Room.OnPowerDown += new On.Room.hook_OnPowerDown(HookRoomOnPowerDown);
 
-                // Fire Shroud Fire Blast
-                if (!ModSettings.useSparky)
-                {
-                    On.MChasingState.DoDoorCheck += new On.MChasingState.hook_DoDoorCheck(HookMChasingStateDoDoorCheck);
-                }
+                // Fire Shroud Fire Blast & Sparky Chase Electric Traps
+                On.MChasingState.DoDoorCheck += new On.MChasingState.hook_DoDoorCheck(HookMChasingStateDoDoorCheck);
 
                 // Increase Map Size
                 On.RegionManager.InitialiseRegionData += new On.RegionManager.hook_InitialiseRegionData(HookRegionManagerInitialiseRegionData);
