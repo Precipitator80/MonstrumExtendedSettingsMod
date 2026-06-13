@@ -1701,14 +1701,42 @@ namespace MonstrumExtendedSettingsMod
                 {
                     conditionsPassed++;
                 }
-                if (
-                    References.Inventory.HasItem("FlareGun") &&
-                    References.Inventory.maxInventoryCapacity > (ModSettings.inventorySize > 0 ? ModSettings.inventorySize : 6)
-                )
+                if (ModSettings.enableMultiplayer)
+                {
+                    var flareGunCheck = false;
+                    var backpackCheck = false;
+                    foreach (Inventory inventory in MultiplayerMode.inventories)
+                    {
+                        if (!flareGunCheck)
+                        {
+                            flareGunCheck = HasFlareGun(inventory);
+                        }
+                        if (!backpackCheck)
+                        {
+                            backpackCheck = HasBackpack(inventory);
+                        }
+                        if (flareGunCheck && backpackCheck)
+                        {
+                            conditionsPassed++;
+                            break;
+                        }
+                    }
+                }
+                else if (HasFlareGun(References.Inventory) && HasBackpack(References.Inventory))
                 {
                     conditionsPassed++;
                 }
                 return conditionsPassed;
+            }
+
+            private static bool HasFlareGun(Inventory inventory)
+            {
+                return inventory.HasItem("FlareGun");
+            }
+
+            private static bool HasBackpack(Inventory inventory)
+            {
+                return inventory.maxInventoryCapacity > (ModSettings.inventorySize > 0 ? ModSettings.inventorySize : 6);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
