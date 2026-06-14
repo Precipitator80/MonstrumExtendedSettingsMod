@@ -1,0 +1,75 @@
+Name|Breach DX
+Author|Precipitator
+Difficulty|8
+Description|Welcome back to the ultimate marine prison. The new Insane Sparky robot roams the halls while sedative smoke machines make navigation treacherous. Mechanical locks replace previous energy locks, requiring you to repair all four escape routes and collect confidential equipment.
+Version|7.1
+Setting|Custom Value
+Number of Random Monsters|0
+Number of Brutes|3
+Number of Sparkies|1
+Add Sparky To The Game|True
+Maximum Monster Spawntime (seconds)|15
+Monster Animation Speed Multiplier|1.25
+Monster Movement Speed Multiplier|1.25
+Monster Rotation Speed Multiplier|1.25
+Custom Monster Scale|1.075
+Brute Chase Speed Buff|True
+Brute Chase Speed Buff Multiplier|-750
+Brute Chase Speed Buff Rate|750
+Brute Fire Shroud|True
+Fire Shroud Radius|0
+Fire Blast Radius|24
+Slow Aura Range|8
+Give All Monsters A Slow Aura|True
+Sparky Chase Speed Factor|0.25
+Sparky Max Chase Speed Factor Increase From Buff|1.5
+Sparky Max Movement Speed Factor Increase From Buff|0.75
+Sparky Rotation Speed Factor|-0.75
+Sparky Minimum Lurk Distance|1
+Sparky Maximum Super EMP Distance|100
+Sparky Super EMP Charge Time|0.1
+Sparky Maximum Aggro|0.1
+Sparky EMP Minimum Charge Time|15
+Sparky EMP Maximum Charge Time|45
+Sparky EMP Range|24
+Region Electric Trap Spawn Chance|60
+Region Electric Trap Slow Factor|0.7
+Region Electric Trap Life Time|7.5
+Sparky Electric Trap Spawn Chance|40
+Sparky Electric Trap Base Slow Factor|0.6
+Max Trap Slow Factor Decrease From Buff|0.075
+Foggy Ship|True
+Monster Vision Affected By Fog|True
+Smoky Ship|True
+Helicopter Fuel Time|5
+Submersible Charge Time|5
+Escape Routes To Win|3
+Escape Conditions|3
+Inventory Size|8
+Infinite Flashlight Power|True
+Monster Compass|True
+Add Smoke Grenade|True
+Starter Room Region|Upper Deck
+Spawn Deactivated Items|True
+Camera Timer|1
+Pre-fill Liferaft Fuse Box|False
+No Starter Fuse|True
+Overpowered Steam Vents|True
+Add Additional Crew Deck Building|True
+Add Deck Cargo Holds|True
+Use Deck Four On Submersible Side|True
+Shortened Cargo Hold Corridors|True
+Add Lower Deck Next To Engine Room|True
+Add Deck Zero|True
+No Doors|True
+Brute Light Colour Red Component|250
+Brute Light Colour Green Component|250
+Brute Light Colour Blue Component|250
+Flashlight Intensity Multiplier|2
+Flashlight Range Multiplier|2
+Glowstick Intensity Multiplier|2
+Ship Generic Lights Colour Red Component|255
+Ship Generic Lights Colour Green Component|255
+Ship Generic Lights Colour Blue Component|255
+Custom Music Pack|2
+Use Wander Theme From Start|True
