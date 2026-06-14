@@ -5768,16 +5768,9 @@ namespace MonstrumExtendedSettingsMod
                     monsterStarter.spawning = true;
                     MonsterStarter.spawned = true;
                     Vector3 position;
-                    if (ModSettings.spawnMonsterInStarterRoom)
+                    if (ModSettings.spawnMonsterInStarterRoom && ModSettings.temporaryPlayerPosition != null && monsterStarter.monster.GetComponent<Monster>().MonsterType != Monster.MonsterTypeEnum.Hunter)
                     {
-                        if (monsterStarter.monster.GetComponent<Monster>().MonsterType != Monster.MonsterTypeEnum.Hunter)
-                        {
-                            position = ModSettings.temporaryPlayerPosition;
-                        }
-                        else
-                        {
-                            position = Vector3.zero;
-                        }
+                        position = ModSettings.temporaryPlayerPosition;
                     }
                     else
                     {
