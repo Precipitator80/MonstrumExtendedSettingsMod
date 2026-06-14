@@ -237,11 +237,8 @@ namespace MonstrumExtendedSettingsMod
                 On.Room.OnPowerUp += new On.Room.hook_OnPowerUp(HookRoomOnPowerUp);
                 On.Room.OnPowerDown += new On.Room.hook_OnPowerDown(HookRoomOnPowerDown);
 
-                // Fire Shroud Fire Blast
-                if (!ModSettings.useSparky)
-                {
-                    On.MChasingState.DoDoorCheck += new On.MChasingState.hook_DoDoorCheck(HookMChasingStateDoDoorCheck);
-                }
+                // Fire Shroud Fire Blast & Sparky Chase Electric Traps
+                On.MChasingState.DoDoorCheck += new On.MChasingState.hook_DoDoorCheck(HookMChasingStateDoDoorCheck);
 
                 // Increase Map Size
                 On.RegionManager.InitialiseRegionData += new On.RegionManager.hook_InitialiseRegionData(HookRegionManagerInitialiseRegionData);
@@ -341,8 +338,8 @@ namespace MonstrumExtendedSettingsMod
                 // Use Wander Theme From Start
                 On.GlobalMusic.Start += new On.GlobalMusic.hook_Start(HookGlobalMusicStart);
 
-                SettingManager.Register(new DeckCargoHolds());
-                SettingManager.Register(new WalkieTalkieRange());
+                SettingsManager.Register(new DeckCargoHolds());
+                SettingsManager.Register(new WalkieTalkieRange());
 
                 // Fix monsters avoiding fire even when fire shroud is on.
                 On.MonsterAvoidFire.Start += new On.MonsterAvoidFire.hook_Start(HookMonsterAvoidFireStart);
@@ -354,8 +351,8 @@ namespace MonstrumExtendedSettingsMod
                     On.PlayerUpperBodyLock.UpdatePositions += new On.PlayerUpperBodyLock.hook_UpdatePositions(HookPlayerUpperBodyLockUpdatePositions);
                 }
 
-                SettingManager.Register(new MonsterVisionConeAngle());
-                SettingManager.Register(new LoadingScreenManager());
+                SettingsManager.Register(new MonsterVisionConeAngle());
+                SettingsManager.Register(new LoadingScreenManager());
             }
 
             /*
@@ -385,6 +382,12 @@ namespace MonstrumExtendedSettingsMod
 
             private static InventoryItem nearbyInventoryItem;
             private static int nearbyInventoryItemDeck;
+            private static float speedrunAccumulatedTime = 0f;
+
+            private static float GetSpeedrunTotalTime()
+            {
+                return speedrunAccumulatedTime + (ModSettings.speedrunTimer != null && ModSettings.speedrunTimer.IsRunning ? ModSettings.speedrunTimer.TimeElapsed : 0f);
+            }
 
             /// <summary>
             /// Holds custom code for any features that may be updated each frame.
@@ -425,7 +428,8 @@ namespace MonstrumExtendedSettingsMod
                     {
                         if (ModSettings.finalTime.Equals(string.Empty))
                         {
-                            ModSettings.ShowTextOnScreen(Mathf.FloorToInt(ModSettings.speedrunTimer.TimeElapsed / 60f).ToString() + ":" + (ModSettings.speedrunTimer.TimeElapsed % 60f).ToString("00.00"));
+                            float totalTime = GetSpeedrunTotalTime();
+                            ModSettings.ShowTextOnScreen(Mathf.FloorToInt(totalTime / 60f).ToString() + ":" + (totalTime % 60f).ToString("00.00"));
                         }
                         else
                         {
@@ -1561,7 +1565,7 @@ namespace MonstrumExtendedSettingsMod
                 float finalTime = float.MaxValue;
                 if (ModSettings.useSpeedrunTimer)
                 {
-                    finalTime = ModSettings.speedrunTimer.TimeElapsed;
+                    finalTime = GetSpeedrunTotalTime();
                 }
 
                 // Check whether the escape route type is allowed by the mod settings.
@@ -1694,14 +1698,42 @@ namespace MonstrumExtendedSettingsMod
                 {
                     conditionsPassed++;
                 }
-                if (
-                    References.Inventory.HasItem("FlareGun") &&
-                    References.Inventory.maxInventoryCapacity > (ModSettings.inventorySize > 0 ? ModSettings.inventorySize : 6)
-                )
+                if (ModSettings.enableMultiplayer)
+                {
+                    var flareGunCheck = false;
+                    var backpackCheck = false;
+                    foreach (Inventory inventory in MultiplayerMode.inventories)
+                    {
+                        if (!flareGunCheck)
+                        {
+                            flareGunCheck = HasFlareGun(inventory);
+                        }
+                        if (!backpackCheck)
+                        {
+                            backpackCheck = HasBackpack(inventory);
+                        }
+                        if (flareGunCheck && backpackCheck)
+                        {
+                            conditionsPassed++;
+                            break;
+                        }
+                    }
+                }
+                else if (HasFlareGun(References.Inventory) && HasBackpack(References.Inventory))
                 {
                     conditionsPassed++;
                 }
                 return conditionsPassed;
+            }
+
+            private static bool HasFlareGun(Inventory inventory)
+            {
+                return inventory.HasItem("FlareGun");
+            }
+
+            private static bool HasBackpack(Inventory inventory)
+            {
+                return inventory.maxInventoryCapacity > (ModSettings.inventorySize > 0 ? ModSettings.inventorySize : 6);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -1714,8 +1746,10 @@ namespace MonstrumExtendedSettingsMod
             {
                 if (ModSettings.useSpeedrunTimer)
                 {
-                    ModSettings.speedrunTimer.StartTimer();
-                    Debug.Log("Started speedrun timer at " + DateTime.Now + " local / " + DateTime.UtcNow + " UTC");
+                    speedrunAccumulatedTime = 0f;
+                    ModSettings.speedrunTimer.StopTimer();
+                    ModSettings.finalTime = string.Empty;
+                    Debug.Log($"Speedrun timer reset and waiting for player movement. {DateTime.Now} local / {DateTime.UtcNow} UTC");
                 }
                 orig.Invoke();
             }
@@ -2410,18 +2444,27 @@ namespace MonstrumExtendedSettingsMod
                 // Check whether to use a custom colour (set or random).
                 // If a custom colour is set and random colours are enabled, give a chance for each.
                 var useCustomShipLightColour = ModSettings.UseCustomColour(ModSettings.shipGenericLightsColour);
+                var light = ((MonoBehaviour)genericLight).GetComponent<Light>();
                 if (ModSettings.randomShipGenericLightsColours && (!useCustomShipLightColour || UnityEngine.Random.value > 0.5f))
                 {
-                    ((MonoBehaviour)genericLight).GetComponent<Light>().color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
+                    light.color = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0.5f, 1f));
                 }
                 else if (useCustomShipLightColour)
                 {
-                    ((MonoBehaviour)genericLight).GetComponent<Light>().color = ModSettings.ConvertColourStringToColour(ModSettings.shipGenericLightsColour);
+                    var customColour = ModSettings.ConvertColourStringToColour(ModSettings.shipGenericLightsColour);
+                    if (ModSettings.shipGenericLightsColourAdditiveMode == 0)
+                    {
+                        light.color += customColour;
+                    }
+                    else
+                    {
+                        light.color += ModSettings.shipGenericLightsColourAdditiveMode * customColour;
+                    }
                 }
 
                 // Apply multipliers to ship light properties.
                 genericLight.normalIntensity *= ModSettings.shipGenericLightIntensityMultiplier;
-                ((MonoBehaviour)genericLight).GetComponent<Light>().range *= ModSettings.shipGenericLightRangeMultiplier;
+                light.range *= ModSettings.shipGenericLightRangeMultiplier;
                 orig.Invoke(genericLight);
 
                 // # LATEST INDEV CHANGE - Sets all ship lights to be Brute lights.
@@ -2848,6 +2891,12 @@ namespace MonstrumExtendedSettingsMod
                     var minGlobal = ModSettings.allowKeyItemsToNotSpawnAtAll ? 0 : 1;
                     foreach (KeyItem keyItem in keyItemSystem.keyItems)
                     {
+                        if (ModSettings.noStarterFuse && keyItem.name.Equals("Fuse"))
+                        {
+                            keyItem.minCount += 1;
+                            keyItem.maxCount += 1;
+                        }
+
                         // Adjust item counts if desired.
                         if (ModSettings.changeKeyItemSpawnNumbers != 0)
                         {
@@ -5705,7 +5754,8 @@ namespace MonstrumExtendedSettingsMod
                     }
                     if (ModSettings.useSpeedrunTimer)
                     {
-                        Debug.Log("Speedrun timer when exiting starting room: " + Mathf.FloorToInt(ModSettings.speedrunTimer.TimeElapsed / 60f).ToString() + ":" + (ModSettings.speedrunTimer.TimeElapsed % 60f).ToString("00.000000") + ". This occurred at " + DateTime.Now + " local / " + DateTime.UtcNow + " UTC");
+                        float exitingTime = GetSpeedrunTotalTime();
+                        Debug.Log("Speedrun timer when exiting starting room: " + Mathf.FloorToInt(exitingTime / 60f).ToString() + ":" + (exitingTime % 60f).ToString("00.000000") + ". This occurred at " + DateTime.Now + " local / " + DateTime.UtcNow + " UTC");
                     }
                 }
             }
@@ -5718,16 +5768,9 @@ namespace MonstrumExtendedSettingsMod
                     monsterStarter.spawning = true;
                     MonsterStarter.spawned = true;
                     Vector3 position;
-                    if (ModSettings.spawnMonsterInStarterRoom)
+                    if (ModSettings.spawnMonsterInStarterRoom && ModSettings.temporaryPlayerPosition != null && monsterStarter.monster.GetComponent<Monster>().MonsterType != Monster.MonsterTypeEnum.Hunter)
                     {
-                        if (monsterStarter.monster.GetComponent<Monster>().MonsterType != Monster.MonsterTypeEnum.Hunter)
-                        {
-                            position = ModSettings.temporaryPlayerPosition;
-                        }
-                        else
-                        {
-                            position = Vector3.zero;
-                        }
+                        position = ModSettings.temporaryPlayerPosition;
                     }
                     else
                     {
@@ -8277,6 +8320,62 @@ namespace MonstrumExtendedSettingsMod
                     Time.timeScale = timeScaleManager.scale * ModSettings.timeScaleMultiplier;
                     ActiveFeatures();
                 }
+
+                if (ModSettings.useSpeedrunTimer && References.Player != null)
+                {
+                    float elapsed = ModSettings.speedrunTimer.TimeElapsed;
+                    bool isRunning = ModSettings.speedrunTimer.IsRunning;
+
+                    // Check to start the timer at the start of the round.
+                    if (!isRunning && speedrunAccumulatedTime == 0f && elapsed == 0f)
+                    {
+                        // Check Unity input axes for keyboard and mouse movement.
+                        bool moved = Mathf.Abs(Input.GetAxis("Horizontal")) > 0.001f ||
+                                     Mathf.Abs(Input.GetAxis("Vertical")) > 0.001f ||
+                                     Mathf.Abs(Input.GetAxis("Mouse X")) > 0.001f ||
+                                     Mathf.Abs(Input.GetAxis("Mouse Y")) > 0.001f;
+
+                        if (!moved)
+                        {
+                            try
+                            {
+                                moved = XboxCtrlrInput.XCI.RightStickValueX() != 0f ||
+                                        XboxCtrlrInput.XCI.RightStickValueY() != 0f ||
+                                        XboxCtrlrInput.XCI.LeftStickValueX() != 0f ||
+                                        XboxCtrlrInput.XCI.LeftStickValueY() != 0f;
+                            }
+                            catch
+                            {
+                                Debug.LogError("Error while trying to detect controller stick movement.");
+                            }
+                        }
+
+                        if (moved)
+                        {
+                            ModSettings.speedrunTimer.StartTimer();
+                            Debug.Log("Speedrun timer started via movement detection.");
+                        }
+                    }
+                    // Check to handle pausing logic after the timer has started.
+                    else if (!ModSettings.noTimeFreezeInPauseMenu && (speedrunAccumulatedTime > 0f || elapsed > 0f))
+                    {
+                        // Stop the timer once if paused, otherwise start once.
+                        if (timeScaleManager.paused)
+                        {
+                            if (isRunning)
+                            {
+                                speedrunAccumulatedTime += ModSettings.speedrunTimer.TimeElapsed;
+                                ModSettings.speedrunTimer.StopTimer();
+                                Debug.Log("Speedrun timer paused due to game pause. Accumulated time: " + speedrunAccumulatedTime);
+                            }
+                        }
+                        else if (!isRunning)
+                        {
+                            ModSettings.speedrunTimer.StartTimer();
+                            Debug.Log("Speedrun timer resumed.");
+                        }
+                    }
+                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -8321,7 +8420,7 @@ namespace MonstrumExtendedSettingsMod
                 orig.Invoke(tutorialFuse);
                 if (ModSettings.noStarterFuse)
                 {
-                    tutorialFuse.transform.position = FindObjectsOfType<KeyItemPlaceholder>().Random().transform.position;
+                    tutorialFuse.gameObject.SetActive(false);
                 }
             }
 

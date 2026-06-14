@@ -14,12 +14,7 @@ namespace MonstrumExtendedSettingsMod.Setting
 
         protected override void OnEnable()
         {
-            On.LoadingBackground.Awake += HookLoadingBackground;
-        }
-
-        protected override void OnDisable()
-        {
-            On.LoadingBackground.Awake -= HookLoadingBackground;
+            RegisterHook<On.LoadingBackground.hook_Awake>(h => On.LoadingBackground.Awake += h, h => On.LoadingBackground.Awake -= h, HookLoadingBackground);
         }
 
         /// <summary>

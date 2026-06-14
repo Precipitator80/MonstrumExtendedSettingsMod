@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace MonstrumExtendedSettingsMod.Setting
 {
-    static class SettingManager
+    static class SettingsManager
     {
         private static readonly Dictionary<Type, Setting> settings = new Dictionary<Type, Setting>();
 
@@ -38,7 +38,6 @@ namespace MonstrumExtendedSettingsMod.Setting
         {
             foreach (var setting in settings.Values)
             {
-                setting.SyncSettingState();
                 if (setting.Enabled)
                     setting.EarlyInitialisation();
             }

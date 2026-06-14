@@ -5657,16 +5657,9 @@ namespace MonstrumExtendedSettingsMod
                 Vector3 position;
                 try
                 {
-                    if (ModSettings.spawnMonsterInStarterRoom)
+                    if (ModSettings.spawnMonsterInStarterRoom && ModSettings.temporaryPlayerPosition != null && monsterListMonsterComponents[i].MonsterType != Monster.MonsterTypeEnum.Hunter)
                     {
-                        if (monsterListMonsterComponents[i].MonsterType != Monster.MonsterTypeEnum.Hunter)
-                        {
-                            position = ModSettings.temporaryPlayerPosition;
-                        }
-                        else
-                        {
-                            position = Vector3.zero;
-                        }
+                        position = ModSettings.temporaryPlayerPosition;
                     }
                     else
                     {
@@ -5947,11 +5940,8 @@ namespace MonstrumExtendedSettingsMod
                     {
                         monster.Starter = monsterListMonsterComponents[0].Starter;
                     }
-                    if (MonsterStarter.spawned)
-                    {
-                        TimeScaleManager.Instance.StartCoroutine(SpawnMonster(monsterNumber));
-                    }
-                    Debug.Log($"Spawned {monsterToCreateString}.");
+                    TimeScaleManager.Instance.StartCoroutine(SpawnMonster(monsterNumber));
+                    Debug.Log($"Started coroutine to spawn {monsterToCreateString}.");
                 }
                 catch (Exception e)
                 {

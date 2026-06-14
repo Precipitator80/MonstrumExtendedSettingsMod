@@ -49,7 +49,9 @@ namespace MonstrumExtendedSettingsMod
                         { "EscapeConditions2", ModSettings.escapeConditionsToWin == 2 },
                         { "EscapeConditions3", ModSettings.escapeConditionsToWin == 3 },
                         { "GlowstickHunt", ModSettings.glowstickHunt && !ModSettings.noGlowstickHuntFinale },
-                        { "GlowstickHuntNoFinale", ModSettings.glowstickHunt && ModSettings.noGlowstickHuntFinale}
+                        { "GlowstickHuntNoFinale", ModSettings.glowstickHunt && ModSettings.noGlowstickHuntFinale },
+                        { "IncorrectSettingValues", ModSettings.errorWhileReadingModSettings },
+                        { "RestartRequired", ModSettings.restartSettingsChanged.Count > 0 }
                     };
 
                     // Check which images to use.

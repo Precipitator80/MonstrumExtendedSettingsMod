@@ -96,6 +96,28 @@ Public assets used:
 ----------------------------------------------------------------------------------------------------
 Changelog:
 ------------------------------------------------------------
+Monstrum Extended Settings Mod V7.1 (Partiality) — Trial by Fire Event Update — 15.06.2026
+-----
+Added Settings:
+* Colour Settings
+- Ship Generic Lights Colour Additive Mode
+-----
+Changes:
+- Increased the maximum challenge difficulty to 11 and added a batch of new 11 difficulty challenges by Ink.
+- Added Breach DX by Precipitator as a variation of Ink's Breach challenges.
+- Slight tweaks to Blind Beast Prime, Darkless and Subconscious challenges.
+- Improved quality of speedrun timer, now only starting when the player moves and pausing when the game is paused.
+- Improved restart warning logic in menu.
+- Added hint images for restart required and incorrect setting values to show during rounds.
+- Slightly improved monster spawning logic.
+- Clarified monster spawning limit calculation logic.
+-----
+Bug Fixes:
+- Fixed being unable to disable Deck Cargo Holds, Loading Screen Manager, Monster Vision Cone Angle and Walkie Talkie Range without restarting.
+- Improved consistency of no starter fuse setting.
+- Fixed inventory escape condition in multiplayer.
+- Fixed Fire Blast and Sparky chase electric traps not working in V7.0.
+------------------------------------------------------------
 Monstrum Extended Settings Mod V7.0 (Partiality) — 29.03.2026
 -----
 Added Settings:
@@ -122,7 +144,7 @@ Added Settings:
 - Use Wander Theme From Start
 -----
 Changes:
-- Added over 50 new challenges by Ink. 
+- Added over 50 new challenges by Ink.
 - Added 15 challenges adapted from the 4.1 MES challenge library by Mike Bone.
 - Improved over 20 existing challenges.
 - Added full directional movement for monster players in Crew VS Monster mode (PvP).

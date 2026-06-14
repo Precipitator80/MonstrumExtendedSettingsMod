@@ -14,12 +14,7 @@ namespace MonstrumExtendedSettingsMod.Setting
 
         protected override void OnEnable()
         {
-            On.ConeControl.Update += HookConeControlUpdate;
-        }
-
-        protected override void OnDisable()
-        {
-            On.ConeControl.Update -= HookConeControlUpdate;
+            RegisterHook<On.ConeControl.hook_Update>(h => On.ConeControl.Update += h, h => On.ConeControl.Update -= h, HookConeControlUpdate);
         }
 
         private void HookConeControlUpdate(On.ConeControl.orig_Update orig, ConeControl coneControl)

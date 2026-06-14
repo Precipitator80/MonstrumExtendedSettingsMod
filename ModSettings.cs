@@ -1,12 +1,10 @@
-﻿// ~Beginning Of File
+// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using System.Collections;
-using UnityEngine.UI;
 using System.Text;
-using System.Linq;
 using MonstrumExtendedSettingsMod.Setting;
 
 namespace MonstrumExtendedSettingsMod
@@ -29,7 +27,7 @@ namespace MonstrumExtendedSettingsMod
 
     public partial class ExtendedSettingsModScript
     {
-        public const string VERSION = "7.0";
+        public const string VERSION = "7.1";
         public const string VERSION_WITH_TEXT = VERSION;
 
         public abstract class MESMSetting
@@ -126,8 +124,6 @@ namespace MonstrumExtendedSettingsMod
                 StringBuilder modSettingsStringBuilder = new StringBuilder("Monstrum Extended Settings Mod Settings File:\nThe first line of each setting will tell you what the setting is and what its default value is, while any following lines are used by the game. Editing the default value shown does nothing. The default settings emulate an unmodded game. Creating or deleting lines will break the mod. If the game stops reading your settings correctly, download the mod again to get a clean settings file.");
                 string category = string.Empty;
                 int newNumberOfMonsters = 0;
-                bool changedSettingThatRequiresRestart = false;
-                List<string> restartSettingsChanged = new List<string>();
                 List<string> badlyFormattedSettings = new List<string>();
                 StringBuilder settingsLogger = new StringBuilder("Saved all settings:\t\t ");
                 foreach (MESMSetting mESMSetting in ModSettings.allSettings)
@@ -208,8 +204,7 @@ namespace MonstrumExtendedSettingsMod
                             //Debug.Log("Wrote to line " + mESMSetting.modSettingsLine + ": " + value);
                             if ((mESMSetting.description.Contains("Restart") || mESMSetting.description.Contains("restart")) && mESMSetting.userValueString != value)
                             {
-                                changedSettingThatRequiresRestart = true;
-                                restartSettingsChanged.Add(mESMSetting.title);
+                                ModSettings.restartSettingsChanged.Add(mESMSetting.title);
                             }
                             mESMSetting.userValueString = value;
                             settingsLogger.Append(mESMSetting.title);
@@ -271,17 +266,31 @@ namespace MonstrumExtendedSettingsMod
                         string settingsLog = settingsLogger.ToString();
                         Debug.Log(settingsLog.Substring(0, settingsLog.Length - 3));
                     }
-                    if (!ModSettings.startedWithMMM && newNumberOfMonsters > 1)
+                    if (!ModSettings.startedWithMMM)
                     {
-                        changedSettingThatRequiresRestart = true;
-                        restartSettingsChanged.Add("Many Monsters Mode (From 0 or 1 to 2 or more monsters)");
+                        var warningString = "Many Monsters Mode (From 0 or 1 to 2 or more monsters)";
+                        if (newNumberOfMonsters > 1)
+                        {
+                            ModSettings.restartSettingsChanged.Add(warningString);
+                        }
+                        else
+                        {
+                            ModSettings.restartSettingsChanged.Remove(warningString);
+                        }
                     }
-                    else if (ModSettings.startedWithMMM && newNumberOfMonsters == 0)
+                    else
                     {
-                        changedSettingThatRequiresRestart = true;
-                        restartSettingsChanged.Add("Many Monsters Mode (From 2 or more to 0 monsters)");
+                        var warningString = "Many Monsters Mode (From 2 or more to 0 monsters)";
+                        if (newNumberOfMonsters == 0)
+                        {
+                            ModSettings.restartSettingsChanged.Add(warningString);
+                        }
+                        else
+                        {
+                            ModSettings.restartSettingsChanged.Remove(warningString);
+                        }
                     }
-                    if (changedSettingThatRequiresRestart)
+                    if (ModSettings.restartSettingsChanged.Count > 0)
                     {
                         /*
                         foreach (GameObject gameObject in mesmButtonGOs)
@@ -290,7 +299,7 @@ namespace MonstrumExtendedSettingsMod
                         }
                         //mesmButtonGOs[0].SetActive(false);
                         */
-                        if (restartSettingsChanged.Count > 1)
+                        if (ModSettings.restartSettingsChanged.Count > 1)
                         {
                             warningBoxTextStringBuilder.Append("Settings that require a restart have been changed:");
                         }
@@ -299,13 +308,13 @@ namespace MonstrumExtendedSettingsMod
                             warningBoxTextStringBuilder.Append("A setting that requires a restart has been changed:");
                         }
                         warningBoxTextStringBuilder.Append("\n----------");
-                        foreach (string restartSettingChanged in restartSettingsChanged)
+                        foreach (string restartSettingChanged in ModSettings.restartSettingsChanged)
                         {
                             warningBoxTextStringBuilder.Append("\n");
                             warningBoxTextStringBuilder.Append(restartSettingChanged);
                         }
                         warningBoxTextStringBuilder.Append("\n----------\nPlease restart the game unless otherwise specified in the setting");
-                        if (restartSettingsChanged.Count > 1)
+                        if (ModSettings.restartSettingsChanged.Count > 1)
                         {
                             warningBoxTextStringBuilder.Append("s");
                         }
@@ -1050,7 +1059,7 @@ namespace MonstrumExtendedSettingsMod
                     itemMonsterFrenzy = new MESMSetting<bool>("Item Monster Frenzy", "Picking up a mission item spawns an additional monster. Must start the game with at least 2 monsters or force MMM to be enabled", false).userValue;
                     extraChaoticIMF = new MESMSetting<bool>("Extra Chaotic IMF", "Picking up any item will spawn an additional monster. Must start the game with at least 2 monsters", false).userValue;
                     monsterSpawnSpeedrunSpawnTime = new MESMSetting<float>("Monster Spawn Speedrun", "Spawns a new monster after each time a specified number of seconds has passed. Only starts after all original monsters have spawned. Must start the game with at least 2 monsters or force MMM to be enabled", 0, true).userValue;
-                    monsterSpawningLimit = new MESMSetting<float>("Monster Spawning Limit", "Limit the maximum number of monsters that can spawn via settings that spawn additional monsters during the round. 0 means no limit", 10, true).userValue;
+                    monsterSpawningLimit = new MESMSetting<float>("Monster Spawning Limit", "Limit the maximum number of monsters that can spawn via settings that spawn additional monsters during the round. 0 means no limit. Includes monsters spawned normally", 10, true).userValue;
                     foggyShip = new MESMSetting<bool>("Foggy Ship", "Creates fog in front of the player, stopping them from seeing what is ahead of them", false).userValue;
                     fogNearDistance = new MESMSetting<float>("Fog Near Distance", "How far away from the player the start point of the camera fog is", 8f, true, true).userValue;
                     fogFarDistance = new MESMSetting<float>("Fog Far Distance", "How far away from the player the end point of the camera fog is", 16f, true, true).userValue;
@@ -1149,7 +1158,7 @@ namespace MonstrumExtendedSettingsMod
                     preFillSubmersibleFuseBox = new MESMSetting<bool>("Pre-fill Submersible Fuse Box", "Pre-fills the fuse box of the submersible room", false).userValue;
                     preFillLightFuseBoxes = new MESMSetting<bool>("Pre-fill Light Fuse Boxes", "Pre-fills all fuse boxes that power region lights (excluding the start region, liferaft, engine room and submersible fuse boxes)", false).userValue;
                     preFillPowerLockFuseBoxes = new MESMSetting<bool>("Pre-fill Power Lock Fuse Boxes", "Pre-fills all fuse boxes of power-locked rooms", false).userValue;
-                    noStarterFuse = new MESMSetting<bool>("No Starter Fuse", "Teleports the fuse in the starter room to a random location", false).userValue;
+                    noStarterFuse = new MESMSetting<bool>("No Starter Fuse", "Spawns another random fuse in place of the starter room fuse", false).userValue;
                     noBarricadedDoors = new MESMSetting<bool>("No Barricaded Doors", "Removes the door of every barricaded room", false).userValue;
                     overpoweredSteamVents = new MESMSetting<bool>("Overpowered Steam Vents", "Lets steam be expelled from each possible point on a steam vent. This means every vent will have three steam spawn points and handles. Two handles will be clipped in each other, making it harder to turn off both", false).userValue;
                     unbreakablePitTraps = new MESMSetting<bool>("Unbreakable Pit Traps", "Pit traps are not destroyed when the player or monster runs over them", false).userValue;
@@ -1249,6 +1258,7 @@ namespace MonstrumExtendedSettingsMod
                     shipGenericLightIntensityMultiplier = new MESMSetting<float>("Ship Generic Lights Intensity Multiplier", "Multiplies the intensity of ship generic lights", 1, false, true).userValue;
                     shipGenericLightRangeMultiplier = new MESMSetting<float>("Ship Generic Lights Range Multiplier", "Multiplies the range of ship generic lights", 1, false, true).userValue;
                     randomShipGenericLightsColours = new MESMSetting<bool>("Random Ship Generic Light Colours", "Assigns each light on the ship a random colour", false, false, true).userValue;
+                    shipGenericLightsColourAdditiveMode = new MESMSetting<int>("Ship Generic Lights Colour Additive Mode", "Instead of setting the colour of each light to the custom colour directly, the custom colour is added to the original colour. Set to 0 to switch off addition, -1 for subtraction and 1 for addition", 0, false, true, -1, 1).userValue;
                     MESMSettingRGB fogColourRSetting = new MESMSettingRGB("Fog Colour Red Component", "Sets the red component of the fog colour", -1, false, false, -1, 255);
                     MESMSettingRGB fogColourGSetting = new MESMSettingRGB("Fog Colour Green Component", "Sets the green component of the fog colour", -1, false, true, -1, 255);
                     MESMSettingRGB fogColourBSetting = new MESMSettingRGB("Fog Colour Blue Component", "Sets the blue component of the fog colour", -1, false, true, -1, 255);
@@ -1388,6 +1398,7 @@ namespace MonstrumExtendedSettingsMod
                         firstTimeReadingSettings = true;
                         ReadModSettings();
                     }
+                    SettingsManager.SyncAllSettings();
                     Debug.Log("READ EXTENDED SETTINGS FROM FILE [" + VERSION_WITH_TEXT + "]");
                 }
                 catch (Exception e)
@@ -1644,7 +1655,7 @@ namespace MonstrumExtendedSettingsMod
             // #ReadBeforeGeneration
             public static void ReadBeforeGeneration()
             {
-                SettingManager.EarlyInitialisation();
+                SettingsManager.EarlyInitialisation();
                 if (enableMultiplayer)
                 {
                     MultiplayerMode.MultiplayerModeVariableInitialisation();
@@ -1657,7 +1668,7 @@ namespace MonstrumExtendedSettingsMod
                 Debug.Log("READING LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READING LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
 
-                SettingManager.LateInitialisation();
+                SettingsManager.LateInitialisation();
 
                 if (!ModSettings.alwaysSkipMenuScreen)
                 {
@@ -3912,6 +3923,7 @@ namespace MonstrumExtendedSettingsMod
             public static float shipGenericLightIntensityMultiplier;
             public static float shipGenericLightRangeMultiplier;
             public static bool randomShipGenericLightsColours;
+            public static int shipGenericLightsColourAdditiveMode;
 
 
             // Utility Settings Variables
@@ -3952,6 +3964,7 @@ namespace MonstrumExtendedSettingsMod
             public static bool noclip;
             public static bool errorWhileReadingModSettings;
             public static string modSettingsErrorString;
+            public static HashSet<string> restartSettingsChanged = new HashSet<string>();
             public static bool errorDuringLevelGeneration;
             public static List<bool> spawnProtection;
             public static bool startedWithInvincibilityMode; // Used so that spawn protection / short timed invincibility events do not switch off godmode in case the round was started with godmode on.
