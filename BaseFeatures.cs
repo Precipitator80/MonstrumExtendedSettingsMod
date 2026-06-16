@@ -1628,8 +1628,8 @@ namespace MonstrumExtendedSettingsMod
                         }
                     }
 
-                    // Let the player escape. This only occurs when the route checks have passed.
-                    if (ModSettings.useSpeedrunTimer)
+                    // Let the player escape. This only occurs when the route checks have passed. Only finish the timer if not already set.
+                    if (ModSettings.useSpeedrunTimer && ModSettings.finalTime.Equals(string.Empty))
                     {
                         ModSettings.speedrunTimer.StopTimer();
                         ModSettings.finalTime = Mathf.FloorToInt(finalTime / 60f).ToString() + ":" + (finalTime % 60f).ToString("00.000000");
@@ -8321,7 +8321,8 @@ namespace MonstrumExtendedSettingsMod
                     ActiveFeatures();
                 }
 
-                if (ModSettings.useSpeedrunTimer && References.Player != null)
+                // Only start if no final time for the round has been recorded.
+                if (ModSettings.useSpeedrunTimer && References.Player != null && ModSettings.finalTime.Equals(string.Empty))
                 {
                     float elapsed = ModSettings.speedrunTimer.TimeElapsed;
                     bool isRunning = ModSettings.speedrunTimer.IsRunning;
