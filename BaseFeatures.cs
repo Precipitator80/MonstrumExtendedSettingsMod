@@ -2843,7 +2843,9 @@ namespace MonstrumExtendedSettingsMod
                     }
 
                     // Ensure the walkie talkie and flare gun spawn when using relevant settings.
-                    if (ModSettings.spawnDeactivatedItems || ModSettings.spawnWithFlareGun)
+                    var deactivatedCondition = ModSettings.spawnDeactivatedItems;
+                    var flareGunCondition = ModSettings.spawnWithFlareGun || ModSettings.escapeConditionsToWin > 0;
+                    if (deactivatedCondition || flareGunCondition)
                     {
                         foreach (KeyItem keyItem in Resources.FindObjectsOfTypeAll<KeyItem>())
                         {
@@ -2874,13 +2876,16 @@ namespace MonstrumExtendedSettingsMod
                             }
 
                             // Ensure a flare gun is always spawned when using the spawn with flare gun or escape conditions setting.
-                            if ((ModSettings.spawnWithFlareGun || ModSettings.escapeConditionsToWin > 0) && keyItem.name.Equals("FlareGunNew") && !keyItemSystem.keyItems.Contains(keyItem))
+                            if (flareGunCondition && keyItem.name.Equals("FlareGunNew"))
                             {
                                 keyItem.gameObject.SetActive(true);
-                                keyItem.minCount = 1;
-                                keyItem.maxCount = 1;
-                                keyItemSystem.keyItems.Add(keyItem);
-                                Debug.Log("Flare Gun added successfully via FindObjectsOfTypeAll when it wasn't added normally.");
+                                keyItem.minCount = Mathf.Max(keyItem.minCount, 1);
+                                keyItem.maxCount = Mathf.Max(keyItem.minCount, keyItem.maxCount, 1);
+                                if (!keyItemSystem.keyItems.Contains(keyItem))
+                                {
+                                    keyItemSystem.keyItems.Add(keyItem);
+                                    Debug.Log("Flare Gun added successfully via FindObjectsOfTypeAll when it wasn't added normally.");
+                                }
                             }
                         }
                     }
