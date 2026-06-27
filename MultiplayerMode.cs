@@ -3883,6 +3883,11 @@ namespace MonstrumExtendedSettingsMod
                 if (Other.name == "PlayerDamage")
                 {
                     NewPlayerClass newPlayerClass = Other.GetComponentInParent<NewPlayerClass>();
+                    if (newPlayerClass == null)
+                    {
+                        Other.name = "Unknown (Incorrectly named PlayerDamage)";
+                        return;
+                    }
 
                     if (!ModSettings.enableCrewVSMonsterMode || (ModSettings.enableCrewVSMonsterMode && !monsterPlayers.Contains(newPlayerClass)))
                     {
@@ -6543,7 +6548,7 @@ namespace MonstrumExtendedSettingsMod
                     {
                         rigidbody.WakeUp();
                     }
-                ((MonoBehaviour)helicopterChain).BroadcastMessage("OnRopeBreak", SendMessageOptions.DontRequireReceiver);
+                    ((MonoBehaviour)helicopterChain).BroadcastMessage("OnRopeBreak", SendMessageOptions.DontRequireReceiver);
                     Transform transform2 = ((MonoBehaviour)helicopterChain).transform.FindChild("Node 0 Link " + helicopterChain.rope.transform.childCount / 2);
                     transform2.gameObject.AddComponent<ChainCutPoint>();
                 }
@@ -12561,7 +12566,13 @@ namespace MonstrumExtendedSettingsMod
             {
                 if (collider.name == "PlayerDamage")
                 {
-                    PushBackPlayerAnimation(steamPushBack, PlayerNumber(collider.transform.GetParentOfType<NewPlayerClass>().GetInstanceID()));
+                    var npc = collider.transform.GetParentOfType<NewPlayerClass>();
+                    if (npc == null)
+                    {
+                        collider.name = "Unknown (Incorrectly named PlayerDamage)";
+                        return;
+                    }
+                    PushBackPlayerAnimation(steamPushBack, PlayerNumber(npc.GetInstanceID()));
                 }
             }
 

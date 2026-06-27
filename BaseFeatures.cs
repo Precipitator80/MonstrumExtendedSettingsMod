@@ -272,8 +272,12 @@ namespace MonstrumExtendedSettingsMod
                 On.MAttackingState2.KillThePlayer += new On.MAttackingState2.hook_KillThePlayer(HookMAttackingState2KillThePlayer);
                 On.ChooseAttack.WhatDeathByPlayer += new On.ChooseAttack.hook_WhatDeathByPlayer(HookChooseAttackWhatDeathByPlayer);
 
-                // Fire Steam Damage Fix and Moved Multiplayer Component
-                On.FireDamage.Start += new On.FireDamage.hook_Start(HookFireDamageStart);
+                // Fire collider fix.
+                if (!ModSettings.enableMultiplayer)
+                {
+                    On.DamageScript.OnTriggerEnter += new On.DamageScript.hook_OnTriggerEnter(HookDamageScriptOnTriggerEnter);
+                    On.SteamPushBack.OnTriggerEnter += new On.SteamPushBack.hook_OnTriggerEnter(HookSteamPushBackOnTriggerEnter);
+                }
 
                 // Alternating Monsters, Multiplayer and Persistent Monster
                 On.MChasingState.Chase += new On.MChasingState.hook_Chase(HookMChasingStateChase);
@@ -1295,6 +1299,23 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @DamageScript
+
+            /// <summary>
+            /// Fixes the vanilla bug that the fire damage script identifies as the player instead of fire.
+            /// This would result in the player being damaged when fire touches steam.
+            /// Renaming the script on start instead does not seem to be enough to cover all incorrect cases.
+            /// </summary>
+            private static void HookDamageScriptOnTriggerEnter(On.DamageScript.orig_OnTriggerEnter orig, DamageScript damageScript, Collider Other)
+            {
+                if (Other.name == "PlayerDamage" && Other.GetComponentInParent<PlayerHealth>() == null)
+                {
+                    Other.name = "Unknown (Incorrectly named PlayerDamage)";
+                }
+                orig.Invoke(damageScript, Other);
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @DeathMenu
 
             private static Dictionary<PrimaryRegionType, List<Sprite>> regionBackgrounds; // Death Menu Region Backgrounds.
@@ -1943,19 +1964,6 @@ namespace MonstrumExtendedSettingsMod
                 }
                 fiendMindAttack.delayTimer += Time.deltaTime * ModSettings.fiendMindAttackDelayTimerRate;
                 fiendMindAttack.delayTimer = Mathf.Clamp(fiendMindAttack.delayTimer, 0f, fiendMindAttack.maxDelay);
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
-            // @Fire
-
-            /// <summary>
-            /// Fixes the vanilla bug that the fire damage script identifies as the player instead of fire.
-            /// This would result in the player being damaged when fire touches steam.
-            /// </summary>
-            private static void HookFireDamageStart(On.FireDamage.orig_Start orig, FireDamage fireDamage)
-            {
-                orig.Invoke(fireDamage);
-                fireDamage.fireDamageParent.GetComponentInChildren<DamageScript>().name = "FireDamage";
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -8248,6 +8256,18 @@ namespace MonstrumExtendedSettingsMod
                 }
                 startGame.startButton.GetComponentInChildren<StartButton>().OnButtonInteract();
                 yield break;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @SteamPushBack
+
+            private static void HookSteamPushBackOnTriggerEnter(On.SteamPushBack.orig_OnTriggerEnter orig, SteamPushBack steamPushBack, Collider collider)
+            {
+                if (collider.name == "PlayerDamage" && collider.GetComponentInParent<PlayerHealth>() == null)
+                {
+                    collider.name = "Unknown (Incorrectly named PlayerDamage)";
+                }
+                orig.Invoke(steamPushBack, collider);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
