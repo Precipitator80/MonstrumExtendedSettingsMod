@@ -93,8 +93,9 @@ namespace MonstrumExtendedSettingsMod
                 On.Flashlight.Start += new On.Flashlight.hook_Start(HookFlashlightStart);
                 On.GlowStick.Start += new On.GlowStick.hook_Start(HookGlowStick);
 
-                // Debug Mode, Invincibility Mode & Extra Lives
+                // Debug Mode, Invincibility Mode, Extra Lives and Escape Conditions
                 On.EscapeRoute.OnInteract += new On.EscapeRoute.hook_OnInteract(HookEscapeRoute);
+                On.Submarine.Start += new On.Submarine.hook_Start(HookSubmarineStart); // Sub escape condition fix.
                 On.FiendMindAttack.Update += new On.FiendMindAttack.hook_Update(HookFiendMindAttackUpdate);
                 if (!ModSettings.startedWithMMM)
                 {
@@ -8305,6 +8306,26 @@ namespace MonstrumExtendedSettingsMod
                 // In this case ctor does work and avoids hooking on Start as this is used without orig.Invoke in MMM.
                 orig.Invoke(subAlarm);
                 subAlarm.SetTime = ModSettings.submersibleChargeTime;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @Submarine
+
+            /// <summary>
+            /// Destroys the DisableOnInteract component on the submarine's escapeInteraction object
+            /// to prevent the submarine from being disabled after interaction.
+            /// </summary>
+            private static void HookSubmarineStart(On.Submarine.orig_Start orig, Submarine submarine)
+            {
+                orig.Invoke(submarine);
+                if (submarine.escapeInteraction != null)
+                {
+                    DisableOnInteract disableComponent = submarine.escapeInteraction.GetComponent<DisableOnInteract>();
+                    if (disableComponent != null)
+                    {
+                        Destroy(disableComponent);
+                    }
+                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
