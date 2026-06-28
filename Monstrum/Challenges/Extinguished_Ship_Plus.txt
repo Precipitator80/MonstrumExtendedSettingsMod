@@ -19,7 +19,7 @@ Fiend Mind Attack Attack Timer Charge Rate|12.5
 Fiend Mind Attack Attack Timer Decay Rate|0
 Fiend Door Teleportation|True
 Give Fiend A Slow Aura|True
-Slow Aura Range|13.125
+Slow Aura Range|6.5625
 Slow Aura Maximum Slow Factor|0.0001
 Helicopter Fuel Amount|3
 Helicopter Fuel Time|2

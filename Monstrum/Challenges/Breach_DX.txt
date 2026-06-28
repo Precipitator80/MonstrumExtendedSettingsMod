@@ -19,7 +19,7 @@ Brute Chase Speed Buff Rate|750
 Brute Fire Shroud|True
 Fire Shroud Radius|0
 Fire Blast Radius|24
-Slow Aura Range|8
+Slow Aura Range|4
 Give All Monsters A Slow Aura|True
 Sparky Chase Speed Factor|0.25
 Sparky Max Chase Speed Factor Increase From Buff|1.5

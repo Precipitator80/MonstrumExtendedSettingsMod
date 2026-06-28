@@ -1504,8 +1504,9 @@ namespace MonstrumExtendedSettingsMod
             protected override void Start()
             {
                 base.Start();
-                float radius = ModSettings.slowAuraRange;
-                boxCollider.size = new Vector3(radius, 1.15f, radius);
+                float diameter = 2 * ModSettings.slowAuraRange;
+                boxCollider.size = new Vector3(diameter, 1.15f, diameter);
+                slowFactor = ModSettings.slowAuraMaxSlowFactor;
             }
 
             protected override void OnTriggerExit(Collider _collider)
