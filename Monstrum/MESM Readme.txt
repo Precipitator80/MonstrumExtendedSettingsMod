@@ -117,6 +117,13 @@ Bug Fixes:
 - Improved consistency of no starter fuse setting.
 - Fixed inventory escape condition in multiplayer.
 - Fixed Fire Blast and Sparky chase electric traps not working in V7.0.
+-----
+Hotfixes up to 28.06.2026
+- Hotfixed speedrun timer being re-recorded if clicking fast to escape.
+- Fixed player still sometimes being hit by fire or steam by Brute with Fire Shroud.
+- Fixed submarine being disabled after interact even with escape conditions.
+- Fixed flare gun not always spawning in escape conditions.
+- Fixed custom slow aura factor not being applied.
 ------------------------------------------------------------
 Monstrum Extended Settings Mod V7.0 (Partiality) — 29.03.2026
 -----
