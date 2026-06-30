@@ -1,4 +1,4 @@
-// ~Beginning Of File
+﻿// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1089,6 +1089,7 @@ namespace MonstrumExtendedSettingsMod
                     gravityXComponent = new MESMSetting<float>("Gravity X Acceleration", "Changes the acceleration due to gravity in the x axis", 0f, false).userValue;
                     gravityYComponent = new MESMSetting<float>("Gravity Y Acceleration", "Changes the acceleration due to gravity in the y axis", -9.81f, false, true).userValue;
                     gravityZComponent = new MESMSetting<float>("Gravity Z Acceleration", "Changes the acceleration due to gravity in the z axis", 0f, false, true).userValue;
+                    camTimer = new MESMSetting<float>("Camera Timer", "Sets the timer for how long a camera needs until it triggers its alarm", 2f, true, false, 0f).userValue;
 
                     // Read Player and Item Settings Variables
                     // Read Player Settings Variables
@@ -1149,7 +1150,6 @@ namespace MonstrumExtendedSettingsMod
                     consistentLevelGeneration = new MESMSetting<bool>("Consistent Level Generation", "Level generation for the same seed and settings will always be the same. This is setting is automatically enabled when using a custom seed", false, false, true).userValue;
                     startRoomRegion = new MESMSettingMultipleChoice("Starter Room Region", "Can be Upper Deck, Lower Deck or Either", "Either", new string[] { "Either", "Upper Deck", "Lower Deck" }).userValue;
                     spawnDeactivatedItems = new MESMSetting<bool>("Spawn Deactivated Items", "Lets the compass and walkie talkie items spawn. These items were spawned in older versions of the game, but later removed", false).userValue;
-                    camTimer = new MESMSetting<int>("Camera Timer", "Sets the timer for how long a camera needs until it triggers its alarm", 2, true, false, 0).userValue;
                     noCameras = new MESMSetting<bool>("No Cameras", "All cameras are covered with duct tape", false).userValue;
                     noSteam = new MESMSetting<bool>("No Steam", "Sets the engine room's steam override to off. Model does not update", false).userValue;
                     preFillStartRegionFuseBox = new MESMSetting<bool>("Pre-fill Start Region Fuse Box", "Pre-fills the fuse box of the player's start region", true).userValue;
@@ -3808,6 +3808,7 @@ namespace MonstrumExtendedSettingsMod
             public static float gravityXComponent;
             public static float gravityYComponent;
             public static float gravityZComponent;
+            public static float camTimer;
 
 
 
@@ -3859,7 +3860,6 @@ namespace MonstrumExtendedSettingsMod
             public static string startRoomRegion;
             public static bool spawnDeactivatedItems;
             public static bool noCameras;
-            public static int camTimer;
             public static bool noSteam;
             public static bool preFillStartRegionFuseBox;
             public static bool preFillLiferaftFuseBox;
