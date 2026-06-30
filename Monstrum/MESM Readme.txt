@@ -123,7 +123,7 @@ Hotfixes up to 28.06.2026
 - Fixed player still sometimes being hit by fire or steam by Brute with Fire Shroud.
 - Fixed submarine being disabled after interact even with escape conditions.
 - Fixed flare gun not always spawning in escape conditions.
-- Fixed custom slow aura factor not being applied.
+- Fixed custom slow aura factor not being applied and changed slow aura range to be a radius instead of diameter.
 ------------------------------------------------------------
 Monstrum Extended Settings Mod V7.0 (Partiality) — 29.03.2026
 -----
