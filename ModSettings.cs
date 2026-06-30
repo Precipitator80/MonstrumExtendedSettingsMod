@@ -1090,6 +1090,7 @@ namespace MonstrumExtendedSettingsMod
                     gravityYComponent = new MESMSetting<float>("Gravity Y Acceleration", "Changes the acceleration due to gravity in the y axis", -9.81f, false, true).userValue;
                     gravityZComponent = new MESMSetting<float>("Gravity Z Acceleration", "Changes the acceleration due to gravity in the z axis", 0f, false, true).userValue;
                     camTimer = new MESMSetting<float>("Camera Timer", "Sets the timer for how long a camera needs until it triggers its alarm", 2f, true, false, 0f).userValue;
+                    silentSteamVents = new MESMSetting<bool>("Silent Steam Vents", "The steam vents will not make any noise", false).userValue;
 
                     // Read Player and Item Settings Variables
                     // Read Player Settings Variables
@@ -3809,6 +3810,7 @@ namespace MonstrumExtendedSettingsMod
             public static float gravityYComponent;
             public static float gravityZComponent;
             public static float camTimer;
+            public static bool silentSteamVents;
 
 
 

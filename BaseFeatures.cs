@@ -89,6 +89,9 @@ namespace MonstrumExtendedSettingsMod
                 // No Steam
                 On.SteamVentManager.Awake += new On.SteamVentManager.hook_Awake(HookSteamVentManager);
 
+                // Silent SteamVents
+                On.SteamVents.Start += new On.SteamVents.hook_Start(HookSteamVentsStart);
+
                 // Colour & Light Settings (Except Brute Light and Ship Generic Light)
                 On.Flashlight.Start += new On.Flashlight.hook_Start(HookFlashlightStart);
                 On.GlowStick.Start += new On.GlowStick.hook_Start(HookGlowStick);
@@ -8300,6 +8303,19 @@ namespace MonstrumExtendedSettingsMod
                     return;
                 }
                 steamVentManager.masterControlOverride = false;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @SteamVents
+            
+            private static void HookSteamVentsStart(On.SteamVents.orig_Start orig, SteamVents steamVents)
+            {
+                orig.Invoke(steamVents);
+                if (ModSettings.silentSteamVents)
+                {
+                    steamVents.blastSource.mute = true;
+                    steamVents.ventSource.mute = true;
+                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
