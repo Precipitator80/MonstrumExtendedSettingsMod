@@ -86,6 +86,9 @@ namespace MonstrumExtendedSettingsMod
                 //Cameras Timer
                 On.AmberState.ctor += new On.AmberState.hook_ctor(HookAmberStateCtor);
 
+                // Hurt Player on detection
+                On.AlarmManager.StartPlayingSound += new On.AlarmManager.hook_StartPlayingSound(HookAlarmManagerStartPlayingSound);
+
                 // No Steam
                 On.SteamVentManager.Awake += new On.SteamVentManager.hook_Awake(HookSteamVentManager);
 
@@ -7308,6 +7311,23 @@ namespace MonstrumExtendedSettingsMod
             private static void HookAmberStateCtor(On.AmberState.orig_ctor orig, AmberState amberState)
             {
                 amberState.warningTime = ModSettings.camTimer;
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @AlarmManager
+            
+            private static void HookAlarmManagerStartPlayingSound(On.AlarmManager.orig_StartPlayingSound orig, AlarmManager alarmManager, Vector3 _audioTransform, Room _cameraRoom)
+            {
+                orig.Invoke(alarmManager, _audioTransform, _cameraRoom);
+                NewPlayerClass newPlayerClass = FindObjectOfType<NewPlayerClass>();
+                if (ModSettings.camDetectDMGValue > 0)
+                {
+                    newPlayerClass.playerMotor.pHealth.DoDamage(ModSettings.camDetectDMGValue, false, PlayerHealth.DamageTypes.Steam, false);
+                }
+                if (ModSettings.doCameraStun)
+                {
+                    newPlayerClass.PushBackDir = 1f;
+                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
