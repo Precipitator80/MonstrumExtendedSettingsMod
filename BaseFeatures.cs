@@ -110,11 +110,13 @@ namespace MonstrumExtendedSettingsMod
                 On.PlayerMotor.HandleFallDamage += new On.PlayerMotor.hook_HandleFallDamage(HookPlayerMotorHandleFallDamage);
                 //On.TutorialLockerModelSwap.Update += new On.TutorialLockerModelSwap.hook_Update(HookTutorialLockerModelSwap); // Debug text & Death countdown were moved to MonsterStarter.
 
+                // Player Max Health & Recovery
+                On.PlayerHealth.Start += new On.PlayerHealth.hook_Start(HookPlayerHealthStart);
+
                 Debug.Log("INITIALISED BASE FEATURES");
 
                 // No Brute Light & Brute Light Colour
                 HookLightShafts();
-
 
                 // Indev / New Area
 
@@ -6643,6 +6645,13 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @PlayerHealth
+            
+            private static void HookPlayerHealthStart(On.PlayerHealth.orig_Start orig, PlayerHealth playerHealth)
+            {
+                playerHealth.MaxHP = ModSettings.maxHealth;
+                playerHealth.recoveryValue = ModSettings.recoveryValue;
+                orig.Invoke(playerHealth);
+            }
 
             private static void HookPlayerHealth()
             {
