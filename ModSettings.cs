@@ -1,4 +1,4 @@
-// ~Beginning Of File
+﻿// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1089,6 +1089,7 @@ namespace MonstrumExtendedSettingsMod
                     gravityXComponent = new MESMSetting<float>("Gravity X Acceleration", "Changes the acceleration due to gravity in the x axis", 0f, false).userValue;
                     gravityYComponent = new MESMSetting<float>("Gravity Y Acceleration", "Changes the acceleration due to gravity in the y axis", -9.81f, false, true).userValue;
                     gravityZComponent = new MESMSetting<float>("Gravity Z Acceleration", "Changes the acceleration due to gravity in the z axis", 0f, false, true).userValue;
+                    silentSteamVents = new MESMSetting<bool>("Silent Steam Vents", "The steam vents will not make any noise", false).userValue;
 
                     // Read Player and Item Settings Variables
                     // Read Player Settings Variables
@@ -3808,7 +3809,7 @@ namespace MonstrumExtendedSettingsMod
             public static float gravityXComponent;
             public static float gravityYComponent;
             public static float gravityZComponent;
-
+            public static bool silentSteamVents;
 
 
             // Player and Item Settings Variables
