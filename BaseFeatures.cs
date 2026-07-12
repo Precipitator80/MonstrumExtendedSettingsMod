@@ -7303,7 +7303,7 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
-            // @SecurityCamera
+            // @AmberState
 
             private static void HookAmberStateCtor(On.AmberState.orig_ctor orig, AmberState amberState)
             {
