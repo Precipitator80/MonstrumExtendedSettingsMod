@@ -1,4 +1,4 @@
-// ~Beginning Of File
+﻿// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1089,12 +1089,16 @@ namespace MonstrumExtendedSettingsMod
                     gravityXComponent = new MESMSetting<float>("Gravity X Acceleration", "Changes the acceleration due to gravity in the x axis", 0f, false).userValue;
                     gravityYComponent = new MESMSetting<float>("Gravity Y Acceleration", "Changes the acceleration due to gravity in the y axis", -9.81f, false, true).userValue;
                     gravityZComponent = new MESMSetting<float>("Gravity Z Acceleration", "Changes the acceleration due to gravity in the z axis", 0f, false, true).userValue;
+                    doCameraStun = new MESMSetting<bool>("Camera Detection Stun", "Defines whether the player gets stunned when detected by a camera", false).userValue;
+                    camDetectDMGValue = new MESMSetting<float>("Camera Detection Damage", "Defines how much damage the player takes when detected by a camera", 0f).userValue;
 
                     // Read Player and Item Settings Variables
                     // Read Player Settings Variables
                     modSettingsErrorString = "Player and Item";
                     MESMSetting.currentCategoryBeingAssigned = modSettingsErrorString + " Settings";
                     extraLives = new MESMSetting<int>("Extra Lives", "Allows you to teleport back to the starter room instead of dying if you have additional lives remaining. Also gives a few seconds of spawn protection", 0).userValue;
+                    maxHealth = new MESMSetting<int>("Player Max Health", "Changes the player's maximum health", 100, true).userValue;
+                    recoveryValue = new MESMSetting<int>("Player Health Recovery", "Defines how much health the player recovers each frame after not taking damage for a set duration", 1, true).userValue; // Not every Second due to "currentHP = Mathf.CeilToInt(currentHP + (float)recoveryValue * Time.deltaTime);"
                     inventorySize = new MESMSetting<int>("Inventory Size", "Changes how many inventory slots you have when starting a game", 0).userValue;
                     minimumValueOnFOVSlider = new MESMSetting<float>("Minimum Value On FOV Slider", "Allows you to customise your FOV Slider. Set minimum to -180 and maximum to 180 for full range of FOVs. This sets the minimum value of the FOV slider", 50).userValue;
                     maximumValueOnFOVSlider = new MESMSetting<float>("Maximum Value On FOV Slider", "Allows you to customise your FOV Slider. Set minimum to -180 and maximum to 180 for full range of FOVs. This sets the maximum value of the FOV slider", 70, false, true).userValue;
@@ -3808,12 +3812,14 @@ namespace MonstrumExtendedSettingsMod
             public static float gravityXComponent;
             public static float gravityYComponent;
             public static float gravityZComponent;
-
-
+            public static bool doCameraStun;
+            public static float camDetectDMGValue;
 
             // Player and Item Settings Variables
             // Player Settings Variables
             public static int extraLives;
+            public static int maxHealth;
+            public static int recoveryValue;
             public static int inventorySize;
             public static float minimumValueOnFOVSlider;
             public static float maximumValueOnFOVSlider;
