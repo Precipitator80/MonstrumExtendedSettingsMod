@@ -1153,6 +1153,33 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
+            // @AlarmManager
+            
+            private static void HookAlarmManagerStartPlayingSound(On.AlarmManager.orig_StartPlayingSound orig, AlarmManager alarmManager, Vector3 _audioTransform, Room _cameraRoom)
+            {
+                orig.Invoke(alarmManager, _audioTransform, _cameraRoom);
+                NewPlayerClass player;
+                if (ModSettings.enableMultiplayer)
+                {
+                    player = MultiplayerMode.crewPlayers[MultiplayerMode.ClosestPlayerToThis(_audioTransform, true)];
+                }
+                else
+                {
+                    player = FindObjectOfType<NewPlayerClass>();
+                }
+
+                if (ModSettings.camDetectDMGValue > 0)
+                {
+                    player.playerMotor.pHealth.DoDamage(ModSettings.camDetectDMGValue, false, PlayerHealth.DamageTypes.Steam, false);
+                }
+
+                if (ModSettings.doCameraStun)
+                {
+                    player.PushBackDir = 1f;
+                }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
             // @AnimationControl
 
             /// <summary>
@@ -7320,33 +7347,6 @@ namespace MonstrumExtendedSettingsMod
             private static void HookAmberStateCtor(On.AmberState.orig_ctor orig, AmberState amberState)
             {
                 amberState.warningTime = ModSettings.camTimer;
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
-            // @AlarmManager
-            
-            private static void HookAlarmManagerStartPlayingSound(On.AlarmManager.orig_StartPlayingSound orig, AlarmManager alarmManager, Vector3 _audioTransform, Room _cameraRoom)
-            {
-                orig.Invoke(alarmManager, _audioTransform, _cameraRoom);
-                NewPlayerClass player;
-                if (ModSettings.enableMultiplayer)
-                {
-                    player = MultiplayerMode.crewPlayers[MultiplayerMode.ClosestPlayerToThis(_audioTransform, true)];
-                }
-                else
-                {
-                    player = FindObjectOfType<NewPlayerClass>();
-                }
-
-                if (ModSettings.camDetectDMGValue > 0)
-                {
-                    player.playerMotor.pHealth.DoDamage(ModSettings.camDetectDMGValue, false, PlayerHealth.DamageTypes.Steam, false);
-                }
-
-                if (ModSettings.doCameraStun)
-                {
-                    player.PushBackDir = 1f;
-                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
