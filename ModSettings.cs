@@ -1821,7 +1821,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (lightlyLockedDoors)
                     {
-                        UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<Welder>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
+                        SpawnItems(UnityEngine.Object.FindObjectOfType<Welder>().gameObject, References.Player.transform, 1);
                     }
                     else if (ModSettings.customDoorTypeNumber == 3)
                     {
@@ -1849,10 +1849,13 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                if (spawnFuseCount > 0 || spawnEggtimerCount > 0)
+                Transform referenceTransform = References.Player.transform;
+                if (!randomStartRoom)
                 {
-                    SpawnFusesAndEggtimers(spawnFuseCount, spawnEggtimerCount);
+                    referenceTransform = FindObjectOfType<TutorialFlashlight>().transform;
                 }
+                SpawnItems(UnityEngine.Object.FindObjectOfType<Fuse>().gameObject, referenceTransform, spawnFuseCount);
+                SpawnItems(UnityEngine.Object.FindObjectOfType<EggTimer>().gameObject, referenceTransform, spawnEggtimerCount);
 
                 if (spawnWithLiferaftItems || spawnWithHelicopterItems || spawnWithSubmersibleItems)
                 {
@@ -2336,22 +2339,16 @@ namespace MonstrumExtendedSettingsMod
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
             }
 
-            private static void SpawnFusesAndEggtimers(int fuses, int eggtimers)
+            private static void SpawnItems(GameObject item, Transform referenceTransform, int amount)
             {
-                Transform referenceTransform = References.Player.transform;
-                if (!randomStartRoom)
+                if (amount <= 0)
                 {
-                    referenceTransform = FindObjectOfType<TutorialFlashlight>().transform;
+                    return;
                 }
 
-                for (int i = 0; i < fuses; i++)
+                for (int i = 0; i < amount; i++)
                 {
-                    UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<Fuse>().gameObject, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
-                }
-
-                for (int i = 0; i < eggtimers; i++)
-                {
-                    UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<EggTimer>().gameObject, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
+                    UnityEngine.Object.Instantiate<GameObject>(item, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
                 }
             }
 
