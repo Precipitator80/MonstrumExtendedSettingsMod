@@ -7328,14 +7328,24 @@ namespace MonstrumExtendedSettingsMod
             private static void HookAlarmManagerStartPlayingSound(On.AlarmManager.orig_StartPlayingSound orig, AlarmManager alarmManager, Vector3 _audioTransform, Room _cameraRoom)
             {
                 orig.Invoke(alarmManager, _audioTransform, _cameraRoom);
-                NewPlayerClass newPlayerClass = FindObjectOfType<NewPlayerClass>();
+                NewPlayerClass player;
+                if (ModSettings.enableMultiplayer)
+                {
+                    player = MultiplayerMode.crewPlayers[MultiplayerMode.ClosestPlayerToThis(_audioTransform, true)];
+                }
+                else
+                {
+                    player = FindObjectOfType<NewPlayerClass>();
+                }
+
                 if (ModSettings.camDetectDMGValue > 0)
                 {
-                    newPlayerClass.playerMotor.pHealth.DoDamage(ModSettings.camDetectDMGValue, false, PlayerHealth.DamageTypes.Steam, false);
+                    player.playerMotor.pHealth.DoDamage(ModSettings.camDetectDMGValue, false, PlayerHealth.DamageTypes.Steam, false);
                 }
+
                 if (ModSettings.doCameraStun)
                 {
-                    newPlayerClass.PushBackDir = 1f;
+                    player.PushBackDir = 1f;
                 }
             }
 
