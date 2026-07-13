@@ -2341,11 +2341,6 @@ namespace MonstrumExtendedSettingsMod
 
             private static void SpawnItems(GameObject item, Transform referenceTransform, int amount)
             {
-                if (amount <= 0)
-                {
-                    return;
-                }
-
                 for (int i = 0; i < amount; i++)
                 {
                     UnityEngine.Object.Instantiate<GameObject>(item, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
