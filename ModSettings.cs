@@ -1098,7 +1098,7 @@ namespace MonstrumExtendedSettingsMod
                     MESMSetting.currentCategoryBeingAssigned = modSettingsErrorString + " Settings";
                     extraLives = new MESMSetting<int>("Extra Lives", "Allows you to teleport back to the starter room instead of dying if you have additional lives remaining. Also gives a few seconds of spawn protection", 0).userValue;
                     maxHealth = new MESMSetting<int>("Player Max Health", "Changes the player's maximum health", 100, true).userValue;
-                    recoveryValue = new MESMSetting<int>("Player Health Recovery", "Changes the player's recovery speed", 1, true).userValue;
+                    recoveryValue = new MESMSetting<int>("Player Health Recovery", "Defines how much health the player recovers each frame after not taking damage for a set duration", 1, true).userValue; // Not every Second due to "currentHP = Mathf.CeilToInt(currentHP + (float)recoveryValue * Time.deltaTime);"
                     inventorySize = new MESMSetting<int>("Inventory Size", "Changes how many inventory slots you have when starting a game", 0).userValue;
                     minimumValueOnFOVSlider = new MESMSetting<float>("Minimum Value On FOV Slider", "Allows you to customise your FOV Slider. Set minimum to -180 and maximum to 180 for full range of FOVs. This sets the minimum value of the FOV slider", 50).userValue;
                     maximumValueOnFOVSlider = new MESMSetting<float>("Maximum Value On FOV Slider", "Allows you to customise your FOV Slider. Set minimum to -180 and maximum to 180 for full range of FOVs. This sets the maximum value of the FOV slider", 70, false, true).userValue;
