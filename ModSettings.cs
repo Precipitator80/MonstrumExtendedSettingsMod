@@ -1,4 +1,4 @@
-// ~Beginning Of File
+﻿// ~Beginning Of File
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1194,6 +1194,8 @@ namespace MonstrumExtendedSettingsMod
                     randomStartRoom = new MESMSetting<bool>("Random Start Room", "Lets the player spawn in a random room in the ship rather than the standard start room", false).userValue;
                     noPitTraps = new MESMSetting<bool>("No Pit Traps", "Destroys all pit traps when starting the game", false).userValue;
                     noDoors = new MESMSetting<bool>("No Doors", "Destroys all doors except the submersible room doors when starting the game", false).userValue;
+                    spawnAdditionalEggtimers = new MESMSetting<int>("Spawn additional Eggtimers", "Spawns additional Eggtimers in the spawn room", 0, false, false, 0).userValue;
+                    spawnAdditionalFuses = new MESMSetting<int>("Spawn additional Fuses", "Spawns additional Fuses in the spawn room", 0, false, false, 0).userValue;
 
                     // Read Colour Settings Variables
                     modSettingsErrorString = "Colour";
@@ -1813,11 +1815,13 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
+                int spawnEggtimerCount = spawnAdditionalEggtimers;
+                int spawnFuseCount = spawnAdditionalFuses;
                 if (useCustomDoors)
                 {
                     if (lightlyLockedDoors)
                     {
-                        UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<Welder>().gameObject, References.Player.transform.position + References.Player.transform.up + References.Player.transform.forward, References.Player.transform.rotation);
+                        SpawnItems(UnityEngine.Object.FindObjectOfType<Welder>().gameObject, References.Player.transform, 1);
                     }
                     else if (ModSettings.customDoorTypeNumber == 3)
                     {
@@ -1829,17 +1833,7 @@ namespace MonstrumExtendedSettingsMod
                             fusebox.AddPreExistingFuse();
                             fusebox.transform.parent.GetComponentInChildren<FuseBoxLever>().PullLever(false);
                         }
-
-                        Transform referenceTransform = References.Player.transform;
-                        if (!randomStartRoom)
-                        {
-                            referenceTransform = FindObjectOfType<TutorialFlashlight>().transform;
-                        }
-
-                        for (int i = 0; i < 40; i++)
-                        {
-                            UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<Fuse>().gameObject, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
-                        }
+                        spawnFuseCount += 40;
                     }
                     else if (ModSettings.customDoorTypeNumber == 5)
                     {
@@ -1851,19 +1845,17 @@ namespace MonstrumExtendedSettingsMod
                                 door.RipOffDoor2();
                             }
                         }
-
-                        Transform referenceTransform = References.Player.transform;
-                        if (!randomStartRoom)
-                        {
-                            referenceTransform = FindObjectOfType<TutorialFlashlight>().transform;
-                        }
-
-                        for (int i = 0; i < 40; i++)
-                        {
-                            UnityEngine.Object.Instantiate<GameObject>(UnityEngine.Object.FindObjectOfType<EggTimer>().gameObject, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
-                        }
+                        spawnEggtimerCount += 40;
                     }
                 }
+
+                Transform referenceTransform = References.Player.transform;
+                if (!randomStartRoom)
+                {
+                    referenceTransform = FindObjectOfType<TutorialFlashlight>().transform;
+                }
+                SpawnItems(UnityEngine.Object.FindObjectOfType<Fuse>().gameObject, referenceTransform, spawnFuseCount);
+                SpawnItems(UnityEngine.Object.FindObjectOfType<EggTimer>().gameObject, referenceTransform, spawnEggtimerCount);
 
                 if (spawnWithLiferaftItems || spawnWithHelicopterItems || spawnWithSubmersibleItems)
                 {
@@ -2345,6 +2337,14 @@ namespace MonstrumExtendedSettingsMod
 
                 Debug.Log("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
+            }
+
+            private static void SpawnItems(GameObject item, Transform referenceTransform, int amount)
+            {
+                for (int i = 0; i < amount; i++)
+                {
+                    UnityEngine.Object.Instantiate<GameObject>(item, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
+                }
             }
 
             public static void AssignCustomMusic()
@@ -3903,6 +3903,8 @@ namespace MonstrumExtendedSettingsMod
             public static bool randomStartRoom;
             public static bool noPitTraps;
             public static bool noDoors;
+            public static int spawnAdditionalEggtimers;
+            public static int spawnAdditionalFuses;
             public static bool experimentalShipExtension = false;
 
 
