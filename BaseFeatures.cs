@@ -2966,18 +2966,6 @@ namespace MonstrumExtendedSettingsMod
             }
 
             /*----------------------------------------------------------------------------------------------------*/
-            // @Phone
-
-            private static void HookPhoneStart(On.Phone.orig_Start orig, Phone phone)
-            {
-                orig.Invoke(phone);
-                if (ModSettings.disableWorkshopPhones)
-                {
-                    phone.phoneDestroyed = true;
-                }
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
             // @LevelGeneration
 
             private static void HookLevelGeneration()
@@ -6627,6 +6615,18 @@ namespace MonstrumExtendedSettingsMod
                             pauseMenu.TogglePause();
                         }
                     }
+                }
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @Phone
+
+            private static void HookPhoneStart(On.Phone.orig_Start orig, Phone phone)
+            {
+                orig.Invoke(phone);
+                if (ModSettings.disableWorkshopPhones)
+                {
+                    phone.phoneDestroyed = true;
                 }
             }
 
