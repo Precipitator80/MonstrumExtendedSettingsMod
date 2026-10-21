@@ -16,7 +16,7 @@ namespace MonstrumExtendedSettingsMod
         /*----------------------------------------------------------------------------------------------------*/
         // ~MultiplayerMode
 
-        private static class MultiplayerMode
+        internal static class MultiplayerMode
         {
             public static List<NewPlayerClass> newPlayerClasses; // Players can be retrieved by getting newPlayerClasses[i].gameObject.
             public static List<Inventory> inventories;

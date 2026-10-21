@@ -86,9 +86,6 @@ namespace MonstrumExtendedSettingsMod
                 //Cameras Timer
                 On.AmberState.ctor += new On.AmberState.hook_ctor(HookAmberStateCtor);
 
-                // Hurt Player on detection
-                On.AlarmManager.StartPlayingSound += new On.AlarmManager.hook_StartPlayingSound(HookAlarmManagerStartPlayingSound);
-
                 // No Steam
                 On.SteamVentManager.Awake += new On.SteamVentManager.hook_Awake(HookSteamVentManager);
 
@@ -109,9 +106,6 @@ namespace MonstrumExtendedSettingsMod
                 HookPlayerHealth();
                 On.PlayerMotor.HandleFallDamage += new On.PlayerMotor.hook_HandleFallDamage(HookPlayerMotorHandleFallDamage);
                 //On.TutorialLockerModelSwap.Update += new On.TutorialLockerModelSwap.hook_Update(HookTutorialLockerModelSwap); // Debug text & Death countdown were moved to MonsterStarter.
-
-                // Player Max Health & Recovery
-                On.PlayerHealth.Start += new On.PlayerHealth.hook_Start(HookPlayerHealthStart);
 
                 Debug.Log("INITIALISED BASE FEATURES");
 
@@ -363,6 +357,8 @@ namespace MonstrumExtendedSettingsMod
 
                 SettingsManager.Register(new MonsterVisionConeAngle());
                 SettingsManager.Register(new LoadingScreenManager());
+                SettingsManager.Register(new CameraDetection());
+                SettingsManager.Register(new PlayerHealthAndRecovery());
             }
 
             /*
@@ -1150,33 +1146,6 @@ namespace MonstrumExtendedSettingsMod
                     return null;
                 }
                 return orig.Invoke(detectRoom, _spots);
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
-            // @AlarmManager
-            
-            private static void HookAlarmManagerStartPlayingSound(On.AlarmManager.orig_StartPlayingSound orig, AlarmManager alarmManager, Vector3 _audioTransform, Room _cameraRoom)
-            {
-                orig.Invoke(alarmManager, _audioTransform, _cameraRoom);
-                NewPlayerClass player;
-                if (ModSettings.enableMultiplayer)
-                {
-                    player = MultiplayerMode.crewPlayers[MultiplayerMode.ClosestPlayerToThis(_audioTransform, true)];
-                }
-                else
-                {
-                    player = FindObjectOfType<NewPlayerClass>();
-                }
-
-                if (ModSettings.camDetectDMGValue > 0)
-                {
-                    player.playerMotor.pHealth.DoDamage(ModSettings.camDetectDMGValue, false, PlayerHealth.DamageTypes.Steam, false);
-                }
-
-                if (ModSettings.doCameraStun)
-                {
-                    player.PushBackDir = 1f;
-                }
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -6672,13 +6641,6 @@ namespace MonstrumExtendedSettingsMod
 
             /*----------------------------------------------------------------------------------------------------*/
             // @PlayerHealth
-            
-            private static void HookPlayerHealthStart(On.PlayerHealth.orig_Start orig, PlayerHealth playerHealth)
-            {
-                playerHealth.MaxHP = ModSettings.maxHealth;
-                playerHealth.recoveryValue = ModSettings.recoveryValue;
-                orig.Invoke(playerHealth);
-            }
 
             private static void HookPlayerHealth()
             {
