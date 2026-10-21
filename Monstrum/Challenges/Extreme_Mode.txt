@@ -2,7 +2,7 @@ Name|Extreme Mode
 Author|Ink
 Difficulty|8
 Description|The game against a random monster of the "Extreme" difficulty variant.
-Version|7.0
+Version|7.2
 Setting|Custom Value
 Number of Random Monsters|1
 Maximum Monster Spawntime (seconds)|15
@@ -29,7 +29,6 @@ Fiend Mind Attack Attack Timer Decay Rate|0
 Fiend Door Teleportation|True
 Give Fiend A Slow Aura|True
 Slow Aura Range|6.5625
-Slow Aura Maximum Slow Factor|0.0001
 Helicopter Fuel Time|9
 Submersible Charge Time|12
 Camera Timer|0

@@ -2,7 +2,7 @@ Name|Extreme Fiend
 Author|Ink
 Difficulty|8
 Description|An overpowered version of the Fiend. "The IQ of this specimen was significantly increased, resulting in an extreme enhancement of its abilities, making further research of the specimen impossible using current methods and means."
-Version|7.0
+Version|7.2
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Fiends|1
@@ -20,7 +20,6 @@ Fiend Mind Attack Attack Timer Decay Rate|0
 Fiend Door Teleportation|True
 Give Fiend A Slow Aura|True
 Slow Aura Range|6.5625
-Slow Aura Maximum Slow Factor|0.0001
 Helicopter Fuel Time|9
 Submersible Charge Time|12
 Camera Timer|0
