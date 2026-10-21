@@ -1,4 +1,4 @@
-using UnityEngine;
+using System.Collections.Generic;
 
 namespace MonstrumExtendedSettingsMod.Setting
 {
@@ -14,32 +14,38 @@ namespace MonstrumExtendedSettingsMod.Setting
 
         protected override void OnEnable()
         {
-            // Hurt or stun the player on detection
-            RegisterHook<On.AlarmManager.hook_StartPlayingSound>(h => On.AlarmManager.StartPlayingSound += h, h => On.AlarmManager.StartPlayingSound -= h, HookAlarmManagerStartPlayingSound);
+            // Hurt or stun the players on detection. RedState is entered every time a camera spots a player, even if the alarm is already sounding.
+            RegisterHook<On.RedState.hook_OnEnter>(h => On.RedState.OnEnter += h, h => On.RedState.OnEnter -= h, HookRedStateOnEnter);
         }
 
-        private static void HookAlarmManagerStartPlayingSound(On.AlarmManager.orig_StartPlayingSound orig, AlarmManager alarmManager, Vector3 _audioTransform, Room _cameraRoom)
+        private static void HookRedStateOnEnter(On.RedState.orig_OnEnter orig, RedState redState)
         {
-            orig.Invoke(alarmManager, _audioTransform, _cameraRoom);
-            NewPlayerClass player;
-            if (ExtendedSettingsModScript.ModSettings.enableMultiplayer)
+            orig.Invoke(redState);
+            foreach (NewPlayerClass player in SpottedPlayers(redState.securityCamera.detectPlayer))
             {
-                player = ExtendedSettingsModScript.MultiplayerMode.crewPlayers[ExtendedSettingsModScript.MultiplayerMode.ClosestPlayerToThis(_audioTransform, true)];
-            }
-            else
-            {
-                player = Object.FindObjectOfType<NewPlayerClass>();
-            }
+                if (camDetectDMGValue > 0)
+                {
+                    player.playerMotor.pHealth.DoDamage(camDetectDMGValue, false, PlayerHealth.DamageTypes.Steam, false);
+                }
 
-            if (camDetectDMGValue > 0)
-            {
-                player.playerMotor.pHealth.DoDamage(camDetectDMGValue, false, PlayerHealth.DamageTypes.Steam, false);
+                if (doCameraStun)
+                {
+                    player.PushBackDir = 1f;
+                }
             }
+        }
 
-            if (doCameraStun)
+        /// <summary>
+        /// Gets the players that a camera can see.
+        /// The vanilla DetectPlayer only checks References.Player, so every crew player is checked in multiplayer.
+        /// </summary>
+        private static List<NewPlayerClass> SpottedPlayers(DetectPlayer detectPlayer)
+        {
+            if (!ExtendedSettingsModScript.ModSettings.enableMultiplayer)
             {
-                player.PushBackDir = 1f;
+                return new List<NewPlayerClass> { References.PlayerClass };
             }
+            return ExtendedSettingsModScript.MultiplayerMode.crewPlayers.FindAll(player => ExtendedSettingsModScript.MultiplayerMode.CameraCanSeePlayer(detectPlayer, player));
         }
     }
 }

@@ -3993,23 +3993,17 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (!detectPlayer.securityCamera.disarmed)
                     {
-                        Vector3 detectPlayerPosition = detectPlayer.startPoint.position;
                         Vector3 playerPosition = detectPlayer.cameraModel.transform.position; // Placeholder position.
                         bool spottedPlayer = false;
                         if (newPlayerClasses != null)
                         {
                             foreach (NewPlayerClass newPlayerClass in crewPlayers)
                             {
-                                playerPosition = PlayerCamera(newPlayerClass).transform.position;
-                                if (GeoHelper.InsideCone(detectPlayerPosition, playerPosition, detectPlayer.cameraModel.transform.forward, detectPlayer.coneAngle, detectPlayer.coneLength))
+                                if (CameraCanSeePlayer(detectPlayer, newPlayerClass))
                                 {
-                                    Vector3 vector = playerPosition - detectPlayerPosition;
-                                    RaycastHit raycastHit;
-                                    if (!Physics.Raycast(detectPlayerPosition, vector.normalized, out raycastHit, vector.magnitude, detectPlayer.wallsLayer))
-                                    {
-                                        spottedPlayer = true;
-                                        break;
-                                    }
+                                    playerPosition = PlayerCamera(newPlayerClass).transform.position;
+                                    spottedPlayer = true;
+                                    break;
                                 }
                             }
                         }
@@ -4033,6 +4027,22 @@ namespace MonstrumExtendedSettingsMod
                 {
                     detectPlayer.playerFound = false;
                 }
+            }
+
+            /// <summary>
+            /// Checks whether a security camera can see a player, using the same cone and wall checks as the vanilla DetectPlayer.
+            /// </summary>
+            public static bool CameraCanSeePlayer(DetectPlayer detectPlayer, NewPlayerClass newPlayerClass)
+            {
+                Vector3 detectPlayerPosition = detectPlayer.startPoint.position;
+                Vector3 playerPosition = PlayerCamera(newPlayerClass).transform.position;
+                if (!GeoHelper.InsideCone(detectPlayerPosition, playerPosition, detectPlayer.cameraModel.transform.forward, detectPlayer.coneAngle, detectPlayer.coneLength))
+                {
+                    return false;
+                }
+                Vector3 vector = playerPosition - detectPlayerPosition;
+                RaycastHit raycastHit;
+                return !Physics.Raycast(detectPlayerPosition, vector.normalized, out raycastHit, vector.magnitude, detectPlayer.wallsLayer);
             }
 
             /*----------------------------------------------------------------------------------------------------*/
