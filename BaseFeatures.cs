@@ -115,7 +115,6 @@ namespace MonstrumExtendedSettingsMod
                 // No Brute Light & Brute Light Colour
                 HookLightShafts();
 
-
                 // Indev / New Area
 
                 // Achievements
@@ -361,6 +360,8 @@ namespace MonstrumExtendedSettingsMod
 
                 SettingsManager.Register(new MonsterVisionConeAngle());
                 SettingsManager.Register(new LoadingScreenManager());
+                SettingsManager.Register(new CameraDetection());
+                SettingsManager.Register(new PlayerHealthAndRecovery());
             }
 
             /*
@@ -1148,6 +1149,14 @@ namespace MonstrumExtendedSettingsMod
                     return null;
                 }
                 return orig.Invoke(detectRoom, _spots);
+            }
+
+            /*----------------------------------------------------------------------------------------------------*/
+            // @AmberState
+
+            private static void HookAmberStateCtor(On.AmberState.orig_ctor orig, AmberState amberState)
+            {
+                amberState.warningTime = ModSettings.camTimer;
             }
 
             /*----------------------------------------------------------------------------------------------------*/
@@ -7303,14 +7312,6 @@ namespace MonstrumExtendedSettingsMod
                 {
                     securityCamera.StopByDuctTape();
                 }
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
-            // @SecurityCamera
-
-            private static void HookAmberStateCtor(On.AmberState.orig_ctor orig, AmberState amberState)
-            {
-                amberState.warningTime = ModSettings.camTimer;
             }
 
             /*----------------------------------------------------------------------------------------------------*/

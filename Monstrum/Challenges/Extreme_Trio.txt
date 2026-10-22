@@ -2,7 +2,7 @@ Name|Extreme Trio
 Author|Ink
 Difficulty|10
 Description|The game against a full trio of monsters of the "Extreme" difficulty variant. Extremely difficult. Increased escape sequence complexity.
-Version|7.0
+Version|7.2
 Setting|Custom Value
 Number of Random Monsters|0
 Number of Brutes|1
@@ -32,7 +32,6 @@ Fiend Mind Attack Attack Timer Decay Rate|0
 Fiend Door Teleportation|True
 Give Fiend A Slow Aura|True
 Slow Aura Range|6.5625
-Slow Aura Maximum Slow Factor|0.0001
 Helicopter Fuel Time|9
 Submersible Charge Time|12
 Camera Timer|0
