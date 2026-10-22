@@ -46,9 +46,6 @@ namespace MonstrumExtendedSettingsMod
                 // Player Movement Speed
                 On.PlayerMotor.ClampSpeed += new On.PlayerMotor.hook_ClampSpeed(HookPlayerMotorClampSpeed);
 
-                //Disable Workshop Phones
-                On.Phone.Start += new On.Phone.hook_Start(HookPhoneStart);
-
                 // Monster Selection, Seed, Starter Room Location & Wallhacks Mode
                 HookLevelGeneration();
                 On.AudioLibrary.GetNext += new On.AudioLibrary.hook_GetNext(HookAudioLibraryGetNext);
@@ -363,6 +360,7 @@ namespace MonstrumExtendedSettingsMod
                 SettingsManager.Register(new SilentSteamVents());
                 SettingsManager.Register(new CameraDetection());
                 SettingsManager.Register(new PlayerHealthAndRecovery());
+                SettingsManager.Register(new DisableWorkshopPhones());
             }
 
             /*
@@ -6625,18 +6623,6 @@ namespace MonstrumExtendedSettingsMod
                             pauseMenu.TogglePause();
                         }
                     }
-                }
-            }
-
-            /*----------------------------------------------------------------------------------------------------*/
-            // @Phone
-
-            private static void HookPhoneStart(On.Phone.orig_Start orig, Phone phone)
-            {
-                orig.Invoke(phone);
-                if (ModSettings.disableWorkshopPhones)
-                {
-                    phone.phoneDestroyed = true;
                 }
             }
 
