@@ -1828,7 +1828,7 @@ namespace MonstrumExtendedSettingsMod
                 {
                     if (lightlyLockedDoors)
                     {
-                        SpawnItems(UnityEngine.Object.FindObjectOfType<Welder>().gameObject, References.Player.transform, 1);
+                        SpawnItems<Welder>(References.Player.transform, 1);
                     }
                     else if (ModSettings.customDoorTypeNumber == 3)
                     {
@@ -1856,13 +1856,21 @@ namespace MonstrumExtendedSettingsMod
                     }
                 }
 
-                Transform referenceTransform = References.Player.transform;
-                if (!randomStartRoom)
+                if (spawnFuseCount > 0 || spawnEggtimerCount > 0)
                 {
-                    referenceTransform = FindObjectOfType<TutorialFlashlight>().transform;
+                    // Spawn at the tutorial flashlight in the standard start room, otherwise next to the player.
+                    Transform referenceTransform = References.Player.transform;
+                    if (!randomStartRoom)
+                    {
+                        TutorialFlashlight tutorialFlashlight = FindObjectOfType<TutorialFlashlight>();
+                        if (tutorialFlashlight != null)
+                        {
+                            referenceTransform = tutorialFlashlight.transform;
+                        }
+                    }
+                    SpawnItems<Fuse>(referenceTransform, spawnFuseCount);
+                    SpawnItems<EggTimer>(referenceTransform, spawnEggtimerCount);
                 }
-                SpawnItems(UnityEngine.Object.FindObjectOfType<Fuse>().gameObject, referenceTransform, spawnFuseCount);
-                SpawnItems(UnityEngine.Object.FindObjectOfType<EggTimer>().gameObject, referenceTransform, spawnEggtimerCount);
 
                 if (spawnWithLiferaftItems || spawnWithHelicopterItems || spawnWithSubmersibleItems)
                 {
@@ -2346,11 +2354,27 @@ namespace MonstrumExtendedSettingsMod
                 Debug.LogError("READ LATE EXTENDED SETTINGS (AFTER GENERATION INITIALISATION)");
             }
 
-            private static void SpawnItems(GameObject item, Transform referenceTransform, int amount)
+            /// <summary>
+            /// Spawns copies of an existing item of the given type in front of the reference transform.
+            /// </summary>
+            private static void SpawnItems<T>(Transform referenceTransform, int amount) where T : Component
             {
+                if (amount <= 0)
+                {
+                    return;
+                }
+
+                // Items such as fuses are key items, so with lowered key item spawn numbers there may be none left to copy.
+                T item = UnityEngine.Object.FindObjectOfType<T>();
+                if (item == null)
+                {
+                    Debug.Log("Could not find a " + typeof(T).Name + " to copy, so " + amount + " could not be spawned");
+                    return;
+                }
+
                 for (int i = 0; i < amount; i++)
                 {
-                    UnityEngine.Object.Instantiate<GameObject>(item, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
+                    UnityEngine.Object.Instantiate<GameObject>(item.gameObject, referenceTransform.position + referenceTransform.up + referenceTransform.forward, referenceTransform.rotation);
                 }
             }
 
